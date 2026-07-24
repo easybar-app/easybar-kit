@@ -38,6 +38,7 @@ public struct CalendarBuiltinConfig: Sendable {
     public var showAllDayLabel: Bool
     public var showHolidayAllDayLabel: Bool
     public var allDayLabel: String
+    public var meetingURLPatterns: [String]
     public var showLocation: Bool
     public var locationIcon: String
     public var locationIconColorHex: String?
@@ -60,6 +61,7 @@ public struct CalendarBuiltinConfig: Sendable {
       showAllDayLabel: Bool,
       showHolidayAllDayLabel: Bool,
       allDayLabel: String,
+      meetingURLPatterns: [String],
       showLocation: Bool,
       locationIcon: String,
       locationIconColorHex: String?,
@@ -81,6 +83,7 @@ public struct CalendarBuiltinConfig: Sendable {
       self.showAllDayLabel = showAllDayLabel
       self.showHolidayAllDayLabel = showHolidayAllDayLabel
       self.allDayLabel = allDayLabel
+      self.meetingURLPatterns = meetingURLPatterns
       self.showLocation = showLocation
       self.locationIcon = locationIcon
       self.locationIconColorHex = locationIconColorHex

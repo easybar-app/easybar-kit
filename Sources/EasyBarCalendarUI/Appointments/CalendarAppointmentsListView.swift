@@ -181,9 +181,9 @@ public struct CalendarAppointmentsListView: View {
         }
       }
 
-      if event.hasUsableURL, let openURL = eventActions?.openURL {
+      if event.hasUsableURL, let actions = eventActions, let openURL = actions.openURL {
         Button(action: { openURL(event) }) {
-          Label(event.urlActionTitle, systemImage: "link")
+          Label(actions.urlActionTitle(for: event), systemImage: "link")
         }
       }
 

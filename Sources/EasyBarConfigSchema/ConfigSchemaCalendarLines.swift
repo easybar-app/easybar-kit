@@ -95,7 +95,8 @@ extension ConfigSchemaRegistry {
       value: "[\"date\", \"time\"]",
       description: "Ordered anchor fields: time and/or date.",
     ),
-    optionalEntry(key: "spacing", value: "2", description: "Optional gap between configured fields."),
+    optionalEntry(
+      key: "spacing", value: "2", description: "Optional gap between configured fields."),
     entry(
       key: "separator",
       value: "\" \"",
@@ -118,7 +119,8 @@ extension ConfigSchemaRegistry {
     entry(
       key: "font_weight",
       value: "\"regular\"",
-      description: "Font weight: ultralight | thin | light | regular | medium | semibold | bold | heavy | black.",
+      description:
+        "Font weight: ultralight | thin | light | regular | medium | semibold | bold | heavy | black.",
     ),
     .blank,
     section(name: "builtins.calendar.anchor.date"),
@@ -137,7 +139,8 @@ extension ConfigSchemaRegistry {
     entry(
       key: "font_weight",
       value: "\"regular\"",
-      description: "Font weight: ultralight | thin | light | regular | medium | semibold | bold | heavy | black.",
+      description:
+        "Font weight: ultralight | thin | light | regular | medium | semibold | bold | heavy | black.",
     ),
     .blank,
     section(name: "builtins.calendar.composer"),
@@ -562,6 +565,13 @@ extension ConfigSchemaRegistry {
       key: "all_day_label",
       value: "\"All day\"",
       description: "Text shown for all-day events when show_all_day_label is true.",
+    ),
+    optionalEntry(
+      key: "meeting_url_patterns",
+      value:
+        "[\"zoom.us\", \"meet.google.com\", \"teams.microsoft.com\", \"webex.com\", \"whereby.com\", \"jitsi\", \"gotomeeting.com\", \"bluejeans.com\"]",
+      description:
+        "Optional case-insensitive URL substrings used to label event links as Join Meeting. When omitted, the built-in list shown here is used; a configured list replaces it, and [] disables matching.",
     ),
     entry(
       key: "show_location",

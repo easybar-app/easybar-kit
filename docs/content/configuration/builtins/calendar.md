@@ -38,9 +38,23 @@ location_icon_color = "theme.accent"
 show_travel_time = true
 travel_icon = ""
 travel_icon_color = "theme.muted_secondary"
+meeting_url_patterns = [
+  "zoom.us",
+  "meet.google.com",
+  "teams.microsoft.com",
+  "webex.com",
+  "whereby.com",
+  "jitsi",
+  "gotomeeting.com",
+  "bluejeans.com",
+]
 ```
 
-Appointment menus provide Edit, Copy Details, Join Meeting or Open URL when available, and Open in Calendar. These actions need no additional configuration.
+Appointment menus provide Edit, Copy Details, Join Meeting or Open URL when available, and Open in
+Calendar. `meeting_url_patterns` contains case-insensitive URL substrings that select the **Join
+Meeting** title. When omitted, EasyBar uses the built-in list shown above. A configured list replaces
+the defaults, so custom services can be added without changing Swift code. Set it to `[]` to label
+every valid event link as **Open URL**.
 
 ## Filters
 
@@ -66,5 +80,3 @@ Each configuration change is written to `config.toml` immediately. Comments, whi
 unrelated settings are preserved.
 
 See the [Configuration Reference](../reference.md) for month, upcoming, selection, composer, appointment, and filter keys. See [Calendar Agent](../../internals/agents/calendar-agent.md) for the process boundary and [Recovery](../../runtime/recovery.md) for permission troubleshooting.
-
-

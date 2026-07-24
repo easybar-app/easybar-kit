@@ -543,6 +543,7 @@ show_calendar_name = false # Shows the source calendar name for appointments.
 show_all_day_label = true # Shows "All day" for all-day events except birthdays, which omit it.
 show_holiday_all_day_label = false # Shows "All day" for all-day holiday-calendar events.
 all_day_label = "All day" # Text shown for all-day events when show_all_day_label is true.
+# meeting_url_patterns = ["zoom.us", "meet.google.com", "teams.microsoft.com", "webex.com", "whereby.com", "jitsi", "gotomeeting.com", "bluejeans.com"] # Optional case-insensitive URL substrings used to label event links as Join Meeting. When omitted, the built-in list shown here is used; a configured list replaces it, and [] disables matching.
 show_location = true # Shows the event location line when present.
 location_icon = "" # Leading icon shown for location rows. Set to an empty string to hide the icon.
 location_icon_color = "theme.accent" # Color of the location icon. When omitted, secondary_text_color is used.

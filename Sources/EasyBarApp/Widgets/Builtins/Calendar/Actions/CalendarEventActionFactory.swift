@@ -6,8 +6,9 @@ import Foundation
 /// Builds host-side quick actions for calendar appointment rows.
 enum CalendarEventActionFactory {
   /// Returns the default action set used by calendar popups.
-  static func makeActions() -> CalendarEventActions {
+  static func makeActions(meetingURLPatterns: [String]) -> CalendarEventActions {
     CalendarEventActions(
+      meetingURLPatterns: meetingURLPatterns,
       copyDetails: copyDetails(for:),
       openURL: openURL(for:),
       openCalendar: { _ in openCalendarApp() }

@@ -285,6 +285,70 @@ final class ConfigLoaderBuiltinTests: ConfigLoaderTestCase {
     )
   }
 
+  func testReloadUsesDefaultCalendarMeetingURLPatternsWhenSettingIsOmitted() throws {
+    let config = Config.makeUnloadedConfig()
+    let configFileURL = tempDirectoryURL.appendingPathComponent(
+      "calendar-meeting-urls-default.toml"
+    )
+
+    try writeConfig(
+      """
+      [builtins.calendar.appointments]
+      show_location = false
+      """,
+      to: configFileURL
+    )
+
+    setEnvironmentValue(configFileURL.path, for: SharedEnvironmentKeys.configPath)
+
+    XCTAssertNil(config.reload())
+    XCTAssertEqual(
+      config.builtinCalendar.appointments.meetingURLPatterns,
+      CalendarMeetingURLMatcher.defaultPatterns
+    )
+  }
+
+  func testReloadAllowsEmptyCalendarMeetingURLPatterns() throws {
+    let config = Config.makeUnloadedConfig()
+    let configFileURL = tempDirectoryURL.appendingPathComponent(
+      "calendar-meeting-urls-disabled.toml"
+    )
+
+    try writeConfig(
+      """
+      [builtins.calendar.appointments]
+      meeting_url_patterns = []
+      """,
+      to: configFileURL
+    )
+
+    setEnvironmentValue(configFileURL.path, for: SharedEnvironmentKeys.configPath)
+
+    XCTAssertNil(config.reload())
+    XCTAssertEqual(config.builtinCalendar.appointments.meetingURLPatterns, [])
+  }
+
+  func testReloadAppliesCalendarMeetingURLPatterns() throws {
+    let config = Config.makeUnloadedConfig()
+    let configFileURL = tempDirectoryURL.appendingPathComponent("calendar-meeting-urls.toml")
+
+    try writeConfig(
+      """
+      [builtins.calendar.appointments]
+      meeting_url_patterns = [" Video.Example.com ", "", "video.example.com", "call.example.net"]
+      """,
+      to: configFileURL
+    )
+
+    setEnvironmentValue(configFileURL.path, for: SharedEnvironmentKeys.configPath)
+
+    XCTAssertNil(config.reload())
+    XCTAssertEqual(
+      config.builtinCalendar.appointments.meetingURLPatterns,
+      ["video.example.com", "call.example.net"]
+    )
+  }
+
   /// Verifies that reload failure keeps previous bar and builtin configuration.
   func testReloadFailureKeepsPreviousBarAndBuiltinConfiguration() throws {
     let config = Config.makeUnloadedConfig()

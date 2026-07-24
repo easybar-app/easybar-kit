@@ -184,6 +184,12 @@ extension CalendarBuiltinConfig {
         fallback: fallback.showHolidayAllDayLabel
       ),
       allDayLabel: try reader.string("all_day_label", fallback: fallback.allDayLabel),
+      meetingURLPatterns: CalendarMeetingURLMatcher.normalizedPatterns(
+        try reader.stringArray(
+          "meeting_url_patterns",
+          fallback: fallback.meetingURLPatterns
+        )
+      ),
       showLocation: try reader.bool("show_location", fallback: fallback.showLocation),
       locationIcon: try reader.string("location_icon", fallback: fallback.locationIcon),
       locationIconColorHex: try reader.optionalString(

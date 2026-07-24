@@ -1,3 +1,4 @@
+import EasyBarShared
 import Foundation
 
 extension CalendarBuiltinConfig {
@@ -57,6 +58,7 @@ extension CalendarBuiltinConfig {
       showAllDayLabel: true,
       showHolidayAllDayLabel: false,
       allDayLabel: "All day",
+      meetingURLPatterns: CalendarMeetingURLMatcher.defaultPatterns,
       showLocation: true,
       locationIcon: "",
       locationIconColorHex: nil,
