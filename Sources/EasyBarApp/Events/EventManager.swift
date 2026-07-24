@@ -24,6 +24,8 @@ final class EventManager {
     case appSwitch
     /// Display configuration notifications.
     case displayChange
+    /// Camera and microphone inventory and activity notifications.
+    case captureDevices
     /// Power source and charging notifications.
     case powerSource
     /// Volume and mute notifications.
@@ -52,6 +54,8 @@ final class EventManager {
   private let timerEvents: TimerEvents
   /// Volume notification source.
   private let volumeEvents: VolumeEvents
+  /// Camera and microphone notification source.
+  private let captureDeviceEvents: CaptureDeviceEvents
 
   /// Event names requested by Lua widgets.
   private var luaRequestedEvents = Set<String>()
@@ -70,25 +74,31 @@ final class EventManager {
     systemEvents: SystemEvents,
     powerEvents: PowerEvents,
     timerEvents: TimerEvents,
-    volumeEvents: VolumeEvents
+    volumeEvents: VolumeEvents,
+    captureDeviceEvents: CaptureDeviceEvents
   ) {
     self.logger = logger
     self.systemEvents = systemEvents
     self.powerEvents = powerEvents
     self.timerEvents = timerEvents
     self.volumeEvents = volumeEvents
+    self.captureDeviceEvents = captureDeviceEvents
   }
 
   /// Replaces the current Lua runtime event subscriptions.
   func setLuaSubscriptions(_ subscriptions: Set<String>) {
+    let addedEvents = subscriptions.subtracting(luaRequestedEvents)
     luaRequestedEvents = subscriptions
     refresh()
+    captureDeviceEvents.publishCurrentSnapshot(for: addedEvents)
   }
 
   /// Replaces the current native widget event subscriptions.
   func setNativeSubscriptions(_ subscriptions: Set<String>) {
+    let addedEvents = subscriptions.subtracting(nativeRequestedEvents)
     nativeRequestedEvents = subscriptions
     refresh()
+    captureDeviceEvents.publishCurrentSnapshot(for: addedEvents)
   }
 
   /// Stops only Lua-owned event subscriptions while preserving native ones.
@@ -180,6 +190,8 @@ final class EventManager {
         systemEvents.subscribeAppSwitch()
       case .displayChange:
         systemEvents.subscribeDisplayChange()
+      case .captureDevices:
+        captureDeviceEvents.start()
       case .powerSource:
         powerEvents.subscribePowerSource()
       case .volume:
@@ -210,6 +222,8 @@ final class EventManager {
         systemEvents.unsubscribeAppSwitch()
       case .displayChange:
         systemEvents.unsubscribeDisplayChange()
+      case .captureDevices:
+        captureDeviceEvents.stop()
       case .powerSource:
         powerEvents.unsubscribePowerSource()
       case .volume:
@@ -228,6 +242,7 @@ final class EventManager {
     systemEvents.stopAll()
     powerEvents.stopAll()
     volumeEvents.stopAll()
+    captureDeviceEvents.stop()
   }
 
   /// Returns the concrete native sources required by the merged subscription set.
@@ -260,6 +275,10 @@ final class EventManager {
 
     if subscriptions.contains(AppEvent.displayChange.rawValue) {
       sources.insert(.displayChange)
+    }
+
+    if !subscriptions.isDisjoint(with: CaptureDeviceEvents.eventNames) {
+      sources.insert(.captureDevices)
     }
 
     if subscriptions.contains(AppEvent.powerSourceChange.rawValue)

@@ -4,7 +4,7 @@ extension ConfigSchemaRegistry {
     entry(
       key: "enabled",
       value: "true",
-      description: "Shows or hides the predefined privacy spacer."
+      description: "Shows or hides the predefined fixed-width privacy spacer."
     ),
     entry(
       key: "position",

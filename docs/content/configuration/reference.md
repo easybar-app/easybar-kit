@@ -526,7 +526,7 @@ For concepts and usage examples, use the hand-written configuration guides.
 
 | Key        | Default   | Example    | Description                                                      |
 | ---------- | --------- | ---------- | ---------------------------------------------------------------- |
-| `enabled`  | `true`    | —          | Shows or hides the predefined privacy spacer.                    |
+| `enabled`  | `true`    | —          | Shows or hides the predefined fixed-width privacy spacer.        |
 | `position` | `"right"` | —          | Places the spacer on the left, center, or right side of the bar. |
 | `order`    | `1000`    | —          | Sort order among widgets in the same position.                   |
 | `group`    | Not set   | `"system"` | Optional native group id that should contain this spacer.        |

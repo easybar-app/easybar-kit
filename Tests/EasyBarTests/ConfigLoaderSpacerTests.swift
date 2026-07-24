@@ -62,6 +62,36 @@ final class ConfigLoaderSpacerTests: ConfigLoaderTestCase {
     XCTAssertEqual(centerGap.config.width, 12)
   }
 
+  func testPrivacySpacerDefaultsToEnabledAndTwelvePoints() {
+    let config = Config.makeUnloadedConfig()
+
+    XCTAssertTrue(config.builtinPrivacySpacer.enabled)
+    XCTAssertEqual(config.builtinPrivacySpacer.width, 12)
+  }
+
+  func testRemovedAutomaticSettingsAreReportedAsUnknown() throws {
+    let configFileURL = tempDirectoryURL.appendingPathComponent("removed-automatic-settings.toml")
+
+    try writeConfig(
+      """
+      [builtins.privacy_spacer]
+      mode = "automatic"
+      collapse_delay_seconds = 2
+      width = 12
+      """,
+      to: configFileURL
+    )
+
+    let result = try ConfigValidator.validate(configPathOverride: configFileURL.path)
+    XCTAssertEqual(
+      result.warnings,
+      [
+        "unknown config key builtins.privacy_spacer.collapse_delay_seconds",
+        "unknown config key builtins.privacy_spacer.mode",
+      ]
+    )
+  }
+
   func testNamedSpacerSectionsAreRecognizedByUnknownKeyValidation() throws {
     let configFileURL = tempDirectoryURL.appendingPathComponent("spacer-validation.toml")
 

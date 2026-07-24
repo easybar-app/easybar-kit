@@ -22,6 +22,14 @@
 ---| '"app_switch"'
 ---Fired when attached displays change.
 ---| '"display_change"'
+---Fired when a camera or microphone connects or disconnects.
+---| '"capture_devices_changed"'
+---Fired when camera or microphone activity state changes.
+---| '"capture_activity_changed"'
+---Fired when camera activity state changes.
+---| '"camera_activity_changed"'
+---Fired when microphone activity state changes.
+---| '"microphone_activity_changed"'
 ---Fired when the power source changes.
 ---| '"power_source_change"'
 ---Fired when charging starts or stops.
@@ -83,6 +91,22 @@
 ---@field muted? boolean Whether the current audio output is muted.
 ---@field value? number The current audio-related value when provided.
 
+---One connected camera or microphone included in capture-related events.
+---@class EasyBarCaptureDeviceData
+---@field id string Stable capture-device identifier.
+---@field name string Localized capture-device name.
+---@field kind 'camera'|'microphone' Capture-device category.
+---@field connected boolean Whether the device is currently connected.
+---@field active boolean Whether another application is using the device.
+
+---Normalized camera and microphone inventory and activity state.
+---@class EasyBarCaptureEventData
+---@field active boolean Whether any camera or microphone is active.
+---@field camera_active boolean Whether at least one camera is active.
+---@field microphone_active boolean Whether at least one microphone is active.
+---@field cameras EasyBarCaptureDeviceData[] Connected cameras.
+---@field microphones EasyBarCaptureDeviceData[] Connected microphones.
+
 ---The event payload object delivered to event handlers.
 ---Different event families populate different optional fields.
 ---@class EasyBarEvent
@@ -100,6 +124,7 @@
 ---@field network? EasyBarNetworkEventData Structured network event data.
 ---@field power? EasyBarPowerEventData Structured power event data.
 ---@field audio? EasyBarAudioEventData Structured audio event data.
+---@field capture? EasyBarCaptureEventData Structured camera and microphone state.
 
 ---The callback signature used by `node:subscribe(...)` and `easybar.subscribe(...)`.
 ---@alias EasyBarEventHandler fun(event: EasyBarEvent)
@@ -159,6 +184,10 @@
 ---@field space_change? EasyBarEventToken Fired when the active macOS space changes.
 ---@field app_switch? EasyBarEventToken Fired when the frontmost app changes.
 ---@field display_change? EasyBarEventToken Fired when attached displays change.
+---@field capture_devices_changed? EasyBarEventToken Fired when a camera or microphone connects or disconnects.
+---@field capture_activity_changed? EasyBarEventToken Fired when camera or microphone activity state changes.
+---@field camera_activity_changed? EasyBarEventToken Fired when camera activity state changes.
+---@field microphone_activity_changed? EasyBarEventToken Fired when microphone activity state changes.
 ---@field power_source_change? EasyBarEventToken Fired when the power source changes.
 ---@field charging_state_change? EasyBarEventToken Fired when charging starts or stops.
 ---@field wifi_change? EasyBarEventToken Fired when Wi-Fi state or SSID changes.

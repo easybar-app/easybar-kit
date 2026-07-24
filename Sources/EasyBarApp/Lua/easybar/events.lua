@@ -57,6 +57,10 @@ function M.normalize_event(payload)
 		error("event.audio must be a table when present")
 	end
 
+	if event.capture ~= nil and type(event.capture) ~= "table" then
+		error("event.capture must be a table when present")
+	end
+
 	return event
 end
 

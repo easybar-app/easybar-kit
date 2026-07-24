@@ -15,6 +15,10 @@ enum EventDeliveryPolicy {
     switch eventName {
     case AppEvent.secondTick.rawValue,
       AppEvent.intervalTick.rawValue,
+      AppEvent.captureDevicesChanged.rawValue,
+      AppEvent.captureActivityChanged.rawValue,
+      AppEvent.cameraActivityChanged.rawValue,
+      AppEvent.microphoneActivityChanged.rawValue,
       WidgetEvent.mouseEntered.rawValue,
       WidgetEvent.mouseExited.rawValue,
       WidgetEvent.mouseScrolled.rawValue,

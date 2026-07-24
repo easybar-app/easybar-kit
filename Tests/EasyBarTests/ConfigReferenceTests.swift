@@ -25,6 +25,10 @@ final class ConfigReferenceTests: ConfigLoaderTestCase {
       ["Not set", "`\"system\"`"]
     )
     XCTAssertEqual(
+      referenceRow(in: reference, section: "builtins.privacy_spacer", key: "width"),
+      ["`12`", "—"]
+    )
+    XCTAssertEqual(
       referenceRow(in: reference, section: "app", key: "lua_socket_path"),
       ["Not set", "`\"~/.local/state/easybar/runtime/lua-runtime.sock\"`"]
     )

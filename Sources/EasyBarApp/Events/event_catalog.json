@@ -14,7 +14,9 @@
     "mouseEventsClass": "Mouse-specific interaction tokens and convenience constants nested under `easybar.events.mouse`.",
     "sliderEventsClass": "Slider-specific interaction tokens nested under `easybar.events.slider`.",
     "eventsClass": "Namespace object exposed as `easybar.events`.",
-    "eventsClassExtra": "Use these tokens when subscribing widgets instead of hard-coding event-name strings."
+    "eventsClassExtra": "Use these tokens when subscribing widgets instead of hard-coding event-name strings.",
+    "captureDeviceData": "One connected camera or microphone included in capture-related events.",
+    "captureEventData": "Normalized camera and microphone inventory and activity state."
   },
   "intervalEvent": {
     "runtimeName": "interval",
@@ -74,6 +76,34 @@
       "runtimeName": "display_change",
       "driver": true,
       "doc": "Fired when attached displays change."
+    },
+    {
+      "swiftCase": "captureDevicesChanged",
+      "luaField": "capture_devices_changed",
+      "runtimeName": "capture_devices_changed",
+      "driver": true,
+      "doc": "Fired when a camera or microphone connects or disconnects."
+    },
+    {
+      "swiftCase": "captureActivityChanged",
+      "luaField": "capture_activity_changed",
+      "runtimeName": "capture_activity_changed",
+      "driver": true,
+      "doc": "Fired when camera or microphone activity state changes."
+    },
+    {
+      "swiftCase": "cameraActivityChanged",
+      "luaField": "camera_activity_changed",
+      "runtimeName": "camera_activity_changed",
+      "driver": true,
+      "doc": "Fired when camera activity state changes."
+    },
+    {
+      "swiftCase": "microphoneActivityChanged",
+      "luaField": "microphone_activity_changed",
+      "runtimeName": "microphone_activity_changed",
+      "driver": true,
+      "doc": "Fired when microphone activity state changes."
     },
     {
       "swiftCase": "powerSourceChange",
@@ -285,4 +315,3 @@
     }
   ]
 }
-

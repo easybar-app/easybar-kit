@@ -9,6 +9,7 @@ struct AppServices: @unchecked Sendable {
   let luaRuntime: LuaRuntime
   let eventHub: EventHub
   let eventManager: EventManager
+  let captureDeviceEvents: CaptureDeviceEvents
   let systemEvents: SystemEvents
   let powerEvents: PowerEvents
   let timerEvents: TimerEvents
@@ -66,6 +67,10 @@ struct AppServices: @unchecked Sendable {
       metricsCoordinator: metricsCoordinator,
       wifiSnapshotProvider: { nativeWiFiStore.snapshot }
     )
+    let captureDeviceEvents = CaptureDeviceEvents(
+      logger: eventLogger.child("capture"),
+      eventHub: eventHub
+    )
     let systemEvents = SystemEvents(logger: eventLogger.child("system"), eventHub: eventHub)
     let powerEvents = PowerEvents(logger: eventLogger.child("power"), eventHub: eventHub)
     let timerEvents = TimerEvents(logger: eventLogger.child("timer"), eventHub: eventHub)
@@ -75,7 +80,8 @@ struct AppServices: @unchecked Sendable {
       systemEvents: systemEvents,
       powerEvents: powerEvents,
       timerEvents: timerEvents,
-      volumeEvents: volumeEvents
+      volumeEvents: volumeEvents,
+      captureDeviceEvents: captureDeviceEvents
     )
     let agentServices = makeAgentServices(
       logger: logger,
@@ -108,6 +114,7 @@ struct AppServices: @unchecked Sendable {
       luaRuntime: luaRuntime,
       eventHub: eventHub,
       eventManager: eventManager,
+      captureDeviceEvents: captureDeviceEvents,
       systemEvents: systemEvents,
       powerEvents: powerEvents,
       timerEvents: timerEvents,

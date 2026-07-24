@@ -12,6 +12,11 @@ enum AppEvent: String, CaseIterable, Sendable {
   case appSwitch = "app_switch"
   case displayChange = "display_change"
 
+  case captureDevicesChanged = "capture_devices_changed"
+  case captureActivityChanged = "capture_activity_changed"
+  case cameraActivityChanged = "camera_activity_changed"
+  case microphoneActivityChanged = "microphone_activity_changed"
+
   case powerSourceChange = "power_source_change"
   case chargingStateChange = "charging_state_change"
 
@@ -64,6 +69,48 @@ enum ScrollDirection: String, CaseIterable, Sendable {
   case right
 }
 
+/// Capture-device category exposed to native and Lua event consumers.
+enum CaptureDeviceKind: String, Encodable, Hashable, Sendable {
+  case camera
+  case microphone
+}
+
+/// One connected camera or microphone in a capture-device snapshot.
+struct CaptureDeviceState: Encodable, Equatable, Sendable {
+  let id: String
+  let name: String
+  let kind: CaptureDeviceKind
+  let connected: Bool
+  let active: Bool
+}
+
+/// Normalized camera and microphone state shared by native and Lua subscribers.
+struct CaptureDeviceSnapshot: Encodable, Equatable, Sendable {
+  let active: Bool
+  let cameraActive: Bool
+  let microphoneActive: Bool
+  let cameras: [CaptureDeviceState]
+  let microphones: [CaptureDeviceState]
+
+  static let empty = CaptureDeviceSnapshot(cameras: [], microphones: [])
+
+  init(cameras: [CaptureDeviceState], microphones: [CaptureDeviceState]) {
+    self.cameras = cameras
+    self.microphones = microphones
+    cameraActive = cameras.contains(where: \.active)
+    microphoneActive = microphones.contains(where: \.active)
+    active = cameraActive || microphoneActive
+  }
+
+  private enum CodingKeys: String, CodingKey {
+    case active
+    case cameraActive = "camera_active"
+    case microphoneActive = "microphone_active"
+    case cameras
+    case microphones
+  }
+}
+
 /// Strongly typed event payload used inside Swift.
 struct EasyBarEventPayload: Sendable {
   /// App-wide event kind, when this is an app event.
@@ -85,6 +132,8 @@ struct EasyBarEventPayload: Sendable {
   let direction: ScrollDirection?
   /// Diagnostic source that caused the event to be emitted.
   let source: String?
+  /// Normalized camera and microphone state associated with capture events.
+  let capture: CaptureDeviceSnapshot?
 
   /// Charging state associated with the event.
   let charging: Bool?
@@ -111,6 +160,7 @@ struct EasyBarEventPayload: Sendable {
     appName: String? = nil,
     interfaceName: String? = nil,
     source: String? = nil,
+    capture: CaptureDeviceSnapshot? = nil,
     charging: Bool? = nil,
     muted: Bool? = nil,
     primaryInterfaceIsTunnel: Bool? = nil
@@ -121,6 +171,7 @@ struct EasyBarEventPayload: Sendable {
       appName: appName,
       interfaceName: interfaceName,
       source: source,
+      capture: capture,
       charging: charging,
       muted: muted,
       primaryInterfaceIsTunnel: primaryInterfaceIsTunnel
@@ -182,6 +233,7 @@ struct EasyBarEventPayload: Sendable {
       deltaX: deltaX,
       deltaY: deltaY,
       actionID: actionID,
+      capture: capture,
       network: hasNetworkPayload
         ? .init(
           primaryInterfaceIsTunnel: primaryInterfaceIsTunnel,
@@ -210,6 +262,7 @@ struct EasyBarEventPayload: Sendable {
     appName: String? = nil,
     interfaceName: String? = nil,
     source: String? = nil,
+    capture: CaptureDeviceSnapshot? = nil,
     button: MouseButton? = nil,
     direction: ScrollDirection? = nil,
     charging: Bool? = nil,
@@ -230,6 +283,7 @@ struct EasyBarEventPayload: Sendable {
       button: button,
       direction: direction,
       source: source,
+      capture: capture,
       charging: charging,
       muted: muted,
       primaryInterfaceIsTunnel: primaryInterfaceIsTunnel,
@@ -282,6 +336,7 @@ struct LuaEventPayload: Encodable, Equatable, Sendable {
   let deltaX: Double?
   let deltaY: Double?
   let actionID: String?
+  let capture: CaptureDeviceSnapshot?
   let network: Network?
   let power: Power?
   let audio: Audio?
@@ -298,6 +353,7 @@ struct LuaEventPayload: Encodable, Equatable, Sendable {
     case deltaX = "delta_x"
     case deltaY = "delta_y"
     case actionID = "action_id"
+    case capture
     case network
     case power
     case audio

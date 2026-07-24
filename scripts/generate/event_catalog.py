@@ -264,6 +264,22 @@ def render_lua_api_block(manifest: dict) -> str:
         "---@field muted? boolean Whether the current audio output is muted.",
         "---@field value? number The current audio-related value when provided.",
         "",
+        f'---{docs["captureDeviceData"]}',
+        "---@class EasyBarCaptureDeviceData",
+        "---@field id string Stable capture-device identifier.",
+        "---@field name string Localized capture-device name.",
+        "---@field kind 'camera'|'microphone' Capture-device category.",
+        "---@field connected boolean Whether the device is currently connected.",
+        "---@field active boolean Whether another application is using the device.",
+        "",
+        f'---{docs["captureEventData"]}',
+        "---@class EasyBarCaptureEventData",
+        "---@field active boolean Whether any camera or microphone is active.",
+        "---@field camera_active boolean Whether at least one camera is active.",
+        "---@field microphone_active boolean Whether at least one microphone is active.",
+        "---@field cameras EasyBarCaptureDeviceData[] Connected cameras.",
+        "---@field microphones EasyBarCaptureDeviceData[] Connected microphones.",
+        "",
         f'---{docs["event"]}',
         f'---{docs["eventExtra"]}',
         "---@class EasyBarEvent",
@@ -281,6 +297,7 @@ def render_lua_api_block(manifest: dict) -> str:
         "---@field network? EasyBarNetworkEventData Structured network event data.",
         "---@field power? EasyBarPowerEventData Structured power event data.",
         "---@field audio? EasyBarAudioEventData Structured audio event data.",
+        "---@field capture? EasyBarCaptureEventData Structured camera and microphone state.",
         "",
         f'---{docs["eventHandler"]}',
         "---@alias EasyBarEventHandler fun(event: EasyBarEvent)",
@@ -401,3 +418,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+

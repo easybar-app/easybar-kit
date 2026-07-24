@@ -26,6 +26,9 @@ final class EventCatalogTests: XCTestCase {
     XCTAssertTrue(EventCatalog.luaDriverEventNames.contains(EventCatalog.forcedEventName))
     XCTAssertTrue(EventCatalog.luaDriverEventNames.contains(AppEvent.systemWoke.rawValue))
     XCTAssertTrue(EventCatalog.luaDriverEventNames.contains(AppEvent.secondTick.rawValue))
+    XCTAssertTrue(
+      EventCatalog.luaDriverEventNames.contains(AppEvent.captureActivityChanged.rawValue)
+    )
   }
 
   /// Verifies that Lua driver names exclude widget events and internal app events.
@@ -81,6 +84,22 @@ final class EventCatalogTests: XCTestCase {
     XCTAssertTrue(plan.sources.contains("spaceChange"))
     XCTAssertTrue(plan.sources.contains("appSwitch"))
     XCTAssertTrue(plan.sources.contains("displayChange"))
+    XCTAssertEqual(plan.intervalSchedules, [])
+  }
+
+  @MainActor
+  /// Verifies that all capture events share one demand-driven source.
+  func testSubscriptionPlanGroupsCaptureEventsIntoSingleSource() {
+    let plan = EventManager.subscriptionPlan(
+      for: [
+        AppEvent.captureDevicesChanged.rawValue,
+        AppEvent.captureActivityChanged.rawValue,
+        AppEvent.cameraActivityChanged.rawValue,
+        AppEvent.microphoneActivityChanged.rawValue,
+      ]
+    )
+
+    XCTAssertEqual(plan.sources, ["captureDevices"])
     XCTAssertEqual(plan.intervalSchedules, [])
   }
 

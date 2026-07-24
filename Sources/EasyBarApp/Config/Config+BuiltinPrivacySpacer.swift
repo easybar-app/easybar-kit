@@ -26,11 +26,11 @@ extension Config {
     /// Default configuration for the predefined privacy spacer.
     static let privacyDefault = SpacerBuiltinConfig(
       placement: .init(
-        enabled: false,
+        enabled: true,
         position: .right,
         order: 1_000
       ),
-      width: 22
+      width: 12
     )
 
     /// Default configuration for an explicitly declared named spacer.
@@ -75,7 +75,10 @@ extension Config {
       parsed.append(
         NamedSpacerBuiltinConfig(
           id: id,
-          config: try parseSpacerBuiltin(from: spacer, fallback: .namedDefault)
+          config: try parseSpacerBuiltin(
+            from: spacer,
+            fallback: .namedDefault
+          )
         )
       )
     }

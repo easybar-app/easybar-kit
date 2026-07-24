@@ -1,10 +1,12 @@
+import EasyBarShared
 import Foundation
 
-/// Native invisible spacer that reserves a fixed amount of bar width.
+/// Native invisible spacer that permanently reserves a fixed amount of bar width.
 @MainActor
 final class SpacerNativeWidget: NativeWidget {
   let rootID: String
   let widgetStore: WidgetStore
+  let appEventSubscriptions: Set<String> = []
 
   private let config: Config.SpacerBuiltinConfig
 
@@ -18,17 +20,8 @@ final class SpacerNativeWidget: NativeWidget {
     self.widgetStore = widgetStore
   }
 
-  /// Publishes the invisible spacer node.
+  /// Publishes the configured fixed-width spacer.
   func start() {
-    publish()
-  }
-
-  /// Removes the spacer node.
-  func stop() {
-    widgetStore.apply(owner: .native(root: rootID), nodes: [])
-  }
-
-  private func publish() {
     let style = Config.BuiltinWidgetStyle(
       icon: "",
       textColorHex: "#00000000",
@@ -58,5 +51,10 @@ final class SpacerNativeWidget: NativeWidget {
     node.receivesMouseClick = false
     node.receivesMouseScroll = false
     widgetStore.apply(owner: .native(root: rootID), nodes: [node])
+  }
+
+  /// Removes the spacer node.
+  func stop() {
+    widgetStore.apply(owner: .native(root: rootID), nodes: [])
   }
 }

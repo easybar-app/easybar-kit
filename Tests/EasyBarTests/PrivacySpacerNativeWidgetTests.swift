@@ -1,14 +1,12 @@
-import EasyBarShared
 import XCTest
 
 @testable import EasyBarApp
 
 @MainActor
 final class PrivacySpacerNativeWidgetTests: XCTestCase {
-  func testPublishesConfiguredInvisibleWidthAndClearsOnStop() throws {
+  func testSpacerPublishesConfiguredInvisibleWidthAndClearsOnStop() throws {
     let store = WidgetStore()
     var config = Config.SpacerBuiltinConfig.privacyDefault
-    config.enabled = true
     config.width = 28
 
     let widget = SpacerNativeWidget(
@@ -27,6 +25,7 @@ final class PrivacySpacerNativeWidgetTests: XCTestCase {
     XCTAssertEqual(node.text, "")
     XCTAssertEqual(node.backgroundColor, "#00000000")
     XCTAssertEqual(node.receivesMouseHover, false)
+    XCTAssertEqual(widget.appEventSubscriptions, [])
 
     widget.stop()
 

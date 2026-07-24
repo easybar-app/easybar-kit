@@ -19,40 +19,44 @@ The callback signature used by `node:subscribe(...)` and `easybar.subscribe(...)
 
 Canonical runtime event-name strings carried inside `EasyBarEventToken.name`. In normal widget code, prefer `easybar.events.*` tokens over comparing raw strings.
 
-| Value                     | Meaning                                                                                                                           |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `"interval"`              | Internal timer callback name delivered to the widget whose own `interval` schedule elapsed.                                       |
-| `"forced"`                | Fired when EasyBar or `easybar` triggers a manual refresh.                                                                        |
-| `"system_woke"`           | Fired after the system wakes from sleep.                                                                                          |
-| `"session_active"`        | Fired when the macOS user session becomes active.                                                                                 |
-| `"session_inactive"`      | Fired when the macOS user session resigns active status.                                                                          |
-| `"sleep"`                 | Fired before the system goes to sleep.                                                                                            |
-| `"space_change"`          | Fired when the active macOS space changes.                                                                                        |
-| `"app_switch"`            | Fired when the frontmost app changes.                                                                                             |
-| `"display_change"`        | Fired when attached displays change.                                                                                              |
-| `"power_source_change"`   | Fired when the power source changes.                                                                                              |
-| `"charging_state_change"` | Fired when charging starts or stops.                                                                                              |
-| `"wifi_change"`           | Fired when Wi-Fi state or SSID changes.                                                                                           |
-| `"network_change"`        | Fired when network routing or tunnel state changes.                                                                               |
-| `"volume_change"`         | Fired when output volume changes.                                                                                                 |
-| `"mute_change"`           | Fired when mute state changes.                                                                                                    |
-| `"minute_tick"`           | Fired once per minute.                                                                                                            |
-| `"second_tick"`           | Fired once per second.                                                                                                            |
-| `"calendar_change"`       | Fired when the calendar snapshot updates.                                                                                         |
-| `"focus_change"`          | Fired when workspace focus changes.                                                                                               |
-| `"workspace_change"`      | Fired when workspace layout or selection changes.                                                                                 |
-| `"space_mode_change"`     | Fired when the AeroSpace layout mode changes.                                                                                     |
-| `"mouse.entered"`         | Fired when the pointer enters the subscribed node frame.                                                                          |
-| `"mouse.exited"`          | Fired when the pointer leaves the subscribed node frame.                                                                          |
-| `"mouse.clicked"`         | Fired when the subscribed node is clicked.                                                                                        |
-| `"mouse.down"`            | Fired on mouse button press over the subscribed node.                                                                             |
-| `"mouse.up"`              | Fired on mouse button release over the subscribed node.                                                                           |
-| `"mouse.scrolled"`        | Fired when the pointer scrolls over the subscribed node.                                                                          |
-| `"context_menu.clicked"`  | Fired when a native widget context menu action is selected.                                                                       |
-| `"inbox.action"`          | Fired when a native inbox action is selected. Prefer easybar.inbox.on_action for source routing.                                  |
-| `"inbox.context_action"`  | Fired when a publisher-provided inbox context-menu action is selected. Prefer easybar.inbox.on_context_action for source routing. |
-| `"slider.preview"`        | Fired while a slider is being previewed or dragged.                                                                               |
-| `"slider.changed"`        | Fired when a slider value is committed.                                                                                           |
+| Value                           | Meaning                                                                                                                           |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `"interval"`                    | Internal timer callback name delivered to the widget whose own `interval` schedule elapsed.                                       |
+| `"forced"`                      | Fired when EasyBar or `easybar` triggers a manual refresh.                                                                        |
+| `"system_woke"`                 | Fired after the system wakes from sleep.                                                                                          |
+| `"session_active"`              | Fired when the macOS user session becomes active.                                                                                 |
+| `"session_inactive"`            | Fired when the macOS user session resigns active status.                                                                          |
+| `"sleep"`                       | Fired before the system goes to sleep.                                                                                            |
+| `"space_change"`                | Fired when the active macOS space changes.                                                                                        |
+| `"app_switch"`                  | Fired when the frontmost app changes.                                                                                             |
+| `"display_change"`              | Fired when attached displays change.                                                                                              |
+| `"capture_devices_changed"`     | Fired when a camera or microphone connects or disconnects.                                                                        |
+| `"capture_activity_changed"`    | Fired when camera or microphone activity state changes.                                                                           |
+| `"camera_activity_changed"`     | Fired when camera activity state changes.                                                                                         |
+| `"microphone_activity_changed"` | Fired when microphone activity state changes.                                                                                     |
+| `"power_source_change"`         | Fired when the power source changes.                                                                                              |
+| `"charging_state_change"`       | Fired when charging starts or stops.                                                                                              |
+| `"wifi_change"`                 | Fired when Wi-Fi state or SSID changes.                                                                                           |
+| `"network_change"`              | Fired when network routing or tunnel state changes.                                                                               |
+| `"volume_change"`               | Fired when output volume changes.                                                                                                 |
+| `"mute_change"`                 | Fired when mute state changes.                                                                                                    |
+| `"minute_tick"`                 | Fired once per minute.                                                                                                            |
+| `"second_tick"`                 | Fired once per second.                                                                                                            |
+| `"calendar_change"`             | Fired when the calendar snapshot updates.                                                                                         |
+| `"focus_change"`                | Fired when workspace focus changes.                                                                                               |
+| `"workspace_change"`            | Fired when workspace layout or selection changes.                                                                                 |
+| `"space_mode_change"`           | Fired when the AeroSpace layout mode changes.                                                                                     |
+| `"mouse.entered"`               | Fired when the pointer enters the subscribed node frame.                                                                          |
+| `"mouse.exited"`                | Fired when the pointer leaves the subscribed node frame.                                                                          |
+| `"mouse.clicked"`               | Fired when the subscribed node is clicked.                                                                                        |
+| `"mouse.down"`                  | Fired on mouse button press over the subscribed node.                                                                             |
+| `"mouse.up"`                    | Fired on mouse button release over the subscribed node.                                                                           |
+| `"mouse.scrolled"`              | Fired when the pointer scrolls over the subscribed node.                                                                          |
+| `"context_menu.clicked"`        | Fired when a native widget context menu action is selected.                                                                       |
+| `"inbox.action"`                | Fired when a native inbox action is selected. Prefer easybar.inbox.on_action for source routing.                                  |
+| `"inbox.context_action"`        | Fired when a publisher-provided inbox context-menu action is selected. Prefer easybar.inbox.on_context_action for source routing. |
+| `"slider.preview"`              | Fired while a slider is being previewed or dragged.                                                                               |
+| `"slider.changed"`              | Fired when a slider value is committed.                                                                                           |
 
 ## `EasyBarMouseButton`
 
@@ -84,6 +88,18 @@ Structured audio-specific fields that may be present on mute or volume events.
 | `muted` _(optional)_ | `boolean` | Whether the current audio output is muted.     |
 | `value` _(optional)_ | `number`  | The current audio-related value when provided. |
 
+## `EasyBarCaptureEventData`
+
+Normalized camera and microphone inventory and activity state.
+
+| Property            | Type                         | Description                                 |
+| ------------------- | ---------------------------- | ------------------------------------------- |
+| `active`            | `boolean`                    | Whether any camera or microphone is active. |
+| `camera_active`     | `boolean`                    | Whether at least one camera is active.      |
+| `microphone_active` | `boolean`                    | Whether at least one microphone is active.  |
+| `cameras`           | `EasyBarCaptureDeviceData[]` | Connected cameras.                          |
+| `microphones`       | `EasyBarCaptureDeviceData[]` | Connected microphones.                      |
+
 ## `EasyBarContextMenuEvents`
 
 Native widget context menu events.
@@ -112,6 +128,7 @@ The event payload object delivered to event handlers. Different event families p
 | `network` _(optional)_          | `EasyBarNetworkEventData`        | Structured network event data.                                  |
 | `power` _(optional)_            | `EasyBarPowerEventData`          | Structured power event data.                                    |
 | `audio` _(optional)_            | `EasyBarAudioEventData`          | Structured audio event data.                                    |
+| `capture` _(optional)_          | `EasyBarCaptureEventData`        | Structured camera and microphone state.                         |
 
 ## `EasyBarEventToken`
 
@@ -125,32 +142,36 @@ Opaque subscribe token object passed through from `easybar.events.*`.
 
 Namespace object exposed as `easybar.events`. Use these tokens when subscribing widgets instead of hard-coding event-name strings.
 
-| Property                             | Type                       | Description                                                |
-| ------------------------------------ | -------------------------- | ---------------------------------------------------------- |
-| `forced` _(optional)_                | `EasyBarEventToken`        | Fired when EasyBar or `easybar` triggers a manual refresh. |
-| `system_woke` _(optional)_           | `EasyBarEventToken`        | Fired after the system wakes from sleep.                   |
-| `session_active` _(optional)_        | `EasyBarEventToken`        | Fired when the macOS user session becomes active.          |
-| `session_inactive` _(optional)_      | `EasyBarEventToken`        | Fired when the macOS user session resigns active status.   |
-| `sleep` _(optional)_                 | `EasyBarEventToken`        | Fired before the system goes to sleep.                     |
-| `space_change` _(optional)_          | `EasyBarEventToken`        | Fired when the active macOS space changes.                 |
-| `app_switch` _(optional)_            | `EasyBarEventToken`        | Fired when the frontmost app changes.                      |
-| `display_change` _(optional)_        | `EasyBarEventToken`        | Fired when attached displays change.                       |
-| `power_source_change` _(optional)_   | `EasyBarEventToken`        | Fired when the power source changes.                       |
-| `charging_state_change` _(optional)_ | `EasyBarEventToken`        | Fired when charging starts or stops.                       |
-| `wifi_change` _(optional)_           | `EasyBarEventToken`        | Fired when Wi-Fi state or SSID changes.                    |
-| `network_change` _(optional)_        | `EasyBarEventToken`        | Fired when network routing or tunnel state changes.        |
-| `volume_change` _(optional)_         | `EasyBarEventToken`        | Fired when output volume changes.                          |
-| `mute_change` _(optional)_           | `EasyBarEventToken`        | Fired when mute state changes.                             |
-| `minute_tick` _(optional)_           | `EasyBarEventToken`        | Fired once per minute.                                     |
-| `second_tick` _(optional)_           | `EasyBarEventToken`        | Fired once per second.                                     |
-| `calendar_change` _(optional)_       | `EasyBarEventToken`        | Fired when the calendar snapshot updates.                  |
-| `focus_change` _(optional)_          | `EasyBarEventToken`        | Fired when workspace focus changes.                        |
-| `workspace_change` _(optional)_      | `EasyBarEventToken`        | Fired when workspace layout or selection changes.          |
-| `space_mode_change` _(optional)_     | `EasyBarEventToken`        | Fired when the AeroSpace layout mode changes.              |
-| `mouse` _(optional)_                 | `EasyBarMouseEvents`       | Mouse interaction event tokens and constants.              |
-| `context_menu` _(optional)_          | `EasyBarContextMenuEvents` | Native widget context menu events.                         |
-| `inbox` _(optional)_                 | `EasyBarInboxEvents`       | Native shared inbox events.                                |
-| `slider` _(optional)_                | `EasyBarSliderEvents`      | Slider interaction event tokens.                           |
+| Property                                   | Type                       | Description                                                |
+| ------------------------------------------ | -------------------------- | ---------------------------------------------------------- |
+| `forced` _(optional)_                      | `EasyBarEventToken`        | Fired when EasyBar or `easybar` triggers a manual refresh. |
+| `system_woke` _(optional)_                 | `EasyBarEventToken`        | Fired after the system wakes from sleep.                   |
+| `session_active` _(optional)_              | `EasyBarEventToken`        | Fired when the macOS user session becomes active.          |
+| `session_inactive` _(optional)_            | `EasyBarEventToken`        | Fired when the macOS user session resigns active status.   |
+| `sleep` _(optional)_                       | `EasyBarEventToken`        | Fired before the system goes to sleep.                     |
+| `space_change` _(optional)_                | `EasyBarEventToken`        | Fired when the active macOS space changes.                 |
+| `app_switch` _(optional)_                  | `EasyBarEventToken`        | Fired when the frontmost app changes.                      |
+| `display_change` _(optional)_              | `EasyBarEventToken`        | Fired when attached displays change.                       |
+| `capture_devices_changed` _(optional)_     | `EasyBarEventToken`        | Fired when a camera or microphone connects or disconnects. |
+| `capture_activity_changed` _(optional)_    | `EasyBarEventToken`        | Fired when camera or microphone activity state changes.    |
+| `camera_activity_changed` _(optional)_     | `EasyBarEventToken`        | Fired when camera activity state changes.                  |
+| `microphone_activity_changed` _(optional)_ | `EasyBarEventToken`        | Fired when microphone activity state changes.              |
+| `power_source_change` _(optional)_         | `EasyBarEventToken`        | Fired when the power source changes.                       |
+| `charging_state_change` _(optional)_       | `EasyBarEventToken`        | Fired when charging starts or stops.                       |
+| `wifi_change` _(optional)_                 | `EasyBarEventToken`        | Fired when Wi-Fi state or SSID changes.                    |
+| `network_change` _(optional)_              | `EasyBarEventToken`        | Fired when network routing or tunnel state changes.        |
+| `volume_change` _(optional)_               | `EasyBarEventToken`        | Fired when output volume changes.                          |
+| `mute_change` _(optional)_                 | `EasyBarEventToken`        | Fired when mute state changes.                             |
+| `minute_tick` _(optional)_                 | `EasyBarEventToken`        | Fired once per minute.                                     |
+| `second_tick` _(optional)_                 | `EasyBarEventToken`        | Fired once per second.                                     |
+| `calendar_change` _(optional)_             | `EasyBarEventToken`        | Fired when the calendar snapshot updates.                  |
+| `focus_change` _(optional)_                | `EasyBarEventToken`        | Fired when workspace focus changes.                        |
+| `workspace_change` _(optional)_            | `EasyBarEventToken`        | Fired when workspace layout or selection changes.          |
+| `space_mode_change` _(optional)_           | `EasyBarEventToken`        | Fired when the AeroSpace layout mode changes.              |
+| `mouse` _(optional)_                       | `EasyBarMouseEvents`       | Mouse interaction event tokens and constants.              |
+| `context_menu` _(optional)_                | `EasyBarContextMenuEvents` | Native widget context menu events.                         |
+| `inbox` _(optional)_                       | `EasyBarInboxEvents`       | Native shared inbox events.                                |
+| `slider` _(optional)_                      | `EasyBarSliderEvents`      | Slider interaction event tokens.                           |
 
 ## `EasyBarInboxActionEvent`
 

@@ -18,7 +18,18 @@ After loading widgets:
 - Lua sends required events
 - Swift enables only those
 
-The subscription list can change at runtime.
+The subscription list can change at runtime. Native widgets contribute to the same merged demand set.
+Camera and microphone observation starts only while a Lua widget or native consumer subscribes to a
+capture event, and stops again when the final subscriber disappears. The fixed privacy spacer does
+not subscribe to capture events.
+
+Core Media I/O camera listeners plus Core Audio microphone inventory, process-list, process-state,
+and input-device wakeup listeners feed one normalized capture snapshot to subscribers. Microphone
+activity prefers `kAudioProcessPropertyIsRunningInput`. Input-device running state is used as an
+activation fallback for microphone-only capture and is suppressed across a camera session until the
+input device returns idle. Each native Core Audio notification also schedules one short settling read;
+this is a one-shot verification rather than periodic polling. A newly added capture subscription
+receives the current snapshot once, even when another subscriber already keeps the source active.
 
 For example, `interval` plus `on_interval` causes Lua to request one
 widget-scoped interval schedule such as `interval_tick:brew:1800`.
@@ -78,3 +89,9 @@ Important properties:
 - no shared memory between Swift and Lua
 - all communication is JSON-based
 - rendering is always derived, never incremental mutation
+
+
+
+Screen recording by another process is intentionally not part of the capture event source. The public
+ScreenCaptureKit APIs describe streams and shareable content for the calling application; they do not
+provide a supported system-wide start/stop subscription for unrelated screen-capture sessions.

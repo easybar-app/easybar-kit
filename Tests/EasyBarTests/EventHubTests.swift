@@ -676,6 +676,11 @@ final class EventHubTests: XCTestCase {
     )
 
     XCTAssertEqual(
+      EventDeliveryPolicy.forEventName(AppEvent.captureActivityChanged.rawValue),
+      .coalescing
+    )
+
+    XCTAssertEqual(
       EventDeliveryPolicy.forEventName(WidgetEvent.mouseScrolled.rawValue),
       .coalescing
     )

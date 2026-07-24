@@ -1,12 +1,8 @@
-# Privacy Spacer
+# Privacy spacer
 
-EasyBar provides invisible native spacers that reserve a fixed amount of bar width. They are useful
-when the macOS privacy indicator or another system element would otherwise overlap the final widget,
-or when you want an intentional gap between widgets.
-
-## Predefined privacy spacer
-
-The predefined spacer is the convenient system-edge instance:
+The privacy spacer is an invisible, fixed-width native widget placed at the far right by default. It
+permanently reserves room for macOS privacy indicators so camera, microphone, screen-recording, and
+system-audio indicators do not overlap the final visible widget.
 
 ```toml
 [builtins.privacy_spacer]
@@ -16,17 +12,42 @@ order = 1000
 width = 12
 ```
 
-It is enabled by default and is the only spacer shown under **Native Widgets → Privacy Spacer**.
-Toggling that menu item writes `builtins.privacy_spacer.enabled` just like the other top-level native
-widgets.
+The predefined spacer supports `enabled`, `position`, `order`, `group`, and `width`. It has no icon,
+text, hover state, popup, or action surface. While enabled, it always reserves its configured width.
+Automatic resizing is intentionally not supported because public macOS APIs do not provide one
+reliable system-wide activity feed covering every privacy indicator and their exact display timing.
 
-The predefined spacer supports `enabled`, `position`, `order`, optional `group`, and `width`. A
-configured group must exist under `builtins.groups.<name>`. Leave `group` unset for the usual
-system-edge placement, where the default `order = 1000` puts the spacer after ordinary right-side
-widgets and shifts the remaining bar content to the left.
+Set `enabled = false` to remove the reserved area. Increase `width` when the system indicator still
+crowds the final widget. The accepted range is `1` through `100` points.
 
-EasyBar does not detect whether the macOS privacy indicator is visible, so the configured width is
-always reserved while the spacer is enabled.
+## Capture events for Lua
+
+The fixed spacer does not subscribe to capture events. Camera and microphone events remain available
+to Lua widgets through the demand-driven capture source:
+
+- `easybar.events.capture_devices_changed`
+- `easybar.events.capture_activity_changed`
+- `easybar.events.camera_activity_changed`
+- `easybar.events.microphone_activity_changed`
+
+The source starts only while a Lua widget subscribes to one of these events. When a subscription is
+first added, EasyBar emits its current snapshot for that event. Every subsequent event includes
+`event.capture` with aggregate activity flags plus the connected camera and microphone arrays.
+
+```lua
+widget:subscribe(easybar.events.capture_activity_changed, function(event)
+    local capture = event.capture
+    if capture and capture.active then
+        widget:set({ label = "Recording" })
+    else
+        widget:set({ label = "" })
+    end
+end)
+```
+
+These events represent camera and microphone device activity. They do not claim to detect unrelated
+applications performing screen-only recording. See [Events](../../lua/reference/events.md) for the
+complete payload fields.
 
 ## Additional named spacers
 
@@ -47,21 +68,11 @@ order = 10
 width = 12
 ```
 
-Named spacers are intentionally config-only. They do not appear individually in **Native Widgets**,
-which keeps that menu compact. Edit or remove their TOML sections to manage them.
-
-Each named spacer supports:
-
-- `enabled`: enables or disables that spacer; defaults to `true` when the section exists
-- `position`: `left`, `center`, or `right`
-- `order`: placement among other widgets in the same position
-- `group`: optional native group id; the referenced group must exist
-- `width`: reserved width from `1` through `100` points; defaults to `8`
-
-All named spacers use the same native renderer as the predefined privacy spacer. They have no text,
-icon, hover behavior, popup, or action surface.
+Named spacers are config-only and do not appear individually in **Native Widgets**. Each named spacer
+supports `enabled`, `position`, `order`, `group`, and `width`, and always reserves its configured width
+while enabled.
 
 ## Suggested widths
 
-Use around `22` points for the macOS privacy indicator. Smaller values such as `6`–`12` points work
-well for visual separation between widgets.
+The default privacy width is `12` points. Smaller values such as `6`–`12` points also work well for
+visual separation between widgets.
