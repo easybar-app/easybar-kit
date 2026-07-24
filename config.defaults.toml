@@ -402,6 +402,12 @@ step = 1 # Slider step size.
 expand_to_slider_on_hover = true # Expands from compact mode to slider mode on hover.
 width = 80 # Width of the slider when shown.
 
+[builtins.privacy_spacer]
+enabled = false # Shows or hides the privacy spacer.
+position = "right" # Places the spacer on the left, center, or right side of the bar.
+order = 1000 # Sort order among widgets in the same position.
+width = 22 # Width of the invisible reserved area in points (1–100).
+
 [builtins.calendar]
 enabled = true # Shows or hides the unified calendar widget.
 position = "right" # Places the widget on the left, center, or right side of the bar.

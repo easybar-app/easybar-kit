@@ -49,6 +49,7 @@ nav:
       - Built-ins: configuration/builtins.md
       - Spaces: configuration/builtins/spaces.md
       - Inbox: configuration/builtins/inbox.md
+      - Privacy Spacer: configuration/builtins/privacy-spacer.md
       - Wi-Fi: configuration/builtins/wifi.md
       - Calendar: configuration/builtins/calendar.md
       - Native Groups: configuration/native-groups.md

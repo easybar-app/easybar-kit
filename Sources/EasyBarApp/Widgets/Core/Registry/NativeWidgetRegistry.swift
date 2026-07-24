@@ -207,6 +207,7 @@ final class NativeWidgetRegistry {
 
   private static let configKeyByRootID = [
     "builtin_inbox": "inbox",
+    "builtin_privacy_spacer": "privacy_spacer",
     "builtin_spaces": "spaces",
     "builtin_battery": "battery",
     "builtin_front_app": "front_app",
@@ -260,6 +261,12 @@ final class NativeWidgetRegistry {
           configSnapshotStore: self.configSnapshotStore,
           configPersistence: self.configPersistence,
           eventHub: self.eventHub
+        )
+      },
+      Registration(id: "privacy_spacer", enabled: builtins.privacySpacer.enabled) {
+        PrivacySpacerNativeWidget(
+          config: builtins.privacySpacer,
+          widgetStore: self.widgetStore
         )
       },
       Registration(id: "spaces", enabled: builtins.spaces.enabled) {

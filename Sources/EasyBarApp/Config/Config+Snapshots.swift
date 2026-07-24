@@ -42,6 +42,7 @@ extension Config {
       bar: barSection,
       builtins: .init(
         inbox: builtinInbox,
+        privacySpacer: builtinPrivacySpacer,
         cpu: builtinCPU,
         battery: builtinBattery,
         groups: builtinGroups,
@@ -118,6 +119,7 @@ extension Config {
   /// Restores the built-in widget config snapshot.
   func applyBuiltinSnapshot(_ snapshot: ConfigSnapshot) {
     builtinInbox = snapshot.builtins.inbox
+    builtinPrivacySpacer = snapshot.builtins.privacySpacer
     builtinCPU = snapshot.builtins.cpu
     builtinBattery = snapshot.builtins.battery
     builtinGroups = snapshot.builtins.groups

@@ -64,14 +64,15 @@ final class ConfigSnapshotStore: ObservableObject {
   /// Updates one top-level native widget's enabled state after context-menu persistence.
   func applyNativeWidgetEnabledOverride(_ key: String, enabled: Bool) {
     let supportedKeys: Set<String> = [
-      "inbox", "cpu", "battery", "spaces", "front_app", "aerospace_mode", "volume",
-      "wifi", "calendar", "time", "date",
+      "inbox", "privacy_spacer", "cpu", "battery", "spaces", "front_app",
+      "aerospace_mode", "volume", "wifi", "calendar", "time", "date",
     ]
     guard supportedKeys.contains(key) else { return }
 
     updateBuiltins { builtins in
       switch key {
       case "inbox": builtins.inbox.placement.enabled = enabled
+      case "privacy_spacer": builtins.privacySpacer.placement.enabled = enabled
       case "cpu": builtins.cpu.enabled = enabled
       case "battery": builtins.battery.enabled = enabled
       case "spaces": builtins.spaces.enabled = enabled

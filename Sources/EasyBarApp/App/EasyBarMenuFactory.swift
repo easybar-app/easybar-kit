@@ -158,6 +158,7 @@ final class EasyBarMenuFactory: NSObject {
     let widgets: [(String, String, Bool)] = [
       ("spaces", "Spaces", builtins.spaces.enabled),
       ("inbox", "Inbox", builtins.inbox.enabled),
+      ("privacy_spacer", "Privacy Spacer", builtins.privacySpacer.enabled),
       ("battery", "Battery", builtins.battery.enabled),
       ("wifi", "Wi-Fi", builtins.wifi.enabled),
       ("calendar", "Calendar", builtins.calendar.enabled),

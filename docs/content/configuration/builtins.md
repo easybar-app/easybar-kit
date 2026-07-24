@@ -90,12 +90,13 @@ See [Box Model](box-model.md).
 
 The generated [Configuration Reference](reference.md) lists every key and default. These guides explain behavior and interactions for the more complex built-ins:
 
-| Built-in | Guide                            |
-| -------- | -------------------------------- |
-| Spaces   | [Spaces](builtins/spaces.md)     |
-| Inbox    | [Inbox](builtins/inbox.md)       |
-| Wi-Fi    | [Wi-Fi](builtins/wifi.md)        |
-| Calendar | [Calendar](builtins/calendar.md) |
+| Built-in       | Guide                                            |
+| -------------- | ------------------------------------------------ |
+| Spaces         | [Spaces](builtins/spaces.md)                     |
+| Inbox          | [Inbox](builtins/inbox.md)                       |
+| Privacy Spacer | [Privacy Spacer](builtins/privacy-spacer.md)     |
+| Wi-Fi          | [Wi-Fi](builtins/wifi.md)                        |
+| Calendar       | [Calendar](builtins/calendar.md)                 |
 
 ## Widget-specific context menus
 
@@ -140,4 +141,3 @@ Switch to Lua when you need:
 - shell-command integration or app-specific logic
 
 See [Lua Widgets](../lua/overview.md).
-

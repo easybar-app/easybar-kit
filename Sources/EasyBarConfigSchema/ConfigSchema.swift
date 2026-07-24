@@ -4,6 +4,7 @@ extension ConfigSchemaRegistry {
     coreLines
     + workspaceLines
     + systemLines
+    + privacySpacerLines
     + calendarLines
     + clockLines
 

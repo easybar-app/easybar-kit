@@ -388,10 +388,7 @@ local function run_operation(operation_id, label, arguments, options, item_id)
 					message = text.trim(output) ~= "" and text.truncate(output, 12000, "…")
 						or "Command exited with code " .. tostring(code),
 				}
-				log(
-					easybar.level.error,
-					"inbox mutation failed operation=" .. operation_id .. " status=" .. tostring(code)
-				)
+				log(easybar.level.error, "inbox mutation failed operation=" .. operation_id .. " status=" .. tostring(code))
 				publish()
 				return
 			end

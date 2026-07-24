@@ -522,6 +522,15 @@ For concepts and usage examples, use the hand-written configuration guides.
 | `expand_to_slider_on_hover` | `true`  | —       | Expands from compact mode to slider mode on hover. |
 | `width`                     | `80`    | —       | Width of the slider when shown.                    |
 
+## `builtins.privacy_spacer`
+
+| Key        | Default   | Example | Description                                                      |
+| ---------- | --------- | ------- | ---------------------------------------------------------------- |
+| `enabled`  | `false`   | —       | Shows or hides the privacy spacer.                               |
+| `position` | `"right"` | —       | Places the spacer on the left, center, or right side of the bar. |
+| `order`    | `1000`    | —       | Sort order among widgets in the same position.                   |
+| `width`    | `22`      | —       | Width of the invisible reserved area in points (1–100).          |
+
 ## `builtins.calendar`
 
 | Key          | Default   | Example | Description                                                      |
