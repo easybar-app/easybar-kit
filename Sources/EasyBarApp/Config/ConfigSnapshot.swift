@@ -55,7 +55,8 @@ struct ConfigSnapshot: @unchecked Sendable {
   /// Built-in widget config snapshot.
   struct Builtins {
     var inbox: Config.InboxBuiltinConfig
-    var privacySpacer: Config.PrivacySpacerBuiltinConfig = .default
+    var privacySpacer: Config.SpacerBuiltinConfig = .privacyDefault
+    var spacers: [Config.NamedSpacerBuiltinConfig] = []
     var cpu: Config.CPUBuiltinConfig
     var battery: Config.BatteryBuiltinConfig
     var groups: [Config.BuiltinGroupConfig]

@@ -93,6 +93,10 @@ extension ConfigSchemaRegistry {
       return widgetStyleKeys
     }
 
+    if isNamedBuiltinSpacer(path) {
+      return placementKeys.union(["width"])
+    }
+
     return knownKeysBySection[path] ?? []
   }
 
@@ -102,6 +106,7 @@ extension ConfigSchemaRegistry {
       || freeFormSections.contains(path)
       || isBuiltinGroup(path)
       || isBuiltinGroupStyle(path)
+      || isNamedBuiltinSpacer(path)
   }
 
   private static func isBuiltinGroup(_ path: String) -> Bool {
@@ -117,5 +122,12 @@ extension ConfigSchemaRegistry {
       && components[0] == "builtins"
       && components[1] == "groups"
       && components[3] == "style"
+  }
+
+  private static func isNamedBuiltinSpacer(_ path: String) -> Bool {
+    let components = path.split(separator: ".")
+    return components.count == 3
+      && components[0] == "builtins"
+      && components[1] == "spacers"
   }
 }

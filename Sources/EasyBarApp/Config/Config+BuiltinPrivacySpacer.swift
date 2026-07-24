@@ -1,8 +1,8 @@
 import Foundation
 
 extension Config {
-  /// Built-in invisible spacer used to reserve room at a bar edge.
-  struct PrivacySpacerBuiltinConfig: @unchecked Sendable {
+  /// Native invisible spacer configuration shared by the predefined and named spacers.
+  struct SpacerBuiltinConfig: @unchecked Sendable {
     /// Shared placement settings.
     var placement: BuiltinWidgetPlacement
     /// Reserved width in points.
@@ -23,8 +23,8 @@ extension Config {
       set { placement.order = newValue }
     }
 
-    /// Default privacy-spacer configuration.
-    static let `default` = PrivacySpacerBuiltinConfig(
+    /// Default configuration for the predefined privacy spacer.
+    static let privacyDefault = SpacerBuiltinConfig(
       placement: .init(
         enabled: false,
         position: .right,
@@ -32,20 +32,70 @@ extension Config {
       ),
       width: 22
     )
+
+    /// Default configuration for an explicitly declared named spacer.
+    static let namedDefault = SpacerBuiltinConfig(
+      placement: .init(
+        enabled: true,
+        position: .right,
+        order: 1_000
+      ),
+      width: 8
+    )
   }
 
-  /// Parses the built-in privacy spacer.
+  /// One config-only named spacer declared below `builtins.spacers`.
+  struct NamedSpacerBuiltinConfig: @unchecked Sendable {
+    /// User-defined section name.
+    var id: String
+    /// Shared native spacer configuration.
+    var config: SpacerBuiltinConfig
+  }
+
+  /// Parses the predefined privacy spacer.
   func parsePrivacySpacerBuiltin(from builtins: ConfigReader) throws {
     guard let spacer = try builtins.optionalSection("privacy_spacer") else { return }
 
-    builtinPrivacySpacer = PrivacySpacerBuiltinConfig(
+    builtinPrivacySpacer = try parseSpacerBuiltin(
+      from: spacer,
+      fallback: builtinPrivacySpacer
+    )
+  }
+
+  /// Parses arbitrary config-only spacers from `builtins.spacers.<name>` sections.
+  func parseSpacerBuiltins(from builtins: ConfigReader) throws {
+    guard let spacers = try builtins.optionalSection("spacers") else {
+      builtinSpacers = []
+      return
+    }
+
+    var parsed: [NamedSpacerBuiltinConfig] = []
+    for id in spacers.keys {
+      guard let spacer = try spacers.optionalSection(id) else { continue }
+      parsed.append(
+        NamedSpacerBuiltinConfig(
+          id: id,
+          config: try parseSpacerBuiltin(from: spacer, fallback: .namedDefault)
+        )
+      )
+    }
+
+    builtinSpacers = parsed.sorted { $0.id < $1.id }
+  }
+
+  /// Parses the settings shared by all native spacers.
+  private func parseSpacerBuiltin(
+    from spacer: ConfigReader,
+    fallback: SpacerBuiltinConfig
+  ) throws -> SpacerBuiltinConfig {
+    SpacerBuiltinConfig(
       placement: try parseBuiltinPlacement(
         reader: spacer,
-        fallback: builtinPrivacySpacer.placement
+        fallback: fallback.placement
       ),
       width: try spacer.double(
         "width",
-        fallback: builtinPrivacySpacer.width,
+        fallback: fallback.width,
         minimum: 1,
         maximum: 100
       )

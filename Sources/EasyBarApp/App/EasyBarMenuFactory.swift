@@ -246,7 +246,8 @@ final class EasyBarMenuFactory: NSObject {
   private func logLevelMenuItem() -> NSMenuItem {
     let item = submenuItem(title: "Log Level")
     for level in ProcessLogLevel.allCases {
-      let levelItem = actionItem(title: level.rawValue.capitalized, action: #selector(setLogLevel(_:)))
+      let levelItem = actionItem(
+        title: level.rawValue.capitalized, action: #selector(setLogLevel(_:)))
       levelItem.representedObject = level.rawValue
       levelItem.state = logger.minimumLevel == level ? .on : .off
       item.submenu?.addItem(levelItem)
@@ -306,7 +307,8 @@ final class EasyBarMenuFactory: NSObject {
   }
 
   @objc private func setLogLevel(_ sender: NSMenuItem) {
-    guard let value = sender.representedObject as? String, let level = ProcessLogLevel(rawValue: value)
+    guard let value = sender.representedObject as? String,
+      let level = ProcessLogLevel(rawValue: value)
     else { return }
     logger.setMinimumLevel(level)
     logger.info("runtime log level changed to \(level.rawValue)")

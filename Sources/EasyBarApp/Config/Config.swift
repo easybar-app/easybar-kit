@@ -238,7 +238,8 @@ final class Config: ObservableObject, @unchecked Sendable {
   // MARK: - Builtins
 
   var builtinCPU: CPUBuiltinConfig = .default
-  var builtinPrivacySpacer: PrivacySpacerBuiltinConfig = .default
+  var builtinPrivacySpacer: SpacerBuiltinConfig = .privacyDefault
+  var builtinSpacers: [NamedSpacerBuiltinConfig] = []
   var builtinInbox: InboxBuiltinConfig = .default
   var builtinBattery: BatteryBuiltinConfig = .default
   var builtinGroups: [BuiltinGroupConfig] = []
@@ -338,7 +339,8 @@ final class Config: ObservableObject, @unchecked Sendable {
   /// Restores built-in widget defaults.
   func resetBuiltinDefaults() {
     builtinInbox = .default
-    builtinPrivacySpacer = .default
+    builtinPrivacySpacer = .privacyDefault
+    builtinSpacers = []
     builtinCPU = .default
     builtinBattery = .default
     builtinGroups = []

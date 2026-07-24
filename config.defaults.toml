@@ -403,10 +403,18 @@ expand_to_slider_on_hover = true # Expands from compact mode to slider mode on h
 width = 80 # Width of the slider when shown.
 
 [builtins.privacy_spacer]
-enabled = false # Shows or hides the privacy spacer.
+enabled = false # Shows or hides the predefined privacy spacer.
 position = "right" # Places the spacer on the left, center, or right side of the bar.
 order = 1000 # Sort order among widgets in the same position.
 width = 22 # Width of the invisible reserved area in points (1–100).
+
+# Additional named spacers are config-only and may use any section name.
+#[builtins.spacers.example]
+#enabled = true # Shows or hides this named spacer.
+#position = "right" # Places this spacer on the left, center, or right side of the bar.
+#order = 1000 # Sort order among widgets in the same position.
+# group = "system" # Optional native group id that should contain this spacer.
+#width = 8 # Width of the invisible reserved area in points (1–100).
 
 [builtins.calendar]
 enabled = true # Shows or hides the unified calendar widget.

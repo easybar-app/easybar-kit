@@ -43,6 +43,7 @@ extension Config {
       builtins: .init(
         inbox: builtinInbox,
         privacySpacer: builtinPrivacySpacer,
+        spacers: builtinSpacers,
         cpu: builtinCPU,
         battery: builtinBattery,
         groups: builtinGroups,
@@ -120,6 +121,7 @@ extension Config {
   func applyBuiltinSnapshot(_ snapshot: ConfigSnapshot) {
     builtinInbox = snapshot.builtins.inbox
     builtinPrivacySpacer = snapshot.builtins.privacySpacer
+    builtinSpacers = snapshot.builtins.spacers
     builtinCPU = snapshot.builtins.cpu
     builtinBattery = snapshot.builtins.battery
     builtinGroups = snapshot.builtins.groups

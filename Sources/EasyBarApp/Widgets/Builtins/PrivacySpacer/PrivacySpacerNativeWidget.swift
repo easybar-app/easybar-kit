@@ -2,16 +2,18 @@ import Foundation
 
 /// Native invisible spacer that reserves a fixed amount of bar width.
 @MainActor
-final class PrivacySpacerNativeWidget: NativeWidget {
-  let rootID = "builtin_privacy_spacer"
+final class SpacerNativeWidget: NativeWidget {
+  let rootID: String
   let widgetStore: WidgetStore
 
-  private let config: Config.PrivacySpacerBuiltinConfig
+  private let config: Config.SpacerBuiltinConfig
 
   init(
-    config: Config.PrivacySpacerBuiltinConfig,
+    rootID: String,
+    config: Config.SpacerBuiltinConfig,
     widgetStore: WidgetStore
   ) {
+    self.rootID = rootID
     self.config = config
     self.widgetStore = widgetStore
   }
@@ -23,7 +25,7 @@ final class PrivacySpacerNativeWidget: NativeWidget {
 
   /// Removes the spacer node.
   func stop() {
-    clearNodes()
+    widgetStore.apply(owner: .native(root: rootID), nodes: [])
   }
 
   private func publish() {
@@ -55,6 +57,6 @@ final class PrivacySpacerNativeWidget: NativeWidget {
     node.receivesMouseUp = false
     node.receivesMouseClick = false
     node.receivesMouseScroll = false
-    applyNodes([node])
+    widgetStore.apply(owner: .native(root: rootID), nodes: [node])
   }
 }

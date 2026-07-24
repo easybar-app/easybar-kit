@@ -252,7 +252,7 @@ final class NativeWidgetRegistry {
     let networkAgent = snapshot.networkAgent
     let calendarAgent = snapshot.calendarAgent
 
-    return [
+    var registrations = [
       Registration(id: "inbox", enabled: builtins.inbox.enabled) {
         InboxNativeWidget(
           config: builtins.inbox,
@@ -264,7 +264,8 @@ final class NativeWidgetRegistry {
         )
       },
       Registration(id: "privacy_spacer", enabled: builtins.privacySpacer.enabled) {
-        PrivacySpacerNativeWidget(
+        SpacerNativeWidget(
+          rootID: "builtin_privacy_spacer",
           config: builtins.privacySpacer,
           widgetStore: self.widgetStore
         )
@@ -372,6 +373,22 @@ final class NativeWidgetRegistry {
         )
       },
     ]
+
+    registrations.insert(
+      contentsOf: builtins.spacers.map { spacer in
+        let rootID = "builtin_spacer:\(spacer.id)"
+        return Registration(id: "spacer.\(spacer.id)", enabled: spacer.config.enabled) {
+          SpacerNativeWidget(
+            rootID: rootID,
+            config: spacer.config,
+            widgetStore: self.widgetStore
+          )
+        }
+      },
+      at: 2
+    )
+
+    return registrations
   }
 
 }
