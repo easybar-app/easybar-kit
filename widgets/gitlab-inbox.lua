@@ -16,11 +16,32 @@ local REFRESH_BACKOFF_SECONDS = { 2, 5 }
 local work_items = {}
 local refreshing = false
 local pending_refresh = nil
+local source_activity = nil
 local log = easybar.log
 
-easybar.inbox.configure(SOURCE, {
-	actions = { { id = "refresh", title = "Refresh" } },
-})
+local function configure_source_actions()
+	local actions
+	if source_activity ~= nil then
+		actions = {
+			{
+				id = "activity",
+				title = source_activity,
+				enabled = false,
+				busy = true,
+			},
+		}
+	else
+		actions = { { id = "refresh", title = "Refresh" } }
+	end
+	easybar.inbox.configure(SOURCE, { actions = actions })
+end
+
+local function set_source_activity(title)
+	source_activity = title
+	configure_source_actions()
+end
+
+configure_source_actions()
 
 local function publish_error(message)
 	easybar.inbox.replace(SOURCE, {
@@ -128,6 +149,7 @@ end
 
 local function finish_error(operation, output, fallback, attempts, code)
 	refreshing = false
+	set_source_activity(nil)
 	log(
 		easybar.level.warn,
 		"inbox refresh failed operation="
@@ -154,6 +176,7 @@ local function refresh(reason)
 	end
 
 	refreshing = true
+	set_source_activity("Refreshing…")
 	log(easybar.level.debug, "inbox refresh started reason=" .. reason)
 
 	local issues_endpoint =
@@ -188,6 +211,7 @@ local function refresh(reason)
 
 		fetch(merge_requests_endpoint, "fetch_merge_requests", function(mrs_output, mrs_code, mrs_attempts, mrs_metadata)
 			refreshing = false
+			set_source_activity(nil)
 
 			if mrs_code ~= 0 then
 				log(

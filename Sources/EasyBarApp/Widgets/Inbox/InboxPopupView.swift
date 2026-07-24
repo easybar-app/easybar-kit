@@ -4,10 +4,16 @@ import SwiftUI
 struct InboxPopupView: View {
   @ObservedObject var store: InboxStore
   let eventHub: EventHub
+  let popupPanel: WidgetPopupPanelController
+  let onSourceActionsMenuClosed: () -> Void
   @EnvironmentObject private var configStore: ConfigSnapshotStore
+  @State private var holdsSourceActionOpen = false
+  @State private var observedSourceActivity = false
+  @State private var sourceActionHoldTask: Task<Void, Never>?
 
   var body: some View {
     let config = configStore.snapshot.builtins.inbox
+    let activities = sourceActivityRows
 
     VStack(alignment: .leading, spacing: 8) {
       HStack {
@@ -24,28 +30,32 @@ struct InboxPopupView: View {
             .foregroundStyle(color(config.popupMutedColorHex))
         }
         if config.showSourceActions, !store.sourceConfigurations.isEmpty {
-          Menu {
-            ForEach(store.sourceConfigurations, id: \.source) { configuration in
-              Menu(configuration.source) {
-                ForEach(configuration.actions) { action in
-                  Button(action.title) {
-                    emitAction(
-                      .inboxContextAction,
-                      actionID: action.id,
-                      source: configuration.source,
-                      targetWidgetID: "builtin_inbox"
-                    )
-                  }
-                }
-              }
-            }
-          } label: {
-            Image(systemName: "ellipsis.circle")
-          }
-          .menuStyle(.borderlessButton)
+          InboxSourceActionsMenuButton(
+            configurations: store.sourceConfigurations,
+            tintColor: NSColor(color(config.popupMutedColorHex)),
+            popupPanel: popupPanel,
+            onAction: { source, actionID in
+              beginSourceActionHold(hasActivity: !activities.isEmpty)
+              emitAction(
+                .inboxContextAction,
+                actionID: actionID,
+                source: source,
+                targetWidgetID: "builtin_inbox"
+              )
+            },
+            onMenuClosed: handleSourceActionsMenuClosed
+          )
+          .frame(width: 16, height: 16)
           .fixedSize()
-          .foregroundStyle(color(config.popupMutedColorHex))
           .help("Inbox actions")
+        }
+      }
+
+      if !activities.isEmpty {
+        VStack(alignment: .leading, spacing: 5) {
+          ForEach(activities) { activity in
+            sourceActivityView(activity, config: config)
+          }
         }
       }
 
@@ -85,6 +95,110 @@ struct InboxPopupView: View {
         )
     }
     .clipShape(RoundedRectangle(cornerRadius: 10))
+    .onChange(of: activities.map(\.id), initial: false) { _, activityIDs in
+      handleSourceActivityChange(hasActivity: !activityIDs.isEmpty)
+    }
+    .onDisappear {
+      releaseSourceActionHold()
+    }
+  }
+
+  private func beginSourceActionHold(hasActivity: Bool) {
+    guard !holdsSourceActionOpen else { return }
+
+    holdsSourceActionOpen = true
+    observedSourceActivity = hasActivity
+    popupPanel.beginTransientInteraction()
+
+    guard !hasActivity else { return }
+    sourceActionHoldTask?.cancel()
+    sourceActionHoldTask = Task { @MainActor in
+      do {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+      } catch {
+        return
+      }
+      sourceActionHoldTask = nil
+      guard holdsSourceActionOpen, !observedSourceActivity else { return }
+      releaseSourceActionHold()
+    }
+  }
+
+  private func handleSourceActionsMenuClosed() {
+    guard !holdsSourceActionOpen else { return }
+    onSourceActionsMenuClosed()
+  }
+
+  private func handleSourceActivityChange(hasActivity: Bool) {
+    guard holdsSourceActionOpen else { return }
+
+    if hasActivity {
+      observedSourceActivity = true
+      sourceActionHoldTask?.cancel()
+      sourceActionHoldTask = nil
+    } else if observedSourceActivity {
+      releaseSourceActionHold()
+    }
+  }
+
+  private func releaseSourceActionHold() {
+    sourceActionHoldTask?.cancel()
+    sourceActionHoldTask = nil
+
+    guard holdsSourceActionOpen else { return }
+    holdsSourceActionOpen = false
+    observedSourceActivity = false
+    popupPanel.endTransientInteraction()
+  }
+
+  private var sourceActivityRows: [InboxSourceActivityRow] {
+    store.sourceConfigurations.flatMap { configuration in
+      configuration.actions.compactMap { action in
+        guard action.isBusy else { return nil }
+        return InboxSourceActivityRow(
+          source: configuration.source,
+          action: action,
+          presentation: sourcePresentation(for: configuration.source)
+        )
+      }
+    }
+    .sorted {
+      if $0.source == $1.source { return $0.action.id < $1.action.id }
+      return $0.source.localizedCaseInsensitiveCompare($1.source) == .orderedAscending
+    }
+  }
+
+  private func sourcePresentation(for source: String) -> InboxSourcePresentation? {
+    store.presentedItems.first { $0.source == source }?.item.source
+  }
+
+  private func sourceActivityView(
+    _ activity: InboxSourceActivityRow,
+    config: Config.InboxBuiltinConfig
+  ) -> some View {
+    HStack(spacing: 6) {
+      ProgressView()
+        .controlSize(.small)
+
+      if let icon = activity.presentation?.icon, !icon.isEmpty {
+        InboxSourceIconView(
+          value: icon,
+          color: color(activity.presentation?.color ?? config.popupMutedColorHex)
+        )
+      }
+
+      Text(activity.source + " · " + activity.action.title)
+        .lineLimit(1)
+
+      Spacer(minLength: 4)
+    }
+    .font(.caption)
+    .foregroundStyle(color(config.popupMutedColorHex))
+    .padding(.horizontal, 8)
+    .padding(.vertical, 6)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(color(config.popupItemBackgroundColorHex))
+    .clipShape(RoundedRectangle(cornerRadius: 7))
   }
 
   private func itemView(
@@ -115,7 +229,8 @@ struct InboxPopupView: View {
           Circle()
             .fill(presented.isUnread ? severityColor(presented.item.resolvedSeverity) : .clear)
             .overlay {
-              Circle().stroke(color(config.popupMutedColorHex), lineWidth: presented.isUnread ? 0 : 1)
+              Circle().stroke(
+                color(config.popupMutedColorHex), lineWidth: presented.isUnread ? 0 : 1)
             }
             .frame(width: 7, height: 7)
             .frame(width: 14, height: 14)
@@ -142,17 +257,27 @@ struct InboxPopupView: View {
       if let actions = presented.item.actions, !actions.isEmpty {
         HStack(spacing: 10) {
           ForEach(actions) { action in
-            Button(action.title) {
-              store.markRead(presented)
-              emitAction(
-                .inboxAction,
-                actionID: action.id,
-                source: presented.source,
-                targetWidgetID: presented.item.id
-              )
+            if action.isBusy {
+              HStack(spacing: 4) {
+                ProgressView()
+                  .controlSize(.small)
+                Text(action.title)
+              }
+              .foregroundStyle(color(config.popupMutedColorHex))
+            } else {
+              Button(action.title) {
+                store.markRead(presented)
+                emitAction(
+                  .inboxAction,
+                  actionID: action.id,
+                  source: presented.source,
+                  targetWidgetID: presented.item.id
+                )
+              }
+              .buttonStyle(.plain)
+              .foregroundStyle(color(config.popupActionColorHex))
+              .disabled(!action.isEnabled)
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(color(config.popupActionColorHex))
           }
         }
         .font(.caption)
@@ -246,6 +371,14 @@ struct InboxPopupView: View {
     case .error: return color(config.errorColorHex)
     }
   }
+}
+
+private struct InboxSourceActivityRow: Identifiable {
+  let source: String
+  let action: InboxAction
+  let presentation: InboxSourcePresentation?
+
+  var id: String { source + "\u{1f}" + action.id }
 }
 
 private struct InboxSourceIconView: View {

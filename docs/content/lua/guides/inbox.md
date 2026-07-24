@@ -10,7 +10,7 @@ publishers are available as `widgets/github-inbox.lua` and `widgets/gitlab-inbox
 widgets remain standalone alternatives.
 
 [`widgets/brew-inbox.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/brew-inbox.lua)
-publishes outdated formulae and casks. Its source submenu provides refresh, update, upgrade-all,
+publishes outdated formulae and casks. Its source action panel provides refresh, update, upgrade-all,
 and cancellation actions without adding control messages to the inbox.
 
 ## Publish a source snapshot
@@ -111,6 +111,46 @@ change their menu while work is running—for example, Homebrew replaces Update 
 Cancel. Passing an empty `actions` array removes the submenu. Clearing a source's messages leaves
 its independently configured actions available.
 
+## Show asynchronous activity
+
+Item and source actions accept optional `enabled` and `busy` fields. A busy item action is rendered
+as a small progress indicator in the item. A busy source action is disabled in its submenu and shown
+as a compact progress row below the inbox header after selection. The popup remains open until the
+reported source activity finishes. A disabled action remains visible but cannot be selected. The
+`enabled` and `busy` fields default to `true` and `false`, respectively.
+
+For a source-wide refresh, republish the source configuration before and after the asynchronous work:
+
+```lua
+easybar.inbox.configure("gitlab", {
+    actions = {
+        {
+            id = "refresh",
+            title = "Refreshing…",
+            enabled = false,
+            busy = true,
+        },
+    },
+})
+
+fetch_async(function()
+    publish_items()
+    easybar.inbox.configure("gitlab", {
+        actions = {
+            { id = "refresh", title = "Refresh" },
+        },
+    })
+end)
+```
+
+Use the same fields on an item's `actions` array for an item-specific operation. EasyBar deliberately
+does not infer activity from `spawn_async`; the publisher owns the complete operation lifecycle,
+including retries, pagination, follow-up commands, cancellation, and failures.
+
+When the source action panel is collapsed, active source operations remain visible as compact status
+rows. Expanding the panel shows the progress indicator in the corresponding source row. Item activity
+always appears directly in the affected item.
+
 ## Text and Markdown
 
 `body` defaults to plain text. Set `format = "markdown"` for limited inline Markdown such as
@@ -163,7 +203,7 @@ use `unread_icon` and `unread_icon_color`. Set `use_inactive_style_when_read = f
 unread icon and color after everything is read. Set
 `show_when_empty = false` to remove the native icon when the inbox contains no messages. Set
 `show_unread_count = false` to keep the stateful icon without displaying its numeric badge.
-Set `show_source_actions = false` to hide the popup's publisher actions button while keeping
+Set `show_source_actions = false` to hide the popup's publisher action-panel button while keeping
 Mark all as read and Dismiss all available.
 
 `popup_width` controls the complete popup width. `popup_max_height` limits the message list before

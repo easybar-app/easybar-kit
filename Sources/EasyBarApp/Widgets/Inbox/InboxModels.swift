@@ -39,6 +39,23 @@ enum InboxBodyFormat: String, Codable, Sendable {
 struct InboxAction: Codable, Equatable, Identifiable, Sendable {
   let id: String
   let title: String
+  let enabled: Bool?
+  let busy: Bool?
+
+  init(
+    id: String,
+    title: String,
+    enabled: Bool? = nil,
+    busy: Bool? = nil
+  ) {
+    self.id = id
+    self.title = title
+    self.enabled = enabled
+    self.busy = busy
+  }
+
+  var isEnabled: Bool { enabled ?? true }
+  var isBusy: Bool { busy ?? false }
 }
 
 struct InboxSourcePresentation: Codable, Equatable, Sendable {

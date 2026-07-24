@@ -12,6 +12,7 @@ local SOURCE_PRESENTATION = {
 }
 local POLL_INTERVAL_SECONDS = 30 * 60
 local NETWORK_READY_DELAY_SECONDS = 3
+local MIN_ACTIVITY_COMPLETION_DELAY_SECONDS = 0.2
 local REFRESH_BACKOFF_SECONDS = { 2, 5 }
 
 local EXEC = {
@@ -29,6 +30,7 @@ local state = {
 	active_operation = nil,
 	operation_kind = nil,
 	operation_id = nil,
+	operation_item_id = nil,
 	can_cancel = false,
 	cancellation_requested = false,
 }
@@ -122,11 +124,64 @@ local function all_packages()
 	return packages
 end
 
+local function reset_operation_state()
+	state.active_operation = nil
+	state.operation = nil
+	state.operation_kind = nil
+	state.operation_id = nil
+	state.operation_item_id = nil
+	state.can_cancel = false
+	state.cancellation_requested = false
+end
+
+local function operation_is_active()
+	return state.operation_id ~= nil
+end
+
+local function configure_source_actions()
+	local actions
+	if operation_is_active() then
+		actions = {
+			{
+				id = "activity",
+				title = state.operation or "Working…",
+				enabled = false,
+				busy = true,
+			},
+		}
+		if state.can_cancel then
+			actions[#actions + 1] = {
+				id = "cancel",
+				title = state.cancellation_requested and "Cancelling…" or "Cancel",
+				enabled = not state.cancellation_requested,
+			}
+		end
+	else
+		actions = {
+			{ id = "refresh", title = "Refresh" },
+			{ id = "update", title = "Update" },
+			{ id = "upgrade_all", title = "Upgrade all" },
+		}
+	end
+	easybar.inbox.configure(SOURCE, { actions = actions })
+end
+
 local function publish()
+	local operation_active = operation_is_active()
 	local items = {}
 	for _, package in ipairs(all_packages()) do
 		local actions = {}
-		if not package.pinned and state.active_operation == nil then
+		local upgrading_this_package = state.operation_id == "upgrade_package" and state.operation_item_id == package.id
+		if upgrading_this_package then
+			actions = {
+				{
+					id = "upgrade",
+					title = state.cancellation_requested and "Cancelling…" or "Upgrading…",
+					enabled = false,
+					busy = true,
+				},
+			}
+		elseif not package.pinned and not operation_active then
 			actions = { { id = "upgrade", title = "Upgrade" } }
 		end
 		items[#items + 1] = {
@@ -164,20 +219,18 @@ local function publish()
 		}
 	end
 
-	local context_actions
-	if state.active_operation ~= nil then
-		context_actions = state.can_cancel
-				and { { id = "cancel", title = state.cancellation_requested and "Cancelling…" or "Cancel" } }
-			or {}
-	else
-		context_actions = {
-			{ id = "refresh", title = "Refresh" },
-			{ id = "update", title = "Update" },
-			{ id = "upgrade_all", title = "Upgrade all" },
-		}
-	end
-	easybar.inbox.configure(SOURCE, { actions = context_actions })
+	configure_source_actions()
 	easybar.inbox.replace(SOURCE, items)
+end
+
+local function complete_operation(callback)
+	state.active_operation = nil
+	state.can_cancel = false
+	publish()
+	easybar.after(MIN_ACTIVITY_COMPLETION_DELAY_SECONDS, function()
+		reset_operation_state()
+		callback()
+	end)
 end
 
 local function apply_outdated(output)
@@ -196,7 +249,7 @@ end
 
 refresh = function(reason)
 	reason = tostring(reason or "unspecified")
-	if state.active_operation ~= nil then
+	if operation_is_active() then
 		log(
 			easybar.level.trace,
 			"inbox refresh skipped reason="
@@ -217,6 +270,7 @@ refresh = function(reason)
 	state.can_cancel = true
 	state.operation_kind = "refresh"
 	state.operation_id = "refresh"
+	state.operation_item_id = nil
 	log(easybar.level.debug, "inbox refresh started reason=" .. reason)
 	publish()
 
@@ -253,55 +307,57 @@ refresh = function(reason)
 			return retryable
 		end,
 		on_complete = function(output, code, attempts, metadata)
-			state.active_operation = nil
-			state.operation = nil
-			state.operation_kind = nil
-			state.operation_id = nil
-			state.can_cancel = false
-			if code ~= 0 then
-				state.error = {
-					title = "Could not check outdated packages",
-					message = text.trim(output) ~= "" and text.truncate(output, 12000, "…")
-						or "brew outdated exited with code " .. tostring(code),
-				}
-				log(
-					easybar.level.warn,
-					"inbox refresh failed reason=" .. reason .. " attempts=" .. tostring(attempts) .. " status=" .. tostring(code)
-				)
-			else
-				local decoded = apply_outdated(output)
-				if decoded then
+			complete_operation(function()
+				if code ~= 0 then
+					state.error = {
+						title = "Could not check outdated packages",
+						message = text.trim(output) ~= "" and text.truncate(output, 12000, "…")
+							or "brew outdated exited with code " .. tostring(code),
+					}
 					log(
-						easybar.level.debug,
-						"inbox refresh completed reason="
+						easybar.level.warn,
+						"inbox refresh failed reason="
 							.. reason
 							.. " attempts="
 							.. tostring(attempts)
-							.. " formulae="
-							.. tostring(#state.formulae)
-							.. " casks="
-							.. tostring(#state.casks)
-							.. " warning="
-							.. tostring(state.warning ~= nil)
-							.. " duration_ms="
-							.. tostring(metadata.duration_ms or 0)
+							.. " status="
+							.. tostring(code)
 					)
+				else
+					local decoded = apply_outdated(output)
+					if decoded then
+						log(
+							easybar.level.debug,
+							"inbox refresh completed reason="
+								.. reason
+								.. " attempts="
+								.. tostring(attempts)
+								.. " formulae="
+								.. tostring(#state.formulae)
+								.. " casks="
+								.. tostring(#state.casks)
+								.. " warning="
+								.. tostring(state.warning ~= nil)
+								.. " duration_ms="
+								.. tostring(metadata.duration_ms or 0)
+						)
+					end
 				end
-			end
-			publish()
+				publish()
+			end)
 		end,
 	})
-	publish()
 end
 
-local function run_operation(operation_id, label, arguments, options)
-	if state.active_operation ~= nil then
+local function run_operation(operation_id, label, arguments, options, item_id)
+	if operation_is_active() then
 		log(easybar.level.trace, "inbox mutation skipped operation=" .. operation_id .. " state=operation_active")
 		return
 	end
-	state.operation = label
+	state.operation = label .. "…"
 	state.operation_kind = "mutation"
 	state.operation_id = operation_id
+	state.operation_item_id = item_id
 	state.error = nil
 	state.can_cancel = true
 	state.cancellation_requested = false
@@ -320,29 +376,28 @@ local function run_operation(operation_id, label, arguments, options)
 	command_options.log_operation = operation_id
 	token = easybar.spawn_async(arguments, command_options, function(output, code)
 		local cancelled = state.cancellation_requested
-		state.active_operation = nil
-		state.operation = nil
-		state.operation_kind = nil
-		state.operation_id = nil
-		state.can_cancel = false
-		state.cancellation_requested = false
-		if cancelled then
-			log(easybar.level.info, "inbox mutation cancelled operation=" .. operation_id)
+		complete_operation(function()
+			if cancelled then
+				log(easybar.level.info, "inbox mutation cancelled operation=" .. operation_id)
+				refresh("post_mutation")
+				return
+			end
+			if code ~= 0 then
+				state.error = {
+					title = label .. " failed",
+					message = text.trim(output) ~= "" and text.truncate(output, 12000, "…")
+						or "Command exited with code " .. tostring(code),
+				}
+				log(
+					easybar.level.error,
+					"inbox mutation failed operation=" .. operation_id .. " status=" .. tostring(code)
+				)
+				publish()
+				return
+			end
+			log(easybar.level.info, "inbox mutation completed operation=" .. operation_id)
 			refresh("post_mutation")
-			return
-		end
-		if code ~= 0 then
-			state.error = {
-				title = label .. " failed",
-				message = text.trim(output) ~= "" and text.truncate(output, 12000, "…")
-					or "Command exited with code " .. tostring(code),
-			}
-			log(easybar.level.error, "inbox mutation failed operation=" .. operation_id .. " status=" .. tostring(code))
-			publish()
-			return
-		end
-		log(easybar.level.info, "inbox mutation completed operation=" .. operation_id)
-		refresh("post_mutation")
+		end)
 	end)
 	publish()
 end
@@ -391,7 +446,7 @@ easybar.inbox.on_action(SOURCE, function(event)
 				"--" .. package.kind,
 				"--yes",
 				package.name,
-			}, EXEC.upgrade)
+			}, EXEC.upgrade, package.id)
 		end
 	end
 end)
@@ -401,18 +456,21 @@ easybar.inbox.on_context_action(SOURCE, function(event)
 	log(easybar.level.debug, "inbox context action received action=" .. action_id)
 
 	if action_id == "cancel" then
-		if state.active_operation ~= nil and state.can_cancel then
+		if state.active_operation ~= nil and state.can_cancel and not state.cancellation_requested then
 			local operation_id = tostring(state.operation_id or "unknown")
 			log(easybar.level.info, "inbox cancellation requested operation=" .. operation_id)
 			if state.operation_kind == "refresh" then
 				if state.active_operation:cancel() then
 					state.active_operation = nil
-					state.operation = nil
-					state.operation_kind = nil
-					state.operation_id = nil
 					state.can_cancel = false
-					state.cancellation_requested = false
-					log(easybar.level.info, "inbox refresh cancelled operation=refresh")
+					state.cancellation_requested = true
+					state.operation = "Cancelling Homebrew refresh…"
+					publish()
+					easybar.after(MIN_ACTIVITY_COMPLETION_DELAY_SECONDS, function()
+						reset_operation_state()
+						log(easybar.level.info, "inbox refresh cancelled operation=refresh")
+						publish()
+					end)
 				end
 			else
 				state.cancellation_requested = true

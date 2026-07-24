@@ -16,11 +16,33 @@ local REFRESH_BACKOFF_SECONDS = { 2, 5 }
 local notifications = {}
 local refreshing = false
 local pending_refresh = nil
+local source_activity = nil
+local busy_item_ids = {}
 local log = easybar.log
 
-easybar.inbox.configure(SOURCE, {
-	actions = { { id = "refresh", title = "Refresh" } },
-})
+local function configure_source_actions()
+	local actions
+	if source_activity ~= nil then
+		actions = {
+			{
+				id = "activity",
+				title = source_activity,
+				enabled = false,
+				busy = true,
+			},
+		}
+	else
+		actions = { { id = "refresh", title = "Refresh" } }
+	end
+	easybar.inbox.configure(SOURCE, { actions = actions })
+end
+
+local function set_source_activity(title)
+	source_activity = title
+	configure_source_actions()
+end
+
+configure_source_actions()
 
 local function notification_url(notification)
 	local repository = type(notification.repository) == "table" and text.trim(notification.repository.html_url) or ""
@@ -52,6 +74,38 @@ local function publish_error(message)
 	})
 end
 
+local function publish_current_notifications()
+	local items = {}
+	for _, notification in ipairs(notifications) do
+		local repository = type(notification.repository) == "table" and notification.repository.full_name or "GitHub"
+		local subject = type(notification.subject) == "table" and notification.subject or {}
+		local item_id = tostring(notification.id or repository .. ":" .. tostring(subject.title))
+		local marking_read = busy_item_ids[item_id] == true
+		items[#items + 1] = {
+			id = item_id,
+			title = text.trim(subject.title) ~= "" and subject.title or "Untitled notification",
+			body = repository .. (text.trim(notification.reason) ~= "" and " · " .. notification.reason or ""),
+			category = text.trim(subject.type) ~= "" and subject.type or "Notification",
+			severity = "info",
+			unread = true,
+			source = SOURCE_PRESENTATION,
+			actions = {
+				{
+					id = "mark_read",
+					title = marking_read and "Marking read…" or "Mark as read",
+					enabled = not marking_read,
+					busy = marking_read,
+				},
+				{ id = "open", title = "Open" },
+			},
+		}
+	end
+
+	easybar.inbox.replace(SOURCE, items)
+	log(easybar.level.debug, "inbox snapshot published operation=refresh items=" .. tostring(#items))
+	return #items
+end
+
 local function publish_notifications(output)
 	local ok, pages = pcall(easybar.json.decode, output)
 	if not ok or type(pages) ~= "table" then
@@ -67,28 +121,7 @@ local function publish_notifications(output)
 		end
 	end
 
-	local items = {}
-	for _, notification in ipairs(notifications) do
-		local repository = type(notification.repository) == "table" and notification.repository.full_name or "GitHub"
-		local subject = type(notification.subject) == "table" and notification.subject or {}
-		items[#items + 1] = {
-			id = tostring(notification.id or repository .. ":" .. tostring(subject.title)),
-			title = text.trim(subject.title) ~= "" and subject.title or "Untitled notification",
-			body = repository .. (text.trim(notification.reason) ~= "" and " · " .. notification.reason or ""),
-			category = text.trim(subject.type) ~= "" and subject.type or "Notification",
-			severity = "info",
-			unread = true,
-			source = SOURCE_PRESENTATION,
-			actions = {
-				{ id = "mark_read", title = "Mark as read" },
-				{ id = "open", title = "Open" },
-			},
-		}
-	end
-
-	easybar.inbox.replace(SOURCE, items)
-	log(easybar.level.debug, "inbox snapshot published operation=refresh items=" .. tostring(#items))
-	return #items
+	return publish_current_notifications()
 end
 
 local function refresh(reason)
@@ -104,6 +137,7 @@ local function refresh(reason)
 	end
 
 	refreshing = true
+	set_source_activity("Refreshing…")
 	log(easybar.level.debug, "inbox refresh started reason=" .. reason)
 
 	local current_attempt = 0
@@ -142,6 +176,7 @@ local function refresh(reason)
 		end,
 		on_complete = function(output, code, attempts, metadata)
 			refreshing = false
+			set_source_activity(nil)
 			if code ~= 0 then
 				log(
 					easybar.level.warn,
@@ -207,12 +242,16 @@ easybar.inbox.on_action(SOURCE, function(event)
 	if action_id == "refresh" then
 		refresh("manual")
 	elseif action_id == "mark_read" then
-		if item_id ~= "" then
+		if item_id ~= "" and not busy_item_ids[item_id] then
+			busy_item_ids[item_id] = true
+			publish_current_notifications()
 			log(easybar.level.info, "inbox mutation started operation=mark_read item_id=" .. item_id)
 			easybar.spawn_async({ "gh", "api", "--method", "PATCH", "notifications/threads/" .. item_id }, {
 				timeout_seconds = 20,
 				log_operation = "mark_read",
-			}, function(output, code)
+			}, function(_, code)
+				busy_item_ids[item_id] = nil
+				publish_current_notifications()
 				if code == 0 then
 					log(easybar.level.info, "inbox mutation completed operation=mark_read item_id=" .. item_id)
 					refresh("post_mutation")

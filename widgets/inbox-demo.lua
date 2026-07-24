@@ -2,6 +2,7 @@
 
 local SOURCE = "Inbox demo"
 local NOW = os.time()
+local DEMO_DELAY_SECONDS = 1.25
 
 ---@type EasyBarInboxSourcePresentation
 local GITHUB = {
@@ -119,53 +120,116 @@ local DEMO_ITEMS = {
 		source = HOMEBREW,
 	},
 }
+
 ---@type EasyBarInboxItem[]
 local items = {}
+local source_busy = false
+local busy_item_id = nil
+
+local function copy_actions(actions)
+	local copy = {}
+	for _, action in ipairs(actions or {}) do
+		copy[#copy + 1] = {
+			id = action.id,
+			title = action.title,
+		}
+	end
+	return copy
+end
+
+local function copy_item(item)
+	return {
+		id = item.id,
+		title = item.title,
+		body = item.body,
+		format = item.format,
+		timestamp = item.timestamp,
+		category = item.category,
+		severity = item.severity,
+		unread = item.unread,
+		dismissible = item.dismissible,
+		source = item.source,
+		url = item.url,
+		actions = copy_actions(item.actions),
+	}
+end
+
+local function configure_source_actions()
+	local actions
+	if source_busy then
+		actions = {
+			{ id = "activity", title = "Refreshing demo…", enabled = false, busy = true },
+		}
+	else
+		actions = {
+			{ id = "refresh", title = "Refresh" },
+			{ id = "clear", title = "Clear demo" },
+		}
+	end
+	easybar.inbox.configure(SOURCE, { actions = actions })
+end
 
 ---Restores a fresh mutable snapshot from the immutable demo templates.
 local function reset_items()
 	items = {}
 	for _, item in ipairs(DEMO_ITEMS) do
-		items[#items + 1] = item
+		items[#items + 1] = copy_item(item)
 	end
 end
 
 ---Publishes the current demo snapshot without affecting real inbox sources.
 local function publish()
-	easybar.inbox.replace(SOURCE, items)
+	local snapshot = {}
+	for _, item in ipairs(items) do
+		local published = copy_item(item)
+		if published.id == busy_item_id then
+			published.actions = {
+				{ id = "dismiss", title = "Dismissing…", enabled = false, busy = true },
+			}
+		end
+		snapshot[#snapshot + 1] = published
+	end
+	easybar.inbox.replace(SOURCE, snapshot)
 end
 
----Removes one demo item selected through its inline Dismiss action.
+---Removes one demo item after showing an item-scoped activity spinner.
 ---@param event EasyBarInboxActionEvent
 local function handle_action(event)
-	if event.action_id ~= "dismiss" then
+	if event.action_id ~= "dismiss" or busy_item_id ~= nil then
 		return
 	end
 
-	for index = #items, 1, -1 do
-		if items[index].id == event.target_widget_id then
-			table.remove(items, index)
-			break
-		end
-	end
+	busy_item_id = event.target_widget_id
 	publish()
+
+	easybar.after(DEMO_DELAY_SECONDS, function()
+		for index = #items, 1, -1 do
+			if items[index].id == busy_item_id then
+				table.remove(items, index)
+				break
+			end
+		end
+		busy_item_id = nil
+		publish()
+	end)
 end
 
 easybar.inbox.on_action(SOURCE, handle_action)
-
-easybar.inbox.configure(SOURCE, {
-	actions = {
-		{ id = "refresh", title = "Refresh" },
-		{ id = "clear", title = "Clear demo" },
-	},
-})
+configure_source_actions()
 
 easybar.inbox.on_context_action(SOURCE, function(event)
-	if event.action_id == "refresh" then
-		reset_items()
-		publish()
+	if event.action_id == "refresh" and not source_busy then
+		source_busy = true
+		configure_source_actions()
+		easybar.after(DEMO_DELAY_SECONDS, function()
+			reset_items()
+			source_busy = false
+			configure_source_actions()
+			publish()
+		end)
 	elseif event.action_id == "clear" then
 		items = {}
+		busy_item_id = nil
 		publish()
 	end
 end)

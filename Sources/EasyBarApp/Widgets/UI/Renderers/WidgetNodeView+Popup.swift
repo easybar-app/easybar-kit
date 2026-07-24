@@ -84,6 +84,7 @@ extension WidgetNodeView {
   /// Closes the popup when neither anchor nor content is hovered.
   func closePopupIfIdle() {
     guard !node.presentsPopupAutomatically else { return }
+    guard !popupPanel.hasTransientInteraction else { return }
     guard !anchorHovered else { return }
     guard !popupHovered else { return }
     popupPresented = false
@@ -215,9 +216,14 @@ extension WidgetNodeView {
     case .inbox:
       guard let appViewServices else { return AnyView(EmptyView()) }
       return AnyView(
-        InboxPopupView(store: appViewServices.inboxStore, eventHub: appViewServices.eventHub)
-          .environmentObject(configStore)
-          .background(popupHoverBackground)
+        InboxPopupView(
+          store: appViewServices.inboxStore,
+          eventHub: appViewServices.eventHub,
+          popupPanel: popupPanel,
+          onSourceActionsMenuClosed: schedulePopupCloseCheck
+        )
+        .environmentObject(configStore)
+        .background(popupHoverBackground)
       )
     case .genericNodePopup:
       guard let appViewServices else { return AnyView(EmptyView()) }

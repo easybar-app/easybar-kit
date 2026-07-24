@@ -9,7 +9,12 @@ final class WidgetPopupPanelController: ObservableObject {
   private var panel: NSPanel?
   private var hostingController = NSHostingController(rootView: AnyView(EmptyView()))
   private var isPresented = false
+  private var transientInteractionCount = 0
   nonisolated(unsafe) private var parentWindowObservers: [NSObjectProtocol] = []
+
+  var hasTransientInteraction: Bool {
+    transientInteractionCount > 0
+  }
 
   deinit {
     let center = NotificationCenter.default
@@ -36,8 +41,19 @@ final class WidgetPopupPanelController: ObservableObject {
     refreshPresentation()
   }
 
+  /// Prevents hover-driven dismissal while a child menu or transient control is active.
+  func beginTransientInteraction() {
+    transientInteractionCount += 1
+  }
+
+  /// Releases one transient interaction lock.
+  func endTransientInteraction() {
+    transientInteractionCount = max(0, transientInteractionCount - 1)
+  }
+
   /// Closes the popup when present and clears related window state.
   func close() {
+    transientInteractionCount = 0
     guard let panel else {
       detachAndResetParentWindow()
       return
