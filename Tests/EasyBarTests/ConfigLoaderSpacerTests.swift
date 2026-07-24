@@ -15,7 +15,7 @@ final class ConfigLoaderSpacerTests: ConfigLoaderTestCase {
       enabled = true
       position = "right"
       order = 1000
-      width = 24
+      width = 12
 
       [builtins.spacers.before_clock]
       position = "right"

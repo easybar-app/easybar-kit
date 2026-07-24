@@ -13,7 +13,7 @@ The predefined spacer is the convenient system-edge instance:
 enabled = true
 position = "right"
 order = 1000
-width = 22
+width = 12
 ```
 
 It is the only spacer shown under **Native Widgets → Privacy Spacer**. Toggling that menu item writes

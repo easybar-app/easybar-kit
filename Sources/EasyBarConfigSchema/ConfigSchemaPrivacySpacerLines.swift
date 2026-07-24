@@ -3,7 +3,7 @@ extension ConfigSchemaRegistry {
     section(name: "builtins.privacy_spacer"),
     entry(
       key: "enabled",
-      value: "false",
+      value: "true",
       description: "Shows or hides the predefined privacy spacer."
     ),
     entry(
@@ -18,7 +18,7 @@ extension ConfigSchemaRegistry {
     ),
     entry(
       key: "width",
-      value: "22",
+      value: "12",
       description: "Width of the invisible reserved area in points (1–100)."
     ),
     .blank,
