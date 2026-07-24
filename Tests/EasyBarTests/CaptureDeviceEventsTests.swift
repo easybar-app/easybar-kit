@@ -33,7 +33,8 @@ final class CaptureDeviceEventsTests: XCTestCase {
       for: [AppEvent.captureActivityChanged.rawValue]
     )
 
-    let payload = try XCTUnwrap(await nextPayload.value)
+    let value = await nextPayload.value
+    let payload = try XCTUnwrap(value)
     XCTAssertEqual(payload.eventName, AppEvent.captureActivityChanged.rawValue)
     XCTAssertEqual(payload.capture?.active, true)
     XCTAssertEqual(payload.capture?.cameraActive, true)
@@ -151,7 +152,8 @@ final class CaptureDeviceEventsTests: XCTestCase {
 
     inventory.update([Self.camera(active: false)])
 
-    let payload = try XCTUnwrap(await nextPayload.value)
+    let value = await nextPayload.value
+    let payload = try XCTUnwrap(value)
     XCTAssertEqual(payload.eventName, AppEvent.captureDevicesChanged.rawValue)
     XCTAssertEqual(payload.capture?.cameras.map(\.id), ["camera-1"])
     XCTAssertEqual(payload.capture?.active, false)
