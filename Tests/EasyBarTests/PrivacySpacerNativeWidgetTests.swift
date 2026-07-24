@@ -26,7 +26,7 @@ final class PrivacySpacerNativeWidgetTests: XCTestCase {
     XCTAssertEqual(node.order, 1_000)
     XCTAssertEqual(node.text, "")
     XCTAssertEqual(node.backgroundColor, "#00000000")
-    XCTAssertFalse(node.receivesMouseHover)
+    XCTAssertEqual(node.receivesMouseHover, false)
 
     widget.stop()
 

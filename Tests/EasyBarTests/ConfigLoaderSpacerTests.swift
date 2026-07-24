@@ -11,11 +11,15 @@ final class ConfigLoaderSpacerTests: ConfigLoaderTestCase {
 
     try writeConfig(
       """
+      [builtins.groups.system]
+      position = "right"
+      order = 40
+
       [builtins.privacy_spacer]
       enabled = true
       position = "right"
       order = 1000
-      width = 12
+      width = 24
 
       [builtins.spacers.before_clock]
       position = "right"
