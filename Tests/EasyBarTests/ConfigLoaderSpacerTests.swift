@@ -19,6 +19,7 @@ final class ConfigLoaderSpacerTests: ConfigLoaderTestCase {
       enabled = true
       position = "right"
       order = 1000
+      group = "system"
       width = 24
 
       [builtins.spacers.before_clock]
@@ -39,6 +40,7 @@ final class ConfigLoaderSpacerTests: ConfigLoaderTestCase {
 
     XCTAssertNil(config.reload())
     XCTAssertTrue(config.builtinPrivacySpacer.enabled)
+    XCTAssertEqual(config.builtinPrivacySpacer.placement.groupID, "system")
     XCTAssertEqual(config.builtinPrivacySpacer.width, 24)
     XCTAssertEqual(config.builtinSpacers.map(\.id), ["before_clock", "center_gap"])
 

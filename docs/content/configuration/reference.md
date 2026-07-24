@@ -524,14 +524,15 @@ For concepts and usage examples, use the hand-written configuration guides.
 
 ## `builtins.privacy_spacer`
 
-| Key        | Default   | Example | Description                                                      |
-| ---------- | --------- | ------- | ---------------------------------------------------------------- |
-| `enabled`  | `true`    | —       | Shows or hides the predefined privacy spacer.                    |
-| `position` | `"right"` | —       | Places the spacer on the left, center, or right side of the bar. |
-| `order`    | `1000`    | —       | Sort order among widgets in the same position.                   |
-| `width`    | `12`      | —       | Width of the invisible reserved area in points (1–100).          |
+| Key        | Default   | Example    | Description                                                      |
+| ---------- | --------- | ---------- | ---------------------------------------------------------------- |
+| `enabled`  | `true`    | —          | Shows or hides the predefined privacy spacer.                    |
+| `position` | `"right"` | —          | Places the spacer on the left, center, or right side of the bar. |
+| `order`    | `1000`    | —          | Sort order among widgets in the same position.                   |
+| `group`    | Not set   | `"system"` | Optional native group id that should contain this spacer.        |
+| `width`    | `12`      | —          | Width of the invisible reserved area in points (1–100).          |
 
-## `builtins.spacers.example`
+## `builtins.spacers.<name>`
 
 | Key        | Default | Example    | Description                                                       |
 | ---------- | ------- | ---------- | ----------------------------------------------------------------- |

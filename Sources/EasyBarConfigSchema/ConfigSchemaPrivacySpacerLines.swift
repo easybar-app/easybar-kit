@@ -16,15 +16,20 @@ extension ConfigSchemaRegistry {
       value: "1000",
       description: "Sort order among widgets in the same position."
     ),
+    optionalEntry(
+      key: "group",
+      value: "\"system\"",
+      description: "Optional native group id that should contain this spacer."
+    ),
     entry(
       key: "width",
       value: "12",
       description: "Width of the invisible reserved area in points (1–100)."
     ),
     .blank,
-    .comment("# Additional named spacers are config-only and may use any section name."),
+    .comment("# Additional named spacers are config-only. Replace <name> with a unique id."),
     section(
-      name: "builtins.spacers.example",
+      name: "builtins.spacers.<name>",
       commented: true,
       prefix: "#",
       documented: true

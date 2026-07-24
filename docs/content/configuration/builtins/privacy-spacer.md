@@ -16,12 +16,17 @@ order = 1000
 width = 12
 ```
 
-It is the only spacer shown under **Native Widgets → Privacy Spacer**. Toggling that menu item writes
-`builtins.privacy_spacer.enabled` just like the other top-level native widgets.
+It is enabled by default and is the only spacer shown under **Native Widgets → Privacy Spacer**.
+Toggling that menu item writes `builtins.privacy_spacer.enabled` just like the other top-level native
+widgets.
 
-The default `order = 1000` places it after ordinary right-side widgets, shifting the remaining bar
-content to the left. EasyBar does not detect whether the macOS privacy indicator is visible, so the
-configured width is always reserved while the spacer is enabled.
+The predefined spacer supports `enabled`, `position`, `order`, optional `group`, and `width`. A
+configured group must exist under `builtins.groups.<name>`. Leave `group` unset for the usual
+system-edge placement, where the default `order = 1000` puts the spacer after ordinary right-side
+widgets and shifts the remaining bar content to the left.
+
+EasyBar does not detect whether the macOS privacy indicator is visible, so the configured width is
+always reserved while the spacer is enabled.
 
 ## Additional named spacers
 
@@ -50,7 +55,7 @@ Each named spacer supports:
 - `enabled`: enables or disables that spacer; defaults to `true` when the section exists
 - `position`: `left`, `center`, or `right`
 - `order`: placement among other widgets in the same position
-- `group`: optional native group id
+- `group`: optional native group id; the referenced group must exist
 - `width`: reserved width from `1` through `100` points; defaults to `8`
 
 All named spacers use the same native renderer as the predefined privacy spacer. They have no text,
