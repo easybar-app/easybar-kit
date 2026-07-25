@@ -34,6 +34,36 @@ final class LuaMetricsTests: XCTestCase {
     }
   }
 
+  func testLogBridgeTagsInfoWidgetLogsAsLuaWithoutSubsystemMetadata() throws {
+    let directory = FileManager.default.temporaryDirectory
+      .appendingPathComponent(
+        "easybar-lua-log-bridge-tests-\(UUID().uuidString)", isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let fileURL = directory.appendingPathComponent("easybar.out")
+    let logger = ProcessLogger(
+      label: "easybar.services.lua.transport.runtime",
+      minimumLevel: .info,
+      outputStream: nil,
+      errorStream: nil
+    )
+    logger.configureFileLogging(enabled: true, path: fileURL.path)
+
+    let bridge = LuaLogBridge(logger: logger)
+    bridge.handle("EASYBAR_LUA_LOG\tINFO\tbrew-inbox\trefresh completed")
+    logger.configureFileLogging(enabled: false, path: "")
+
+    let line = try String(contentsOf: fileURL, encoding: .utf8)
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+    let record = ProcessLogRecord.parse(line, source: "easybar")
+
+    XCTAssertEqual(record.widget, "brew-inbox")
+    XCTAssertEqual(record.runtime, .lua)
+    XCTAssertEqual(record.fields["runtime"], ProcessLogRuntime.lua.rawValue)
+    XCTAssertNil(record.fields["subsystem"])
+  }
+
   func testMetricsCoordinatorSplitsLuaLogSeveritiesAndRawStderr() async {
     let coordinator = MetricsCoordinator()
 

@@ -22,6 +22,26 @@ final class ProcessLogRecordTests: XCTestCase {
     XCTAssertEqual(record.runtime, .lua)
   }
 
+  func testParserInfersLegacyLuaWidgetWithoutSubsystemMetadata() {
+    let record = ProcessLogRecord.parse(
+      "[2026-07-21T23:11:10.117+02:00] [INFO ] refresh completed widget=brew-inbox",
+      source: "easybar"
+    )
+
+    XCTAssertEqual(record.widget, "brew-inbox")
+    XCTAssertEqual(record.runtime, .lua)
+    XCTAssertTrue(ProcessLogFilter(widget: "brew-inbox", runtime: .lua).matches(record))
+  }
+
+  func testParserInfersLegacyLuaRuntimeComponentWithoutSubsystemMetadata() {
+    let record = ProcessLogRecord.parse(
+      "[2026-07-21T23:11:10.117+02:00] [INFO ] runtime ready component=runtime",
+      source: "easybar"
+    )
+
+    XCTAssertEqual(record.runtime, .lua)
+  }
+
   func testParserInfersNativeWidgetFromSubsystem() {
     let record = ProcessLogRecord.parse(
       "[2026-07-21T23:11:10.117+02:00] [WARN ] action failed "

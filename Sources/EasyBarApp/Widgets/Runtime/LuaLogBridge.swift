@@ -44,7 +44,11 @@ final class LuaLogBridge {
 
   /// Logs one raw stderr line that does not follow the structured format.
   private func logRawStderr(_ line: String) {
-    logger.error("lua stderr line", .field("bytes", line.utf8.count))
+    logger.error(
+      "lua stderr line",
+      .field("bytes", line.utf8.count),
+      .field("runtime", ProcessLogRuntime.lua.rawValue)
+    )
   }
 
   /// Logs one structured Lua message at the requested level.
@@ -54,17 +58,19 @@ final class LuaLogBridge {
       ? .field("component", "runtime")
       : .field("widget", source)
 
+    let runtimeField = ProcessLogField.field("runtime", ProcessLogRuntime.lua.rawValue)
+
     switch level {
     case .trace:
-      logger.trace(message, field)
+      logger.trace(message, field, runtimeField)
     case .debug:
-      logger.debug(message, field)
+      logger.debug(message, field, runtimeField)
     case .info:
-      logger.info(message, field)
+      logger.info(message, field, runtimeField)
     case .warn:
-      logger.warn(message, field)
+      logger.warn(message, field, runtimeField)
     case .error:
-      logger.error(message, field)
+      logger.error(message, field, runtimeField)
     }
   }
 }

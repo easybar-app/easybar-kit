@@ -75,6 +75,10 @@ public struct ProcessLogRecord: Sendable {
       return .lua
     }
 
+    if fields["component"]?.lowercased() == "runtime" {
+      return .lua
+    }
+
     let subsystem = fields["subsystem"]?.lowercased() ?? ""
     let lowercasedMessage = message.lowercased()
     if subsystem.contains(".lua") || lowercasedMessage.hasPrefix("lua ") {
@@ -85,6 +89,10 @@ public struct ProcessLogRecord: Sendable {
       || lowercasedMessage.contains("native widget") || lowercasedMessage.hasPrefix("wifi widget")
     {
       return .native
+    }
+
+    if source == "easybar", fields["widget"] != nil {
+      return .lua
     }
 
     return nil
