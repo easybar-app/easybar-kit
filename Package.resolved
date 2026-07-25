@@ -1,13 +1,13 @@
 {
-  "originHash" : "d2a7c0d9819e5c2623d0d0ef2f48e2232a9388b7c6b44ce39d3ba69d5c710eea",
+  "originHash" : "2d603e190f845b2b8dbb02c417db3b36dd169740d606e67b039bbc7551677e3d",
   "pins" : [
     {
       "identity" : "swifttomledit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/gi8lino/SwiftTOMLEdit.git",
       "state" : {
-        "revision" : "3093ba28bbaf00b1fe6ccbcddc5ebc1e4695d81c",
-        "version" : "0.0.1"
+        "revision" : "d6a93a4eb18a58ca4174a11bd2cd83eb66826f97",
+        "version" : "0.0.2"
       }
     }
   ],

@@ -30,7 +30,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/gi8lino/SwiftTOMLEdit.git",
-      exact: "0.0.1"
+      exact: "0.0.2"
     )
   ],
   targets: [
