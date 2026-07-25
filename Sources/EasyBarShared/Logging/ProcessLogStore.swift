@@ -63,14 +63,20 @@ public enum ProcessLogStore {
     for (_, processFiles) in Dictionary(grouping: files, by: \.source) {
       var processRecords: [ProcessLogRecord] = []
       for file in processFiles.sorted(by: { $0.archiveIndex < $1.archiveIndex }) {
-        let contents = try String(contentsOf: file.url, encoding: .utf8)
-        for line in contents.split(separator: "\n", omittingEmptySubsequences: true).reversed() {
-          guard filter.mightMatch(rawLine: line) else { continue }
-          let record = ProcessLogRecord.parse(String(line), source: file.source)
-          if filter.matches(record) {
-            processRecords.append(record)
-            if processRecords.count == limit { break }
+        try ReverseLineReader.forEachLine(at: file.url) { lineData in
+          guard let line = String(data: lineData, encoding: .utf8) else {
+            throw CocoaError(
+              .fileReadInapplicableStringEncoding,
+              userInfo: [NSFilePathErrorKey: file.url.path]
+            )
           }
+          guard filter.mightMatch(rawLine: Substring(line)) else { return true }
+
+          let record = ProcessLogRecord.parse(line, source: file.source)
+          guard filter.matches(record) else { return true }
+
+          processRecords.append(record)
+          return processRecords.count < limit
         }
         if processRecords.count == limit { break }
       }

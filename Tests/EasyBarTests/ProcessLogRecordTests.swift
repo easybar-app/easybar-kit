@@ -128,6 +128,28 @@ final class ProcessLogRecordTests: XCTestCase {
     XCTAssertEqual(latestWidget.map(\.message), ["newest"])
   }
 
+  func testBoundedHistoryStopsAfterNewestMatchingLine() throws {
+    let directory = try makeProcessLogDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let active = directory.appendingPathComponent("easybar.out")
+
+    var contents = Data([0xFF, 0x0A])
+    contents.append(Data(repeating: 0x78, count: 128 * 1024))
+    contents.append(0x0A)
+    contents.append(
+      Data("[2026-07-21T20:02:00.000+02:00] [INFO ] newest widget=tailscale\n".utf8)
+    )
+    try contents.write(to: active)
+
+    let records = try ProcessLogStore.history(
+      in: directory.path,
+      filter: ProcessLogFilter(widget: "tailscale"),
+      limit: 1
+    )
+
+    XCTAssertEqual(records.map(\.message), ["newest"])
+  }
+
   func testFollowerPreservesUTF8ScalarSplitAcrossPolls() throws {
     let directory = try makeProcessLogDirectory()
     defer { try? FileManager.default.removeItem(at: directory) }
