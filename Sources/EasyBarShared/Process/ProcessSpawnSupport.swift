@@ -147,6 +147,14 @@ public enum ProcessSpawnSupport {
       }
     }
 
+    try addInheritAction(fileActions: &fileActions, fileDescriptor: STDIN_FILENO)
+    if standardOutputFileDescriptor == nil {
+      try addInheritAction(fileActions: &fileActions, fileDescriptor: STDOUT_FILENO)
+    }
+    if standardErrorFileDescriptor == nil {
+      try addInheritAction(fileActions: &fileActions, fileDescriptor: STDERR_FILENO)
+    }
+
     if let standardOutputFileDescriptor {
       try addDup2Action(
         fileActions: &fileActions,
@@ -175,9 +183,10 @@ public enum ProcessSpawnSupport {
       try addCloseAction(fileActions: &fileActions, fileDescriptor: fileDescriptor)
     }
 
-    if createProcessGroup {
-      try configureDedicatedProcessGroup(attributes: &attributes)
-    }
+    try configureSpawnAttributes(
+      attributes: &attributes,
+      createProcessGroup: createProcessGroup
+    )
 
     let argv = try makeCStringVector(arguments)
     defer { freeCStringVector(argv) }
@@ -223,17 +232,25 @@ public enum ProcessSpawnSupport {
     }
   }
 
-  /// Configures the child to lead a process group created atomically during spawn.
-  private static func configureDedicatedProcessGroup(
-    attributes: inout posix_spawnattr_t?
+  /// Closes unrelated parent descriptors and optionally creates a dedicated process group.
+  private static func configureSpawnAttributes(
+    attributes: inout posix_spawnattr_t?,
+    createProcessGroup: Bool
   ) throws {
-    let flagsResult = posix_spawnattr_setflags(&attributes, Int16(POSIX_SPAWN_SETPGROUP))
+    var flags = Int16(POSIX_SPAWN_CLOEXEC_DEFAULT)
+    if createProcessGroup {
+      flags |= Int16(POSIX_SPAWN_SETPGROUP)
+    }
+
+    let flagsResult = posix_spawnattr_setflags(&attributes, flags)
     guard flagsResult == 0 else {
       throw ProcessSpawnError.systemCall(
         operation: "posix_spawnattr_setflags",
         code: flagsResult
       )
     }
+
+    guard createProcessGroup else { return }
 
     let groupResult = posix_spawnattr_setpgroup(&attributes, 0)
     guard groupResult == 0 else {
@@ -244,13 +261,19 @@ public enum ProcessSpawnSupport {
     }
   }
 
-  /// Adds one child `dup2` action.
+  /// Adds one child `dup2` action, preserving an already-matching descriptor explicitly.
   private static func addDup2Action(
     fileActions: inout posix_spawn_file_actions_t?,
     sourceFileDescriptor: Int32,
     destinationFileDescriptor: Int32
   ) throws {
-    guard sourceFileDescriptor != destinationFileDescriptor else { return }
+    if sourceFileDescriptor == destinationFileDescriptor {
+      try addInheritAction(
+        fileActions: &fileActions,
+        fileDescriptor: destinationFileDescriptor
+      )
+      return
+    }
 
     let result = posix_spawn_file_actions_adddup2(
       &fileActions,
@@ -260,6 +283,20 @@ public enum ProcessSpawnSupport {
     guard result == 0 else {
       throw ProcessSpawnError.systemCall(
         operation: "posix_spawn_file_actions_adddup2",
+        code: result
+      )
+    }
+  }
+
+  /// Marks one descriptor as intentionally inherited under the close-by-default policy.
+  private static func addInheritAction(
+    fileActions: inout posix_spawn_file_actions_t?,
+    fileDescriptor: Int32
+  ) throws {
+    let result = posix_spawn_file_actions_addinherit_np(&fileActions, fileDescriptor)
+    guard result == 0 else {
+      throw ProcessSpawnError.systemCall(
+        operation: "posix_spawn_file_actions_addinherit_np",
         code: result
       )
     }
