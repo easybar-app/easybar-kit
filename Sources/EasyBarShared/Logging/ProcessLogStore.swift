@@ -151,7 +151,7 @@ public final class ProcessLogFollower {
     var url: URL
     var source: String
     var offset: UInt64
-    var partialLine: String
+    var pendingLineData: Data
   }
 
   private let directory: String
@@ -168,7 +168,7 @@ public final class ProcessLogFollower {
         url: file.url,
         source: file.source,
         offset: fileSize(at: file.url),
-        partialLine: ""
+        pendingLineData: Data()
       )
     }
   }
@@ -181,14 +181,14 @@ public final class ProcessLogFollower {
     for file in ProcessLogStore.discoveredFiles(in: directory) {
       var state =
         states[file.identity]
-        ?? State(url: file.url, source: file.source, offset: 0, partialLine: "")
+        ?? State(url: file.url, source: file.source, offset: 0, pendingLineData: Data())
       state.url = file.url
       state.source = file.source
 
       let size = fileSize(at: file.url)
       if size < state.offset {
         state.offset = 0
-        state.partialLine = ""
+        state.pendingLineData.removeAll(keepingCapacity: true)
       }
 
       guard size > state.offset else {
@@ -202,16 +202,15 @@ public final class ProcessLogFollower {
       }
       state.offset += UInt64(data.count)
 
-      guard let text = String(data: data, encoding: .utf8) else {
-        states[file.identity] = state
-        continue
-      }
+      let combined = state.pendingLineData + data
+      var lineStart = combined.startIndex
 
-      let combined = state.partialLine + text
-      var lines = combined.components(separatedBy: "\n")
-      state.partialLine = lines.removeLast()
+      for newlineIndex in combined.indices where combined[newlineIndex] == 0x0A {
+        let lineData = combined[lineStart..<newlineIndex]
+        lineStart = combined.index(after: newlineIndex)
+        guard !lineData.isEmpty else { continue }
 
-      for line in lines where !line.isEmpty {
+        let line = String(decoding: lineData, as: UTF8.self)
         guard filter.mightMatch(rawLine: Substring(line)) else { continue }
         let record = ProcessLogRecord.parse(line, source: state.source)
         if filter.matches(record) {
@@ -219,6 +218,8 @@ public final class ProcessLogFollower {
         }
         sequence += 1
       }
+
+      state.pendingLineData = Data(combined[lineStart...])
 
       states[file.identity] = state
     }

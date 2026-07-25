@@ -128,6 +128,28 @@ final class ProcessLogRecordTests: XCTestCase {
     XCTAssertEqual(latestWidget.map(\.message), ["newest"])
   }
 
+  func testFollowerPreservesUTF8ScalarSplitAcrossPolls() throws {
+    let directory = try makeProcessLogDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let active = directory.appendingPathComponent("easybar.out")
+    try write(
+      "[2026-07-21T20:00:00.000+02:00] [INFO ] existing\n",
+      to: active
+    )
+
+    let follower = ProcessLogFollower(directory: directory.path, filter: ProcessLogFilter())
+    let scalar = Data("🔒".utf8)
+    var firstChunk = Data("[2026-07-21T20:01:00.000+02:00] [INFO ] split ".utf8)
+    firstChunk.append(contentsOf: scalar.prefix(2))
+    try append(firstChunk, to: active)
+    XCTAssertTrue(follower.poll().isEmpty)
+
+    var secondChunk = Data(scalar.dropFirst(2))
+    secondChunk.append(0x0A)
+    try append(secondChunk, to: active)
+    XCTAssertEqual(follower.poll().map(\.message), ["split 🔒"])
+  }
+
   func testFollowerReadsAppendsAndContinuesAcrossRotation() throws {
     let directory = try makeProcessLogDirectory()
     defer { try? FileManager.default.removeItem(at: directory) }
@@ -166,8 +188,12 @@ private func write(_ text: String, to url: URL) throws {
 }
 
 private func append(_ text: String, to url: URL) throws {
+  try append(Data(text.utf8), to: url)
+}
+
+private func append(_ data: Data, to url: URL) throws {
   let handle = try FileHandle(forWritingTo: url)
   defer { try? handle.close() }
   try handle.seekToEnd()
-  try handle.write(contentsOf: Data(text.utf8))
+  try handle.write(contentsOf: data)
 }
