@@ -460,9 +460,18 @@ public final class LineSocketServerTransport<
     var lineDecoder = LineDelimitedJSONDecoder<Request>(maxLineBytes: maxRequestBytes)
     var buffer = [UInt8](repeating: 0, count: 4096)
     var isWaitingForInitialRequest = true
+    let initialRequestDeadline = monotonicPollDeadline(after: initialRequestTimeout)
 
     while isActiveConnection(connection) {
-      switch waitForReadable(on: connection, initialRequest: isWaitingForInitialRequest) {
+      let deadline =
+        isWaitingForInitialRequest
+        ? initialRequestDeadline
+        : monotonicPollDeadline(after: 1)
+      switch waitForReadable(
+        on: connection,
+        deadline: deadline,
+        initialRequest: isWaitingForInitialRequest
+      ) {
       case .ready:
         break
       case .timedOut where !isWaitingForInitialRequest:
@@ -545,10 +554,10 @@ public final class LineSocketServerTransport<
   /// Waits for socket input while retaining a finite initial-request deadline.
   private func waitForReadable(
     on connection: ClientConnection,
+    deadline: UInt64,
     initialRequest: Bool
   ) -> Readiness {
     var descriptor = pollfd(fd: connection.fd, events: Int16(POLLIN), revents: 0)
-    let deadline = monotonicPollDeadline(after: initialRequest ? initialRequestTimeout : 1)
 
     while isActiveConnection(connection) {
       let result = poll(&descriptor, 1, remainingPollMilliseconds(until: deadline))

@@ -31,6 +31,37 @@ final class SocketTransportHardeningTests: XCTestCase {
     try super.tearDownWithError()
   }
 
+  func testInitialRequestTimeoutDoesNotResetAfterPartialReads() throws {
+    let server = makeServer(
+      initialRequestTimeout: 0.12,
+      maxConcurrentClients: 1
+    )
+    XCTAssertTrue(
+      server.start { fd, _ in
+        server.closeAfterSending(Message(kind: "pong"), to: fd)
+      }
+    )
+    defer { server.stop() }
+
+    let slowClientFD = try connect()
+    defer { close(slowClientFD) }
+    let partialRequest = Data(#"{"command":"unfinished"}"#.utf8)
+
+    for byte in partialRequest.prefix(6) {
+      usleep(40_000)
+      if writeAll(Data([byte]), to: slowClientFD, timeout: 0.1) != nil {
+        break
+      }
+    }
+    usleep(20_000)
+
+    let response: Message = try LineSocketClientTransport<Request, Message>(
+      socketPath: socketPath,
+      responseTimeout: 1
+    ).send(request: Request(command: "ping"))
+    XCTAssertEqual(response, Message(kind: "pong"))
+  }
+
   func testSubscriberDoesNotConsumeRequestClientCapacity() async throws {
     let server = makeServer(maxConcurrentClients: 1)
     XCTAssertTrue(
@@ -186,6 +217,7 @@ final class SocketTransportHardeningTests: XCTestCase {
   }
 
   private func makeServer(
+    initialRequestTimeout: TimeInterval = 5,
     maxConcurrentClients: Int = 32,
     writeTimeout: TimeInterval = 1
   ) -> LineSocketServerTransport<Void, Request, Message> {
@@ -193,6 +225,7 @@ final class SocketTransportHardeningTests: XCTestCase {
       socketPath: socketPath,
       serverLabel: "socket hardening test",
       logger: Self.makeLogger(),
+      initialRequestTimeout: initialRequestTimeout,
       maxConcurrentClients: maxConcurrentClients,
       workerDrainTimeout: 0.5,
       writeTimeout: writeTimeout
