@@ -1,4 +1,5 @@
 import Darwin
+import Dispatch
 import EasyBarShared
 import Foundation
 import XCTest
@@ -191,7 +192,7 @@ final class LogStreamingTests: XCTestCase {
     XCTAssertTrue(server.start(provider: provider))
     defer { server.stop() }
 
-    let message = try await Task.detached {
+    let message = try await Self.runBlocking {
       let fd = try openConnectedUnixSocket(at: agentSocketPath, timeout: 1)
       defer { close(fd) }
 
@@ -213,7 +214,7 @@ final class LogStreamingTests: XCTestCase {
       )
       let record = try Self.readCalendarLogRecord(message: "calendar live trace", from: fd)
       return (acknowledgement, record)
-    }.value
+    }
 
     XCTAssertEqual(message.0.kind, .logSubscribed)
     XCTAssertEqual(message.1.kind, .logRecord)
@@ -247,7 +248,7 @@ final class LogStreamingTests: XCTestCase {
     XCTAssertTrue(server.start(provider: provider))
     defer { server.stop() }
 
-    let message = try await Task.detached {
+    let message = try await Self.runBlocking {
       let fd = try openConnectedUnixSocket(at: agentSocketPath, timeout: 1)
       defer { close(fd) }
 
@@ -269,7 +270,7 @@ final class LogStreamingTests: XCTestCase {
       )
       let record = try Self.readNetworkLogRecord(message: "network live trace", from: fd)
       return (acknowledgement, record)
-    }.value
+    }
 
     XCTAssertEqual(message.0.kind, .logSubscribed)
     XCTAssertEqual(message.1.kind, .logRecord)
@@ -307,6 +308,16 @@ final class LogStreamingTests: XCTestCase {
     logger.trace("live trace after metrics")
     let event = try Self.readLogRecord(message: "live trace after metrics", from: fd)
     XCTAssertEqual(event.message, "live trace after metrics")
+  }
+
+  private static func runBlocking<T: Sendable>(
+    _ operation: @escaping @Sendable () throws -> T
+  ) async throws -> T {
+    try await withCheckedThrowingContinuation { continuation in
+      DispatchQueue.global(qos: .userInitiated).async {
+        continuation.resume(with: Result(catching: operation))
+      }
+    }
   }
 
   private static func readLogSubscriptionAcknowledgement(from fd: Int32) throws -> IPC.Message {
@@ -536,3 +547,5 @@ final class LogStreamingTests: XCTestCase {
     return try decoder.decode(type, from: Data(bytes))
   }
 }
+
+
