@@ -5,10 +5,12 @@ import Foundation
 /// Serves network-agent socket requests.
 @MainActor
 final class NetworkSocketServer {
-  /// One subscribed client field selection.
-  private struct Subscriber {
-    /// Fields requested by the subscriber.
-    let fields: [NetworkAgentField]
+  /// Active subscription state for one connected client.
+  private enum Subscriber: Sendable {
+    /// Fields requested by a network snapshot subscriber.
+    case fields([NetworkAgentField])
+    /// Filter used when streaming live process logs.
+    case logs(IPC.LogSubscription)
   }
 
   /// Disposition returned after handling one client request.
@@ -48,6 +50,18 @@ final class NetworkSocketServer {
       serverLabel: componentName,
       logger: logger.child("transport"),
     )
+
+    ProcessLogSocketSink.install(
+      logger: logger,
+      transport: transport,
+      subscription: { subscriber in
+        guard case .logs(let subscription) = subscriber else { return nil }
+        return subscription
+      },
+      response: { event in
+        NetworkAgentMessage(kind: .logRecord, logRecord: event)
+      }
+    )
   }
 
   /// Starts accepting network agent requests.
@@ -77,8 +91,12 @@ final class NetworkSocketServer {
   func broadcastSnapshots() {
     guard let provider else { return }
 
-    transport.broadcast { subscriber in
-      makeResponseMessage(from: responseFields(for: subscriber.fields, provider: provider))
+    for entry in transport.subscribersSnapshot() {
+      guard case .fields(let fields) = entry.subscriber else { continue }
+      _ = transport.enqueue(
+        makeResponseMessage(from: responseFields(for: fields, provider: provider)),
+        to: entry.fd
+      )
     }
   }
 
@@ -102,6 +120,8 @@ final class NetworkSocketServer {
       return handleFetch(to: clientFD, request: request)
     case .subscribe:
       return handleSubscribe(to: clientFD, request: request)
+    case .logs:
+      return handleLogs(to: clientFD, request: request)
     case .restart:
       return handleRestart(to: clientFD)
     }
@@ -164,7 +184,7 @@ final class NetworkSocketServer {
       return sendError(to: clientFD, code: .missingFields)
     }
 
-    guard transport.addSubscriber(Subscriber(fields: fields), for: clientFD) else {
+    guard transport.addSubscriber(.fields(fields), for: clientFD) else {
       logger.warn("\(componentName) subscriber rejected", .field("fd", clientFD))
       return .close
     }
@@ -187,13 +207,37 @@ final class NetworkSocketServer {
     return .keepOpen
   }
 
+  /// Handles one bounded live-log subscription.
+  private func handleLogs(
+    to clientFD: Int32,
+    request: NetworkAgentRequest
+  ) -> ClientDisposition {
+    guard let subscription = request.logSubscription else {
+      return sendError(
+        to: clientFD,
+        code: .unknown,
+        message: "Missing live log subscription."
+      )
+    }
+
+    guard transport.addSubscriber(.logs(subscription), for: clientFD) else {
+      return .close
+    }
+    guard transport.send(NetworkAgentMessage(kind: .logSubscribed), to: clientFD) else {
+      _ = transport.removeSubscriber(fd: clientFD)
+      return .close
+    }
+    return .keepOpen
+  }
+
   /// Sends a structured network-agent error response.
   private func sendError(
     to clientFD: Int32,
-    code: NetworkAgentErrorCode
+    code: NetworkAgentErrorCode,
+    message: String? = nil
   ) -> ClientDisposition {
     _ = transport.send(
-      NetworkAgentMessage(kind: .error, errorCode: code),
+      NetworkAgentMessage(kind: .error, errorCode: code, message: message),
       to: clientFD
     )
     return .close

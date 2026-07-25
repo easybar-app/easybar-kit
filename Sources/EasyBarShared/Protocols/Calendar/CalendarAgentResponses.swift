@@ -21,6 +21,8 @@ public enum CalendarAgentMessageKind: String, Codable, Sendable {
   case pong
   case version
   case subscribed
+  case logSubscribed = "log_subscribed"
+  case logRecord = "log_record"
   case restarting
   case snapshot
   case created
@@ -43,6 +45,8 @@ public struct CalendarAgentMessage: Codable, Sendable {
   public var errorCode: CalendarAgentErrorCode?
   /// Optional error message.
   public var message: String?
+  /// Optional live log record payload.
+  public var logRecord: ProcessLogEvent?
 
   /// Creates one calendar agent message.
   public init(
@@ -51,7 +55,8 @@ public struct CalendarAgentMessage: Codable, Sendable {
     version: CalendarAgentVersion? = nil,
     snapshot: CalendarAgentSnapshot? = nil,
     errorCode: CalendarAgentErrorCode? = nil,
-    message: String? = nil
+    message: String? = nil,
+    logRecord: ProcessLogEvent? = nil
   ) {
     self.requestID = requestID
     self.kind = kind
@@ -59,5 +64,6 @@ public struct CalendarAgentMessage: Codable, Sendable {
     self.snapshot = snapshot
     self.errorCode = errorCode
     self.message = message
+    self.logRecord = logRecord
   }
 }

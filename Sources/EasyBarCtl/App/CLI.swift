@@ -63,7 +63,11 @@ private struct AppController {
         )
 
       case .logs(let options):
-        try showLogs(options: options, context: context)
+        try showLogs(
+          options: options,
+          explicitSocketPath: parsed.socketPath,
+          context: context
+        )
 
       case .inbox(let command):
         let socketPath = try resolvedControlSocketPath(

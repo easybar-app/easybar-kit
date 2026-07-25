@@ -4,6 +4,8 @@ public enum NetworkAgentMessageKind: String, Codable, Sendable {
   case pong
   case version
   case subscribed
+  case logSubscribed = "log_subscribed"
+  case logRecord = "log_record"
   case restarting
   case fields
   case error
@@ -31,6 +33,10 @@ public struct NetworkAgentMessage: Codable, Sendable {
   public var fieldStatuses: [String: NetworkAgentFieldStatus]?
   /// Optional stable wire-level error code.
   public var errorCode: NetworkAgentErrorCode?
+  /// Optional human-readable error message.
+  public var message: String?
+  /// Optional live log record payload.
+  public var logRecord: ProcessLogEvent?
 
   /// Creates one network agent message.
   public init(
@@ -38,12 +44,16 @@ public struct NetworkAgentMessage: Codable, Sendable {
     version: NetworkAgentVersion? = nil,
     fields: [String: NetworkAgentFieldValue]? = nil,
     fieldStatuses: [String: NetworkAgentFieldStatus]? = nil,
-    errorCode: NetworkAgentErrorCode? = nil
+    errorCode: NetworkAgentErrorCode? = nil,
+    message: String? = nil,
+    logRecord: ProcessLogEvent? = nil
   ) {
     self.kind = kind
     self.version = version
     self.fields = fields
     self.fieldStatuses = fieldStatuses
     self.errorCode = errorCode
+    self.message = message
+    self.logRecord = logRecord
   }
 }

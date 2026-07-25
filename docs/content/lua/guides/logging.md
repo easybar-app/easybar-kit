@@ -80,13 +80,19 @@ command output in a bounded file-backed log only when the widget explicitly need
 
 ## Host filtering
 
-The Swift host decides which logs are emitted based on the configured host log level.
+The configured host level controls normal console output and retained `easybar.out` records:
 
-For example:
+- `logging.level = "info"` emits info, warnings, and errors
+- `logging.level = "debug"` also emits debug logs
+- `logging.level = "trace"` also emits trace logs
 
-- `logging.level = "info"` shows info, warnings, and errors
-- `logging.level = "debug"` also shows debug logs
-- `logging.level = "trace"` also shows trace logs
+A live CLI subscription can request a more verbose level without changing that persistent setting:
+
+```bash
+easybar logs --widget brew-inbox --runtime lua --level trace --follow
+```
+
+With `logging.level = "info"`, matching trace records are delivered only to the connected CLI and are not appended to `easybar.out`.
 
 ## Recommended usage
 
@@ -97,5 +103,3 @@ Use:
 - `info` for explicit user-triggered mutations, cancellation, and mutation completion
 - `warn` for exhausted retries, invalid responses, and recoverable failures
 - `error` for failed mutations or failures that prevent the widget from working
-
-

@@ -1,6 +1,6 @@
 # CLI Reference
 
-The `easybar` command controls the running app, validates configuration, restarts helper agents, and exposes diagnostics. Commands that operate on the app use its Unix control socket. Agent restart commands contact the selected helper-agent socket directly. `easybar logs` reads retained log files and does not require a socket.
+The `easybar` command controls the running app, validates configuration, restarts helper agents, and exposes diagnostics. Commands that operate on the app use its Unix control socket. Agent commands contact the selected helper-agent socket directly. `easybar logs` reads retained history; follow mode opens live subscriptions to the selected running processes.
 
 ## Command structure
 
@@ -12,7 +12,7 @@ usage:
 
 commands:
   refresh                     Refresh the bar, widgets, and agent-backed data
-  logs                        Show retained process logs
+  logs                        Show retained and live process logs
   metrics                     Show runtime metrics
   inbox                       Manage native inbox messages
   config                      Reload or validate configuration
@@ -40,7 +40,7 @@ easybar logs --help
 | `easybar metrics`         | Print one runtime metrics snapshot.                                           |
 | `easybar metrics --watch` | Continuously display runtime metrics and rolling graphs.                      |
 | `easybar logs`            | Print recent retained logs and exit.                                          |
-| `easybar logs --follow`   | Print recent retained logs and continue following new matching entries.       |
+| `easybar logs --follow`   | Print retained history, then subscribe to matching live process records.      |
 
 See [Runtime Control](control.md) for the difference between refresh, reload, and restart operations. See [Metrics](metrics.md) for the fields included in a snapshot.
 
@@ -92,7 +92,7 @@ CLI-published message content remains in memory until cleared or until EasyBar r
 
 ## Logs
 
-`easybar logs` merges the main app, calendar-agent, and network-agent logs in timestamp order. By default it prints the latest 100 matching retained entries and exits. Add `--follow` or `-f` to continue following active files across rotation.
+`easybar logs` merges the main app, calendar-agent, and network-agent history in timestamp order. By default it prints the latest 100 matching retained entries and exits. Add `--follow` or `-f` to subscribe directly to the EasyBar control socket and the sockets of every enabled agent selected by the runtime filter.
 
 ```bash
 easybar logs
@@ -108,7 +108,7 @@ easybar logs --request-id lua-19 --json
 | --------------------- | ------------------------------------------------------------------------- |
 | `--widget NAME`       | Match a Lua or native widget name.                                        |
 | `--runtime KIND`      | Match `app`, `lua`, or `agent`.                                           |
-| `--level LEVEL`       | Match the selected severity and higher.                                   |
+| `--level LEVEL`       | Match the selected severity and higher; in follow mode this is also the live subscription level. |
 | `--request-id ID`     | Match one request across every retained process log.                      |
 | `--since TIME`        | Match entries since a duration such as `30m` or an ISO-8601 timestamp.    |
 | `--lines COUNT`, `-n` | Limit the latest matching retained history.                               |
@@ -128,6 +128,16 @@ This prints the same retained history and then follows new matches:
 easybar logs --runtime lua --level error --since 1h --follow
 ```
 
+In follow mode, the requested level is independent from `[logging].level`. For example, the app can keep `level = "info"` for stdout and retained files while one CLI client subscribes at `trace`:
+
+```bash
+easybar logs --widget brew-inbox --runtime lua --level trace --follow
+```
+
+Trace and debug records requested only by a live subscriber are streamed to that client and are not added to the process log file. Each process gives every client a bounded serial socket queue. Logging never waits for the client to read; a stalled or overflowing subscriber is disconnected. Follow mode does not fall back to file polling: when any requested running-process socket is unavailable or closes, the command reports that error and exits. Disabled agents are omitted from an unfiltered or `--runtime agent` subscription.
+
+`--socket` can override the EasyBar control socket only when following `--runtime lua` or `--runtime native`. Agent and unfiltered follow mode use the configured process socket paths because they may require more than one connection.
+
 History is limited to the active files and numbered archives retained by EasyBar's rotation policy. `--all` means all retained history, not logs that have already rotated out.
 
 ## Helper-agent commands
@@ -145,9 +155,9 @@ Version commands query the running processes rather than inspecting binaries on 
 the shared agent-protocol version and mark a result when it does not match the current EasyBar CLI:
 
 ```text
-EasyBar: 0.23.0 (protocol 1)
-Calendar agent: 0.23.0 (protocol 1)
-Network agent: 0.23.0 (protocol 1)
+EasyBar: 0.23.0 (protocol 2)
+Calendar agent: 0.23.0 (protocol 2)
+Network agent: 0.23.0 (protocol 2)
 ```
 
 Use `--json` for scripts and diagnostics:

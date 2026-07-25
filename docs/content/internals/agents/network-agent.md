@@ -179,6 +179,7 @@ The agent still returns a flat field map. EasyBar converts that field map into t
 
 ## Behavior notes
 
+- The agent socket accepts bounded live log subscriptions independently from retained-file verbosity.
 - Wi-Fi fields require location permission.
 - Permission denied returns an error unless unauthorized non-sensitive fields are allowed.
 - Partial responses explicitly mark protected fields as `permission_denied`.
@@ -248,3 +249,5 @@ Lua event:
 
 Agents return flat data.
 Lua receives structured event data.
+
+

@@ -51,6 +51,7 @@ That keeps the normal runtime logging model explicit and consistent across all l
 
 The CLI remains slightly different on purpose:
 
-- it can enable extra local debug output with `--debug`
+- `--debug` enables extra diagnostics from the CLI process itself
+- `easybar logs --follow --level LEVEL` registers temporary live sinks in every selected process logger
 
-That CLI-specific flag is a developer convenience, not the main logging contract for the app or agents.
+A live sink can request a more verbose level than the persistent process configuration. Records are routed per sink: a trace subscriber receives trace messages, while an `info` file sink still omits them. The app, calendar agent, and network agent use the same shared socket-sink adapter. Socket writes use bounded serial queues, so log producers enqueue delivery without waiting for a client to read. Each sink is removed automatically when its socket connection closes.

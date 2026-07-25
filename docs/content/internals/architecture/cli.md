@@ -14,7 +14,7 @@ The CLI translates user commands into typed operations. Its job is to:
 - connect to the relevant Unix socket
 - encode requests and decode typed responses
 - report success or failure to the shell
-- merge, filter, and optionally follow retained app and agent logs through `EasyBarShared`
+- merge and filter retained logs, then multiplex live app and agent subscriptions through `EasyBarShared`
 
 This keeps automation simple and avoids forcing users to speak the socket protocol manually.
 
@@ -30,7 +30,7 @@ This keeps automation simple and avoids forcing users to speak the socket protoc
 
 The same catalog drives command resolution and help output, preventing the parser and usage text from drifting apart.
 
-The wire protocol remains separate. `IPC.Command` is shared by the CLI and socket server, while CLI names and descriptions remain in `EasyBarCtl`. This is intentional: user-facing paths such as `refresh` do not need to match stable protocol values such as `manual_refresh`, and commands such as `logs` or agent restarts do not use the main control socket at all.
+The wire protocol remains separate. `IPC.Command` is shared by the CLI and socket server, while CLI names and descriptions remain in `EasyBarCtl`. This is intentional: user-facing paths such as `refresh` do not need to match stable protocol values such as `manual_refresh`. Agent commands use agent-specific protocols, while `logs --follow` can use the main control socket and one or both agent sockets at the same time.
 
 ## Common commands
 
@@ -55,7 +55,8 @@ The CLI should stay small.
 
 Most commands use the main EasyBar control socket. Agent restart and version commands contact the
 calendar or network socket directly through the shared agent protocol. Version queries therefore
-report the processes that are actually running. `easybar logs` reads the configured log directory
-and follows active files only when `--follow` is supplied.
+report the processes that are actually running. `easybar logs` reads retained history from the configured log directory. With `--follow`, it then connects to the EasyBar socket and the selected enabled agent sockets; it does not poll files for new records.
 
 The CLI is a transport client, not a second source of application logic.
+
+

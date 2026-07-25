@@ -35,6 +35,7 @@ Common commands include:
 - `version`
 - `fetch`
 - `subscribe`
+- `logs`
 - `restart`
 
 `version` returns the running binary version and the shared EasyBar IPC protocol version:
@@ -44,7 +45,7 @@ Common commands include:
   "kind": "version",
   "version": {
     "appVersion": "0.4.0",
-    "protocolVersion": "1"
+    "protocolVersion": "2"
   }
 }
 ```
@@ -64,6 +65,8 @@ Common kinds include:
 - `pong`
 - `version`
 - `subscribed`
+- `log_subscribed`
+- `log_record`
 - `restarting`
 - `error`
 
@@ -71,6 +74,23 @@ Error responses may include a stable `errorCode` in addition to the human-readab
 calendar agent uses `invalid_request` when a decoded request violates protocol limits, including its
 maximum 366-day date range.
 
+
+
+## Live log subscriptions
+
+Both agents accept a `logs` request carrying the same optional filters as the EasyBar control socket:
+
+```json
+{
+  "command": "logs",
+  "logSubscription": {
+    "runtime": "agent",
+    "minimum_level": "trace"
+  }
+}
+```
+
+The agent acknowledges the subscription with `log_subscribed`. Each matching record is then sent as a `log_record` message. The requested level is independent from `[logging].level`: records needed only by the live client are not written to the retained agent log. Slow clients cannot block the agent because delivery uses a bounded serial queue; an overflowing client is disconnected.
 
 ## Request correlation
 
@@ -91,6 +111,8 @@ client retains a FIFO fallback for older agents that do not yet echo request ide
   returns one data payload, then closes
 - `subscribe`
   returns one `subscribed`, returns one immediate data payload, then keeps the socket open for later pushes
+- `logs`
+  returns one `log_subscribed`, then keeps the socket open and streams matching `log_record` payloads through a bounded per-client queue
 - `restart`
   returns one `restarting` acknowledgement, closes the request socket, then exits the agent process cleanly
 
@@ -170,6 +192,8 @@ easybar config reload
 - reloads `config.toml`
 - rebuilds runtime state
 - recreates agent-backed subscriptions
+
+
 
 
 

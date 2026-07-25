@@ -42,6 +42,20 @@ final class ProcessLogRecordTests: XCTestCase {
     XCTAssertEqual(record.runtime, .lua)
   }
 
+  func testLiveAgentLoggerLabelsInferAgentRuntime() {
+    let calendar = ProcessLogRecord.parse(
+      "[2026-07-21T23:11:10.117+02:00] [TRACE] calendar trace",
+      source: "easybar-calendar-agent"
+    )
+    let network = ProcessLogRecord.parse(
+      "[2026-07-21T23:11:10.117+02:00] [TRACE] network trace",
+      source: "easybar-network-agent"
+    )
+
+    XCTAssertEqual(calendar.runtime, .agent)
+    XCTAssertEqual(network.runtime, .agent)
+  }
+
   func testParserInfersNativeWidgetFromSubsystem() {
     let record = ProcessLogRecord.parse(
       "[2026-07-21T23:11:10.117+02:00] [WARN ] action failed "

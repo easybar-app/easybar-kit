@@ -6,9 +6,11 @@ import Foundation
 @MainActor
 final class CalendarSocketServer {
   /// Active subscription state for one connected client.
-  private struct Subscriber {
-    /// Query used when broadcasting snapshots to this subscriber.
-    let query: CalendarAgentQuery
+  private enum Subscriber: Sendable {
+    /// Query used when broadcasting calendar snapshots.
+    case snapshots(CalendarAgentQuery)
+    /// Filter used when streaming live process logs.
+    case logs(IPC.LogSubscription)
   }
 
   /// Disposition returned after handling one client request.
@@ -44,6 +46,18 @@ final class CalendarSocketServer {
       serverLabel: "calendar agent",
       logger: logger.child("transport"),
     )
+
+    ProcessLogSocketSink.install(
+      logger: logger,
+      transport: transport,
+      subscription: { subscriber in
+        guard case .logs(let subscription) = subscriber else { return nil }
+        return subscription
+      },
+      response: { event in
+        CalendarAgentMessage(kind: .logRecord, logRecord: event)
+      }
+    )
   }
 
   /// Starts accepting calendar agent requests.
@@ -73,10 +87,14 @@ final class CalendarSocketServer {
   func broadcastSnapshots() {
     guard let provider else { return }
 
-    transport.broadcast { subscriber in
-      CalendarAgentMessage(
-        kind: .snapshot,
-        snapshot: provider.snapshot(for: subscriber.query)
+    for entry in transport.subscribersSnapshot() {
+      guard case .snapshots(let query) = entry.subscriber else { continue }
+      _ = transport.enqueue(
+        CalendarAgentMessage(
+          kind: .snapshot,
+          snapshot: provider.snapshot(for: query)
+        ),
+        to: entry.fd
       )
     }
   }
@@ -117,6 +135,8 @@ final class CalendarSocketServer {
       return handleFetch(to: clientFD, request: request)
     case .subscribe:
       return handleSubscribe(to: clientFD, request: request)
+    case .logs:
+      return handleLogs(to: clientFD, request: request)
     case .restart:
       return handleRestart(to: clientFD, requestID: request.requestID)
     case .createEvent:
@@ -201,7 +221,7 @@ final class CalendarSocketServer {
       )
     }
 
-    guard transport.addSubscriber(Subscriber(query: query), for: clientFD) else {
+    guard transport.addSubscriber(.snapshots(query), for: clientFD) else {
       logger.warn("calendar agent subscriber rejected", .field("fd", clientFD))
       return .close
     }
@@ -233,6 +253,38 @@ final class CalendarSocketServer {
       return .close
     }
 
+    return .keepOpen
+  }
+
+  /// Handles one bounded live-log subscription.
+  private func handleLogs(
+    to clientFD: Int32,
+    request: CalendarAgentRequest
+  ) -> ClientDisposition {
+    guard let subscription = request.logSubscription else {
+      return sendError(
+        to: clientFD,
+        requestID: request.requestID,
+        code: .invalidRequest,
+        message: "Missing live log subscription."
+      )
+    }
+
+    guard transport.addSubscriber(.logs(subscription), for: clientFD) else {
+      return .close
+    }
+    guard
+      transport.send(
+        CalendarAgentMessage(
+          kind: .logSubscribed,
+          requestID: request.requestID
+        ),
+        to: clientFD
+      )
+    else {
+      _ = transport.removeSubscriber(fd: clientFD)
+      return .close
+    }
     return .keepOpen
   }
 

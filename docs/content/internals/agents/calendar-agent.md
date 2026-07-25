@@ -16,7 +16,7 @@ It is responsible for:
 ```json
 {
   "requestID": "month-42",
-  "command": "ping | version | fetch | subscribe | create_event | update_event | delete_event",
+  "command": "ping | version | fetch | subscribe | logs | create_event | update_event | delete_event",
   "query": {
     "startDate": "2026-03-29T00:00:00Z",
     "endDate": "2026-04-01T00:00:00Z"
@@ -47,6 +47,8 @@ Other kinds:
 - `pong`
 - `version`
 - `subscribed`
+- `log_subscribed`
+- `log_record`
 - `created`
 - `updated`
 - `deleted`
@@ -116,5 +118,7 @@ failures.
 The calendar agent collects calendar data and performs calendar mutations.
 
 EasyBar decides how calendar data is rendered.
+
+
 
 

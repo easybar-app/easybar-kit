@@ -11,13 +11,13 @@ lua[widget.lua] ...
 lua[runtime] ...
 ```
 
-For deeper runtime debugging, temporarily raise the host logging level to:
+For deeper runtime debugging without changing retained-file verbosity, subscribe at trace level:
 
-```toml
-[logging]
-enabled = true
-level = "trace"
+```bash
+easybar logs --runtime lua --level trace --follow
 ```
+
+The live subscription can request trace records while `[logging].level` remains at `info`. Raise the configured level only when those records must also be retained in `easybar.out`.
 
 ## Run Lua manually
 

@@ -31,7 +31,13 @@ Logs are written to:
 ~/.local/state/easybar/
 ```
 
-For extremely verbose socket and update tracing, temporarily use:
+For extremely verbose tracing without retaining trace records, use a temporary live subscription:
+
+```bash
+easybar logs --runtime agent --level trace --follow
+```
+
+Raise the configured level only when those records must also be retained:
 
 ```toml
 [logging]
@@ -278,5 +284,7 @@ flowchart LR
     Lua --> UI["UI"]
     Native --> UI
 ```
+
+
 
 

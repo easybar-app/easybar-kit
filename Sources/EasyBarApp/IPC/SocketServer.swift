@@ -60,6 +60,7 @@ final class SocketServer: @unchecked Sendable {
       metricsCoordinator: metricsCoordinator,
       logger: logger.child("transport")
     )
+    Self.installLiveLogSink(logger: logger, transport: transport)
   }
 
   /// Starts the socket listener.
@@ -118,6 +119,7 @@ final class SocketServer: @unchecked Sendable {
         metricsCoordinator: metricsCoordinator,
         logger: logger.child("transport")
       )
+      Self.installLiveLogSink(logger: logger, transport: transport)
       return .rebound
     }
 
@@ -158,6 +160,7 @@ final class SocketServer: @unchecked Sendable {
 
     let previousTransport = transport
     transport = replacementTransport
+    Self.installLiveLogSink(logger: logger, transport: replacementTransport)
     socketPath = updatedSocketPath
     started = true
 
@@ -186,10 +189,27 @@ final class SocketServer: @unchecked Sendable {
     let message = IPC.Message.metrics(snapshot)
 
     for subscriber in transport.subscribersSnapshot() {
+      guard case .metrics(watch: true) = subscriber.subscriber else { continue }
       if !transport.send(message, to: subscriber.fd) {
         _ = transport.removeSubscriber(fd: subscriber.fd)
       }
     }
+  }
+
+  /// Installs the shared bounded live-log sink for one active transport.
+  private static func installLiveLogSink(
+    logger: ProcessLogger,
+    transport: Transport
+  ) {
+    ProcessLogSocketSink.install(
+      logger: logger,
+      transport: transport,
+      subscription: { request in
+        guard case .logs(let subscription) = request else { return nil }
+        return subscription
+      },
+      response: { event in IPC.Message.logRecord(event) }
+    )
   }
 
   /// Starts one concrete transport with the retained request handlers.
@@ -231,6 +251,13 @@ final class SocketServer: @unchecked Sendable {
       return handleMetricsRequest(
         clientFD: clientFD,
         watch: watch,
+        request: request,
+        transport: transport
+      )
+
+    case .logs:
+      return handleLogsRequest(
+        clientFD: clientFD,
         request: request,
         transport: transport
       )
@@ -286,6 +313,22 @@ final class SocketServer: @unchecked Sendable {
       return .close
     }
 
+    return .keepOpen
+  }
+
+  /// Registers one bounded live log subscriber.
+  private func handleLogsRequest(
+    clientFD: Int32,
+    request: IPC.Request,
+    transport: Transport
+  ) -> Transport.ClientDisposition {
+    guard transport.addSubscriber(request, for: clientFD) else {
+      return .close
+    }
+    guard transport.send(.logSubscribed, to: clientFD) else {
+      _ = transport.removeSubscriber(fd: clientFD)
+      return .close
+    }
     return .keepOpen
   }
 

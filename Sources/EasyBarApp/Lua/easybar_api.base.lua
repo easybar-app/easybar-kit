@@ -669,7 +669,7 @@ EasyBar.inbox = {}
 
 ---Writes one widget-scoped log line to the EasyBar host logger.
 ---Supported levels are `trace`, `debug`, `info`, `warn`, and `error`.
----Which messages are actually emitted depends on the host logging level.
+---Which messages are emitted depends on the persistent host level and active live log subscriptions.
 ---@param level EasyBarLevel|string Minimum severity for this message.
 ---@param ... any Values converted to text and joined into one log message.
 function EasyBar.log(level, ...) end

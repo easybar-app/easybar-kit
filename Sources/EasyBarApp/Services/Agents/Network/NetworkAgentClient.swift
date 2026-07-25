@@ -226,7 +226,7 @@ final class NetworkAgentClient: @unchecked Sendable {
       let publicationID = issuePublicationID()
       snapshotPublisher.publish(snapshot: snapshot, publicationID: publicationID)
 
-    case .pong, .restarting:
+    case .pong, .logSubscribed, .logRecord, .restarting:
       break
 
     case .error:

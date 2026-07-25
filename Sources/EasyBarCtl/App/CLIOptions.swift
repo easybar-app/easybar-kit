@@ -219,7 +219,7 @@ enum CLI {
 
   static let logLevelOption = CLIOption(
     flag: "--level",
-    description: "Match this severity and higher",
+    description: "Match this severity and higher; sets the live follow level",
     placeholder: "level"
   )
 
@@ -250,7 +250,7 @@ enum CLI {
   static let logFollowOption = CLIOption(
     flag: "--follow",
     short: "-f",
-    description: "Continue following new matching entries"
+    description: "Subscribe to live app/Lua logs and follow agent files"
   )
 
   static let jsonOption = CLIOption(
@@ -331,7 +331,7 @@ enum CLI {
 
   static let commandGroups: [CLICommandGroup] = [
     .init(name: "refresh", description: "Refresh the bar, widgets, and agent-backed data"),
-    .init(name: "logs", description: "Show retained process logs"),
+    .init(name: "logs", description: "Show retained and live process logs"),
     .init(name: "metrics", description: "Show runtime metrics"),
     .init(name: "inbox", description: "Manage native inbox messages"),
     .init(name: "config", description: "Reload or validate configuration"),
@@ -348,7 +348,7 @@ enum CLI {
     ),
     .init(
       path: ["logs"],
-      description: "Show retained logs and optionally follow new entries",
+      description: "Show retained history and optionally subscribe to live records",
       kind: .logs,
       options: logOptions
     ),

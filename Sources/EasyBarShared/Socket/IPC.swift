@@ -14,6 +14,7 @@ extension IPC {
     case reloadConfig = "reload_config"
     case validateConfig = "validate_config"
     case metrics = "metrics"
+    case logs = "logs"
     case inboxSend = "inbox_send"
     case inboxRead = "inbox_read"
     case inboxMarkRead = "inbox_mark_read"
@@ -112,12 +113,14 @@ extension IPC {
     case command(Command)
     case validateConfig(configPath: String?)
     case metrics(watch: Bool)
+    case logs(LogSubscription)
     case inbox(InboxRequest)
 
     private enum CodingKeys: String, CodingKey {
       case command
       case configPath = "config_path"
       case watch
+      case logs
       case inbox
     }
 
@@ -126,6 +129,8 @@ extension IPC {
       switch command {
       case .metrics:
         return .metrics(watch: false)
+      case .logs:
+        return .logs(LogSubscription())
       case .validateConfig:
         return .validateConfig(configPath: nil)
       case .inboxSend, .inboxRead, .inboxMarkRead, .inboxMarkUnread, .inboxDismiss, .inboxRemove,
@@ -146,6 +151,11 @@ extension IPC {
       return .metrics(watch: watch)
     }
 
+    /// Builds one live log request.
+    public static func makeLogs(_ subscription: LogSubscription) -> Self {
+      return .logs(subscription)
+    }
+
     /// Builds one inbox request.
     public static func makeInbox(_ request: InboxRequest) -> Self {
       return .inbox(request)
@@ -160,6 +170,8 @@ extension IPC {
         return .validateConfig
       case .metrics:
         return .metrics
+      case .logs:
+        return .logs
       case .inbox(let request):
         switch request.operation {
         case .send: return .inboxSend
@@ -178,7 +190,7 @@ extension IPC {
       switch self {
       case .validateConfig(let configPath):
         return configPath
-      case .command, .metrics, .inbox:
+      case .command, .metrics, .logs, .inbox:
         return nil
       }
     }
@@ -186,7 +198,7 @@ extension IPC {
     /// Returns whether this request keeps the metrics stream open.
     public var watch: Bool {
       switch self {
-      case .command, .validateConfig, .inbox:
+      case .command, .validateConfig, .logs, .inbox:
         return false
       case .metrics(let watch):
         return watch
@@ -201,6 +213,11 @@ extension IPC {
       switch command {
       case .metrics:
         self = .metrics(watch: try container.decodeIfPresent(Bool.self, forKey: .watch) ?? false)
+      case .logs:
+        self = .logs(
+          try container.decodeIfPresent(LogSubscription.self, forKey: .logs)
+            ?? LogSubscription()
+        )
       case .validateConfig:
         self = .validateConfig(
           configPath: try container.decodeIfPresent(String.self, forKey: .configPath)
@@ -240,6 +257,10 @@ extension IPC {
           try container.encode(watch, forKey: .watch)
         }
 
+      case .logs(let subscription):
+        try container.encode(Command.logs, forKey: .command)
+        try container.encode(subscription, forKey: .logs)
+
       case .inbox(let request):
         try container.encode(command, forKey: .command)
         try container.encode(request, forKey: .inbox)
@@ -259,6 +280,8 @@ extension IPC {
       case rejected
       case configValidated = "config_validated"
       case metrics
+      case logSubscribed = "log_subscribed"
+      case logRecord = "log_record"
       case inbox
     }
 
@@ -266,6 +289,8 @@ extension IPC {
     case rejected(message: String?)
     case configValidated(configPath: String, warnings: [String])
     case metrics(MetricsSnapshot)
+    case logSubscribed
+    case logRecord(ProcessLogEvent)
     case inbox([InboxItem])
 
     private enum CodingKeys: String, CodingKey {
@@ -274,6 +299,7 @@ extension IPC {
       case configPath = "config_path"
       case metrics
       case warnings
+      case log
       case inbox
     }
 
@@ -288,6 +314,10 @@ extension IPC {
         return .configValidated
       case .metrics:
         return .metrics
+      case .logSubscribed:
+        return .logSubscribed
+      case .logRecord:
+        return .logRecord
       case .inbox:
         return .inbox
       }
@@ -298,7 +328,7 @@ extension IPC {
       switch self {
       case .rejected(let message):
         return message
-      case .accepted, .configValidated, .metrics, .inbox:
+      case .accepted, .configValidated, .metrics, .logSubscribed, .logRecord, .inbox:
         return nil
       }
     }
@@ -308,7 +338,7 @@ extension IPC {
       switch self {
       case .configValidated(let configPath, _):
         return configPath
-      case .accepted, .rejected, .metrics, .inbox:
+      case .accepted, .rejected, .metrics, .logSubscribed, .logRecord, .inbox:
         return nil
       }
     }
@@ -318,7 +348,7 @@ extension IPC {
       switch self {
       case .configValidated(_, let warnings):
         return warnings
-      case .accepted, .rejected, .metrics, .inbox:
+      case .accepted, .rejected, .metrics, .logSubscribed, .logRecord, .inbox:
         return []
       }
     }
@@ -328,7 +358,17 @@ extension IPC {
       switch self {
       case .metrics(let snapshot):
         return snapshot
-      case .accepted, .rejected, .configValidated, .inbox:
+      case .accepted, .rejected, .configValidated, .logSubscribed, .logRecord, .inbox:
+        return nil
+      }
+    }
+
+    /// Returns the streamed log event when present.
+    public var logEvent: ProcessLogEvent? {
+      switch self {
+      case .logRecord(let event):
+        return event
+      case .accepted, .rejected, .configValidated, .metrics, .logSubscribed, .inbox:
         return nil
       }
     }
@@ -353,6 +393,12 @@ extension IPC {
 
       case .metrics:
         self = .metrics(try container.decode(MetricsSnapshot.self, forKey: .metrics))
+
+      case .logSubscribed:
+        self = .logSubscribed
+
+      case .logRecord:
+        self = .logRecord(try container.decode(ProcessLogEvent.self, forKey: .log))
 
       case .inbox:
         self = .inbox(try container.decode([InboxItem].self, forKey: .inbox))
@@ -381,6 +427,13 @@ extension IPC {
       case .metrics(let snapshot):
         try container.encode(Kind.metrics, forKey: .kind)
         try container.encode(snapshot, forKey: .metrics)
+
+      case .logSubscribed:
+        try container.encode(Kind.logSubscribed, forKey: .kind)
+
+      case .logRecord(let event):
+        try container.encode(Kind.logRecord, forKey: .kind)
+        try container.encode(event, forKey: .log)
 
       case .inbox(let items):
         try container.encode(Kind.inbox, forKey: .kind)

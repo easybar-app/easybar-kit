@@ -1,7 +1,7 @@
 import Foundation
 
 /// Runtime category inferred from one structured process log entry.
-public enum ProcessLogRuntime: String, CaseIterable, Sendable {
+public enum ProcessLogRuntime: String, Codable, CaseIterable, Sendable {
   case lua
   case native
   case agent
@@ -67,7 +67,9 @@ public struct ProcessLogRecord: Sendable {
       return runtime
     }
 
-    if source == "calendar-agent" || source == "network-agent" {
+    if source == "calendar-agent" || source == "network-agent"
+      || source == "easybar-calendar-agent" || source == "easybar-network-agent"
+    {
       return .agent
     }
 
@@ -136,10 +138,13 @@ public struct ProcessLogRecord: Sendable {
 
   private static func normalizedWidget(_ value: String) -> String {
     let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-    return normalized.hasPrefix("builtin_") ? String(normalized.dropFirst("builtin_".count)) : normalized
+    return normalized.hasPrefix("builtin_")
+      ? String(normalized.dropFirst("builtin_".count)) : normalized
   }
 
-  private static func parsedHeader(_ line: String) -> (timestamp: String, level: String, remainder: String)? {
+  private static func parsedHeader(_ line: String) -> (
+    timestamp: String, level: String, remainder: String
+  )? {
     guard line.hasPrefix("[") else { return nil }
     guard let timestampEnd = line.firstIndex(of: "]") else { return nil }
     let afterTimestamp = line.index(after: timestampEnd)
@@ -288,7 +293,8 @@ public struct ProcessLogFilter: Sendable {
 
   private static func normalizedWidget(_ value: String) -> String {
     let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-    return normalized.hasPrefix("builtin_") ? String(normalized.dropFirst("builtin_".count)) : normalized
+    return normalized.hasPrefix("builtin_")
+      ? String(normalized.dropFirst("builtin_".count)) : normalized
   }
 }
 

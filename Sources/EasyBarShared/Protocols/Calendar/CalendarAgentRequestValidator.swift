@@ -94,7 +94,7 @@ public enum CalendarAgentRequestValidator {
       if let draft = request.deleteEvent {
         try validate(draft)
       }
-    case .ping, .version, .restart:
+    case .ping, .version, .logs, .restart:
       break
     }
   }

@@ -363,6 +363,8 @@ private func expectAccepted(_ response: IPC.Message, fallback: String) throws {
 
   case .metrics:
     throw AppError.message("unexpected metrics response")
+  case .logSubscribed, .logRecord:
+    throw AppError.message("unexpected log stream response")
   case .inbox:
     throw AppError.message("unexpected inbox response")
   }
@@ -377,7 +379,7 @@ private func expectMetrics(_ response: IPC.Message, fallback: String) throws -> 
   case .rejected:
     throw rejectedResponseError(response, fallback: fallback)
 
-  case .accepted, .configValidated, .inbox:
+  case .accepted, .configValidated, .logSubscribed, .logRecord, .inbox:
     throw AppError.message(fallback)
   }
 }
@@ -398,6 +400,8 @@ private func expectConfigValidated(_ response: IPC.Message, fallback: String) th
 
   case .metrics:
     throw AppError.message("unexpected metrics response")
+  case .logSubscribed, .logRecord:
+    throw AppError.message("unexpected log stream response")
   case .inbox:
     throw AppError.message("unexpected inbox response")
   }
@@ -412,7 +416,7 @@ private func metricsSnapshot(fromStreamMessage message: IPC.Message) throws -> I
   case .rejected:
     throw rejectedResponseError(message, fallback: "metrics rejected")
 
-  case .accepted, .configValidated, .inbox:
+  case .accepted, .configValidated, .logSubscribed, .logRecord, .inbox:
     return nil
   }
 }
@@ -424,7 +428,7 @@ private func expectInbox(_ response: IPC.Message, fallback: String) throws -> [I
     return items
   case .rejected:
     throw rejectedResponseError(response, fallback: fallback)
-  case .accepted, .configValidated, .metrics:
+  case .accepted, .configValidated, .metrics, .logSubscribed, .logRecord:
     throw AppError.message(fallback)
   }
 }

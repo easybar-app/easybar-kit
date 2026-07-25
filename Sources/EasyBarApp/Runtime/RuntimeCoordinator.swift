@@ -324,7 +324,7 @@ actor RuntimeCoordinator {
     case .validateConfig:
       break
 
-    case .metrics:
+    case .metrics, .logs:
       break
 
     case .inboxSend, .inboxRead, .inboxMarkRead, .inboxMarkUnread, .inboxDismiss, .inboxRemove,

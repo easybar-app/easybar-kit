@@ -20,6 +20,7 @@ public enum CalendarAgentCommand: String, Codable, Equatable, Sendable {
   case version
   case fetch
   case subscribe
+  case logs
   case restart
   case createEvent = "create_event"
   case updateEvent = "update_event"

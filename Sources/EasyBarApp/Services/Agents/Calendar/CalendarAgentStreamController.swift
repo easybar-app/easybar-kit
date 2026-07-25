@@ -287,7 +287,8 @@ final class CalendarAgentStreamController: @unchecked Sendable {
     case .version:
       break
 
-    case .pong, .subscribed, .restarting, .created, .updated, .deleted:
+    case .pong, .subscribed, .logSubscribed, .logRecord, .restarting, .created, .updated,
+      .deleted:
       break
     }
   }

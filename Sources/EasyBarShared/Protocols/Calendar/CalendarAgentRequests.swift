@@ -240,6 +240,8 @@ public struct CalendarAgentRequest: Codable, Equatable, Sendable {
   public var updateEvent: CalendarAgentUpdateEvent?
   /// Optional delete-event payload used for event deletion.
   public var deleteEvent: CalendarAgentDeleteEvent?
+  /// Optional live-log subscription used by the logs command.
+  public var logSubscription: IPC.LogSubscription?
 
   /// Creates one calendar agent request.
   public init(
@@ -248,7 +250,8 @@ public struct CalendarAgentRequest: Codable, Equatable, Sendable {
     query: CalendarAgentQuery? = nil,
     createEvent: CalendarAgentCreateEvent? = nil,
     updateEvent: CalendarAgentUpdateEvent? = nil,
-    deleteEvent: CalendarAgentDeleteEvent? = nil
+    deleteEvent: CalendarAgentDeleteEvent? = nil,
+    logSubscription: IPC.LogSubscription? = nil
   ) {
     self.requestID = requestID
     self.command = command
@@ -256,6 +259,7 @@ public struct CalendarAgentRequest: Codable, Equatable, Sendable {
     self.createEvent = createEvent
     self.updateEvent = updateEvent
     self.deleteEvent = deleteEvent
+    self.logSubscription = logSubscription
   }
 
   /// Returns a copy carrying one client-generated correlation identifier.
@@ -273,6 +277,11 @@ public struct CalendarAgentRequest: Codable, Equatable, Sendable {
   /// Builds one subscribe request.
   public static func subscribe(_ query: CalendarAgentQuery) -> Self {
     return Self(command: .subscribe, query: query)
+  }
+
+  /// Builds one live-log subscription request.
+  public static func logs(_ subscription: IPC.LogSubscription = IPC.LogSubscription()) -> Self {
+    return Self(command: .logs, logSubscription: subscription)
   }
 
   /// Builds one create-event request.

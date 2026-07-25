@@ -266,6 +266,25 @@ public final class LineSocketServerTransport<
     return true
   }
 
+  /// Enqueues one response for an active client without waiting for socket I/O.
+  @discardableResult
+  public func enqueue(_ response: Response, to clientFD: Int32) -> Bool {
+    guard let connection = currentConnection(for: clientFD) else { return false }
+    guard let data = encode(response) else { return false }
+
+    let accepted = connection.writer.enqueue(data) { [weak self, weak connection] error in
+      guard let self, let connection, let error else { return }
+      self.logWriteFailure(error, fd: connection.fd)
+      self.closeClientConnection(connection)
+    }
+
+    guard accepted else {
+      closeClientConnection(connection)
+      return false
+    }
+    return true
+  }
+
   /// Sends one terminal response and closes the client after the handler returns.
   public func closeAfterSending(_ response: Response, to clientFD: Int32) -> ClientDisposition {
     if !send(response, to: clientFD) {

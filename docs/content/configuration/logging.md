@@ -20,7 +20,21 @@ easybar logs --widget tailscale --level debug
 easybar logs --since 30m
 ```
 
-The command prints recent retained history and exits. Add `--follow` to continue following new entries across file rotation. See the [CLI Reference](../runtime/cli.md#logs) for every filter and output option.
+The command prints recent retained history and exits. Add `--follow` to subscribe directly to the running EasyBar app and every enabled helper agent. See the [CLI Reference](../runtime/cli.md#logs) for every filter and output option.
+
+Live follow subscriptions have their own minimum level. They do not change `[logging].level` and do not force additional records into the retained files:
+
+```toml
+[logging]
+enabled = true
+level = "info"
+```
+
+```bash
+easybar logs --widget brew-inbox --runtime lua --level trace --follow
+```
+
+With this combination, the CLI receives matching trace records live, while `easybar.out` continues to retain only info and higher. The same independent level applies to calendar and network agent subscriptions. Live delivery uses bounded per-client queues and disconnects stalled subscribers instead of blocking any producer process.
 
 ## Config
 
@@ -72,7 +86,7 @@ The main app and helper agents use the shared logging config from `config.toml`.
 
 `EASYBAR_CONFIG_PATH` remains the public environment override for selecting the runtime config file.
 
-The `easybar` CLI can enable its own debug output explicitly with `--debug`. This does not change the main app or agent log level.
+The `easybar` CLI can enable its own debug output explicitly with `--debug`. This does not change the main app or agent log level. In `logs --follow`, `--level` controls only that client's live subscription and output filter.
 
 Structured request logs include both `request_id` and `run_id`. A request ID identifies one operation within a process; the run ID distinguishes it from the same counter value after a restart. `easybar logs --request-id ID` searches every retained app and agent log, while the printed `run_id` exposes any cross-run matches.
 
@@ -108,6 +122,3 @@ or:
 ```bash
 EASYBAR_CONFIG_PATH=/path/to/config.toml easybar config validate
 ```
-
-
-

@@ -82,6 +82,12 @@ private func formatLogFieldValue(_ value: Any?) -> String {
   return "\"\(escaped)\""
 }
 
+/// Converts one typed field into its unquoted structured value.
+private func logFieldTextValue(_ value: Any?) -> String {
+  guard let value else { return "nil" }
+  return String(describing: value)
+}
+
 extension Array where Element == ProcessLogField {
   /// Returns whether one structured field already exists for the given key.
   fileprivate func containsField(named key: String) -> Bool {
@@ -109,14 +115,22 @@ public final class ProcessLogger: @unchecked Sendable {
     var fileLoggingPath = ""
   }
 
+  /// Optional live diagnostics sink shared by one logger tree.
+  private struct LiveSink: Sendable {
+    let minimumLevel: @Sendable (ProcessLogLevel) -> ProcessLogLevel?
+    let emit: @Sendable (ProcessLogEvent, ProcessLogLevel) -> Void
+  }
+
   /// Shared mutable state for one root logger and all child loggers.
   private final class SharedState: @unchecked Sendable {
     let configuration: LockedState<LoggerConfiguration>
+    let liveSink = LockedState<LiveSink?>(nil)
     let outputQueue = DispatchQueue(label: "easybar.process-logger.output")
     let outputStream: UnsafeMutablePointer<FILE>?
     let errorStream: UnsafeMutablePointer<FILE>?
     let rotationPolicy: ProcessLogRotationPolicy
     let runID: String
+    let source: String
 
     /// Accessed only from `outputQueue`.
     var fileHandle: FileHandle?
@@ -128,13 +142,15 @@ public final class ProcessLogger: @unchecked Sendable {
       outputStream: UnsafeMutablePointer<FILE>?,
       errorStream: UnsafeMutablePointer<FILE>?,
       rotationPolicy: ProcessLogRotationPolicy,
-      runID: String
+      runID: String,
+      source: String
     ) {
       configuration = LockedState(LoggerConfiguration(minimumLevel: minimumLevel))
       self.outputStream = outputStream
       self.errorStream = errorStream
       self.rotationPolicy = rotationPolicy
       self.runID = runID
+      self.source = source
     }
   }
 
@@ -168,7 +184,8 @@ public final class ProcessLogger: @unchecked Sendable {
       outputStream: outputStream,
       errorStream: errorStream,
       rotationPolicy: rotationPolicy,
-      runID: runID
+      runID: runID,
+      source: label
     )
   }
 
@@ -211,6 +228,21 @@ public final class ProcessLogger: @unchecked Sendable {
     sharedState.configuration.withLock { state in
       state.minimumLevel = level
     }
+  }
+
+  /// Installs one live diagnostics sink without changing persistent log filtering.
+  public func configureLiveSink(
+    minimumLevel: @escaping @Sendable (ProcessLogLevel) -> ProcessLogLevel?,
+    emit: @escaping @Sendable (ProcessLogEvent, ProcessLogLevel) -> Void
+  ) {
+    sharedState.liveSink.withLock { sink in
+      sink = LiveSink(minimumLevel: minimumLevel, emit: emit)
+    }
+  }
+
+  /// Removes the current live diagnostics sink.
+  public func removeLiveSink() {
+    sharedState.liveSink.withLock { $0 = nil }
   }
 
   /// Configures minimum level and optional file logging.
@@ -318,32 +350,77 @@ public final class ProcessLogger: @unchecked Sendable {
     message: String,
     fields: [ProcessLogField]
   ) {
-    let minimumLevel = sharedState.configuration.withLock { $0.minimumLevel }
-    guard minimumLevel.allows(level) else { return }
+    let persistentMinimumLevel = sharedState.configuration.withLock { $0.minimumLevel }
+    let liveSink = sharedState.liveSink.withLock { $0 }
+    let liveMinimumLevel = liveSink?.minimumLevel(persistentMinimumLevel)
+    let shouldWritePersistently = persistentMinimumLevel.allows(level)
+    let shouldStreamLive = liveMinimumLevel?.allows(level) == true
 
-    let line = formattedLine(
-      level: level,
-      message: message,
-      fields: fields,
-      minimumLevel: minimumLevel
-    )
-    writeFormattedLine(line, level: level)
+    guard shouldWritePersistently || shouldStreamLive else { return }
+
+    let timestamp = Date()
+    let timestampText = Self.formatTimestamp(timestamp)
+
+    if shouldWritePersistently {
+      let line = formattedLine(
+        timestampText: timestampText,
+        level: level,
+        message: message,
+        fields: fields,
+        minimumLevel: persistentMinimumLevel
+      )
+      writeFormattedLine(line, level: level)
+    }
+
+    if shouldStreamLive, let liveSink, let liveMinimumLevel {
+      liveSink.emit(
+        makeLiveEvent(
+          timestamp: timestamp,
+          timestampText: timestampText,
+          level: level,
+          message: message,
+          fields: fields,
+          minimumLevel: liveMinimumLevel
+        ),
+        persistentMinimumLevel
+      )
+    }
   }
 
-  /// Writes one formatted message without holding the configuration lock.
+  /// Writes one formatted message without applying the persistent minimum level.
   private func write(
     level: ProcessLogLevel,
     message: String,
     fields: [ProcessLogField]
   ) {
-    let minimumLevel = sharedState.configuration.withLock { $0.minimumLevel }
+    let persistentMinimumLevel = sharedState.configuration.withLock { $0.minimumLevel }
+    let timestamp = Date()
+    let timestampText = Self.formatTimestamp(timestamp)
     let line = formattedLine(
+      timestampText: timestampText,
       level: level,
       message: message,
       fields: fields,
-      minimumLevel: minimumLevel
+      minimumLevel: persistentMinimumLevel
     )
     writeFormattedLine(line, level: level)
+
+    guard let liveSink = sharedState.liveSink.withLock({ $0 }),
+      let liveMinimumLevel = liveSink.minimumLevel(persistentMinimumLevel),
+      liveMinimumLevel.allows(level)
+    else { return }
+
+    liveSink.emit(
+      makeLiveEvent(
+        timestamp: timestamp,
+        timestampText: timestampText,
+        level: level,
+        message: message,
+        fields: fields,
+        minimumLevel: liveMinimumLevel
+      ),
+      persistentMinimumLevel
+    )
   }
 
   /// Serializes stream output and file mirroring for one formatted line.
@@ -354,6 +431,56 @@ public final class ProcessLogger: @unchecked Sendable {
         fflush(stream)
       }
       writeFileLine(line)
+    }
+  }
+
+  /// Builds one structured event for the active live diagnostics sink.
+  private func makeLiveEvent(
+    timestamp: Date,
+    timestampText: String,
+    level: ProcessLogLevel,
+    message: String,
+    fields: [ProcessLogField],
+    minimumLevel: ProcessLogLevel
+  ) -> ProcessLogEvent {
+    let renderedFields =
+      fields
+      + metadataFields(
+        for: level,
+        existingFields: fields,
+        minimumLevel: minimumLevel
+      )
+    let line = formattedLine(
+      timestampText: timestampText,
+      level: level,
+      message: message,
+      renderedFields: renderedFields
+    )
+    let fieldMap = Dictionary(
+      renderedFields.map { ($0.key, logFieldTextValue($0.value)) },
+      uniquingKeysWith: { _, latest in latest }
+    )
+
+    return ProcessLogEvent(
+      timestamp: timestamp,
+      timestampText: timestampText,
+      level: level,
+      message: message,
+      fields: fieldMap,
+      source: Self.liveSourceName(sharedState.source),
+      rawLine: line
+    )
+  }
+
+  /// Normalizes long-running process labels to the retained log source names.
+  private static func liveSourceName(_ source: String) -> String {
+    switch source {
+    case "easybar-calendar-agent":
+      return "calendar-agent"
+    case "easybar-network-agent":
+      return "network-agent"
+    default:
+      return source
     }
   }
 
@@ -369,19 +496,54 @@ public final class ProcessLogger: @unchecked Sendable {
 
   /// Builds one formatted log line.
   private func formattedLine(
+    timestampText: String,
     level: ProcessLogLevel,
     message: String,
     fields: [ProcessLogField],
     minimumLevel: ProcessLogLevel
   ) -> String {
+    let renderedFields =
+      fields
+      + metadataFields(
+        for: level,
+        existingFields: fields,
+        minimumLevel: minimumLevel
+      )
+    return formattedLine(
+      timestampText: timestampText,
+      level: level,
+      message: message,
+      renderedFields: renderedFields
+    )
+  }
+
+  /// Builds one formatted log line from fully resolved fields.
+  private func formattedLine(
+    timestampText: String,
+    level: ProcessLogLevel,
+    message: String,
+    renderedFields: [ProcessLogField]
+  ) -> String {
     let renderedLevel = level.formattedTag
-    let renderedMessage = renderedMessage(
+    let renderedFieldText = formatLogFields(renderedFields)
+    let renderedMessage = renderedFieldText.isEmpty ? message : "\(message) \(renderedFieldText)"
+    return "[\(timestampText)] [\(renderedLevel)] \(renderedMessage)"
+  }
+
+  /// Builds one formatted log line using the current time.
+  private func formattedLine(
+    level: ProcessLogLevel,
+    message: String,
+    fields: [ProcessLogField],
+    minimumLevel: ProcessLogLevel
+  ) -> String {
+    formattedLine(
+      timestampText: Self.formatTimestamp(Date()),
       level: level,
       message: message,
       fields: fields,
       minimumLevel: minimumLevel
     )
-    return "[\(Self.formatTimestamp(Date()))] [\(renderedLevel)] \(renderedMessage)"
   }
 
   /// Formats one timestamp through the locked shared formatter.
@@ -389,23 +551,6 @@ public final class ProcessLogger: @unchecked Sendable {
     formatter.withLock { formatter in
       formatter.string(from: date)
     }
-  }
-
-  /// Adds subsystem context only when the active runtime mode or severity requires it.
-  private func renderedMessage(
-    level: ProcessLogLevel,
-    message: String,
-    fields: [ProcessLogField],
-    minimumLevel: ProcessLogLevel
-  ) -> String {
-    let renderedFields = renderedFields(
-      level: level,
-      fields: fields,
-      minimumLevel: minimumLevel
-    )
-    guard !renderedFields.isEmpty else { return message }
-
-    return "\(message) \(renderedFields)"
   }
 
   /// Returns whether the current mode should append subsystem details.
@@ -418,20 +563,6 @@ public final class ProcessLogger: @unchecked Sendable {
     }
 
     return level == .warn || level == .error
-  }
-
-  /// Renders caller-provided fields plus logger-managed metadata.
-  private func renderedFields(
-    level: ProcessLogLevel,
-    fields: [ProcessLogField],
-    minimumLevel: ProcessLogLevel
-  ) -> String {
-    let metadataFields = metadataFields(
-      for: level,
-      existingFields: fields,
-      minimumLevel: minimumLevel
-    )
-    return formatLogFields(fields + metadataFields)
   }
 
   /// Builds logger-managed metadata fields for the current line.
