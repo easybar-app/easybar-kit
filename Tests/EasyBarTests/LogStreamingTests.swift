@@ -547,5 +547,3 @@ final class LogStreamingTests: XCTestCase {
     return try decoder.decode(type, from: Data(bytes))
   }
 }
-
-
