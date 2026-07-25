@@ -127,7 +127,7 @@ endif
         generate check-generated generate-event-catalog generate-theme-tokens generate-config generate-default-config generate-swift-env \
         build bundle package release app cli validate-config \
         fmt fmt-all fmt-swift fmt-lua fmt-rust fmt-markdown \
-        lint lint-swift lint-lua lint-rust check-lua test \
+        lint lint-swift lint-lua lint-rust check-lua test test-hardening \
         clean clean-dist run run-debug run-trace install-local install-widgets uninstall-local stop restart-app icons screenshots check-screenshots \
         build-app build-lua-runtime build-calendar-agent build-network-agent build-cli build-toml-debug build-toml-release \
         copy-resources copy-debug-resources prepare-debug-app-bundle verify verify-release \
@@ -238,6 +238,9 @@ build-toml-release: ## Build the lossless TOML library for release Swift builds.
 
 test: generate-swift-env build-toml-debug check-lua ## Run the Swift and Lua test suites without regenerating checked-in artifacts.
 	@env $(LOCAL_SWIFT_ENV) swift test --disable-sandbox
+
+test-hardening: generate-swift-env build-toml-debug ## Run the focused hardening regression suite.
+	@env $(LOCAL_SWIFT_ENV) swift test --disable-sandbox --filter HardeningTests
 
 bundle: ## Build the app, agent bundles, and CLI into dist/.
 	@scripts/build/bundle.sh \

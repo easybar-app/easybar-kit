@@ -94,13 +94,19 @@ jobs:
           restore-keys: |
             swiftpm-deps-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.xcode_version }}-
 
-      - name: Run tests
+      - name: Run hardening tests
         shell: bash
         env:
           CI_COMMAND_TIMEOUT_MINUTES: ${{ inputs.test_timeout_minutes }}
         run: |
           scripts/build/build-toml-library.sh debug "$(uname -m)"
-          scripts/ci/run-swift-tests.sh test.log swift test
+          scripts/ci/run-swift-tests.sh hardening-test.log swift test --filter HardeningTests
+
+      - name: Run primary tests
+        shell: bash
+        env:
+          CI_COMMAND_TIMEOUT_MINUTES: ${{ inputs.test_timeout_minutes }}
+        run: scripts/ci/run-swift-tests.sh test.log swift test --skip HardeningTests
 
       - name: Check strict concurrency
         shell: bash
@@ -111,7 +117,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: swift-test-logs
-          path: test.log
+          path: |
+            test.log
+            hardening-test.log
           if-no-files-found: ignore
 
       - name: Verify generated artifacts are current

@@ -5,7 +5,7 @@ import XCTest
 
 @testable import EasyBarApp
 
-final class ConfigPersistenceTests: XCTestCase {
+final class ConfigPersistenceHardeningTests: XCTestCase {
   @MainActor
   func testAtomicEditPreservesExistingFilePermissions() throws {
     let directory = try makeTemporaryDirectory()
