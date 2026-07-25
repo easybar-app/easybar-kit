@@ -5,15 +5,13 @@
 Install the local development dependencies:
 
 ```bash
-brew install lua stylua rustup
-export PATH="$(brew --prefix rustup)/bin:$PATH"
-rustup default stable
-rustup target add aarch64-apple-darwin x86_64-apple-darwin
+brew install lua stylua
 ```
 
-EasyBar links a small Rust `toml_edit` bridge into every executable. Universal releases require
-both Rust targets; `make test` builds only the current architecture. Lua formatting uses the
-repository's `.stylua.toml` file and the `stylua` executable from `PATH`.
+EasyBar consumes the lossless TOML parser and editor from the versioned `SwiftTOMLEdit` Swift
+package. Its prebuilt native artifact is resolved by SwiftPM, so EasyBar contributors do not need a
+Rust toolchain for normal builds or tests. Lua formatting uses the repository's `.stylua.toml` file
+and the `stylua` executable from `PATH`.
 
 ## Common commands
 
@@ -125,5 +123,3 @@ use `dev`. Lua API versions are stamped only into the copy under `dist/`.
 
 Continue with [Architecture](architecture/overview.md), [Agents](agents/overview.md), or the
 [Lua runtime](lua-runtime/overview.md) for subsystem details.
-
-

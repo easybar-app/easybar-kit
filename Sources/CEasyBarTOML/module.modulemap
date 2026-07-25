@@ -1,4 +1,0 @@
-module CEasyBarTOML {
-  header "include/easybar_toml.h"
-  export *
-}

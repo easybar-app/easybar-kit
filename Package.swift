@@ -27,12 +27,13 @@ let package = Package(
     .executable(name: "EasyBarNetworkAgent", targets: ["EasyBarNetworkAgent"]),
     .executable(name: "EasyBarGenerateConfig", targets: ["EasyBarGenerateConfig"]),
   ],
-  dependencies: [],
+  dependencies: [
+    .package(
+      url: "https://github.com/gi8lino/SwiftTOMLEdit.git",
+      exact: "0.0.1"
+    )
+  ],
   targets: [
-    .systemLibrary(
-      name: "CEasyBarTOML",
-      path: "Sources/CEasyBarTOML"
-    ),
     .target(
       name: "CEasyBarEventKitCompat",
       path: "Sources/CEasyBarEventKitCompat",
@@ -70,13 +71,10 @@ let package = Package(
     .target(
       name: "EasyBarConfigParsing",
       dependencies: [
-        "CEasyBarTOML"
+        .product(name: "SwiftTOMLEdit", package: "swifttomledit")
       ],
-      path: "Sources/EasyBarConfigParsing",
-      swiftSettings: strictConcurrencySettings,
-      linkerSettings: [
-        .unsafeFlags(["-L", ".build/easybar-toml", "-leasybar_toml"])
-      ]
+      path: "Sources/EasyBarConfigParsingCompat",
+      swiftSettings: strictConcurrencySettings
     ),
     .target(
       name: "EasyBarCalendarCore",

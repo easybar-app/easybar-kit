@@ -9,5 +9,3 @@ docs/.venv/
 
 .DS_Store
 todo.txt
-# Rust build artifacts
-/Rust/**/target/

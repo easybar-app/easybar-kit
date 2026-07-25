@@ -98,9 +98,7 @@ jobs:
         shell: bash
         env:
           CI_COMMAND_TIMEOUT_MINUTES: ${{ inputs.test_timeout_minutes }}
-        run: |
-          scripts/build/build-toml-library.sh debug "$(uname -m)"
-          scripts/ci/run-swift-tests.sh hardening-test.log swift test --filter HardeningTests
+        run: scripts/ci/run-swift-tests.sh hardening-test.log swift test --filter HardeningTests
 
       - name: Run primary tests
         shell: bash
@@ -125,5 +123,3 @@ jobs:
       - name: Verify generated artifacts are current
         if: ${{ inputs.check_generated }}
         run: make check-generated
-
-

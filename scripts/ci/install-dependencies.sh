@@ -25,18 +25,15 @@ fi
 need_lua=false
 need_imagemagick=false
 need_stylua=false
-need_rust=false
 
 for mode in "$@"; do
   case "$mode" in
     test|lua)
       need_lua=true
-      if [ "$mode" = test ]; then need_rust=true; fi
       ;;
     release)
       need_lua=true
       need_imagemagick=true
-      need_rust=true
       ;;
     format)
       need_lua=true
@@ -115,21 +112,4 @@ fi
 if [ "$need_stylua" = true ]; then
   install_if_missing stylua stylua
   stylua --version
-fi
-
-if [ "$need_rust" = true ]; then
-  if command -v brew >/dev/null 2>&1; then
-    rustup_prefix="$(brew --prefix rustup 2>/dev/null || true)"
-    if [ -z "$rustup_prefix" ] || [ ! -x "$rustup_prefix/bin/rustup" ]; then
-      HOMEBREW_NO_AUTO_UPDATE=1 brew install rustup
-      rustup_prefix="$(brew --prefix rustup)"
-    fi
-    export PATH="$rustup_prefix/bin:$PATH"
-    if [ -n "${GITHUB_PATH:-}" ]; then
-      echo "$rustup_prefix/bin" >>"$GITHUB_PATH"
-    fi
-  fi
-  rustup default stable
-  rustup target add aarch64-apple-darwin x86_64-apple-darwin
-  cargo --version
 fi
