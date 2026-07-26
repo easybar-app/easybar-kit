@@ -2,7 +2,6 @@
 set -euo pipefail
 
 readonly targets=(
-  EasyBarConfigParsing
   EasyBarConfigSchema
   EasyBarCalendarConfig
   EasyBarCalendarCore
