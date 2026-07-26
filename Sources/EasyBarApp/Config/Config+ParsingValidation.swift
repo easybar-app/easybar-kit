@@ -1,6 +1,6 @@
-import EasyBarConfigParsing
 import EasyBarShared
 import Foundation
+import SwiftTOMLEdit
 
 extension Config.BuiltinBatteryColorMode: TOMLStringDecodable {}
 extension Config.BuiltinBatteryDisplayMode: TOMLStringDecodable {}

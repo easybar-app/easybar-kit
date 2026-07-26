@@ -1,6 +1,6 @@
 import EasyBarCalendarConfig
-import EasyBarConfigParsing
 import Foundation
+import SwiftTOMLEdit
 
 extension Config {
 

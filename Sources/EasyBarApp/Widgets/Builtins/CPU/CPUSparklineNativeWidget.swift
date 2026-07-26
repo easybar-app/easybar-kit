@@ -1,8 +1,8 @@
 import AppKit
 import Darwin.Mach
-import EasyBarConfigParsing
 import EasyBarShared
 import Foundation
+import SwiftTOMLEdit
 
 /// Native CPU widget that samples system usage and renders a sparkline.
 @MainActor

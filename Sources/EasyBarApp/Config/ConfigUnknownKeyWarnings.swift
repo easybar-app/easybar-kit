@@ -1,6 +1,6 @@
-import EasyBarConfigParsing
 import EasyBarConfigSchema
 import Foundation
+import SwiftTOMLEdit
 
 /// Builds warnings for valid TOML keys that EasyBar does not read.
 enum ConfigUnknownKeyWarningBuilder {

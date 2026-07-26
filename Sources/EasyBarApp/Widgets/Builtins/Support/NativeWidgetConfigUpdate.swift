@@ -1,4 +1,4 @@
-import EasyBarConfigParsing
+import SwiftTOMLEdit
 
 /// Commits native-widget runtime state only after a comment-preserving TOML write succeeds.
 @MainActor

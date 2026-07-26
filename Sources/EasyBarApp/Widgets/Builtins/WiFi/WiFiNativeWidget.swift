@@ -1,7 +1,7 @@
 import AppKit
-import EasyBarConfigParsing
 import EasyBarShared
 import Foundation
+import SwiftTOMLEdit
 
 /// Native Wi-Fi widget backed by the network agent snapshot store.
 @MainActor

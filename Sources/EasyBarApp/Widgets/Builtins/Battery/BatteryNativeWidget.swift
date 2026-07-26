@@ -1,6 +1,6 @@
-import EasyBarConfigParsing
 import Foundation
 import IOKit.ps
+import SwiftTOMLEdit
 
 /// Native battery widget.
 ///

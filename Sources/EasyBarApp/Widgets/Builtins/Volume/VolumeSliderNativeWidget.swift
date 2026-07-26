@@ -1,8 +1,8 @@
 import AppKit
 import CoreAudio
-import EasyBarConfigParsing
 import EasyBarShared
 import Foundation
+import SwiftTOMLEdit
 
 /// Native volume widget with optional inline expansion.
 @MainActor

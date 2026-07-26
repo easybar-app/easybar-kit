@@ -13,7 +13,6 @@ let package = Package(
   ],
   products: [
     .library(name: "EasyBarShared", targets: ["EasyBarShared"]),
-    .library(name: "EasyBarConfigParsing", targets: ["EasyBarConfigParsing"]),
     .library(name: "EasyBarConfigSchema", targets: ["EasyBarConfigSchema"]),
     .library(name: "EasyBarCalendarConfig", targets: ["EasyBarCalendarConfig"]),
     .library(name: "EasyBarCalendarCore", targets: ["EasyBarCalendarCore"]),
@@ -60,21 +59,13 @@ let package = Package(
     .target(
       name: "EasyBarShared",
       dependencies: [
-        "EasyBarConfigParsing"
+        .product(name: "SwiftTOMLEdit", package: "swifttomledit")
       ],
       path: "Sources/EasyBarShared",
       swiftSettings: strictConcurrencySettings,
       plugins: [
         .plugin(name: "EasyBarBuildInfoPlugin")
       ]
-    ),
-    .target(
-      name: "EasyBarConfigParsing",
-      dependencies: [
-        .product(name: "SwiftTOMLEdit", package: "swifttomledit")
-      ],
-      path: "Sources/EasyBarConfigParsingCompat",
-      swiftSettings: strictConcurrencySettings
     ),
     .target(
       name: "EasyBarCalendarCore",
@@ -106,7 +97,7 @@ let package = Package(
       name: "EasyBarCalendarConfig",
       dependencies: [
         "EasyBarShared",
-        "EasyBarConfigParsing",
+        .product(name: "SwiftTOMLEdit", package: "swifttomledit"),
       ],
       path: "Sources/EasyBarCalendarConfig",
       swiftSettings: strictConcurrencySettings
@@ -123,11 +114,11 @@ let package = Package(
       name: "EasyBarApp",
       dependencies: [
         "EasyBarShared",
-        "EasyBarConfigParsing",
         "EasyBarConfigSchema",
         "EasyBarCalendarConfig",
         "EasyBarCalendarPresentation",
         "EasyBarCalendarUI",
+        .product(name: "SwiftTOMLEdit", package: "swifttomledit"),
       ],
       path: "Sources/EasyBarApp",
       exclude: [
@@ -193,13 +184,13 @@ let package = Package(
         "EasyBarCtl",
         "EasyBarLuaRuntime",
         "EasyBarShared",
-        "EasyBarConfigParsing",
         "EasyBarConfigSchema",
         "EasyBarCalendarConfig",
         "EasyBarCalendarCore",
         "EasyBarCalendarPresentation",
         "EasyBarCalendarUI",
         "EasyBarNetworkAgentCore",
+        .product(name: "SwiftTOMLEdit", package: "swifttomledit"),
       ],
       path: "Tests/EasyBarTests",
       swiftSettings: strictConcurrencySettings

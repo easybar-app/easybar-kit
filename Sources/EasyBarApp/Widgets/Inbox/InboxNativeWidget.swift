@@ -1,6 +1,6 @@
 import Combine
-import EasyBarConfigParsing
 import Foundation
+import SwiftTOMLEdit
 
 @MainActor
 final class InboxNativeWidget: NativeWidget {

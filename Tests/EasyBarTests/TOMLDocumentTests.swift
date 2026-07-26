@@ -1,4 +1,4 @@
-import EasyBarConfigParsing
+import SwiftTOMLEdit
 import XCTest
 
 final class TOMLDocumentTests: XCTestCase {

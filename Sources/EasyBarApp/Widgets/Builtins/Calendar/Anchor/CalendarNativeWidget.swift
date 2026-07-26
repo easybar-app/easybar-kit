@@ -1,7 +1,7 @@
 import AppKit
 import EasyBarCalendarConfig
-import EasyBarConfigParsing
 import Foundation
+import SwiftTOMLEdit
 
 /// Native calendar anchor widget.
 ///

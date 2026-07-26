@@ -1,5 +1,5 @@
-import EasyBarConfigParsing
 import Foundation
+import SwiftTOMLEdit
 
 /// Native front-app widget backed by `AeroSpaceService` state.
 @MainActor

@@ -1,7 +1,7 @@
 import Darwin
-import EasyBarConfigParsing
 import EasyBarShared
 import Foundation
+import SwiftTOMLEdit
 
 /// Applies validated, comment-preserving edits to the active configuration file.
 @MainActor

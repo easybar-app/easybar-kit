@@ -1,6 +1,6 @@
-import EasyBarConfigParsing
 import EasyBarShared
 import Foundation
+import SwiftTOMLEdit
 import XCTest
 
 @testable import EasyBarApp

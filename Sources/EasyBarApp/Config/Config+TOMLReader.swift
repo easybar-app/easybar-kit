@@ -1,5 +1,5 @@
-import EasyBarConfigParsing
 import Foundation
+import SwiftTOMLEdit
 
 extension Config {
   /// App-local TOML reader that raises `ConfigError` diagnostics.

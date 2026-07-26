@@ -1,7 +1,7 @@
 import AppKit
-import EasyBarConfigParsing
 import EasyBarShared
 import Foundation
+import SwiftTOMLEdit
 
 /// Main-actor app shell responsible for UI lifecycle and startup wiring.
 @MainActor

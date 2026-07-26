@@ -1,5 +1,5 @@
-import EasyBarConfigParsing
 import Foundation
+import SwiftTOMLEdit
 
 /// Native AeroSpace layout-mode widget backed by `AeroSpaceService` state.
 @MainActor

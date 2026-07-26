@@ -1,4 +1,4 @@
-import EasyBarConfigParsing
+import SwiftTOMLEdit
 
 extension TOMLConfigReader {
   /// Returns an expanded path value or the fallback when absent.

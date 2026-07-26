@@ -1,6 +1,6 @@
-import EasyBarConfigParsing
 import EasyBarShared
 import Foundation
+import SwiftTOMLEdit
 
 extension CalendarPopupMode: TOMLStringDecodable {
   public static let allowedValues = allCases.map(\.rawValue)

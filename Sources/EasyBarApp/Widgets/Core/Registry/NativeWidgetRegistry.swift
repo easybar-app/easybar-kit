@@ -1,6 +1,6 @@
-import EasyBarConfigParsing
 import EasyBarShared
 import Foundation
+import SwiftTOMLEdit
 
 @MainActor
 final class NativeWidgetRegistry {

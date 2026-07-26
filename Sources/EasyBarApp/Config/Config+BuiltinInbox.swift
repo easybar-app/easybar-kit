@@ -1,5 +1,5 @@
-import EasyBarConfigParsing
 import Foundation
+import SwiftTOMLEdit
 
 extension InboxGroupMode: TOMLStringDecodable {}
 extension InboxSortMode: TOMLStringDecodable {}
