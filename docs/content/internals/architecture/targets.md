@@ -14,6 +14,8 @@ EasyBar is split into a few focused targets.
   Helper app entrypoint for the calendar agent.
 - `EasyBarCalendarCore`
   Shared reusable calendar-agent logic used by `EasyBarCalendarAgent` and intended for future standalone calendar clients.
+- `CEasyBarEventKitCompat`
+  Exception-safe Objective-C bridge used by `EasyBarCalendarCore` to access EventKit's non-public event travel-time value.
 - `EasyBarCalendarPresentation`
   Shared reusable calendar request and presentation helpers used by `EasyBar` and intended for future standalone calendar clients.
 - `EasyBarCalendarUI`
@@ -37,6 +39,8 @@ A useful way to think about the targets is:
   calendar-agent executable entrypoint and app lifecycle
 - `Sources/EasyBarCalendarCore`
   reusable calendar-agent internals
+- `Sources/CEasyBarEventKitCompat`
+  Objective-C exception boundary for EventKit travel-time access
 - `Sources/EasyBarCalendarPresentation`
   reusable calendar request or presentation logic
 - `Sources/EasyBarCalendarUI`

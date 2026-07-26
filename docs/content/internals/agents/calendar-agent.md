@@ -105,20 +105,40 @@ failures.
 - birthdays are separated and use the same calendar filters as regular events
 - occurrence ids are deterministic even when EventKit omits an event identifier
 - relative and absolute alarms are normalized into visible lead times
-- EventKit exposes no public event travel-time API; compatibility access is isolated behind an
-  exception-safe Objective-C adapter and invalid values fail closed
 - sections are optional, day-bucketed once, and clamp multi-day display times to each section day
 - EasyBar treats `invalid_request` as permanent for the exact rejected subscription: it logs the
   rejection once, suspends reconnects, and retains the last valid snapshot
 - when the subscription request or socket configuration changes, EasyBar clears the permanent
   block and reconnects immediately
 
+## Event travel-time bridge
+
+EventKit does not expose a public, typed API for reading or writing an event's native travel-time
+value. EasyBar therefore accesses the runtime `travelTime` property through
+`EventKitTravelTimeAdapter`, with the dynamic Objective-C work isolated in
+`CEasyBarEventKitCompat`.
+
+The Objective-C boundary is intentional:
+
+- KVC access can raise an Objective-C exception, which Swift `do`/`catch` cannot catch.
+- the bridge checks that the runtime getter or setter exists before using it
+- Objective-C catches any KVC exception and reports failure to Swift instead of crashing the agent
+- the Swift adapter rejects non-finite, negative, zero-on-read, or excessively large values
+
+A pure Swift KVC implementation might work on the current EventKit implementation, but it would
+lose the exception boundary. Calling the Objective-C method implementation directly from Swift
+would instead introduce unsafe runtime calling conventions and would still not catch Objective-C
+exceptions.
+
+The bridge is a separate Swift Package Manager target because a target cannot mix Swift and
+Objective-C sources. It can be removed if travel-time support is removed, or if EventKit gains a
+public typed API that covers both reading and writing the native value.
+
 ## Boundary
 
 The calendar agent collects calendar data and performs calendar mutations.
 
 EasyBar decides how calendar data is rendered.
-
 
 
 
