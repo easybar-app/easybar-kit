@@ -54,10 +54,11 @@ if [ "${#item_names[@]}" -eq 0 ]; then
 fi
 
 default_names=(
-  tailscale
-  gitlab-inbox
+  brew-inbox
   github-inbox
+  gitlab-inbox
   inbox-demo
+  tailscale
   lib
   assets
 )
