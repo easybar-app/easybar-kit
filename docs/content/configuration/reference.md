@@ -28,9 +28,9 @@ For concepts and usage examples, use the hand-written configuration guides.
 
 ## `app.env`
 
-| Key    | Default                                                            | Example | Description                                                                  |
-| ------ | ------------------------------------------------------------------ | ------- | ---------------------------------------------------------------------------- |
-| `PATH` | `"/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"` | —       | Environment overrides passed into the Lua runtime and widget shell commands. |
+| Key    | Default                                                            | Example | Description                                                                                      |
+| ------ | ------------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------ |
+| `PATH` | `"/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"` | —       | PATH for the Lua runtime and widget commands. Set to an empty string to keep the inherited PATH. |
 
 ## `app.lua_commands`
 

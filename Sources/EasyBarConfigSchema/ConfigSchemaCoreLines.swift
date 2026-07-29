@@ -53,7 +53,8 @@ extension ConfigSchemaRegistry {
     entry(
       key: "PATH",
       value: "\"/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin\"",
-      description: "Environment overrides passed into the Lua runtime and widget shell commands.",
+      description:
+        "PATH for the Lua runtime and widget commands. Set to an empty string to keep the inherited PATH.",
     ),
     .blank,
     section(name: "app.lua_commands"),

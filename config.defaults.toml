@@ -10,7 +10,7 @@ widget_editor_stub_path = "~/.local/share/easybar/easybar_api.lua" # LuaLS/edito
 develop = false # Shows the developer menu section without holding Shift when right-clicking the bar.
 
 [app.env]
-PATH = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin" # Environment overrides passed into the Lua runtime and widget shell commands.
+PATH = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin" # PATH for the Lua runtime and widget commands. Set to an empty string to keep the inherited PATH.
 
 [app.lua_commands]
 timeout_seconds = 5 # Default hard timeout for easybar.exec and easybar.exec_async commands.

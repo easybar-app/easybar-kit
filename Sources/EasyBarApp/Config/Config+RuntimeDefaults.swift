@@ -49,11 +49,19 @@ extension Config {
     )
   }
 
-  /// Returns the configured app environment merged onto the runtime defaults.
+  /// Returns configured app environment overrides with PATH's three-state semantics.
   static func mergedAppEnvironment(with configured: [String: String]) -> [String: String] {
-    SharedPathDefaults.defaultLuaEnvironment.merging(configured) { _, configuredValue in
-      configuredValue
+    var environment = SharedPathDefaults.defaultLuaEnvironment
+
+    for (key, value) in configured {
+      if key == SharedEnvironmentKeys.path, value.isEmpty {
+        environment.removeValue(forKey: key)
+      } else {
+        environment[key] = value
+      }
     }
+
+    return environment
   }
 
   /// Restores logging defaults.

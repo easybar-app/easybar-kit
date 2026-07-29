@@ -19,12 +19,15 @@ TAILSCALE = "/usr/local/bin/tailscale"
 
 EasyBar resolves `PATH` in this order:
 
-1. If `[app.env]` sets `PATH`, EasyBar overlays that exact value onto the inherited process environment.
-2. If `[app.env]` does not set `PATH`, EasyBar uses the default PATH shown below so GUI-launched sessions can still find common tools.
+1. If `[app.env]` does not contain `PATH`, EasyBar overlays the default shown below so GUI-launched sessions can find common tools.
+2. If `[app.env]` sets `PATH = ""`, EasyBar does not add a `PATH` override. The Lua runtime and widget commands retain the environment inherited by EasyBar.
+3. If `[app.env]` sets a non-empty `PATH`, EasyBar overlays that exact value.
 
 ```text
 /usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin
 ```
+
+The empty-string behavior is special to `PATH`. Other `[app.env]` values may be empty and are still passed as explicit environment overrides.
 
 ## EasyBar environment overrides
 
