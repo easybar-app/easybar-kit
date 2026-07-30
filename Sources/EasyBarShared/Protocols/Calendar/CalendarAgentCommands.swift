@@ -1,5 +1,6 @@
 import Foundation
 
+/// Stable wire-level error codes returned by the calendar agent.
 public enum CalendarAgentErrorCode: String, Codable, Equatable, Sendable {
   case accessDenied = "access_denied"
   case invalidDateRange = "invalid_date_range"
@@ -26,5 +27,3 @@ public enum CalendarAgentCommand: String, Codable, Equatable, Sendable {
   case updateEvent = "update_event"
   case deleteEvent = "delete_event"
 }
-
-/// Query payload that shapes one calendar snapshot request.

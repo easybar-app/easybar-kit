@@ -1,5 +1,6 @@
 import Foundation
 
+/// Message kinds emitted by the network-agent socket.
 public enum NetworkAgentMessageKind: String, Codable, Sendable {
   case pong
   case version

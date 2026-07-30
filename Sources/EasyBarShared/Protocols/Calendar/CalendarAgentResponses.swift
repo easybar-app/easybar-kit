@@ -17,6 +17,7 @@ public struct CalendarAgentVersion: Codable, Equatable, Sendable {
   }
 }
 
+/// Message kinds emitted by the calendar-agent socket.
 public enum CalendarAgentMessageKind: String, Codable, Sendable {
   case pong
   case version

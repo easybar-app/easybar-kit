@@ -1,5 +1,6 @@
 import Foundation
 
+/// Version information returned by the network agent.
 public struct NetworkAgentVersion: Codable, Equatable, Sendable {
   /// The application version embedded in the network-agent build.
   public var appVersion: String

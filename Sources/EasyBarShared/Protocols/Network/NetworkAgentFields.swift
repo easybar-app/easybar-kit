@@ -1,5 +1,6 @@
 import Foundation
 
+/// Stable field keys that clients can request from the network agent.
 public enum NetworkAgentField: String, Codable, CaseIterable, Sendable {
   case generatedAt = "network.generated_at"
   case ssid = "wifi.ssid"
@@ -56,8 +57,7 @@ public enum NetworkAgentFieldNamespace: String, Codable, CaseIterable, Sendable 
   }
 }
 
-/// One stable wire-level error code returned by the network agent.
-
+/// Describes one shared network-agent field.
 public struct NetworkAgentFieldSpec: Sendable {
   /// Field key used on the wire.
   public let field: NetworkAgentField
