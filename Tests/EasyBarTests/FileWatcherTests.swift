@@ -15,26 +15,26 @@ final class FileWatcherTests: XCTestCase {
 
     let watcher = makeWatcher()
     let stream = await watcher.start(configPath: configURL.path, enabled: true)
-    let observed = expectation(description: "observed all atomic replacements")
-    observed.expectedFulfillmentCount = 3
+    let observations = (1...3).map {
+      expectation(description: "observed atomic replacement \($0)")
+    }
 
     let consumer = Task {
       var count = 0
       for await event in stream {
         guard case .changed = event else { continue }
+        guard count < observations.count else { break }
+        observations[count].fulfill()
         count += 1
-        observed.fulfill()
-        if count == 3 { break }
+        if count == observations.count { break }
       }
     }
 
-    try await Task.sleep(nanoseconds: 100_000_000)
     for value in 1...3 {
       try "value = \(value)\n".write(to: configURL, atomically: true, encoding: .utf8)
-      try await Task.sleep(nanoseconds: 400_000_000)
+      await fulfillment(of: [observations[value - 1]], timeout: 2)
     }
 
-    await fulfillment(of: [observed], timeout: 3)
     await watcher.stop()
     consumer.cancel()
   }
@@ -47,25 +47,28 @@ final class FileWatcherTests: XCTestCase {
     let configURL = directoryURL.appendingPathComponent("config.toml")
     let watcher = makeWatcher()
     let stream = await watcher.start(configPath: configURL.path, enabled: true)
-    let observed = expectation(description: "observed creation and replacement")
-    observed.expectedFulfillmentCount = 2
+    let creationObserved = expectation(description: "observed creation")
+    let replacementObserved = expectation(description: "observed replacement")
 
     let consumer = Task {
       var count = 0
       for await event in stream {
         guard case .changed = event else { continue }
+        if count == 0 {
+          creationObserved.fulfill()
+        } else {
+          replacementObserved.fulfill()
+        }
         count += 1
-        observed.fulfill()
         if count == 2 { break }
       }
     }
 
-    try await Task.sleep(nanoseconds: 100_000_000)
     try "value = 1\n".write(to: configURL, atomically: true, encoding: .utf8)
-    try await Task.sleep(nanoseconds: 400_000_000)
+    await fulfillment(of: [creationObserved], timeout: 2)
     try "value = 2\n".write(to: configURL, atomically: true, encoding: .utf8)
 
-    await fulfillment(of: [observed], timeout: 3)
+    await fulfillment(of: [replacementObserved], timeout: 2)
     await watcher.stop()
     consumer.cancel()
   }
@@ -87,7 +90,6 @@ final class FileWatcherTests: XCTestCase {
       finished.fulfill()
     }
 
-    try await Task.sleep(nanoseconds: 50_000_000)
     await watcher.stop()
 
     await fulfillment(of: [finished], timeout: 1)

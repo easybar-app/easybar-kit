@@ -181,14 +181,15 @@ final class CalendarAgentStreamController: @unchecked Sendable {
     return true
   }
 
-  /// Sends one fresh request built from current config and state.
-  func refresh() {
-    guard isStarted else { return }
+  /// Sends one fresh request and returns whether it was dispatched.
+  @discardableResult
+  func refresh() -> Bool {
+    guard isStarted else { return false }
 
     let inputUpdate = updateCachedConnectionInputs(started: true)
     guard !inputUpdate.blockedByPermanentError else {
       logger.debug("\(label) refresh skipped for permanently rejected request")
-      return
+      return false
     }
 
     if inputUpdate.resumedAfterRequestChange {
@@ -200,6 +201,7 @@ final class CalendarAgentStreamController: @unchecked Sendable {
       await metricsCoordinator.recordAgentRefresh(metricsAgent)
     }
     client.refresh()
+    return true
   }
 
   /// Handles one decoded calendar-agent response.

@@ -91,8 +91,7 @@ final class CalendarAgentStreamControllerTests: XCTestCase {
     }
     XCTAssertEqual(clearedSnapshots.withLock { $0 }, 0)
 
-    controller.refresh()
-    try await Task.sleep(nanoseconds: 150_000_000)
+    XCTAssertFalse(controller.refresh())
     XCTAssertEqual(requestCount.withLock { $0 }, 2)
     XCTAssertEqual(clearedSnapshots.withLock { $0 }, 0)
 
@@ -124,6 +123,8 @@ final class CalendarAgentStreamControllerTests: XCTestCase {
     let currentRequest = LockedState(Self.makeRequest(marker: "initial"))
     let appliedSnapshots = LockedState(0)
     let requestCount = LockedState(0)
+    let releaseStaleResponse = DispatchSemaphore(value: 0)
+    defer { releaseStaleResponse.signal() }
 
     let server = LineSocketServerTransport<
       Void, CalendarAgentRequest, CalendarAgentMessage
@@ -139,8 +140,8 @@ final class CalendarAgentStreamControllerTests: XCTestCase {
 
         if marker == "stale" {
           let requestID = request.requestID
-          Task.detached {
-            try? await Task.sleep(nanoseconds: 100_000_000)
+          DispatchQueue.global(qos: .userInitiated).async {
+            releaseStaleResponse.wait()
             _ = server.send(
               CalendarAgentMessage(
                 kind: .error,
@@ -193,6 +194,7 @@ final class CalendarAgentStreamControllerTests: XCTestCase {
     try await waitUntil("latest snapshot before stale rejection") {
       appliedSnapshots.withLock { $0 == 2 }
     }
+    releaseStaleResponse.signal()
 
     try await waitUntil(
       "reconnect after stale rejection",

@@ -48,22 +48,14 @@ actor FileWatcher {
   func start(configPath: String, enabled: Bool) -> AsyncStream<Event> {
     stop()
     let generation = watcherGeneration
-
-    return AsyncStream { continuation in
-      Task { [weak self] in
-        guard let self else {
-          continuation.finish()
-          return
-        }
-
-        await self.install(
-          continuation: continuation,
-          configPath: configPath,
-          enabled: enabled,
-          generation: generation
-        )
-      }
-    }
+    let (stream, continuation) = AsyncStream<Event>.makeStream()
+    install(
+      continuation: continuation,
+      configPath: configPath,
+      enabled: enabled,
+      generation: generation
+    )
+    return stream
   }
 
   /// Stops the active watcher.
