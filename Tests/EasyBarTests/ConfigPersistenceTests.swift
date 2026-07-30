@@ -54,6 +54,31 @@ final class ConfigPersistenceHardeningTests: XCTestCase {
     XCTAssertTrue(try String(contentsOf: configURL, encoding: .utf8).contains("develop = true"))
   }
 
+  @MainActor
+  func testAtomicEditPreservesSymbolicLinkAndUpdatesItsTarget() throws {
+    let directory = try makeTemporaryDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let targetURL = directory.appendingPathComponent("managed-config.toml")
+    try "[app]\ndevelop = false\n".write(
+      to: targetURL,
+      atomically: false,
+      encoding: .utf8
+    )
+    let configURL = directory.appendingPathComponent("config.toml")
+    try FileManager.default.createSymbolicLink(at: configURL, withDestinationURL: targetURL)
+
+    let persistence = ConfigPersistence(configPath: configURL.path, logger: makeLogger())
+    XCTAssertTrue(
+      persistence.apply([
+        TOMLEdit(path: ["app", "develop"], value: .bool(true))
+      ])
+    )
+
+    XCTAssertNoThrow(try FileManager.default.destinationOfSymbolicLink(atPath: configURL.path))
+    XCTAssertTrue(try String(contentsOf: targetURL, encoding: .utf8).contains("develop = true"))
+  }
+
   private func makeTemporaryDirectory() throws -> URL {
     let directory = FileManager.default.temporaryDirectory
       .appendingPathComponent("easybar-config-persistence-\(UUID().uuidString)", isDirectory: true)

@@ -30,13 +30,14 @@ final class ConfigPersistence {
   /// Writes one batch atomically after parsing both the input and edited document.
   func apply(_ edits: [TOMLEdit]) -> Bool {
     guard !edits.isEmpty else { return true }
-    let url = URL(fileURLWithPath: configPath)
+    let configuredURL = URL(fileURLWithPath: configPath)
+    let storageURL = configuredURL.resolvingSymlinksInPath()
 
     do {
-      let fileExists = FileManager.default.fileExists(atPath: url.path)
+      let fileExists = FileManager.default.fileExists(atPath: storageURL.path)
       let source: String
       if fileExists {
-        source = try String(contentsOf: url, encoding: .utf8)
+        source = try String(contentsOf: storageURL, encoding: .utf8)
       } else {
         source = ""
       }
@@ -45,10 +46,10 @@ final class ConfigPersistence {
       let edited = try TOMLDocument.edit(source, edits: edits)
       _ = try TOMLTable(string: edited)
       try FileManager.default.createDirectory(
-        at: url.deletingLastPathComponent(),
+        at: storageURL.deletingLastPathComponent(),
         withIntermediateDirectories: true
       )
-      try Self.writeAtomically(edited, to: url, replacingExistingFile: fileExists)
+      try Self.writeAtomically(edited, to: storageURL, replacingExistingFile: fileExists)
       logger.info(
         "persisted config changes",
         .field("path", configPath),
