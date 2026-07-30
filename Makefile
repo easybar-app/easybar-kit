@@ -374,10 +374,11 @@ restart-app: stop ## Restart the installed EasyBar application.
 ##@ Cleanup
 
 clean-dist: ## Remove dist/.
-	@rm -rf "$(DIST_DIR)"
+	@scripts/build/clean-dist-dir.sh "$(DIST_DIR)"
 
 clean: ## Remove dist/ and .build without modifying tracked sources.
-	@rm -rf "$(DIST_DIR)" ".build"
+	@scripts/build/clean-dist-dir.sh "$(DIST_DIR)"
+	@rm -rf ".build"
 
 ##@ Info
 

@@ -89,10 +89,11 @@ esac
 
 case "$clean_build" in
 0 | false | no)
-  rm -rf "$dist_dir"
+  scripts/build/clean-dist-dir.sh "$dist_dir"
   ;;
 1 | true | yes)
-  rm -rf "$dist_dir" .build
+  scripts/build/clean-dist-dir.sh "$dist_dir"
+  rm -rf .build
   ;;
 *)
   echo "Unsupported clean build value '$clean_build'. Use 0 or 1." >&2
