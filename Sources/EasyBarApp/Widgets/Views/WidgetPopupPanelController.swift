@@ -4,6 +4,8 @@ import SwiftUI
 /// Manages one AppKit popup panel anchored to a widget view.
 @MainActor
 final class WidgetPopupPanelController: ObservableObject {
+  static let popupWindowLevel = NSWindow.Level.popUpMenu
+
   private weak var anchorView: NSView?
   private weak var parentWindow: NSWindow?
   private var panel: NSPanel?
@@ -118,7 +120,14 @@ final class WidgetPopupPanelController: ObservableObject {
       parentWindow.addChildWindow(panel, ordered: .above)
     }
 
-    panel.orderFront(nil)
+    Self.orderPopupFront(panel)
+  }
+
+  /// Promotes a transient popup above status-bar and system overlay windows.
+  static func orderPopupFront(_ panel: NSPanel) {
+    // AppKit resets a child window to its parent's level when it is attached.
+    panel.level = popupWindowLevel
+    panel.orderFrontRegardless()
   }
 
   /// Builds the shared popup panel instance.
@@ -133,7 +142,7 @@ final class WidgetPopupPanelController: ObservableObject {
     panel.backgroundColor = .clear
     panel.hasShadow = true
     panel.hidesOnDeactivate = false
-    panel.level = .statusBar
+    panel.level = Self.popupWindowLevel
     panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
     panel.contentViewController = hostingController
     return panel

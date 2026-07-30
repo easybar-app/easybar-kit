@@ -1,3 +1,4 @@
+import AppKit
 import XCTest
 
 @testable import EasyBarApp
@@ -26,5 +27,31 @@ final class WidgetPopupPanelControllerTests: XCTestCase {
     controller.endTransientInteraction()
 
     XCTAssertFalse(controller.hasTransientInteraction)
+  }
+
+  func testPopupIsRepromotedAfterJoiningStatusBarWindow() {
+    let parent = NSWindow(
+      contentRect: .zero,
+      styleMask: .borderless,
+      backing: .buffered,
+      defer: false
+    )
+    parent.level = .statusBar
+
+    let popup = NSPanel(
+      contentRect: .zero,
+      styleMask: [.borderless, .nonactivatingPanel],
+      backing: .buffered,
+      defer: false
+    )
+    parent.addChildWindow(popup, ordered: .above)
+
+    WidgetPopupPanelController.orderPopupFront(popup)
+
+    XCTAssertEqual(popup.level, .popUpMenu)
+    XCTAssertGreaterThan(popup.level.rawValue, parent.level.rawValue)
+
+    popup.orderOut(nil)
+    parent.removeChildWindow(popup)
   }
 }
