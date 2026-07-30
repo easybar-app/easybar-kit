@@ -4,10 +4,17 @@ import Foundation
 
 /// Observes CoreAudio output volume and mute changes.
 final class VolumeEvents: @unchecked Sendable {
-  /// Shared volume event source.
+  private struct DeviceListener {
+    let deviceID: AudioDeviceID
+    let address: AudioObjectPropertyAddress
+    let label: String
+    let block: AudioObjectPropertyListenerBlock
+  }
+
   /// Logger used for volume diagnostics.
   private let logger: ProcessLogger
   private let eventHub: EventHub
+  private let coreAudio: VolumeEventsCoreAudioClient
 
   /// Serializes CoreAudio callbacks and mutable listener state.
   private let stateQueue = DispatchQueue(label: "io.github.gi8lino.easybar.volume-events")
@@ -21,18 +28,21 @@ final class VolumeEvents: @unchecked Sendable {
 
   /// Listener for default output device changes.
   private var defaultDeviceListener: AudioObjectPropertyListenerBlock?
-  /// Listener for output volume changes.
-  private var volumeListener: AudioObjectPropertyListenerBlock?
-  /// Listener for output mute changes.
-  private var muteListener: AudioObjectPropertyListenerBlock?
+  /// Per-device listeners, including failed removals retained for later retry.
+  private var deviceListeners: [DeviceListener] = []
 
   /// Last emitted mute state.
   private var lastMutedState: Bool?
 
   /// Creates one volume event source.
-  init(logger: ProcessLogger, eventHub: EventHub) {
+  init(
+    logger: ProcessLogger,
+    eventHub: EventHub,
+    coreAudio: VolumeEventsCoreAudioClient = .system
+  ) {
     self.logger = logger
     self.eventHub = eventHub
+    self.coreAudio = coreAudio
     stateQueue.setSpecific(key: stateQueueKey, value: ())
   }
 
@@ -111,8 +121,6 @@ final class VolumeEvents: @unchecked Sendable {
   private func uninstallDefaultOutputDeviceListener() {
     guard let block = defaultDeviceListener else { return }
 
-    defer { defaultDeviceListener = nil }
-
     let status = removeListener(
       objectID: AudioObjectID(kAudioObjectSystemObject),
       address: defaultOutputDeviceAddress(),
@@ -126,6 +134,8 @@ final class VolumeEvents: @unchecked Sendable {
       )
       return
     }
+
+    defaultDeviceListener = nil
   }
 
   /// Rebinds per-device listeners to the current default output device.
@@ -133,6 +143,9 @@ final class VolumeEvents: @unchecked Sendable {
     let newDeviceID = defaultOutputDeviceID()
 
     guard let newDeviceID else {
+      uninstallDeviceListeners()
+      currentDeviceID = nil
+      lastMutedState = nil
       logger.debug("no default output device found")
       return
     }
@@ -159,151 +172,131 @@ final class VolumeEvents: @unchecked Sendable {
     guard let deviceID = currentDeviceID else { return }
     let eventHub = eventHub
 
-    let volumeBlock: AudioObjectPropertyListenerBlock = { _, _ in
-      Task {
-        await eventHub.emit(.volumeChange)
+    if !hasDeviceListener(deviceID: deviceID, selector: kAudioDevicePropertyVolumeScalar) {
+      let volumeBlock: AudioObjectPropertyListenerBlock = { [weak self] _, _ in
+        guard let self else { return }
+        self.performStateMutation {
+          guard self.currentDeviceID == deviceID else { return }
+          Task {
+            await eventHub.emit(.volumeChange)
+          }
+        }
+      }
+
+      let address = volumeAddress()
+      let volumeStatus = addListener(
+        objectID: deviceID,
+        address: address,
+        block: volumeBlock
+      )
+
+      if volumeStatus == noErr {
+        deviceListeners.append(
+          DeviceListener(
+            deviceID: deviceID,
+            address: address,
+            label: "volume",
+            block: volumeBlock
+          )
+        )
+      } else {
+        logger.debug(
+          "failed to subscribe volume listener",
+          .field("status", volumeStatus),
+        )
       }
     }
 
-    let volumeStatus = addListener(
-      objectID: deviceID,
-      address: volumeAddress(),
-      block: volumeBlock
-    )
-
-    guard volumeStatus == noErr else {
-      logger.debug(
-        "failed to subscribe volume listener",
-        .field("status", volumeStatus),
-      )
+    guard !hasDeviceListener(deviceID: deviceID, selector: kAudioDevicePropertyMute) else {
       return
     }
 
-    volumeListener = volumeBlock
-
     let muteBlock: AudioObjectPropertyListenerBlock = { [weak self] _, _ in
-      Task {
-        await eventHub.emit(.volumeChange)
-      }
-
-      guard let self, let deviceID = self.currentDeviceID else { return }
-
-      let muted = self.readMutedState(for: deviceID)
-      if self.lastMutedState != muted {
-        self.lastMutedState = muted
+      guard let self else { return }
+      self.performStateMutation {
+        guard self.currentDeviceID == deviceID else { return }
 
         Task {
-          await eventHub.emit(.app(.muteChange, muted: muted))
+          await eventHub.emit(.volumeChange)
+        }
+
+        let muted = self.readMutedState(for: deviceID)
+        if self.lastMutedState != muted {
+          self.lastMutedState = muted
+
+          Task {
+            await eventHub.emit(.app(.muteChange, muted: muted))
+          }
         }
       }
     }
 
+    let address = muteAddress()
     let muteStatus = addListener(
       objectID: deviceID,
-      address: muteAddress(),
+      address: address,
       block: muteBlock
     )
 
-    guard muteStatus == noErr else {
+    if muteStatus == noErr {
+      deviceListeners.append(
+        DeviceListener(
+          deviceID: deviceID,
+          address: address,
+          label: "mute",
+          block: muteBlock
+        )
+      )
+    } else {
       logger.debug(
         "mute listener unavailable on current output device",
         .field("status", muteStatus),
       )
-      return
     }
-
-    muteListener = muteBlock
   }
 
-  /// Removes all listeners from the current output device.
+  /// Removes all registered device listeners and retains failures for a later retry.
   private func uninstallDeviceListeners() {
-    guard let deviceID = currentDeviceID else { return }
-
-    if let block = volumeListener {
-      defer { volumeListener = nil }
-
+    var failedRemovals: [DeviceListener] = []
+    for listener in deviceListeners {
       let status = removeListener(
-        objectID: deviceID,
-        address: volumeAddress(),
-        block: block
+        objectID: listener.deviceID,
+        address: listener.address,
+        block: listener.block
       )
 
-      guard status == noErr else {
+      if status != noErr,
+        status != kAudioHardwareBadObjectError,
+        status != kAudioHardwareBadDeviceError
+      {
         logger.debug(
-          "failed to remove volume listener",
+          "failed to remove \(listener.label) listener",
           .field("status", status),
         )
-        return
+        failedRemovals.append(listener)
       }
     }
+    deviceListeners = failedRemovals
+  }
 
-    if let block = muteListener {
-      defer { muteListener = nil }
-
-      let status = removeListener(
-        objectID: deviceID,
-        address: muteAddress(),
-        block: block
-      )
-
-      guard status == noErr else {
-        logger.debug(
-          "failed to remove mute listener",
-          .field("status", status),
-        )
-        return
-      }
+  /// Returns whether a listener is already registered for one device property.
+  private func hasDeviceListener(
+    deviceID: AudioDeviceID,
+    selector: AudioObjectPropertySelector
+  ) -> Bool {
+    deviceListeners.contains {
+      $0.deviceID == deviceID && $0.address.mSelector == selector
     }
   }
 
   /// Returns the current default output device id.
   private func defaultOutputDeviceID() -> AudioDeviceID? {
-    var address = defaultOutputDeviceAddress()
-
-    var deviceID = AudioDeviceID(0)
-    var size = UInt32(MemoryLayout<AudioDeviceID>.size)
-
-    let status = AudioObjectGetPropertyData(
-      AudioObjectID(kAudioObjectSystemObject),
-      &address,
-      0,
-      nil,
-      &size,
-      &deviceID
-    )
-
-    guard status == noErr else {
-      logger.debug(
-        "failed to read default output device",
-        .field("status", status),
-      )
-      return nil
-    }
-
-    return deviceID
+    coreAudio.defaultOutputDeviceID()
   }
 
   /// Returns the current mute state for one output device.
   private func readMutedState(for deviceID: AudioDeviceID) -> Bool {
-    var address = muteAddress()
-
-    var muted = UInt32(0)
-    var size = UInt32(MemoryLayout<UInt32>.size)
-
-    let status = AudioObjectGetPropertyData(
-      deviceID,
-      &address,
-      0,
-      nil,
-      &size,
-      &muted
-    )
-
-    guard status == noErr else {
-      return false
-    }
-
-    return muted != 0
+    coreAudio.readMutedState(deviceID)
   }
 
   /// Returns the CoreAudio address for the default output device property.
@@ -339,14 +332,7 @@ final class VolumeEvents: @unchecked Sendable {
     address: AudioObjectPropertyAddress,
     block: @escaping AudioObjectPropertyListenerBlock
   ) -> OSStatus {
-    var address = address
-
-    return AudioObjectAddPropertyListenerBlock(
-      objectID,
-      &address,
-      stateQueue,
-      block
-    )
+    coreAudio.addListener(objectID, address, stateQueue, block)
   }
 
   /// Removes one property listener block from one audio object.
@@ -355,13 +341,6 @@ final class VolumeEvents: @unchecked Sendable {
     address: AudioObjectPropertyAddress,
     block: @escaping AudioObjectPropertyListenerBlock
   ) -> OSStatus {
-    var address = address
-
-    return AudioObjectRemovePropertyListenerBlock(
-      objectID,
-      &address,
-      stateQueue,
-      block
-    )
+    coreAudio.removeListener(objectID, address, stateQueue, block)
   }
 }
