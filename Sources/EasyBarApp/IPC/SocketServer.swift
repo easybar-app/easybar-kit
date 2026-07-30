@@ -190,9 +190,7 @@ final class SocketServer: @unchecked Sendable {
 
     for subscriber in transport.subscribersSnapshot() {
       guard case .metrics(watch: true) = subscriber.subscriber else { continue }
-      if !transport.send(message, to: subscriber.fd) {
-        _ = transport.removeSubscriber(fd: subscriber.fd)
-      }
+      _ = transport.enqueue(message, to: subscriber.fd)
     }
   }
 

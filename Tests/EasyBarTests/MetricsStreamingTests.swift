@@ -68,6 +68,50 @@ final class MetricsStreamingTests: XCTestCase {
     }
   }
 
+  func testMetricsBroadcastDoesNotBlockOnNonReadingSubscriber() async throws {
+    await MetricsCoordinator.shared.resetStreaming()
+    defer {
+      Task {
+        await MetricsCoordinator.shared.resetStreaming()
+      }
+    }
+
+    let server = SocketServer(
+      logger: ProcessLogger(label: "metrics.streaming.tests", minimumLevel: .error),
+      socketPath: socketPath
+    )
+    server.start(handler: { _ in }, validateConfigHandler: { _ in .rejected(message: "unused") })
+    defer { server.stop() }
+
+    let clientFD = try connectUnixSocket(path: socketPath)
+    defer {
+      shutdown(clientFD, SHUT_RDWR)
+      close(clientFD)
+    }
+    var receiveBufferSize: Int32 = 1_024
+    XCTAssertEqual(
+      setsockopt(
+        clientFD,
+        SOL_SOCKET,
+        SO_RCVBUF,
+        &receiveBufferSize,
+        socklen_t(MemoryLayout<Int32>.size)
+      ),
+      0
+    )
+
+    try sendMetricsWatchRequest(to: clientFD)
+    _ = try readLine(from: clientFD)
+
+    let snapshot = await MetricsCoordinator.shared.snapshot()
+    let startedAt = Date()
+    for _ in 0..<512 {
+      server.broadcastMetrics(snapshot)
+    }
+
+    XCTAssertLessThan(Date().timeIntervalSince(startedAt), 0.5)
+  }
+
   func testValidateConfigRequestReturnsValidatedPath() async throws {
     await MetricsCoordinator.shared.resetStreaming()
     defer {
