@@ -25,7 +25,7 @@ make run-debug
 
 Other useful targets:
 
-- `make verify-source-tree` checks source, packaging, and Homebrew inputs.
+- `make verify` checks the built bundle structure and key packaged files.
 - `make build` builds the app, agents, and CLI.
 - `make validate-config CONFIG=/path/to/config.toml` validates a config without reloading.
 - `make generate` refreshes all checked-in generated artifacts.
