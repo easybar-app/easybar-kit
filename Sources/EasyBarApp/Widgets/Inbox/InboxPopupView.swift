@@ -14,6 +14,7 @@ struct InboxPopupView: View {
   var body: some View {
     let config = configStore.snapshot.builtins.inbox
     let activities = sourceActivityRows
+    let busySources = Set(activities.map(\.source))
 
     VStack(alignment: .leading, spacing: 8) {
       HStack {
@@ -75,7 +76,11 @@ struct InboxPopupView: View {
                 )
               }
               ForEach(group.items) { item in
-                itemView(item, config: config)
+                itemView(
+                  item,
+                  sourceIsBusy: busySources.contains(item.source),
+                  config: config
+                )
               }
             }
           }
@@ -203,6 +208,7 @@ struct InboxPopupView: View {
 
   private func itemView(
     _ presented: InboxPresentedItem,
+    sourceIsBusy: Bool,
     config: Config.InboxBuiltinConfig
   ) -> some View {
     VStack(alignment: .leading, spacing: 5) {
@@ -257,15 +263,24 @@ struct InboxPopupView: View {
       if let actions = presented.item.actions, !actions.isEmpty {
         HStack(spacing: 10) {
           ForEach(actions) { action in
-            if action.isBusy {
+            let presentation = InboxItemActionPresentation(
+              action: action,
+              sourceIsBusy: sourceIsBusy
+            )
+
+            switch presentation.style {
+            case .progress:
               HStack(spacing: 4) {
                 ProgressView()
                   .controlSize(.small)
-                Text(action.title)
+                Text(presentation.title)
               }
               .foregroundStyle(color(config.popupMutedColorHex))
-            } else {
-              Button(action.title) {
+            case .status:
+              Text(presentation.title)
+                .foregroundStyle(color(config.popupMutedColorHex))
+            case .button:
+              Button(presentation.title) {
                 store.markRead(presented)
                 emitAction(
                   .inboxAction,
@@ -276,7 +291,7 @@ struct InboxPopupView: View {
               }
               .buttonStyle(.plain)
               .foregroundStyle(color(config.popupActionColorHex))
-              .disabled(!action.isEnabled)
+              .disabled(!presentation.isEnabled)
             }
           }
         }
@@ -369,6 +384,34 @@ struct InboxPopupView: View {
     case .success: return color(config.successColorHex)
     case .warning: return color(config.warningColorHex)
     case .error: return color(config.errorColorHex)
+    }
+  }
+}
+
+enum InboxItemActionStyle: Equatable {
+  case button
+  case progress
+  case status
+}
+
+struct InboxItemActionPresentation: Equatable {
+  let title: String
+  let style: InboxItemActionStyle
+  let isEnabled: Bool
+
+  init(action: InboxAction, sourceIsBusy: Bool) {
+    if sourceIsBusy, action.id == "refresh" {
+      title = "Refreshing…"
+      style = .status
+      isEnabled = false
+    } else if action.isBusy {
+      title = action.title
+      style = .progress
+      isEnabled = false
+    } else {
+      title = action.title
+      style = .button
+      isEnabled = action.isEnabled
     }
   }
 }

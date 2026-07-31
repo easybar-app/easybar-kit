@@ -22,4 +22,37 @@ final class InboxActionActivityTests: XCTestCase {
     XCTAssertFalse(action.isEnabled)
     XCTAssertTrue(action.isBusy)
   }
+
+  func testSourceRefreshUsesStatusInsteadOfSecondItemSpinner() {
+    let presentation = InboxItemActionPresentation(
+      action: InboxAction(id: "refresh", title: "Refresh", busy: true),
+      sourceIsBusy: true
+    )
+
+    XCTAssertEqual(presentation.title, "Refreshing…")
+    XCTAssertEqual(presentation.style, .status)
+    XCTAssertFalse(presentation.isEnabled)
+  }
+
+  func testItemOperationKeepsItsInlineProgressIndicator() {
+    let presentation = InboxItemActionPresentation(
+      action: InboxAction(id: "upgrade", title: "Upgrading…", enabled: false, busy: true),
+      sourceIsBusy: false
+    )
+
+    XCTAssertEqual(presentation.title, "Upgrading…")
+    XCTAssertEqual(presentation.style, .progress)
+    XCTAssertFalse(presentation.isEnabled)
+  }
+
+  func testIdleItemActionRemainsAButton() {
+    let presentation = InboxItemActionPresentation(
+      action: InboxAction(id: "refresh", title: "Refresh"),
+      sourceIsBusy: false
+    )
+
+    XCTAssertEqual(presentation.title, "Refresh")
+    XCTAssertEqual(presentation.style, .button)
+    XCTAssertTrue(presentation.isEnabled)
+  }
 }

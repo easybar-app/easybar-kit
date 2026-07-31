@@ -146,7 +146,7 @@ local function configure_source_actions()
 				id = "activity",
 				title = state.operation or "Working…",
 				enabled = false,
-				busy = true,
+				busy = state.operation_item_id == nil,
 			},
 		}
 		if state.can_cancel then

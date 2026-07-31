@@ -119,6 +119,17 @@ as a compact progress row below the inbox header after selection. The popup rema
 reported source activity finishes. A disabled action remains visible but cannot be selected. The
 `enabled` and `busy` fields default to `true` and `false`, respectively.
 
+Choose one busy scope for each operation:
+
+| Operation scope                                                                    | Set `busy = true` on                                       | Progress location        |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------ |
+| Source-wide work, such as refresh, update, or upgrade all                          | The source action passed to `easybar.inbox.configure(...)` | Below the inbox header   |
+| Item-specific work, such as marking one notification read or upgrading one package | The affected item's action in `easybar.inbox.replace(...)` | Inside the affected item |
+
+Do not mark both a source action and an item action as busy for the same operation. One operation
+should produce one progress indicator. While a source-wide refresh is busy, a matching inline
+`refresh` action is shown as disabled `Refreshing…` status text instead of a second spinner.
+
 For a source-wide refresh, republish the source configuration before and after the asynchronous work:
 
 ```lua
@@ -147,9 +158,8 @@ Use the same fields on an item's `actions` array for an item-specific operation.
 does not infer activity from `spawn_async`; the publisher owns the complete operation lifecycle,
 including retries, pagination, follow-up commands, cancellation, and failures.
 
-When the source action panel is collapsed, active source operations remain visible as compact status
-rows. Expanding the panel shows the progress indicator in the corresponding source row. Item activity
-always appears directly in the affected item.
+Active source operations remain visible as compact status rows after the actions menu closes. Item
+activity always appears directly in the affected item.
 
 ## Text and Markdown
 
