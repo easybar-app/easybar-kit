@@ -89,30 +89,37 @@ public struct CalendarAppointmentsListView: View {
     .frame(maxWidth: .infinity, alignment: .topLeading)
   }
 
+  @ViewBuilder
   private func appointmentRow(_ event: CalendarAgentEvent) -> some View {
     let isBirthday = CalendarAgendaBuilder.isBirthdayEvent(event)
     let showsActions = !isBirthday && hasActionMenu(for: event)
     let content = appointmentRowContent(
       event,
-      showsChevron: !showsActions && !isBirthday && onEventTap != nil,
-      showsActions: showsActions
+      showsChevron: !showsActions && !isBirthday && onEventTap != nil
     )
 
-    if let onEventTap, !isBirthday {
-      return AnyView(
+    HStack(alignment: .top, spacing: 8) {
+      if let onEventTap, !isBirthday {
+        Button(action: { onEventTap(event) }) {
+          content
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .leading)
+      } else {
         content
-          .contentShape(Rectangle())
-          .onTapGesture { onEventTap(event) }
-      )
-    }
+      }
 
-    return AnyView(content)
+      if showsActions {
+        actionMenu(for: event)
+          .padding(.top, 5)
+      }
+    }
   }
 
   private func appointmentRowContent(
     _ event: CalendarAgentEvent,
-    showsChevron: Bool,
-    showsActions: Bool
+    showsChevron: Bool
   ) -> some View {
     HStack(alignment: .top, spacing: 8) {
       Rectangle()
@@ -148,14 +155,12 @@ public struct CalendarAppointmentsListView: View {
       }
       .frame(maxWidth: .infinity, alignment: .leading)
 
-      if showsActions {
-        actionMenu(for: event)
-          .padding(.top, 1)
-      } else if showsChevron {
+      if showsChevron {
         Image(systemName: "chevron.right")
           .font(.system(size: 10, weight: .medium))
           .foregroundStyle(color(style.secondaryTextColorHex).opacity(0.8))
           .padding(.top, 3)
+          .accessibilityHidden(true)
       }
     }
     .padding(.leading, CGFloat(style.itemIndent))
