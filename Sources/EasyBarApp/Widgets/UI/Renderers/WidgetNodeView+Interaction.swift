@@ -6,7 +6,7 @@ import SwiftUI
 extension WidgetNodeView {
   /// Applies node styling and mouse handling to a container.
   func styledContainerSurface<Content: View>(_ content: Content) -> some View {
-    AnyView(
+    let surface = AnyView(
       content
         .modifier(nodeStyle)
         .contentShape(Rectangle())
@@ -15,6 +15,7 @@ extension WidgetNodeView {
           containerContextMenuOverlay
         }
     )
+    return accessibleContainerClickSurface(surface)
   }
 
   /// Builds the ordinary mouse-event surface behind container children.
@@ -51,7 +52,7 @@ extension WidgetNodeView {
 
   /// Applies node styling and mouse handling to a leaf node.
   func styledNodeSurface<Content: View>(_ content: Content) -> some View {
-    AnyView(
+    let surface = AnyView(
       content
         .modifier(nodeStyle)
         .contentShape(Rectangle())
@@ -59,6 +60,7 @@ extension WidgetNodeView {
           nodeMouseOverlay
         }
     )
+    return accessibleLeafClickSurface(surface)
   }
 
   /// Styles one native interactive control surface without attaching an extra tap gesture.
@@ -104,6 +106,10 @@ extension WidgetNodeView {
           emitNodeClickEvent()
         }
       )
+      .accessibilityAddTraits(.isButton)
+      .accessibilityAction {
+        emitNodeClickEvent()
+      }
     )
   }
 
@@ -124,17 +130,19 @@ extension WidgetNodeView {
 
   /// Applies popup anchoring to an item node.
   func popupItemSurface<Content: View>(_ content: Content) -> some View {
-    content
-      .modifier(nodeStyle)
-      .contentShape(Rectangle())
-      .overlay {
-        popupAnchorMouseOverlay
-      }
-      .background {
-        WidgetPopupAnchorView { anchor in
-          popupPanel.updateAnchorView(anchor)
+    accessibleLeafClickSurface(
+      content
+        .modifier(nodeStyle)
+        .contentShape(Rectangle())
+        .overlay {
+          popupAnchorMouseOverlay
         }
-      }
+        .background {
+          WidgetPopupAnchorView { anchor in
+            popupPanel.updateAnchorView(anchor)
+          }
+        }
+    )
   }
 
   /// Builds the AppKit-backed event surface for one node.
@@ -177,7 +185,7 @@ extension WidgetNodeView {
 
   /// Applies styling and mouse handling to popup anchor content.
   func popupAnchorInteractiveSurface<Content: View>(_ content: Content) -> some View {
-    AnyView(
+    let surface = AnyView(
       content
         .modifier(nodeStyle)
         .contentShape(Rectangle())
@@ -185,6 +193,55 @@ extension WidgetNodeView {
           popupAnchorMouseOverlay
         }
     )
+    return accessibleContainerClickSurface(surface)
+  }
+
+  /// Adds keyboard and assistive-technology activation to a clickable leaf node.
+  func accessibleLeafClickSurface<Content: View>(_ content: Content) -> AnyView {
+    guard node.isMouseClickInteractive else { return AnyView(content) }
+
+    return AnyView(
+      content
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(nodeClickAccessibilityLabel)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction {
+          emitNodeClickEvent()
+        }
+    )
+  }
+
+  /// Adds activation to a clickable container while preserving its child elements.
+  func accessibleContainerClickSurface<Content: View>(_ content: Content) -> AnyView {
+    guard node.isMouseClickInteractive else { return AnyView(content) }
+
+    return AnyView(
+      content
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(nodeClickAccessibilityLabel)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction {
+          emitNodeClickEvent()
+        }
+    )
+  }
+
+  /// Returns a stable spoken label for one scripted click target.
+  var nodeClickAccessibilityLabel: String {
+    let label = node.text.trimmingCharacters(in: .whitespacesAndNewlines)
+    if !label.isEmpty {
+      return label
+    }
+
+    let childLabels = children.compactMap { child -> String? in
+      let childLabel = child.text.trimmingCharacters(in: .whitespacesAndNewlines)
+      return childLabel.isEmpty ? nil : childLabel
+    }
+    if !childLabels.isEmpty {
+      return childLabels.joined(separator: ", ")
+    }
+
+    return "Widget item"
   }
 
   @ViewBuilder

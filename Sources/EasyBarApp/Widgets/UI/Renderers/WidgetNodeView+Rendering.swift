@@ -122,7 +122,7 @@ extension WidgetNodeView {
   func nativePopupAnchorView<Content: View>(
     @ViewBuilder content: () -> Content
   ) -> some View {
-    content()
+    let surface = content()
       .foregroundStyle(nodeColor)
       .modifier(nodeStyle)
       .onHover { hovering in handleAnchorHover(hovering) }
@@ -136,6 +136,11 @@ extension WidgetNodeView {
           popupPanel.updateAnchorView(anchor)
         }
       }
+
+    if node.kind == .item {
+      return accessibleLeafClickSurface(surface)
+    }
+    return accessibleContainerClickSurface(surface)
   }
 
   var popupAnchor: some View {
