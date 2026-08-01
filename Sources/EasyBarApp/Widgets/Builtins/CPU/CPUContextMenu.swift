@@ -106,12 +106,6 @@ enum CPUContextMenu {
   }
 
   private static func formattedSeconds(_ value: Double) -> String {
-    if value.rounded() == value {
-      return String(Int(value))
-    }
-
-    return String(format: "%.3f", value)
-      .replacingOccurrences(of: #"0+$"#, with: "", options: .regularExpression)
-      .replacingOccurrences(of: #"\.$"#, with: "", options: .regularExpression)
+    value.formatted(.number.precision(.fractionLength(0...3)))
   }
 }
