@@ -3,6 +3,7 @@ import SwiftUI
 struct SliderWidgetView: View {
   let rootWidgetID: String
   let targetWidgetID: String
+  let accessibilityLabel: String
   let minValue: Double
   let maxValue: Double
   let step: Double
@@ -21,6 +22,7 @@ struct SliderWidgetView: View {
   init(
     rootWidgetID: String,
     targetWidgetID: String,
+    accessibilityLabel: String,
     minValue: Double,
     maxValue: Double,
     step: Double,
@@ -30,6 +32,7 @@ struct SliderWidgetView: View {
   ) {
     self.rootWidgetID = rootWidgetID
     self.targetWidgetID = targetWidgetID
+    self.accessibilityLabel = accessibilityLabel
     self.minValue = minValue
     self.maxValue = maxValue
     self.step = step
@@ -86,6 +89,7 @@ struct SliderWidgetView: View {
     )
     .tint(tint)
     .frame(width: resolvedWidth)
+    .accessibilityLabel(accessibilityLabel)
     .onChange(of: externalValue) { _, newValue in
       if !isEditing {
         value = range.clamped(newValue)

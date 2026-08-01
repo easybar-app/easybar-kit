@@ -20,6 +20,7 @@ extension WidgetNodeView {
       SliderWidgetView(
         rootWidgetID: node.root,
         targetWidgetID: node.id,
+        accessibilityLabel: controlAccessibilityLabel,
         minValue: minValue,
         maxValue: maxValue,
         step: stepValue,
@@ -38,6 +39,7 @@ extension WidgetNodeView {
       ProgressSliderWidgetView(
         rootWidgetID: node.root,
         targetWidgetID: node.id,
+        accessibilityLabel: controlAccessibilityLabel,
         minValue: minValue,
         maxValue: maxValue,
         step: stepValue,
@@ -75,6 +77,11 @@ extension WidgetNodeView {
       )
       .frame(width: sparklineWidth, height: sparklineHeight)
     }
+  }
+
+  /// Returns the spoken label for an interactive value control.
+  var controlAccessibilityLabel: String {
+    node.text.isEmpty ? "Slider" : node.text
   }
 }
 

@@ -5,6 +5,7 @@ import SwiftUI
 struct ProgressSliderWidgetView: View {
   let rootWidgetID: String
   let targetWidgetID: String
+  let accessibilityLabel: String
   let minValue: Double
   let maxValue: Double
   let step: Double
@@ -23,6 +24,7 @@ struct ProgressSliderWidgetView: View {
   init(
     rootWidgetID: String,
     targetWidgetID: String,
+    accessibilityLabel: String,
     minValue: Double,
     maxValue: Double,
     step: Double,
@@ -32,6 +34,7 @@ struct ProgressSliderWidgetView: View {
   ) {
     self.rootWidgetID = rootWidgetID
     self.targetWidgetID = targetWidgetID
+    self.accessibilityLabel = accessibilityLabel
     self.minValue = minValue
     self.maxValue = maxValue
     self.step = step
@@ -94,9 +97,14 @@ struct ProgressSliderWidgetView: View {
             }
           }
         )
+        .accessibilityHidden(true)
       }
     }
     .frame(width: resolvedWidth, height: 14)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(accessibilityLabel)
+    .accessibilityValue(Text(value, format: .number))
+    .accessibilityAdjustableAction(adjustValue)
     .onChange(of: externalValue) { _, newValue in
       if !isDragging {
         value = range.clamped(newValue)
@@ -131,6 +139,33 @@ struct ProgressSliderWidgetView: View {
 
     let stepped = (rawValue / range.step).rounded() * range.step
     return range.clamped(stepped)
+  }
+
+  /// Changes and commits the value for an assistive-technology adjustment.
+  private func adjustValue(_ direction: AccessibilityAdjustmentDirection) {
+    let delta: Double
+    switch direction {
+    case .increment:
+      delta = range.step
+    case .decrement:
+      delta = -range.step
+    @unknown default:
+      return
+    }
+
+    let adjustedValue = range.clamped(value + delta)
+    guard adjustedValue != value else { return }
+    value = adjustedValue
+
+    guard let eventHub = appViewServices?.eventHub else { return }
+    WidgetEventDispatcher.shared.enqueue {
+      await eventHub.emitWidgetEvent(
+        .sliderChanged,
+        widgetID: rootWidgetID,
+        targetWidgetID: targetWidgetID,
+        value: adjustedValue
+      )
+    }
   }
 }
 
