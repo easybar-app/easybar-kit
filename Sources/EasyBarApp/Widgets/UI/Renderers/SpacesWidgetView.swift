@@ -286,6 +286,8 @@ struct SpacesWidgetView: View {
 /// Renders an individual app icon.
 private struct AppIconView: View {
 
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
   let app: SpaceApp
   let isFocusedApp: Bool
 
@@ -330,7 +332,7 @@ private struct AppIconView: View {
             lineWidth: resolvedBorderWidth
           )
       }
-      .animation(.easeOut(duration: 0.06), value: isFocusedApp)
+      .animation(reduceMotion ? nil : .easeOut(duration: 0.06), value: isFocusedApp)
   }
 
   /// Returns the rendered app icon or fallback initial.
