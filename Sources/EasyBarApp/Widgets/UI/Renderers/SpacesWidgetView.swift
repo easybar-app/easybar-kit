@@ -29,15 +29,37 @@ struct SpacesWidgetView: View {
               collapseInactive: config.layout.collapseInactive
             )
           ) { space in
-            spacePill(for: space)
-              .contentShape(Rectangle())
-              .onTapGesture { focusSpaceIfEnabled(space) }
+            interactiveSpacePill(for: space)
           }
         }
         .padding(.horizontal, CGFloat(config.layout.marginX))
         .padding(.vertical, CGFloat(config.layout.marginY))
       }
       .fixedSize(horizontal: true, vertical: false)
+    }
+  }
+
+  /// Adds workspace activation semantics without swallowing nested app controls.
+  @ViewBuilder
+  private func interactiveSpacePill(for space: SpaceItem) -> some View {
+    let pill = spacePill(for: space)
+
+    if config.layout.clickToFocusSpace {
+      pill
+        .contentShape(Rectangle())
+        .onTapGesture { focusSpaceIfEnabled(space) }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Workspace \(space.name)")
+        .accessibilityValue(space.isFocused ? "Focused" : "Not focused")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction {
+          focusSpaceIfEnabled(space)
+        }
+    } else {
+      pill
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Workspace \(space.name)")
+        .accessibilityValue(space.isFocused ? "Focused" : "Not focused")
     }
   }
 
@@ -59,14 +81,7 @@ struct SpacesWidgetView: View {
       if shouldShowIcons(for: space) {
         HStack(spacing: CGFloat(config.icons.spacing)) {
           ForEach(visibleApps(for: space)) { app in
-            AppIconView(
-              app: app,
-              isFocusedApp: app.id == aeroSpaceService.focusedAppID,
-              config: config,
-              themeSnapshot: configStore.snapshot
-            )
-            .contentShape(Rectangle())
-            .onTapGesture { focusAppIfEnabled(app) }
+            interactiveAppIcon(for: app)
           }
 
           hiddenAppBadge(for: space)
@@ -88,6 +103,36 @@ struct SpacesWidgetView: View {
     )
     .scaleEffect(space.isFocused ? CGFloat(config.layout.focusedScale) : 1.0)
     .opacity(space.isFocused ? 1.0 : config.layout.inactiveOpacity)
+  }
+
+  /// Adds app activation semantics while preserving the workspace gesture surface.
+  @ViewBuilder
+  private func interactiveAppIcon(for app: SpaceApp) -> some View {
+    let isFocused = app.id == aeroSpaceService.focusedAppID
+    let icon = AppIconView(
+      app: app,
+      isFocusedApp: isFocused,
+      config: config,
+      themeSnapshot: configStore.snapshot
+    )
+
+    if config.layout.clickToFocusApp {
+      icon
+        .contentShape(Rectangle())
+        .onTapGesture { focusAppIfEnabled(app) }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Focus \(app.name)")
+        .accessibilityValue(isFocused ? "Focused" : "Not focused")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction {
+          focusAppIfEnabled(app)
+        }
+    } else {
+      icon
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(app.name)
+        .accessibilityValue(isFocused ? "Focused" : "Not focused")
+    }
   }
 
   /// Returns whether the space label should be shown.
