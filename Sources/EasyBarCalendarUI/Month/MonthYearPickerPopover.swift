@@ -88,6 +88,7 @@ extension MonthYearPickerPopover {
             }
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(year == currentYear ? .isSelected : [])
       }
     }
   }
