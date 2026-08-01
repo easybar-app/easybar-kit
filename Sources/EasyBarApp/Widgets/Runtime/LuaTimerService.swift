@@ -103,7 +103,7 @@ actor LuaTimerService {
     let nanoseconds = clampedSleepNanoseconds(from: delaySeconds)
     let task = Task { [weak self] in
       do {
-        try await Task.sleep(nanoseconds: nanoseconds)
+        try await Task.sleep(for: .nanoseconds(Int64(clamping: nanoseconds)))
       } catch {
         return
       }

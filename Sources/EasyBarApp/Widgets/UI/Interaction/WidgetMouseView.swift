@@ -2,7 +2,7 @@ import AppKit
 import EasyBarShared
 import SwiftUI
 
-let widgetHoverDelayNanoseconds: UInt64 = 80_000_000
+let widgetHoverDelay: Duration = .milliseconds(80)
 
 /// AppKit-backed event surface for widget mouse input.
 struct WidgetMouseView: NSViewRepresentable {
@@ -499,7 +499,7 @@ final class WidgetHoverState: @unchecked Sendable {
 
     let task = Task { [weak self] in
       do {
-        try await Task.sleep(nanoseconds: widgetHoverDelayNanoseconds)
+        try await Task.sleep(for: widgetHoverDelay)
       } catch {
         return
       }

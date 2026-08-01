@@ -13,6 +13,6 @@ public struct TaskSleeper: AsyncSleeper {
 
   /// Suspends the current task for the requested duration.
   public func sleep(nanoseconds: UInt64) async throws {
-    try await Task.sleep(nanoseconds: nanoseconds)
+    try await Task.sleep(for: .nanoseconds(Int64(clamping: nanoseconds)))
   }
 }

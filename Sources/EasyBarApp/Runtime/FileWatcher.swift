@@ -157,7 +157,7 @@ actor FileWatcher {
     debounceTask?.cancel()
     debounceTask = Task { [weak self] in
       do {
-        try await Task.sleep(nanoseconds: 250_000_000)
+        try await Task.sleep(for: .milliseconds(250))
       } catch {
         return
       }

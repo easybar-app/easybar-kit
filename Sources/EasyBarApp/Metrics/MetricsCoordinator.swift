@@ -181,8 +181,8 @@ actor MetricsCoordinator {
 
   /// Metrics sampling interval.
   let sampleIntervalSeconds: TimeInterval = 1
-  /// Metrics sampling interval in nanoseconds.
-  private let sampleIntervalNanoseconds: UInt64 = 1_000_000_000
+  /// Metrics sampling interval.
+  private let sampleInterval: Duration = .seconds(1)
   /// Process sampler for EasyBar, Lua, and agents.
   let processSampler = ProcessSampler()
 
@@ -391,12 +391,12 @@ actor MetricsCoordinator {
   private func startStreamingTask() {
     guard streamingTask == nil else { return }
 
-    let intervalNanoseconds = sampleIntervalNanoseconds
+    let interval = sampleInterval
 
     streamingTask = Task { [weak self] in
       while !Task.isCancelled {
         do {
-          try await Task.sleep(nanoseconds: intervalNanoseconds)
+          try await Task.sleep(for: interval)
         } catch {
           break
         }

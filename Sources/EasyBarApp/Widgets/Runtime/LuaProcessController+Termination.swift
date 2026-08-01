@@ -2,7 +2,7 @@ import Darwin
 import EasyBarShared
 
 /// Grace period between terminate and forced kill.
-private let easyBarLuaTerminationGracePeriodNanoseconds: UInt64 = 150_000_000
+private let easyBarLuaTerminationGracePeriod: Duration = .milliseconds(150)
 
 extension LuaProcessController {
   /// Terminates the Lua runtime process tree and schedules one forced kill fallback.
@@ -34,7 +34,7 @@ extension LuaProcessController {
 
     let task = DetachedTask.run(priority: .utility) { [weak self] in
       do {
-        try await Task.sleep(nanoseconds: easyBarLuaTerminationGracePeriodNanoseconds)
+        try await Task.sleep(for: easyBarLuaTerminationGracePeriod)
       } catch {
         return
       }

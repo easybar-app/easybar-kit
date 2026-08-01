@@ -65,7 +65,7 @@ final class SystemCaptureDeviceInventoryMonitor: CaptureDeviceInventoryMonitorin
     settleTask?.cancel()
     settleTask = Task { @MainActor [weak self] in
       do {
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await Task.sleep(for: .milliseconds(500))
       } catch {
         return
       }

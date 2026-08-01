@@ -264,7 +264,7 @@ final class SystemEvents: @unchecked Sendable {
 
     pendingWakeTask = Task { [weak self] in
       do {
-        try await Task.sleep(nanoseconds: 150_000_000)
+        try await Task.sleep(for: .milliseconds(150))
       } catch {
         return
       }

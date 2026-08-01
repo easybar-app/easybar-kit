@@ -119,7 +119,7 @@ struct InboxPopupView: View {
     sourceActionHoldTask?.cancel()
     sourceActionHoldTask = Task { @MainActor in
       do {
-        try await Task.sleep(nanoseconds: 1_000_000_000)
+        try await Task.sleep(for: .seconds(1))
       } catch {
         return
       }

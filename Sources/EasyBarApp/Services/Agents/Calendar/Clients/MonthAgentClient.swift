@@ -112,10 +112,9 @@ final class MonthCalendarAgentClient {
 
     for (index, radius) in (0...maximumRadius).enumerated() {
       let delay = preloadDelays[min(index, preloadDelays.count - 1)]
-      let nanoseconds = UInt64(max(delay, 0) * 1_000_000_000)
       let task = Task { @MainActor [weak self] in
         do {
-          try await Task.sleep(nanoseconds: nanoseconds)
+          try await Task.sleep(for: .seconds(max(delay, 0)))
         } catch {
           return
         }
