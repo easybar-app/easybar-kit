@@ -11,7 +11,9 @@ extension WidgetNodeView {
         .modifier(nodeStyle)
         .contentShape(Rectangle())
         .background(containerMouseOverlay)
-        .overlay(containerContextMenuOverlay)
+        .overlay {
+          containerContextMenuOverlay
+        }
     )
   }
 
@@ -53,7 +55,9 @@ extension WidgetNodeView {
       content
         .modifier(nodeStyle)
         .contentShape(Rectangle())
-        .overlay(nodeMouseOverlay)
+        .overlay {
+          nodeMouseOverlay
+        }
     )
   }
 
@@ -69,7 +73,9 @@ extension WidgetNodeView {
           guard node.isMouseHoverInteractive else { return }
           emitNodeHoverEvent(hovering)
         }
-        .overlay(scrollOverlay)
+        .overlay {
+          scrollOverlay
+        }
     )
   }
 
@@ -83,7 +89,9 @@ extension WidgetNodeView {
           guard node.isMouseHoverInteractive else { return }
           emitNodeHoverEvent(hovering)
         }
-        .overlay(scrollOverlay)
+        .overlay {
+          scrollOverlay
+        }
     )
 
     guard node.isMouseClickInteractive else {
@@ -119,7 +127,9 @@ extension WidgetNodeView {
     content
       .modifier(nodeStyle)
       .contentShape(Rectangle())
-      .overlay(popupAnchorMouseOverlay)
+      .overlay {
+        popupAnchorMouseOverlay
+      }
       .background {
         WidgetPopupAnchorView { anchor in
           popupPanel.updateAnchorView(anchor)
@@ -171,7 +181,9 @@ extension WidgetNodeView {
       content
         .modifier(nodeStyle)
         .contentShape(Rectangle())
-        .overlay(popupAnchorMouseOverlay)
+        .overlay {
+          popupAnchorMouseOverlay
+        }
     )
   }
 

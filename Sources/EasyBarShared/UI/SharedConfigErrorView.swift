@@ -207,10 +207,10 @@ public struct SharedConfigErrorView: View {
           RoundedRectangle(cornerRadius: 10, style: .continuous)
             .fill(Color(nsColor: .windowBackgroundColor).opacity(0.9))
         )
-        .overlay(
+        .overlay {
           RoundedRectangle(cornerRadius: 10, style: .continuous)
             .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-        )
+        }
       }
 
       HStack {

@@ -40,10 +40,10 @@ public struct CalendarEventComposerView: View {
       RoundedRectangle(cornerRadius: CGFloat(config.cornerRadius))
         .fill(color(config.backgroundColorHex))
     )
-    .overlay(
+    .overlay {
       RoundedRectangle(cornerRadius: CGFloat(config.cornerRadius))
         .stroke(color(config.borderColorHex), lineWidth: CGFloat(config.borderWidth))
-    )
+    }
     .alert(config.deleteConfirmationTitle, isPresented: $showsDeleteConfirmation) {
       Button(config.cancelLabel, role: .cancel) {}
       Button(config.removeLabel, role: .destructive) {
