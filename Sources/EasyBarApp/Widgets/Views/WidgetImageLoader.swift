@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import Foundation
 
 /// One validated source for a rendered widget image.

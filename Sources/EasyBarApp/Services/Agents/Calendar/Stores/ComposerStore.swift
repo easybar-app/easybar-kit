@@ -1,3 +1,4 @@
+import Combine
 import EasyBarShared
 import Foundation
 

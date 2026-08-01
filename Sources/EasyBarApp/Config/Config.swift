@@ -1,3 +1,4 @@
+import Combine
 import EasyBarCalendarConfig
 import EasyBarShared
 import Foundation

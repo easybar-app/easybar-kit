@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import SwiftUI
 
 /// Manages one AppKit popup panel anchored to a widget view.
