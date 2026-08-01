@@ -114,14 +114,22 @@ public struct CalendarEventComposerView: View {
     HStack(spacing: 8) {
       VStack(alignment: .leading, spacing: 4) {
         label(config.startLabel)
-        DatePicker("", selection: $composer.startDate, displayedComponents: displayedComponents)
-          .labelsHidden()
+        DatePicker(
+          config.startLabel,
+          selection: $composer.startDate,
+          displayedComponents: displayedComponents
+        )
+        .labelsHidden()
       }
 
       VStack(alignment: .leading, spacing: 4) {
         label(config.endLabel)
-        DatePicker("", selection: $composer.endDate, displayedComponents: displayedComponents)
-          .labelsHidden()
+        DatePicker(
+          config.endLabel,
+          selection: $composer.endDate,
+          displayedComponents: displayedComponents
+        )
+        .labelsHidden()
       }
     }
   }
@@ -236,7 +244,7 @@ public struct CalendarEventComposerView: View {
   ) -> some View {
     VStack(alignment: .leading, spacing: 4) {
       label(labelText)
-      TextField(placeholder, text: text)
+      TextField(labelText, text: text, prompt: Text(placeholder))
         .textFieldStyle(.roundedBorder)
     }
   }
