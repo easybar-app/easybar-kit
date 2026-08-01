@@ -62,7 +62,22 @@ struct WiFiSignalCanvas: View {
       }
     }
     .drawingGroup()
-    .accessibilityHidden(true)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel("Wi-Fi")
+    .accessibilityValue(accessibilityValue)
+  }
+
+  /// Returns the connection state announced by assistive technologies.
+  private var accessibilityValue: String {
+    if isDenied {
+      return "Location access denied"
+    }
+
+    if isDisconnected {
+      return "Disconnected"
+    }
+
+    return "Connected, signal \(max(0, min(signalLevel, 3))) of 3"
   }
 
   /// Returns whether the indicator should render as connected.
