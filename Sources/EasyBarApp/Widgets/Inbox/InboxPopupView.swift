@@ -214,50 +214,68 @@ struct InboxPopupView: View {
     VStack(alignment: .leading, spacing: 5) {
       if config.groupBy != .source {
         let source = presented.item.source
-        HStack(spacing: 4) {
-          if let icon = source?.icon, !icon.isEmpty {
-            InboxSourceIconView(
-              value: icon,
-              color: color(source?.color ?? config.popupMutedColorHex)
-            )
+        Button {
+          store.markRead(presented)
+        } label: {
+          HStack(spacing: 4) {
+            if let icon = source?.icon, !icon.isEmpty {
+              InboxSourceIconView(
+                value: icon,
+                color: color(source?.color ?? config.popupMutedColorHex)
+              )
+            }
+            Text(source?.name?.isEmpty == false ? source?.name ?? presented.source : presented.source)
           }
-          Text(source?.name?.isEmpty == false ? source?.name ?? presented.source : presented.source)
         }
+        .buttonStyle(.plain)
         .font(.caption.weight(.semibold))
         .foregroundStyle(color(source?.color ?? config.popupMutedColorHex))
-        .onTapGesture { store.markRead(presented) }
+        .accessibilityHint("Marks this message as read")
       }
 
       HStack(alignment: .firstTextBaseline, spacing: 6) {
         Button {
           store.toggleRead(presented)
         } label: {
-          Circle()
-            .fill(presented.isUnread ? severityColor(presented.item.resolvedSeverity) : .clear)
-            .overlay {
-              Circle().stroke(
-                color(config.popupMutedColorHex), lineWidth: presented.isUnread ? 0 : 1)
-            }
-            .frame(width: 7, height: 7)
-            .frame(width: 14, height: 14)
-            .contentShape(Rectangle())
+          Label {
+            Text(presented.isUnread ? "Mark as read" : "Mark as unread")
+          } icon: {
+            Circle()
+              .fill(presented.isUnread ? severityColor(presented.item.resolvedSeverity) : .clear)
+              .overlay {
+                Circle().stroke(
+                  color(config.popupMutedColorHex), lineWidth: presented.isUnread ? 0 : 1)
+              }
+              .frame(width: 7, height: 7)
+              .frame(width: 14, height: 14)
+              .contentShape(Rectangle())
+          }
+          .labelStyle(.iconOnly)
         }
         .buttonStyle(.plain)
         .help(presented.isUnread ? "Mark as read" : "Mark as unread")
-        Text(presented.item.title)
-          .font(.system(size: 13, weight: presented.isUnread ? .semibold : .regular))
-          .foregroundStyle(color(config.popupTitleColorHex))
-          .onTapGesture { store.markRead(presented) }
+        Button(presented.item.title) {
+          store.markRead(presented)
+        }
+        .buttonStyle(.plain)
+        .font(.system(size: 13, weight: presented.isUnread ? .semibold : .regular))
+        .foregroundStyle(color(config.popupTitleColorHex))
+        .accessibilityHint("Marks this message as read")
         Spacer(minLength: 4)
       }
 
       if let body = presented.item.body, !body.isEmpty {
-        bodyText(body, format: presented.item.resolvedFormat)
-          .font(.system(size: 12))
-          .foregroundStyle(
-            color(config.popupTextColorHex)
-          )
-          .onTapGesture { store.markRead(presented) }
+        Button {
+          store.markRead(presented)
+        } label: {
+          bodyText(body, format: presented.item.resolvedFormat)
+        }
+        .buttonStyle(.plain)
+        .font(.system(size: 12))
+        .foregroundStyle(
+          color(config.popupTextColorHex)
+        )
+        .accessibilityHint("Marks this message as read")
       }
 
       if let actions = presented.item.actions, !actions.isEmpty {
