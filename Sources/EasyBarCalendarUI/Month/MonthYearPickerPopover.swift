@@ -39,11 +39,12 @@ extension MonthYearPickerPopover {
   /// Builds the top year-page navigation row.
   fileprivate var headerView: some View {
     HStack {
-      Button(action: { pageStartYear -= 12 }) {
-        Text("‹")
-          .font(.system(size: 15, weight: .semibold))
-          .foregroundStyle(headerColor)
+      Button("Previous years", systemImage: "chevron.left") {
+        pageStartYear -= 12
       }
+      .labelStyle(.iconOnly)
+      .font(.system(size: 15, weight: .semibold))
+      .foregroundStyle(headerColor)
       .buttonStyle(.plain)
 
       Spacer()
@@ -54,11 +55,12 @@ extension MonthYearPickerPopover {
 
       Spacer()
 
-      Button(action: { pageStartYear += 12 }) {
-        Text("›")
-          .font(.system(size: 15, weight: .semibold))
-          .foregroundStyle(headerColor)
+      Button("Next years", systemImage: "chevron.right") {
+        pageStartYear += 12
       }
+      .labelStyle(.iconOnly)
+      .font(.system(size: 15, weight: .semibold))
+      .foregroundStyle(headerColor)
       .buttonStyle(.plain)
     }
   }

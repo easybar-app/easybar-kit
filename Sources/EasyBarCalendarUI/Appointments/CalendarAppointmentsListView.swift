@@ -193,7 +193,8 @@ public struct CalendarAppointmentsListView: View {
         }
       }
     } label: {
-      Image(systemName: "ellipsis.circle")
+      Label("Event actions", systemImage: "ellipsis.circle")
+        .labelStyle(.iconOnly)
         .font(.system(size: 13, weight: .medium))
         .foregroundStyle(color(style.secondaryTextColorHex).opacity(0.9))
         .frame(width: 22, height: 22)

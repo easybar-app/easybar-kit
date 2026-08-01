@@ -91,13 +91,12 @@ extension CalendarMonthPopupView {
 
   private var monthControlsRowView: some View {
     HStack(spacing: 18) {
-      Button(action: showPreviousMonth) {
-        Text("‹")
-          .font(.system(size: 17, weight: .semibold))
-          .foregroundStyle(color(config.headerTextColorHex))
-          .frame(minWidth: 18)
-      }
-      .buttonStyle(.plain)
+      Button("Previous month", systemImage: "chevron.left", action: showPreviousMonth)
+        .labelStyle(.iconOnly)
+        .font(.system(size: 17, weight: .semibold))
+        .foregroundStyle(color(config.headerTextColorHex))
+        .frame(minWidth: 18)
+        .buttonStyle(.plain)
 
       Button(action: showToday) {
         HStack(spacing: 4) {
@@ -116,13 +115,12 @@ extension CalendarMonthPopupView {
       }
       .buttonStyle(.plain)
 
-      Button(action: showNextMonth) {
-        Text("›")
-          .font(.system(size: 17, weight: .semibold))
-          .foregroundStyle(color(config.headerTextColorHex))
-          .frame(minWidth: 18)
-      }
-      .buttonStyle(.plain)
+      Button("Next month", systemImage: "chevron.right", action: showNextMonth)
+        .labelStyle(.iconOnly)
+        .font(.system(size: 17, weight: .semibold))
+        .foregroundStyle(color(config.headerTextColorHex))
+        .frame(minWidth: 18)
+        .buttonStyle(.plain)
     }
     .frame(maxWidth: .infinity, alignment: .center)
   }

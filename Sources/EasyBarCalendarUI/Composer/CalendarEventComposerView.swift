@@ -173,11 +173,10 @@ public struct CalendarEventComposerView: View {
               .frame(width: 80)
           }
 
-          Button {
+          Button(config.removeLabel, systemImage: "minus.circle") {
             composer.removeAlertRow(id: row.id)
-          } label: {
-            Image(systemName: "minus.circle")
           }
+          .labelStyle(.iconOnly)
           .buttonStyle(.plain)
         }
       }

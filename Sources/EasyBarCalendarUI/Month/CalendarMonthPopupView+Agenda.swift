@@ -45,21 +45,20 @@ extension CalendarMonthPopupView {
 
       Spacer()
 
-      Button(action: openComposer) {
-        Image(systemName: "plus")
-          .font(.system(size: 12, weight: .medium))
-          .foregroundStyle(color(config.headerTextColorHex))
-          .frame(width: 24, height: 24)
-          .background(
-            RoundedRectangle(cornerRadius: 7, style: .continuous)
-              .fill(Color.white.opacity(0.05))
-          )
-          .overlay {
-            RoundedRectangle(cornerRadius: 7, style: .continuous)
-              .stroke(color(config.borderColorHex).opacity(0.8), lineWidth: 1)
-          }
-      }
-      .buttonStyle(.plain)
+      Button("Create event", systemImage: "plus", action: openComposer)
+        .labelStyle(.iconOnly)
+        .font(.system(size: 12, weight: .medium))
+        .foregroundStyle(color(config.headerTextColorHex))
+        .frame(width: 24, height: 24)
+        .background(
+          RoundedRectangle(cornerRadius: 7, style: .continuous)
+            .fill(Color.white.opacity(0.05))
+        )
+        .overlay {
+          RoundedRectangle(cornerRadius: 7, style: .continuous)
+            .stroke(color(config.borderColorHex).opacity(0.8), lineWidth: 1)
+        }
+        .buttonStyle(.plain)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .padding(.top, agendaTitleTopPadding)
