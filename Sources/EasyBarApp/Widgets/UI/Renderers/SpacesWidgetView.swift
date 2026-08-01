@@ -17,7 +17,7 @@ struct SpacesWidgetView: View {
       showLabel: config.layout.showLabel,
       showIcons: config.layout.showIcons
     ) {
-      ScrollView(.horizontal, showsIndicators: false) {
+      ScrollView(.horizontal) {
         HStack(spacing: CGFloat(config.layout.spacing)) {
           ForEach(
             Self.visibleSpaces(
@@ -35,6 +35,7 @@ struct SpacesWidgetView: View {
         .padding(.horizontal, CGFloat(config.layout.marginX))
         .padding(.vertical, CGFloat(config.layout.marginY))
       }
+      .scrollIndicators(.hidden)
       .fixedSize(horizontal: true, vertical: false)
     }
   }
