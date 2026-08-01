@@ -20,6 +20,8 @@ public struct CalendarAppointmentsListRow: Identifiable {
 
 /// Shared appointments list used by calendar month and upcoming surfaces.
 public struct CalendarAppointmentsListView: View {
+  @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+
   public let title: String?
   public let rows: [CalendarAppointmentsListRow]
   public let emptyText: String
@@ -132,7 +134,10 @@ public struct CalendarAppointmentsListView: View {
         appointmentTitleView(for: event)
         appointmentEndTimeView(for: event)
 
-        if style.showCalendarName, let calendarName = event.calendarName, !calendarName.isEmpty {
+        if style.showCalendarName || differentiateWithoutColor,
+          let calendarName = event.calendarName,
+          !calendarName.isEmpty
+        {
           Text(calendarName)
             .font(.system(size: 11, weight: .regular))
             .foregroundStyle(color(style.secondaryTextColorHex))
