@@ -121,6 +121,50 @@ extension CalendarMonthPopupView {
         )
       }
     )
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(
+      Text(day.date, format: .dateTime.weekday(.wide).month(.wide).day().year())
+    )
+    .accessibilityValue(Text(verbatim: dayAccessibilityValue(for: day)))
+    .accessibilityHint("Selects this date")
+    .accessibilityAddTraits(.isButton)
+    .accessibilityAction {
+      selectDayForAccessibility(day.date)
+    }
+  }
+
+  /// Returns the selection and event state announced for one day cell.
+  func dayAccessibilityValue(for day: DayCell) -> String {
+    var values: [String] = []
+
+    if isSelected(day.date) {
+      values.append("Selected")
+    }
+
+    if resolvedCalendar.isDateInToday(day.date) {
+      values.append("Today")
+    }
+
+    let eventCount = store.eventsForDay(day.date).count
+    if eventCount == 1 {
+      values.append("1 event")
+    } else if eventCount > 1 {
+      values.append("\(eventCount) events")
+    }
+
+    return values.joined(separator: ", ")
+  }
+
+  /// Selects one day when an assistive technology activates its cell.
+  func selectDayForAccessibility(_ date: Date) {
+    let normalizedDate = resolvedCalendar.startOfDay(for: date)
+    selectedStartDate = normalizedDate
+    selectedEndDate = normalizedDate
+
+    logger.debug(
+      "month calendar popup accessibility_select",
+      .field("date", "\(debugDate(normalizedDate))"),
+    )
   }
 
   /// Returns the font weight for one day cell.
