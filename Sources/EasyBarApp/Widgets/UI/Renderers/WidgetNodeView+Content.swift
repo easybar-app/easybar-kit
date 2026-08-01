@@ -63,6 +63,9 @@ extension WidgetNodeView {
       )
       .frame(width: progressWidth, height: progressHeight)
     }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(progressAccessibilityLabel)
+    .accessibilityValue(progressAccessibilityValue)
   }
 
   var sparklineView: some View {
@@ -77,11 +80,38 @@ extension WidgetNodeView {
       )
       .frame(width: sparklineWidth, height: sparklineHeight)
     }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(sparklineAccessibilityLabel)
+    .accessibilityValue(sparklineAccessibilityValue)
   }
 
   /// Returns the spoken label for an interactive value control.
   var controlAccessibilityLabel: String {
     node.text.isEmpty ? "Slider" : node.text
+  }
+
+  /// Returns the spoken label for a progress indicator.
+  var progressAccessibilityLabel: String {
+    node.text.isEmpty ? "Progress" : node.text
+  }
+
+  /// Returns the normalized progress announced by assistive technologies.
+  var progressAccessibilityValue: Text {
+    let range = maxValue - minValue
+    guard range > 0 else { return Text(currentValue, format: .number) }
+    let fraction = min(1, max(0, (currentValue - minValue) / range))
+    return Text(fraction, format: .percent.precision(.fractionLength(0)))
+  }
+
+  /// Returns the spoken label for a sparkline.
+  var sparklineAccessibilityLabel: String {
+    node.text.isEmpty ? "Trend" : node.text
+  }
+
+  /// Returns the latest sparkline value announced by assistive technologies.
+  var sparklineAccessibilityValue: Text {
+    guard let latestValue = node.values?.last else { return Text("No data") }
+    return Text(latestValue, format: .number)
   }
 }
 
