@@ -57,7 +57,7 @@ struct InboxSourceActionsMenuButton: NSViewRepresentable {
       )
       parent.popupPanel.endTransientInteraction()
 
-      DispatchQueue.main.async { [weak self] in
+      Task { @MainActor [weak self] in
         self?.parent.onMenuClosed()
       }
     }

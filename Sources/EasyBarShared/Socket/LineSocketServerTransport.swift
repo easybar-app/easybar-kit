@@ -303,7 +303,9 @@ public final class LineSocketServerTransport<
     then action: @escaping @MainActor @Sendable () -> Void
   ) -> ClientDisposition {
     guard send(response, to: clientFD) else { return .close }
-    DispatchQueue.main.async(execute: action)
+    Task { @MainActor in
+      action()
+    }
     return .close
   }
 
