@@ -3,21 +3,25 @@ import Foundation
 /// Localized fallback text for calendar composer preset controls.
 enum CalendarComposerLocalizedText {
   static var none: String {
-    localized("None", comment: "Label for no selected alert or travel time")
+    String(localized: "None", comment: "Label for no selected alert or travel time")
   }
 
   static var atTimeOfEvent: String {
-    localized("At time of event", comment: "Label for an alert at the event start time")
+    String(
+      localized: "At time of event",
+      comment: "Label for an alert at the event start time"
+    )
   }
 
   static var custom: String {
-    localized("Custom", comment: "Label for a custom alert or travel-time value")
+    String(localized: "Custom", comment: "Label for a custom alert or travel-time value")
   }
 
   static func alertBefore(seconds: TimeInterval) -> String {
-    let format = localized(
-      "%@ before", comment: "Alert preset label with a duration before an event")
-    return String(format: format, locale: Locale.autoupdatingCurrent, duration(seconds: seconds))
+    String(
+      localized: "\(duration(seconds: seconds)) before",
+      comment: "Alert preset label with a duration before an event"
+    )
   }
 
   static func duration(seconds: TimeInterval) -> String {
@@ -58,9 +62,5 @@ enum CalendarComposerLocalizedText {
     }
 
     return minutes == 1 ? "1 minute" : "\(minutes) minutes"
-  }
-
-  private static func localized(_ key: String, comment: String) -> String {
-    NSLocalizedString(key, comment: comment)
   }
 }
