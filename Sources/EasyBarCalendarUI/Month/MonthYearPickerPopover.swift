@@ -30,6 +30,7 @@ struct MonthYearPickerPopover: View {
         .stroke(borderColor, lineWidth: 1)
     }
     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    .onExitCommand(perform: onClose)
   }
 }
 

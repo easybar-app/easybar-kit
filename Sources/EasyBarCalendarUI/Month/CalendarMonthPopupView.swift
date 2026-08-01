@@ -94,12 +94,14 @@ public struct CalendarMonthPopupView<Store: CalendarMonthPopupStore>: View {
       popupLayoutView
 
       if isYearPickerPresented {
-        Color.black
-          .opacity(0.001)
-          .contentShape(Rectangle())
-          .onTapGesture {
-            isYearPickerPresented = false
-          }
+        Button("Close year picker") {
+          isYearPickerPresented = false
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .contentShape(Rectangle())
+        .foregroundStyle(.clear)
+        .background(Color.black.opacity(0.001))
 
         yearPickerOverlayView
       }
