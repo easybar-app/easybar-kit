@@ -44,6 +44,10 @@ Keep `bar.png` as the complete overview. Crop feature screenshots around the rel
 popup and use the shared padding from the manifest. Update the crop rectangle when a raw capture's
 dimensions or popup position changes.
 
+For the EasyBar context-menu screenshot, run `make screenshot-context-menu`, hover **Native
+Widgets** to open its submenu, and take a full-screen screenshot. Save it as
+`docs/screenshots/raw/native_widgets.png`; the manifest crop assumes a 1728-point Retina display.
+
 ## Test release bundles
 
 Build ad-hoc-signed bundles and launch the agents before the app:

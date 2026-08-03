@@ -97,6 +97,8 @@ LOCAL_LOG_DIR ?= $(HOME)/Library/Logs/EasyBar
 LOCAL_STATE_DIR ?= $(HOME)/Library/Application Support/EasyBar/LocalInstall
 WIDGETS_INSTALL_DIR ?= $(HOME)/.config/easybar/widgets
 IMAGE_CONVERT ?= magick
+CLICLICK ?= cliclick
+SCREENSHOT_CONTEXT_MENU_POINT ?= 1344,16
 PRETTIER ?= npx prettier
 STYLUA ?= stylua
 LUA ?= lua
@@ -128,7 +130,7 @@ endif
         build bundle package release app cli validate-config \
         fmt fmt-all fmt-swift fmt-lua fmt-markdown \
         lint lint-swift lint-lua check-lua test test-hardening \
-        clean clean-dist run run-debug run-trace install-local install-widgets uninstall-local stop restart-app icons screenshots check-screenshots \
+        clean clean-dist run run-debug run-trace install-local install-widgets uninstall-local stop restart-app icons screenshot-context-menu screenshots check-screenshots \
         build-app build-lua-runtime build-calendar-agent build-network-agent build-cli \
         copy-resources copy-debug-resources prepare-debug-app-bundle verify verify-release \
         sign notarize \
@@ -161,6 +163,13 @@ generate-config: ## Regenerate default config and config docs from the app confi
 
 generate-default-config: ## Regenerate the visible default config reference from the app config schema.
 	@swift run EasyBarGenerateConfig defaults
+
+screenshot-context-menu: ## Open the EasyBar context menu at its documentation screenshot position.
+	@if ! command -v "$(CLICLICK)" >/dev/null 2>&1; then \
+		echo 'Missing cliclick. Install it with: brew install cliclick' >&2; \
+		exit 1; \
+	fi
+	@$(CLICLICK) "rc:$(SCREENSHOT_CONTEXT_MENU_POINT)"
 
 screenshots: ## Regenerate consistently cropped documentation screenshots.
 	@scripts/assets/screenshots.sh "$(IMAGE_CONVERT)" docs/screenshots/screenshots.manifest \
