@@ -1,3 +1,4 @@
+import AppKit
 import EasyBarShared
 import SwiftUI
 
@@ -75,7 +76,7 @@ extension CalendarMonthPopupView {
           handleGridDragChanged(value)
         }
         .onEnded { value in
-          handleGridDragEnded(value)
+          handleGridDragEnded(value, clickCount: NSApp.currentEvent?.clickCount ?? 1)
         }
     )
     .onPreferenceChange(MonthCalendarGridFramePreferenceKey.self) { frame in
@@ -126,10 +127,13 @@ extension CalendarMonthPopupView {
       Text(day.date, format: .dateTime.weekday(.wide).month(.wide).day().year())
     )
     .accessibilityValue(Text(verbatim: dayAccessibilityValue(for: day)))
-    .accessibilityHint("Selects this date")
+    .accessibilityHint("Selects this date. Double-click to create an appointment")
     .accessibilityAddTraits(.isButton)
     .accessibilityAction {
       selectDayForAccessibility(day.date)
+    }
+    .accessibilityAction(named: "Create appointment") {
+      openComposer(on: day.date)
     }
   }
 

@@ -10,6 +10,7 @@ public struct CalendarEventComposerView: View {
   public let onSaved: () -> Void
   public let onDeleted: () -> Void
   @State private var showsDeleteConfirmation = false
+  @State private var showsCloseConfirmation = false
 
   public init(
     composer: CalendarEventComposer,
@@ -51,6 +52,14 @@ public struct CalendarEventComposerView: View {
       }
     } message: {
       Text(config.deleteConfirmationMessage)
+    }
+    .alert("Save changes before closing?", isPresented: $showsCloseConfirmation) {
+      Button(config.cancelLabel, role: .cancel) {}
+      Button("Discard", role: .destructive, action: onCancel)
+      Button(primaryButtonTitle, action: saveAndClose)
+        .disabled(!composer.canSave)
+    } message: {
+      Text("If you don’t save, your changes will be lost.")
     }
   }
 
@@ -202,16 +211,13 @@ public struct CalendarEventComposerView: View {
 
       Spacer()
 
-      Button(config.cancelLabel) {
-        onCancel()
-      }
-      .disabled(composer.isSaving)
+      Button(config.cancelLabel, action: requestClose)
+        .keyboardShortcut(.cancelAction)
+        .disabled(composer.isSaving)
 
-      Button(primaryButtonTitle) {
-        composer.save(onSuccess: onSaved)
-      }
-      .keyboardShortcut(.defaultAction)
-      .disabled(composer.isSaving)
+      Button(primaryButtonTitle, action: saveAndClose)
+        .keyboardShortcut(.defaultAction)
+        .disabled(composer.isSaving)
     }
   }
 
@@ -235,6 +241,19 @@ public struct CalendarEventComposerView: View {
 
   private var displayedComponents: DatePickerComponents {
     composer.isAllDay ? [.date] : [.date, .hourAndMinute]
+  }
+
+  private func requestClose() {
+    guard composer.hasUnsavedChanges else {
+      onCancel()
+      return
+    }
+
+    showsCloseConfirmation = true
+  }
+
+  private func saveAndClose() {
+    composer.save(onSuccess: onSaved)
   }
 
   private func labeledTextField(

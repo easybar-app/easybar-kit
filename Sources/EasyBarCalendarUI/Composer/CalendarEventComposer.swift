@@ -72,6 +72,7 @@ public final class CalendarEventComposer: ObservableObject {
   private var cancellables: Set<AnyCancellable> = []
   var preferredCalendarID: String?
   var preferredCalendarName: String?
+  private var cleanFormState: CalendarEventComposerFormState?
 
   public init(
     config: CalendarComposerConfig,
@@ -106,6 +107,7 @@ public final class CalendarEventComposer: ObservableObject {
       .store(in: &cancellables)
 
     reset(using: Date())
+    markFormClean()
   }
 
   /// Returns whether the current form contents can be saved.
@@ -120,6 +122,12 @@ public final class CalendarEventComposer: ObservableObject {
   public var canDelete: Bool {
     guard case .edit = mode else { return false }
     return accessGranted && !isSaving
+  }
+
+  /// Returns whether editable form values differ from the prepared event or defaults.
+  public var hasUnsavedChanges: Bool {
+    guard let cleanFormState else { return false }
+    return !CalendarEventComposerFormState(composer: self).matches(cleanFormState)
   }
 
   /// Returns the current panel title.
@@ -165,5 +173,10 @@ public final class CalendarEventComposer: ObservableObject {
     }
 
     alertRows.removeAll { $0.id == id }
+  }
+
+  /// Records the current editable values as the clean dismissal baseline.
+  func markFormClean() {
+    cleanFormState = CalendarEventComposerFormState(composer: self)
   }
 }

@@ -115,6 +115,7 @@ extension CalendarEventComposer {
     }
 
     infoMessage = successMessage
+    markFormClean()
     refreshSnapshots()
     onSuccess()
   }

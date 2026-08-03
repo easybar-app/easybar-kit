@@ -10,6 +10,7 @@ extension CalendarEventComposer {
 
     reset(using: defaultDate)
     clearMessages()
+    markFormClean()
     refreshSnapshots()
   }
 
@@ -21,6 +22,7 @@ extension CalendarEventComposer {
       mode = .create
       reset(using: event.startDate)
       errorMessage = "This appointment cannot be edited."
+      markFormClean()
       refreshSnapshots()
       return
     }
@@ -49,10 +51,18 @@ extension CalendarEventComposer {
       defaultAlert: config.defaultAlert
     )
 
+    markFormClean()
     refreshSnapshots()
   }
 
   func applySnapshot(_ snapshot: CalendarAgentSnapshot?) {
+    let wasClean = !hasUnsavedChanges
+    defer {
+      if wasClean {
+        markFormClean()
+      }
+    }
+
     accessGranted = snapshot?.accessGranted ?? false
 
     let options =

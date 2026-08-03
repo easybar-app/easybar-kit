@@ -26,7 +26,12 @@ extension CalendarMonthPopupView {
 
   /// Opens the host-provided event composer for a new appointment.
   func openComposer() {
-    let defaultDate = resolvedCalendar.startOfDay(for: min(selectedStartDate, selectedEndDate))
+    openComposer(on: min(selectedStartDate, selectedEndDate))
+  }
+
+  /// Opens the host-provided event composer for a new appointment on one date.
+  func openComposer(on date: Date) {
+    let defaultDate = resolvedCalendar.startOfDay(for: date)
     onCreateEvent(defaultDate) {
       refreshCalendarViews()
     }

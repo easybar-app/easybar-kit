@@ -209,7 +209,7 @@ extension CalendarMonthPopupView {
   }
 
   /// Handles one grid drag end.
-  func handleGridDragEnded(_ value: DragGesture.Value) {
+  func handleGridDragEnded(_ value: DragGesture.Value, clickCount: Int) {
     defer {
       isDragSelecting = false
       dragAnchorDate = nil
@@ -219,6 +219,12 @@ extension CalendarMonthPopupView {
 
     guard let startDate = resolvedDay(at: value.startLocation) else { return }
     let endDate = resolvedDay(at: value.location) ?? startDate
+    let shouldOpenComposer = shouldOpenComposerAfterGridInteraction(
+      clickCount: clickCount,
+      startDate: startDate,
+      endDate: endDate,
+      didCrossIntoAnotherDay: dragDidCrossIntoAnotherDay
+    )
 
     if shouldCollapseDragSelection(startDate: startDate, endDate: endDate) {
       selectedStartDate = startDate
@@ -227,6 +233,11 @@ extension CalendarMonthPopupView {
         "month calendar popup click_select",
         .field("date", "\(debugDate(startDate))"),
       )
+
+      if shouldOpenComposer {
+        openComposer(on: startDate)
+      }
+
       return
     }
 
@@ -243,6 +254,18 @@ extension CalendarMonthPopupView {
   /// Returns whether the finished drag should collapse back to a single selected day.
   func shouldCollapseDragSelection(startDate: Date, endDate: Date) -> Bool {
     return !dragDidCrossIntoAnotherDay || startDate == endDate
+  }
+
+  /// Returns whether a completed pointer interaction is an unambiguous date double-click.
+  func shouldOpenComposerAfterGridInteraction(
+    clickCount: Int,
+    startDate: Date,
+    endDate: Date,
+    didCrossIntoAnotherDay: Bool
+  ) -> Bool {
+    clickCount == 2
+      && !didCrossIntoAnotherDay
+      && startDate == endDate
   }
 
   /// Formats one grouped selection date header.

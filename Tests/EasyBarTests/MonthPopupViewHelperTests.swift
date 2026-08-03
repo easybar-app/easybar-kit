@@ -70,6 +70,84 @@ final class MonthPopupViewHelperTests: XCTestCase {
 
     XCTAssertEqual(view.appointmentsScrollableHeight, CGFloat(240))
   }
+
+  @MainActor
+  func testOpenComposerOnDateUsesStartOfDayAndRefreshesAfterChange() {
+    let calendar = Calendar.current
+    let input = calendar.date(
+      bySettingHour: 16,
+      minute: 45,
+      second: 0,
+      of: Date(timeIntervalSince1970: 1_800_000_000)
+    )!
+    var receivedDate: Date?
+    var changeCompletion: (() -> Void)?
+    var refreshRequested = false
+    let view = makeMonthPopupView(
+      layout: .calendarAppointmentsVertical,
+      spacing: 12,
+      onCreateEvent: { date, completion in
+        receivedDate = date
+        changeCompletion = completion
+      },
+      onRefreshRequested: {
+        refreshRequested = true
+      }
+    )
+
+    view.openComposer(on: input)
+
+    XCTAssertEqual(receivedDate, calendar.startOfDay(for: input))
+    XCTAssertFalse(refreshRequested)
+
+    changeCompletion?()
+
+    XCTAssertTrue(refreshRequested)
+  }
+
+  @MainActor
+  func testOnlyStationaryDoubleClickOpensComposer() {
+    let calendar = Calendar.current
+    let startDate = calendar.startOfDay(for: Date(timeIntervalSince1970: 1_800_000_000))
+    let endDate = calendar.date(byAdding: .day, value: 1, to: startDate)!
+    let view = makeMonthPopupView(
+      layout: .calendarAppointmentsVertical,
+      spacing: 12
+    )
+
+    XCTAssertFalse(
+      view.shouldOpenComposerAfterGridInteraction(
+        clickCount: 1,
+        startDate: startDate,
+        endDate: startDate,
+        didCrossIntoAnotherDay: false
+      )
+    )
+    XCTAssertTrue(
+      view.shouldOpenComposerAfterGridInteraction(
+        clickCount: 2,
+        startDate: startDate,
+        endDate: startDate,
+        didCrossIntoAnotherDay: false
+      )
+    )
+    XCTAssertFalse(
+      view.shouldOpenComposerAfterGridInteraction(
+        clickCount: 2,
+        startDate: startDate,
+        endDate: endDate,
+        didCrossIntoAnotherDay: false
+      )
+    )
+    XCTAssertFalse(
+      view.shouldOpenComposerAfterGridInteraction(
+        clickCount: 2,
+        startDate: startDate,
+        endDate: startDate,
+        didCrossIntoAnotherDay: true
+      )
+    )
+  }
 }
 
 @MainActor
@@ -89,7 +167,9 @@ private final class StubMonthCalendarPopupStore: CalendarMonthPopupStore {
 @MainActor
 private func makeMonthPopupView(
   layout: CalendarMonthPopupLayout,
-  spacing: Double
+  spacing: Double,
+  onCreateEvent: @escaping (Date, @escaping () -> Void) -> Void = { _, _ in },
+  onRefreshRequested: @escaping () -> Void = {}
 ) -> CalendarMonthPopupView<StubMonthCalendarPopupStore> {
   return CalendarMonthPopupView(
     store: StubMonthCalendarPopupStore(),
@@ -99,9 +179,9 @@ private func makeMonthPopupView(
     birthdays: .testValue,
     emptyText: "No events",
     onVisibleMonthChanged: { _ in },
-    onCreateEvent: { _, _ in },
+    onCreateEvent: onCreateEvent,
     onEditEvent: { _, _ in },
-    onRefreshRequested: {}
+    onRefreshRequested: onRefreshRequested
   )
 }
 
