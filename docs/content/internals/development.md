@@ -5,13 +5,14 @@
 Install the local development dependencies:
 
 ```bash
-brew install lua stylua
+brew install imagemagick librsvg lua stylua
 ```
 
 EasyBar consumes the lossless TOML parser and editor from the versioned `SwiftTOMLEdit` Swift
 package. Its prebuilt native artifact is resolved by SwiftPM, so EasyBar contributors do not need a
 Rust toolchain for normal builds or tests. Lua formatting uses the repository's `.stylua.toml` file
-and the `stylua` executable from `PATH`.
+and the `stylua` executable from `PATH`. Release-style bundles use `rsvg-convert` from librsvg to
+render the SVG app icons and ImageMagick to validate the rendered colors.
 
 ## Common commands
 

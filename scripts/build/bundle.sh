@@ -27,7 +27,7 @@ notary_submit="${NOTARY_SUBMIT:-0}"
 clean_build="${CLEAN_BUILD:-0}"
 dist_dir="${DIST_DIR:-dist}"
 image_convert="${IMAGE_CONVERT:-magick}"
-icon_font="${ICON_FONT:-/System/Library/Fonts/Supplemental/Arial.ttf}"
+svg_convert="${SVG_CONVERT:-rsvg-convert}"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -173,7 +173,7 @@ scripts/build/copy-resources.sh \
   "$version"
 
 echo "Generating app icons"
-scripts/assets/app_icons.sh "$image_convert" "$icon_font" "$dist_dir" \
+scripts/assets/app_icons.sh "$svg_convert" "$image_convert" "$dist_dir" \
   "packaging/easybar-icon.svg:$app_icon_icns" \
   "packaging/easybar-calendar-agent-icon.svg:$calendar_agent_icon_icns" \
   "packaging/easybar-network-agent-icon.svg:$network_agent_icon_icns"

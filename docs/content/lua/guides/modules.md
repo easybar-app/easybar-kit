@@ -17,7 +17,7 @@ use standard `require(...)` calls without changing `package.path` themselves.
 │   └── status/
 │       └── init.lua
 └── assets/
-    └── github-mark.svg
+    └── github.svg
 ```
 
 Only regular `*.lua` files directly inside the widgets directory are started as widgets. Lua files

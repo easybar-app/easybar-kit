@@ -11,7 +11,7 @@ final class LuaAssetAndImageTests: LuaRenderRuntimeTestCase, @unchecked Sendable
       """
       local item = easybar.add("item", "asset", {
         label = table.concat({
-          easybar.asset("github-mark.svg"),
+          easybar.asset("github.svg"),
           easybar.asset("assets/icons/warning.svg"),
           easybar.asset("assets/../normalized.svg"),
         }, "|")
@@ -24,7 +24,7 @@ final class LuaAssetAndImageTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     XCTAssertEqual(
       node.text,
       [
-        widgets.appendingPathComponent("github-mark.svg").path,
+        widgets.appendingPathComponent("github.svg").path,
         widgets.appendingPathComponent("assets/icons/warning.svg").path,
         widgets.appendingPathComponent("normalized.svg").path,
       ].joined(separator: "|")
@@ -37,12 +37,12 @@ final class LuaAssetAndImageTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
 
     let node = try await render(
-      "easybar.add(\"item\", \"asset\", { label = easybar.asset(\"github-mark.svg\") })",
+      "easybar.add(\"item\", \"asset\", { label = easybar.asset(\"github.svg\") })",
       as: "github/widget.lua",
       in: widgets
     )
 
-    XCTAssertEqual(node.text, nested.appendingPathComponent("github-mark.svg").path)
+    XCTAssertEqual(node.text, nested.appendingPathComponent("github.svg").path)
   }
 
   func testAssetRejectsInvalidPaths() async throws {

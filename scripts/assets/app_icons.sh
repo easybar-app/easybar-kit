@@ -2,7 +2,7 @@
 set -eu
 
 usage() {
-  echo "Usage: $0 IMAGE_CONVERT ICON_FONT DIST_DIR SVG:ICNS [SVG:ICNS ...]" >&2
+  echo "Usage: $0 SVG_CONVERT IMAGE_CONVERT DIST_DIR SVG:ICNS [SVG:ICNS ...]" >&2
 }
 
 require_command() {
@@ -24,15 +24,15 @@ if [ "$#" -lt 4 ]; then
   exit 2
 fi
 
-image_convert=$1
-icon_font=$2
+svg_convert=$1
+image_convert=$2
 dist_dir=$3
 shift 3
 
+require_command "$svg_convert" "Install librsvg or set SVG_CONVERT=/path/to/rsvg-convert."
 require_command "$image_convert" "Install ImageMagick or set IMAGE_CONVERT=/path/to/convert."
 require_command sips "This target must run on macOS."
 require_command iconutil "This target must run on macOS."
-require_file "$icon_font" "icon font"
 
 create_icon_variant() {
   size=$1
@@ -53,17 +53,28 @@ for spec in "$@"; do
   rm -rf "$tmp_dir" "$render_dir" "$icns"
   mkdir -p "$(dirname "$icns")" "$tmp_dir" "$render_dir"
 
-  "$image_convert" \
-    -background none \
-    -font "$icon_font" \
-    -density 1024 \
-    "$svg" \
-    -resize 1024x1024 \
-    -gravity center \
-    -extent 1024x1024 \
-    "$rendered_png"
+  "$svg_convert" \
+    --width 1024 \
+    --height 1024 \
+    --keep-aspect-ratio \
+    --output "$rendered_png" \
+    "$svg"
 
   require_file "$rendered_png" "rendered SVG icon"
+
+  saturation_mean=$(
+    "$image_convert" "$rendered_png" \
+      -colorspace HSL \
+      -channel G \
+      -separate \
+      -format '%[fx:mean]' \
+      info:
+  )
+  if ! awk -v value="$saturation_mean" 'BEGIN { exit !(value >= 0.1) }'; then
+    echo "Rendered icon has unexpectedly low color saturation: $svg ($saturation_mean)" >&2
+    echo "Check that SVG_CONVERT supports the SVG gradients." >&2
+    exit 1
+  fi
 
   cp "$rendered_png" "$tmp_dir/icon_512x512@2x.png"
   create_icon_variant 16 icon_16x16.png

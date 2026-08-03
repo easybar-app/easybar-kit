@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat >&2 <<'EOF_USAGE'
-Usage: scripts/ci/install-dependencies.sh <test|release|format|lua|imagemagick> [...]
+Usage: scripts/ci/install-dependencies.sh <test|release|format|lua|imagemagick|librsvg> [...]
 
 Modes:
   test         Install dependencies needed for tests.
@@ -11,6 +11,7 @@ Modes:
   format       Install dependencies needed for source-format checks.
   lua          Install Lua only.
   imagemagick  Install ImageMagick only.
+  librsvg      Install librsvg only.
 
 Environment:
   HOMEBREW_TRUST_TAPS  Space-separated installed taps to trust before installs.
@@ -24,6 +25,7 @@ fi
 
 need_lua=false
 need_imagemagick=false
+need_librsvg=false
 need_stylua=false
 
 for mode in "$@"; do
@@ -34,6 +36,7 @@ for mode in "$@"; do
     release)
       need_lua=true
       need_imagemagick=true
+      need_librsvg=true
       ;;
     format)
       need_lua=true
@@ -41,6 +44,9 @@ for mode in "$@"; do
       ;;
     imagemagick)
       need_imagemagick=true
+      ;;
+    librsvg)
+      need_librsvg=true
       ;;
     -h|--help)
       usage
@@ -102,6 +108,19 @@ if [ "$need_imagemagick" = true ]; then
   fi
 
   magick -version
+fi
+
+if [ "$need_librsvg" = true ]; then
+  install_if_missing rsvg-convert librsvg
+  svg_convert="$(command -v rsvg-convert)"
+
+  if [ -n "${GITHUB_ENV:-}" ]; then
+    echo "SVG_CONVERT=${svg_convert}" >>"$GITHUB_ENV"
+  else
+    echo "SVG_CONVERT=${svg_convert}"
+  fi
+
+  rsvg-convert --version
 fi
 
 if [ "$need_lua" = true ]; then

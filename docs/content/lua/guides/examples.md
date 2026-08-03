@@ -141,7 +141,7 @@ local github = easybar.add(easybar.kind.item, "github", {
     icon = {
         color = easybar.theme.ref.text,
         image = {
-            path = easybar.asset("github-mark.svg"),
+            path = easybar.asset("github.svg"),
             size = 16,
         },
     },
@@ -149,8 +149,8 @@ local github = easybar.add(easybar.kind.item, "github", {
 ```
 
 `easybar.asset()` resolves relative to the Lua file that calls it, so the example expects
-`github-mark.svg` beside the widget file. Nested paths such as
-`easybar.asset("assets/github-mark.svg")` work too. This approach is best for larger images or
+`github.svg` beside the widget file. Nested paths such as
+`easybar.asset("assets/github.svg")` work too. This approach is best for larger images or
 assets reused by more than one part of a widget. Existing absolute paths remain valid when passed
 directly as `image.path`.
 

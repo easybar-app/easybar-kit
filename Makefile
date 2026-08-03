@@ -29,7 +29,6 @@ LUA_RUNTIME_BIN := $(APP_MACOS)/$(LUA_RUNTIME_EXEC)
 APP_ICON_SVG := packaging/easybar-icon.svg
 APP_ICON_FILE := $(APP_NAME)
 APP_ICON_ICNS := $(APP_RESOURCES)/$(APP_ICON_FILE).icns
-ICON_FONT ?= /System/Library/Fonts/Supplemental/Arial.ttf
 
 CALENDAR_AGENT_BUNDLE := $(DIST_DIR)/$(CALENDAR_AGENT_NAME).app
 CALENDAR_AGENT_CONTENTS := $(CALENDAR_AGENT_BUNDLE)/Contents
@@ -97,6 +96,7 @@ LOCAL_LOG_DIR ?= $(HOME)/Library/Logs/EasyBar
 LOCAL_STATE_DIR ?= $(HOME)/Library/Application Support/EasyBar/LocalInstall
 WIDGETS_INSTALL_DIR ?= $(HOME)/.config/easybar/widgets
 IMAGE_CONVERT ?= magick
+SVG_CONVERT ?= rsvg-convert
 CLICLICK ?= cliclick
 SCREENSHOT_CONTEXT_MENU_POINT ?= 1344,16
 PRETTIER ?= npx prettier
@@ -289,8 +289,8 @@ prepare-debug-app-bundle: ## Internal target: prepare local debug app bundle met
 		--icon-file "$(APP_ICON_FILE)"
 	@touch "$(APP_BUNDLE)"
 
-icons: ## Generate .icns files from SVG icons using ImageMagick, sips, and iconutil.
-	@scripts/assets/app_icons.sh "$(IMAGE_CONVERT)" "$(ICON_FONT)" "$(DIST_DIR)" \
+icons: ## Generate .icns files from SVG icons using librsvg, ImageMagick, sips, and iconutil.
+	@scripts/assets/app_icons.sh "$(SVG_CONVERT)" "$(IMAGE_CONVERT)" "$(DIST_DIR)" \
 		"$(APP_ICON_SVG):$(APP_ICON_ICNS)" \
 		"$(CALENDAR_AGENT_ICON_SVG):$(CALENDAR_AGENT_ICON_ICNS)" \
 		"$(NETWORK_AGENT_ICON_SVG):$(NETWORK_AGENT_ICON_ICNS)"
@@ -491,4 +491,4 @@ ICON_DIR := docs/content/assets/icons
 ICON_SIZES := 16x16 32x32 48x48 64x64
 
 favicon: ## Create favicons.
-	@scripts/assets/favicons.sh "$(IMAGE_CONVERT)" "$(ICON_FONT)" "$(SVG)" "$(ICON_DIR)" $(ICON_SIZES)
+	@scripts/assets/favicons.sh "$(SVG_CONVERT)" "$(SVG)" "$(ICON_DIR)" $(ICON_SIZES)

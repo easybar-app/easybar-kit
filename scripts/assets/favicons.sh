@@ -2,12 +2,12 @@
 set -eu
 
 usage() {
-  echo "Usage: $0 IMAGE_CONVERT ICON_FONT SVG ICON_DIR SIZE [SIZE ...]" >&2
+  echo "Usage: $0 SVG_CONVERT SVG ICON_DIR SIZE [SIZE ...]" >&2
 }
 
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
-    echo "Missing $1. Install ImageMagick or set IMAGE_CONVERT=/path/to/convert." >&2
+    echo "Missing $1. Install librsvg or set SVG_CONVERT=/path/to/rsvg-convert." >&2
     exit 1
   fi
 }
@@ -19,19 +19,17 @@ require_file() {
   fi
 }
 
-if [ "$#" -lt 5 ]; then
+if [ "$#" -lt 4 ]; then
   usage
   exit 2
 fi
 
-image_convert=$1
-icon_font=$2
-svg=$3
-icon_dir=$4
-shift 4
+svg_convert=$1
+svg=$2
+icon_dir=$3
+shift 3
 
-require_command "$image_convert"
-require_file "$icon_font" "icon font"
+require_command "$svg_convert"
 require_file "$svg" "icon SVG"
 mkdir -p "$icon_dir"
 
@@ -39,15 +37,16 @@ create_icon() {
   size=$1
   outfile=$2
   path="$icon_dir/$outfile"
+  width=${size%x*}
+  height=${size#*x}
 
   echo "create $path"
-  "$image_convert" \
-    -background none \
-    -font "$icon_font" \
-    "$svg" \
-    -fuzz 5% -transparent white \
-    -resize "$size" \
-    "$path"
+  "$svg_convert" \
+    --width "$width" \
+    --height "$height" \
+    --keep-aspect-ratio \
+    --output "$path" \
+    "$svg"
 
   if [ ! -s "$path" ]; then
     echo "Could not create icon: $path" >&2
