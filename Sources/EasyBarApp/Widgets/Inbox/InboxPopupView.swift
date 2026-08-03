@@ -14,12 +14,22 @@ struct InboxPopupView: View {
   var body: some View {
     let config = configStore.snapshot.builtins.inbox
     let activities = sourceActivityRows
-    let busySources = Set(activities.map(\.source))
+    let busySourceActions = Dictionary(grouping: activities, by: \.source)
+      .mapValues { $0.map(\.action) }
 
     VStack(alignment: .leading, spacing: 8) {
       HStack {
         Text("Inbox").font(.headline).foregroundStyle(color(config.popupTitleColorHex))
         Spacer()
+        if !store.refreshAllTargets.isEmpty {
+          Button("Refresh all", systemImage: "arrow.clockwise", action: refreshAllSources)
+            .labelStyle(.iconOnly)
+            .buttonStyle(.plain)
+            .font(.system(size: 13, weight: .medium))
+            .foregroundStyle(color(config.popupMutedColorHex))
+            .disabled(store.availableRefreshAllTargets.isEmpty)
+            .help("Refresh all inbox sources")
+        }
         if store.unreadCount > 0 {
           Button("Mark all read") { store.markAllRead() }
             .buttonStyle(.plain)
@@ -78,7 +88,7 @@ struct InboxPopupView: View {
               ForEach(group.items) { item in
                 itemView(
                   item,
-                  sourceIsBusy: busySources.contains(item.source),
+                  busySourceActions: busySourceActions[item.source] ?? [],
                   config: config
                 )
               }
@@ -105,6 +115,22 @@ struct InboxPopupView: View {
     }
     .onDisappear {
       releaseSourceActionHold()
+    }
+  }
+
+  /// Requests every available source action that opted into Refresh All.
+  private func refreshAllSources() {
+    let targets = store.availableRefreshAllTargets
+    guard !targets.isEmpty else { return }
+
+    beginSourceActionHold(hasActivity: !sourceActivityRows.isEmpty)
+    for target in targets {
+      emitAction(
+        .inboxContextAction,
+        actionID: target.action.id,
+        source: target.source,
+        targetWidgetID: "builtin_inbox"
+      )
     }
   }
 
@@ -208,7 +234,7 @@ struct InboxPopupView: View {
 
   private func itemView(
     _ presented: InboxPresentedItem,
-    sourceIsBusy: Bool,
+    busySourceActions: [InboxAction],
     config: Config.InboxBuiltinConfig
   ) -> some View {
     VStack(alignment: .leading, spacing: 5) {
@@ -283,7 +309,7 @@ struct InboxPopupView: View {
           ForEach(actions) { action in
             let presentation = InboxItemActionPresentation(
               action: action,
-              sourceIsBusy: sourceIsBusy
+              busySourceAction: busySourceActions.first { $0.id == action.id }
             )
 
             switch presentation.style {
@@ -417,9 +443,9 @@ struct InboxItemActionPresentation: Equatable {
   let style: InboxItemActionStyle
   let isEnabled: Bool
 
-  init(action: InboxAction, sourceIsBusy: Bool) {
-    if sourceIsBusy, action.id == "refresh" {
-      title = "Refreshing…"
+  init(action: InboxAction, busySourceAction: InboxAction?) {
+    if let busySourceAction, busySourceAction.isBusy {
+      title = busySourceAction.title
       style = .status
       isEnabled = false
     } else if action.isBusy {

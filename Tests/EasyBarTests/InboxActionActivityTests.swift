@@ -8,25 +8,29 @@ final class InboxActionActivityTests: XCTestCase {
 
     XCTAssertTrue(action.isEnabled)
     XCTAssertFalse(action.isBusy)
+    XCTAssertFalse(action.isIncludedInRefreshAll)
   }
 
-  func testActionDecodesBusyAndDisabledState() throws {
+  func testActionDecodesBusyDisabledAndRefreshAllState() throws {
     let data = Data(
-      #"{"id":"activity","title":"Refreshing…","enabled":false,"busy":true}"#.utf8
+      #"{"id":"sync","title":"Refreshing…","enabled":false,"busy":true,"include_in_refresh_all":true}"#.utf8
     )
 
-    let action = try JSONDecoder().decode(InboxAction.self, from: data)
+    let decoder = JSONDecoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
+    let action = try decoder.decode(InboxAction.self, from: data)
 
-    XCTAssertEqual(action.id, "activity")
+    XCTAssertEqual(action.id, "sync")
     XCTAssertEqual(action.title, "Refreshing…")
     XCTAssertFalse(action.isEnabled)
     XCTAssertTrue(action.isBusy)
+    XCTAssertTrue(action.isIncludedInRefreshAll)
   }
 
-  func testSourceRefreshUsesStatusInsteadOfSecondItemSpinner() {
+  func testMatchingBusySourceActionUsesStatusInsteadOfSecondItemSpinner() {
     let presentation = InboxItemActionPresentation(
-      action: InboxAction(id: "refresh", title: "Refresh", busy: true),
-      sourceIsBusy: true
+      action: InboxAction(id: "sync", title: "Sync now"),
+      busySourceAction: InboxAction(id: "sync", title: "Refreshing…", busy: true)
     )
 
     XCTAssertEqual(presentation.title, "Refreshing…")
@@ -37,7 +41,7 @@ final class InboxActionActivityTests: XCTestCase {
   func testItemOperationKeepsItsInlineProgressIndicator() {
     let presentation = InboxItemActionPresentation(
       action: InboxAction(id: "upgrade", title: "Upgrading…", enabled: false, busy: true),
-      sourceIsBusy: false
+      busySourceAction: nil
     )
 
     XCTAssertEqual(presentation.title, "Upgrading…")
@@ -48,7 +52,7 @@ final class InboxActionActivityTests: XCTestCase {
   func testIdleItemActionRemainsAButton() {
     let presentation = InboxItemActionPresentation(
       action: InboxAction(id: "refresh", title: "Refresh"),
-      sourceIsBusy: false
+      busySourceAction: nil
     )
 
     XCTAssertEqual(presentation.title, "Refresh")

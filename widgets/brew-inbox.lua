@@ -141,12 +141,14 @@ end
 local function configure_source_actions()
 	local actions
 	if operation_is_active() then
+		local is_refresh = state.operation_kind == "refresh"
 		actions = {
 			{
-				id = "activity",
+				id = is_refresh and "refresh" or "activity",
 				title = state.operation or "Working…",
 				enabled = false,
 				busy = state.operation_item_id == nil,
+				include_in_refresh_all = is_refresh or nil,
 			},
 		}
 		if state.can_cancel then
@@ -158,7 +160,7 @@ local function configure_source_actions()
 		end
 	else
 		actions = {
-			{ id = "refresh", title = "Refresh" },
+			{ id = "refresh", title = "Refresh", include_in_refresh_all = true },
 			{ id = "update", title = "Update" },
 			{ id = "upgrade_all", title = "Upgrade all" },
 		}

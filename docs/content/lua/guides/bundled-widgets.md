@@ -30,7 +30,9 @@ Do not load both presentation variants for the same service:
 - choose `github.lua` or `github-inbox.lua`
 - choose `gitlab.lua` or `gitlab-inbox.lua`
 
-The regular variants own a bar icon and popup. The inbox variants publish snapshots into the shared native inbox and register their operations as source actions.
+The regular variants own a bar icon and popup. The inbox variants publish snapshots into the shared
+native inbox, register their operations as source actions, and opt their refresh action into the
+inbox-wide **Refresh all** command.
 
 The Tailscale widget uses left click to bring Tailscale up or down. Its right-click menu lists the
 currently advertised exit nodes and a **Disabled** option. Selecting one changes Tailscale's own
@@ -83,7 +85,6 @@ Lua loader and command failures also appear in EasyBar's logs. The Homebrew exam
 bounded `brew-widget.log` in the configured logging directory. Use [Lua Logging](logging.md),
 [Commands](commands.md), and [Troubleshooting](../../runtime/troubleshooting.md) when an example does
 not update.
-
 
 
 

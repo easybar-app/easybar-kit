@@ -248,7 +248,9 @@ final class InboxStoreTests: XCTestCase {
     let store = InboxStore()
     store.configure(
       source: "GitLab",
-      actions: [InboxAction(id: "refresh", title: "Refresh")]
+      actions: [
+        InboxAction(id: "sync", title: "Refresh", includeInRefreshAll: true)
+      ]
     )
 
     XCTAssertEqual(
@@ -256,7 +258,9 @@ final class InboxStoreTests: XCTestCase {
       [
         InboxSourceConfiguration(
           source: "GitLab",
-          actions: [InboxAction(id: "refresh", title: "Refresh")]
+          actions: [
+            InboxAction(id: "sync", title: "Refresh", includeInRefreshAll: true)
+          ]
         )
       ]
     )
@@ -266,6 +270,65 @@ final class InboxStoreTests: XCTestCase {
 
     store.configure(source: "GitLab", actions: [])
     XCTAssertTrue(store.sourceConfigurations.isEmpty)
+  }
+
+  func testRefreshAllTargetsContainOnlyOptedInSourceActions() {
+    let store = InboxStore()
+    store.configure(
+      source: "GitHub",
+      actions: [
+        InboxAction(id: "sync", title: "Sync now", includeInRefreshAll: true),
+        InboxAction(id: "open", title: "Open"),
+      ]
+    )
+    store.configure(
+      source: "GitLab",
+      actions: [
+        InboxAction(
+          id: "reload",
+          title: "Refreshing…",
+          enabled: false,
+          busy: true,
+          includeInRefreshAll: true
+        )
+      ]
+    )
+    store.configure(
+      source: "Other",
+      actions: [InboxAction(id: "refresh", title: "Refresh")]
+    )
+
+    XCTAssertEqual(store.refreshAllTargets.map(\.source), ["GitHub", "GitLab"])
+    XCTAssertEqual(store.refreshAllTargets.map(\.action.id), ["sync", "reload"])
+    XCTAssertEqual(store.availableRefreshAllTargets.map(\.source), ["GitHub"])
+  }
+
+  func testOnlyOneSourceActionCanJoinRefreshAll() {
+    let store = InboxStore()
+    store.configure(
+      source: "GitHub",
+      actions: [
+        InboxAction(id: "sync", title: "Sync", includeInRefreshAll: true),
+        InboxAction(id: "reload", title: "Reload", includeInRefreshAll: true),
+        InboxAction(id: "open", title: "Open"),
+      ]
+    )
+
+    XCTAssertEqual(store.sourceConfigurations.first?.actions.map(\.id), ["sync", "open"])
+    XCTAssertEqual(store.refreshAllTargets.map(\.action.id), ["sync"])
+  }
+
+  func testItemActionsCannotJoinRefreshAll() {
+    let store = InboxStore()
+    let invalidItem = InboxItem(
+      id: "one",
+      title: "One",
+      actions: [InboxAction(id: "sync", title: "Sync", includeInRefreshAll: true)]
+    )
+
+    store.replace(source: "GitHub", items: [invalidItem])
+
+    XCTAssertTrue(store.presentedItems.isEmpty)
   }
 
   func testSourceIsNormalizedConsistently() {

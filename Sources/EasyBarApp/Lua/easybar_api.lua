@@ -468,6 +468,9 @@
 ---@class (exact) EasyBarInboxAction
 ---@field id string Action id returned to the publisher.
 ---@field title string Button title shown in the inbox.
+---@field enabled? boolean Whether the action can be selected. Defaults to true.
+---@field busy? boolean Whether the action is currently running. Defaults to false.
+---@field include_in_refresh_all? boolean For source actions, includes this action in the native Refresh All command. Defaults to false.
 
 ---@class (exact) EasyBarInboxSourcePresentation
 ---@field name? string Display name. Defaults to the publisher source.

@@ -41,21 +41,25 @@ struct InboxAction: Codable, Equatable, Identifiable, Sendable {
   let title: String
   let enabled: Bool?
   let busy: Bool?
+  let includeInRefreshAll: Bool?
 
   init(
     id: String,
     title: String,
     enabled: Bool? = nil,
-    busy: Bool? = nil
+    busy: Bool? = nil,
+    includeInRefreshAll: Bool? = nil
   ) {
     self.id = id
     self.title = title
     self.enabled = enabled
     self.busy = busy
+    self.includeInRefreshAll = includeInRefreshAll
   }
 
   var isEnabled: Bool { enabled ?? true }
   var isBusy: Bool { busy ?? false }
+  var isIncludedInRefreshAll: Bool { includeInRefreshAll ?? false }
 }
 
 struct InboxSourcePresentation: Codable, Equatable, Sendable {
@@ -120,6 +124,10 @@ struct InboxSourceSnapshot: Codable, Equatable, Sendable {
 struct InboxSourceConfiguration: Codable, Equatable, Sendable {
   let source: String
   let actions: [InboxAction]
+
+  var refreshAllAction: InboxAction? {
+    actions.first(where: \.isIncludedInRefreshAll)
+  }
 }
 
 struct InboxPresentedItem: Identifiable, Equatable, Sendable {

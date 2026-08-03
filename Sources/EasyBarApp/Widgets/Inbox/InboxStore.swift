@@ -39,6 +39,19 @@ final class InboxStore: ObservableObject {
     presentedItems.lazy.filter(\.isUnread).count
   }
 
+  /// Returns every source action that participates in the native Refresh All command.
+  var refreshAllTargets: [InboxSourceActionTarget] {
+    sourceConfigurations.compactMap { configuration in
+      guard let action = configuration.refreshAllAction else { return nil }
+      return InboxSourceActionTarget(source: configuration.source, action: action)
+    }
+  }
+
+  /// Returns Refresh All targets that can currently accept an action.
+  var availableRefreshAllTargets: [InboxSourceActionTarget] {
+    refreshAllTargets.filter { $0.action.isEnabled && !$0.action.isBusy }
+  }
+
   func updateStateURL(_ stateURL: URL) {
     guard persistence?.fileURL.standardizedFileURL != stateURL.standardizedFileURL else { return }
     persistState()
@@ -202,7 +215,12 @@ final class InboxStore: ObservableObject {
     guard let source = normalizedSource(source) else { return }
     var actionIDs = Set<String>()
     var validActions: [InboxAction] = []
+    var hasRefreshAllAction = false
     for action in actions where isValidAction(action) && actionIDs.insert(action.id).inserted {
+      if action.isIncludedInRefreshAll {
+        guard !hasRefreshAllAction else { continue }
+        hasRefreshAllAction = true
+      }
       validActions.append(action)
       if validActions.count == 16 { break }
     }
@@ -424,6 +442,7 @@ final class InboxStore: ObservableObject {
     let actions = item.actions ?? []
     return actions.count <= 16
       && actions.allSatisfy(isValidAction)
+      && actions.allSatisfy { !$0.isIncludedInRefreshAll }
       && Set(actions.map(\.id)).count == actions.count
   }
 }

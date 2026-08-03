@@ -95,7 +95,11 @@ distinct:
 ```lua
 easybar.inbox.configure("gitlab", {
     actions = {
-        { id = "refresh", title = "Refresh" },
+        {
+            id = "refresh",
+            title = "Refresh",
+            include_in_refresh_all = true,
+        },
     },
 })
 
@@ -110,6 +114,11 @@ Calling `configure` again replaces the source's complete action list, which allo
 change their menu while work is running—for example, Homebrew replaces Update and Upgrade with
 Cancel. Passing an empty `actions` array removes the submenu. Clearing a source's messages leaves
 its independently configured actions available.
+
+Set `include_in_refresh_all = true` on at most one source action to opt that source into the native
+**Refresh all** button. EasyBar sends the existing `inbox.context_action` event with that action's
+`id`; the action id does not need to be `refresh`. Disabled and busy actions remain visible but are
+skipped by **Refresh all** until they become available. Item actions cannot opt in.
 
 ## Show asynchronous activity
 
@@ -140,6 +149,7 @@ easybar.inbox.configure("gitlab", {
             title = "Refreshing…",
             enabled = false,
             busy = true,
+            include_in_refresh_all = true,
         },
     },
 })
@@ -148,7 +158,11 @@ fetch_async(function()
     publish_items()
     easybar.inbox.configure("gitlab", {
         actions = {
-            { id = "refresh", title = "Refresh" },
+            {
+                id = "refresh",
+                title = "Refresh",
+                include_in_refresh_all = true,
+            },
         },
     })
 end)

@@ -24,14 +24,15 @@ local function configure_source_actions()
 	if source_activity ~= nil then
 		actions = {
 			{
-				id = "activity",
+				id = "refresh",
 				title = source_activity,
 				enabled = false,
 				busy = true,
+				include_in_refresh_all = true,
 			},
 		}
 	else
-		actions = { { id = "refresh", title = "Refresh" } }
+		actions = { { id = "refresh", title = "Refresh", include_in_refresh_all = true } }
 	end
 	easybar.inbox.configure(SOURCE, { actions = actions })
 end

@@ -39,7 +39,12 @@ unread_count_color = "theme.accent"
 
 When there are no unread messages, `use_inactive_style_when_read` selects `read_icon` and `read_icon_color`. Otherwise the anchor uses `unread_icon` and `unread_icon_color`. Set `show_when_empty = false` to hide the anchor when no messages exist. Set `show_unread_count = false` to retain the stateful icon without its numeric badge.
 
-The popup header exposes publisher-provided source submenus through its actions button. Opening the menu temporarily suspends hover-driven popup dismissal. After selecting an asynchronous source action, the inbox remains open while the publisher reports that action as busy and shows a compact progress row below the header. Set `show_source_actions = false` to hide these actions while retaining the inbox-wide controls.
+The popup header exposes publisher-provided source submenus through its actions button. Sources can
+also opt one action into the inbox-wide **Refresh all** button. Opening the menu temporarily suspends
+hover-driven popup dismissal. After selecting an asynchronous source action, the inbox remains open
+while the publisher reports that action as busy and shows a compact progress row below the header.
+Set `show_source_actions = false` to hide the source menus; **Refresh all** remains available for
+sources that explicitly opt in.
 
 See [Native Inbox for Lua](../../lua/guides/inbox.md) for publishing snapshots, limited Markdown,
 item actions, source actions, activity states, persistence, and dismissal behavior. Local shell scripts can instead
