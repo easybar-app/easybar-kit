@@ -1,7 +1,7 @@
 # Native Context Menus
 
-Lua nodes can declare a native macOS menu for right-click actions. EasyBar builds the menu with
-AppKit and sends the selected action back through the normal widget event pipeline.
+Lua nodes can declare a native macOS menu for right-click actions. Subscribe to
+`easybar.events.context_menu.clicked` to handle selections.
 
 ```lua
 local github = easybar.add(easybar.kind.item, "github", {
@@ -62,9 +62,8 @@ right-button `mouse.clicked` event. Without a context menu, existing right-click
 continue to work unchanged. Right-clicking empty bar space continues to open EasyBar's application
 menu.
 
-Invalid entries are omitted without rejecting the widget tree. Menus are limited to eight nested
-levels and 256 total entries per node to keep rendered messages and native menu construction
-bounded.
+Invalid entries are omitted without rejecting the widget tree. Menus support up to eight nested
+levels and 256 total entries per node.
 
 See the complete bundled [`widgets/context-menu.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/context-menu.lua)
 example for dynamic checked filters and native actions.

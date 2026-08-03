@@ -79,4 +79,6 @@ At least one anchor field remains enabled so the calendar keeps a visible intera
 Each configuration change is written to `config.toml` immediately. Comments, whitespace, and
 unrelated settings are preserved.
 
-See the [Configuration Reference](../reference.md) for month, upcoming, selection, composer, appointment, and filter keys. See [Calendar Agent](../../internals/agents/calendar-agent.md) for the process boundary and [Recovery](../../runtime/recovery.md) for permission troubleshooting.
+See the [Configuration Reference](../reference.md) for month, upcoming, selection, composer,
+appointment, and filter keys. See [Agents](../agents.md) for calendar-agent configuration and
+[Recovery](../../runtime/recovery.md) for permission troubleshooting.

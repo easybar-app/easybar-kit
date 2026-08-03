@@ -59,14 +59,14 @@ For concepts and usage examples, use the hand-written configuration guides.
 
 | Key           | Default | Example                                                | Description                                                                                      |
 | ------------- | ------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| `enabled`     | `true`  | —                                                      | Starts the calendar socket client in EasyBar and enables the calendar helper contract.           |
+| `enabled`     | `true`  | —                                                      | Enables calendar data and actions through the calendar agent.                                    |
 | `socket_path` | Not set | `"~/.local/state/easybar/runtime/calendar-agent.sock"` | Optional calendar-agent socket override. Defaults to calendar-agent.sock inside app.runtime_dir. |
 
 ## `agents.network`
 
 | Key                                       | Default | Example                                               | Description                                                                                                                                      |
 | ----------------------------------------- | ------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `enabled`                                 | `true`  | —                                                     | Starts the network socket client in EasyBar and enables the Wi-Fi helper contract.                                                               |
+| `enabled`                                 | `true`  | —                                                     | Enables Wi-Fi and network data through the network agent.                                                                                        |
 | `socket_path`                             | Not set | `"~/.local/state/easybar/runtime/network-agent.sock"` | Optional network-agent socket override. Defaults to network-agent.sock inside app.runtime_dir.                                                   |
 | `refresh_interval_seconds`                | `60`    | —                                                     | Fallback polling interval for Wi-Fi state. Set to 0 to disable polling.                                                                          |
 | `allow_unauthorized_non_sensitive_fields` | `false` | —                                                     | When false, Wi-Fi field requests fail while location permission is denied. When true, only non-sensitive non-Wi-Fi fields may still be returned. |
@@ -745,17 +745,17 @@ For concepts and usage examples, use the hand-written configuration guides.
 
 ## `builtins.calendar.month.popup.style`
 
-| Key                | Default                 | Example | Description                                                              |
-| ------------------ | ----------------------- | ------- | ------------------------------------------------------------------------ |
-| `background_color` | `"theme.background"`    | —       | Background color of the month popup.                                     |
-| `border_color`     | `"theme.border_strong"` | —       | Border color of the month popup.                                         |
-| `border_width`     | `1`                     | —       | Border width of the month popup.                                         |
-| `corner_radius`    | `14`                    | —       | Corner radius of the month popup. Set to 0 for square corners.           |
-| `padding_x`        | `10`                    | —       | Horizontal inner padding of the month popup.                             |
-| `padding_y`        | `8`                     | —       | Vertical inner padding of the month popup.                               |
-| `spacing`          | `8`                     | —       | Gap between calendar and appointments areas and internal popup sections. |
-| `margin_x`         | `8`                     | —       | Horizontal outer margin around the whole month popup.                    |
-| `margin_y`         | `8`                     | —       | Vertical outer margin around the whole month popup.                      |
+| Key                | Default                 | Example | Description                                                    |
+| ------------------ | ----------------------- | ------- | -------------------------------------------------------------- |
+| `background_color` | `"theme.background"`    | —       | Background color of the month popup.                           |
+| `border_color`     | `"theme.border_strong"` | —       | Border color of the month popup.                               |
+| `border_width`     | `1`                     | —       | Border width of the month popup.                               |
+| `corner_radius`    | `14`                    | —       | Corner radius of the month popup. Set to 0 for square corners. |
+| `padding_x`        | `10`                    | —       | Horizontal inner padding of the month popup.                   |
+| `padding_y`        | `8`                     | —       | Vertical inner padding of the month popup.                     |
+| `spacing`          | `8`                     | —       | Gap between the calendar and appointments sections.            |
+| `margin_x`         | `8`                     | —       | Horizontal outer margin around the whole month popup.          |
+| `margin_y`         | `8`                     | —       | Vertical outer margin around the whole month popup.            |
 
 ## `builtins.calendar.month.popup.calendar`
 

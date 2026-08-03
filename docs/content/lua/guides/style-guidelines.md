@@ -87,6 +87,3 @@ Check formatting without changing files:
 ```bash
 stylua --check ~/.config/easybar/widgets
 ```
-
-For widgets stored inside the EasyBar repository, use `make fmt-lua` and `make lint-lua` so the
-repository `.stylua.toml` settings are applied consistently.

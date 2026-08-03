@@ -8,13 +8,6 @@ EasyBar installs a bundled LuaLS stub into:
 
 That installed file is the combined public stub.
 
-If you are working on EasyBar itself, the split source files are:
-
-- `Sources/EasyBarApp/Lua/easybar_api.base.lua`
-- `Sources/EasyBarApp/Lua/easybar_api.events.lua`
-
-Those source files are merged into the installed `easybar_api.lua` stub during generation.
-
 ## LuaLS workspace setup
 
 If your editor uses LuaLS, add a `.luarc.json` in the workspace where you edit widgets.
@@ -60,5 +53,3 @@ The `runtime.path` entries above let LuaLS resolve the same widget-local modules
 Keep reusable-module annotations beside the module implementation. For example, the bundled
 `lib/retry.lua` declares `RetryOptions` and `RetryOperation` locally, so LuaLS can validate retry
 callbacks when the module is required without polluting the global EasyBar API.
-
-

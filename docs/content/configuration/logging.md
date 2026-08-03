@@ -34,7 +34,9 @@ level = "info"
 easybar logs --widget brew-inbox --runtime lua --level trace --follow
 ```
 
-With this combination, the CLI receives matching trace records live, while `easybar.out` continues to retain only info and higher. The same independent level applies to calendar and network agent subscriptions. Live delivery uses bounded per-client queues and disconnects stalled subscribers instead of blocking any producer process.
+With this combination, the CLI receives matching trace records live, while `easybar.out` continues
+to retain only info and higher. The same independent level applies to calendar and network agent
+subscriptions.
 
 ## Config
 
@@ -53,7 +55,8 @@ directory = "~/.local/state/easybar"
 | Minimum log level | `logging.level`     | `EASYBAR_LOG_LEVEL`  |
 | Log directory     | `logging.directory` | none                 |
 
-Only the minimum log level has an environment override. File logging and the log directory stay config-only so the app, agents, and docs all share one explicit logging contract.
+Only the minimum log level has an environment override. File logging and the log directory remain
+config-only.
 
 ## Supported levels
 
@@ -82,7 +85,8 @@ The main app and helper agents use the shared logging config from `config.toml`.
 
 `logging.enabled` and `logging.directory` are config-only settings. They are not controlled by environment variables.
 
-`EASYBAR_LOG_LEVEL` is the only logging environment override. It temporarily overrides `logging.level` for diagnostics, for example in local `make run-debug` or service troubleshooting sessions.
+`EASYBAR_LOG_LEVEL` is the only logging environment override. It temporarily overrides
+`logging.level` for troubleshooting without changing `config.toml`.
 
 `EASYBAR_CONFIG_PATH` remains the public environment override for selecting the runtime config file.
 

@@ -81,56 +81,23 @@ The complete default config also uses this theme name.
 
 ## Bundled themes
 
-Bundled themes live in the repository root `themes/` directory. That root directory is the source of truth for bundled theme files.
+EasyBar includes these themes:
 
-SwiftPM does not automatically package arbitrary root-level directories into `EasyBar.app`. For that reason, local runs and release builds must go through the project Makefile. The Makefile copies the root `themes/` directory into the app bundle before launching or packaging the app:
+- `default`
+- `dracula`
+- `everforest-dark`
+- `frappe`
+- `gruvbox-dark`
+- `latte`
+- `macchiato`
+- `mocha`
+- `nord`
+- `rose-pine`
+- `solarized-dark`
+- `tokyo-night`
 
-```text
-EasyBar.app/Contents/Resources/Themes/
-```
-
-The bundled themes directory should contain at least:
-
-```text
-themes/
-└── default.toml
-```
-
-Additional bundled themes may also live there, for example:
-
-```text
-themes/
-├── default.toml
-├── dracula.toml
-├── everforest-dark.toml
-├── frappe.toml
-├── gruvbox-dark.toml
-├── latte.toml
-├── macchiato.toml
-├── mocha.toml
-├── nord.toml
-├── rose-pine.toml
-├── solarized-dark.toml
-└── tokyo-night.toml
-```
-
-The Makefile should verify that `default.toml` exists after copying themes into the app bundle.
-
-Bundled themes are not copied into `~/.config/easybar/themes`, because user theme files should stay user-owned and should not become stale copies of bundled files. Instead they are baked into the app bundle.
-
-For local development, prefer:
-
-```bash
-make run
-```
-
-For release-style packaging, prefer:
-
-```bash
-make bundle
-```
-
-Avoid relying on plain `swift run EasyBar` for theme testing, because it does not stage the root `themes/` directory into the app bundle.
+Bundled themes are included with the app and do not need to be copied into `themes_dir`. To
+customize one, create a theme with the same name in `themes_dir`; the custom file takes precedence.
 
 ## Custom themes
 
@@ -368,39 +335,15 @@ If you see:
 theme 'default' was not found in ~/.config/easybar/themes or bundled themes
 ```
 
-check that one of these files exists:
+For a custom theme, check that the file exists in `themes_dir`:
 
 ```text
 ~/.config/easybar/themes/default.toml
-EasyBar.app/Contents/Resources/Themes/default.toml
 ```
 
-For bundled themes, make sure the repository root contains the selected theme file:
-
-```text
-themes/default.toml
-```
-
-Then rebuild or run through the Makefile so the root `themes/` directory is copied into the app bundle. Use `make run` for local development and `make bundle` for a release-style app bundle.
-
-Both targets should package bundled themes into:
-
-```text
-EasyBar.app/Contents/Resources/Themes/
-```
-
-Bundled app-owned resources are staged separately under:
-
-```text
-EasyBar.app/Contents/Resources/EasyBar/
-├── Lua/
-├── Events/
-└── ThemeTokens/
-```
-
-Themes intentionally stay at `Contents/Resources/Themes/` because they are selected and overridden through the user-facing `[theme]` configuration.
-
-Plain `swift run EasyBar` is not enough for bundled theme testing unless you have separately staged the root themes directory into the app bundle resource location.
+For a bundled theme, check that `name` matches one of the names in
+[Bundled themes](#bundled-themes). If a bundled theme is missing from an installed app, reinstall or
+upgrade EasyBar.
 
 ### Theme changes do not apply
 
@@ -417,5 +360,3 @@ If `watch_config = false`, EasyBar will not reload automatically.
 Check whether that widget has an explicit color in `config.toml`.
 
 Explicit widget colors override theme defaults.
-
-

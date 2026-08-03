@@ -33,9 +33,9 @@ EasyBar can start without a custom config file. Create `~/.config/easybar/config
 
 Stopping the bar from the controller does not quit the EasyBar application. The controller can therefore start it again. Quitting EasyBar removes both the bar and controller, but does not stop the agent services.
 
-### Upgrading from the self-contained app
+## Upgrade
 
-No manual migration is required. A normal upgrade installs the agent formulae and starts their services:
+Upgrade EasyBar and its dependencies with Homebrew:
 
 ```bash
 brew update
@@ -113,5 +113,3 @@ Common user data remains under:
 ```
 
 See [Configuration Path](configuration-path.md) and [Logging](../configuration/logging.md) before deleting these directories.
-
-

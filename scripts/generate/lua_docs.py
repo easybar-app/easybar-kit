@@ -400,7 +400,7 @@ This section is generated from the EasyBar LuaLS stub and is meant to answer
 \"what is the exact API surface?\" quickly.
 
 Use these pages for exact types, event names, and property tables. For usage
-patterns and architecture, use the hand-written guides.
+patterns and examples, use the hand-written guides.
 
 ## Generated pages
 
@@ -418,16 +418,6 @@ patterns and architecture, use the hand-written guides.
 1. Start with [Lua Overview](../overview.md) for the node-based mental model.
 2. Read [Functions](functions.md) to learn how widgets are created and updated.
 3. Keep [Events](events.md) and [Properties](properties.md) open while building widgets.
-
-## Source of truth
-
-The source of truth is the public LuaLS stub:
-
-```text
-Sources/EasyBarApp/Lua/easybar_api.lua
-```
-
-If this reference is wrong, update the stub and regenerate the docs.
 """
     (OUT / "index.md").write_text(content)
 
@@ -609,6 +599,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
 
 

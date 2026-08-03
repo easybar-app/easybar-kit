@@ -9,7 +9,7 @@ Lua widgets are the right tool when you want:
 - custom text, icons, or layout that built-ins do not provide
 - shell-command integration or lightweight local scripting
 - event-driven behavior tied to app changes, mouse input, timers, or helper-agent updates
-- small personal workflows without touching the native Swift codebase
+- small personal workflows specific to your setup
 
 If you have not decided whether Lua is the right tool yet, read [Built-ins Vs Lua](../getting-started/builtins-vs-lua.md).
 
@@ -66,7 +66,3 @@ The generated API reference is useful when you need exact function names, event 
 - [Properties](reference/properties.md)
 
 Use the guides for concepts and patterns. Use the reference pages for exact API details.
-
-## Contributor internals
-
-Runtime architecture, process boundaries, socket transport, registry internals, rendering internals, and generated-artifact notes live under [Lua Runtime Internals](../internals/lua-runtime/overview.md).

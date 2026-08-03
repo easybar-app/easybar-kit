@@ -21,7 +21,7 @@ Canonical runtime event-name strings carried inside `EasyBarEventToken.name`. In
 
 | Value                           | Meaning                                                                                                                           |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `"interval"`                    | Internal timer callback name delivered to the widget whose own `interval` schedule elapsed.                                       |
+| `"interval"`                    | Timer event delivered to the widget whose own `interval` schedule elapsed.                                                        |
 | `"forced"`                      | Fired when EasyBar or `easybar` triggers a manual refresh.                                                                        |
 | `"system_woke"`                 | Fired after the system wakes from sleep.                                                                                          |
 | `"session_active"`              | Fired when the macOS user session becomes active.                                                                                 |

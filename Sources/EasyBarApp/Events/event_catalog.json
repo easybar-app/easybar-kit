@@ -20,7 +20,7 @@
   },
   "intervalEvent": {
     "runtimeName": "interval",
-    "doc": "Internal timer callback name delivered to the widget whose own `interval` schedule elapsed."
+    "doc": "Timer event delivered to the widget whose own `interval` schedule elapsed."
   },
   "forcedEvent": {
     "luaField": "forced",

@@ -18,8 +18,6 @@ New users should follow the user path first:
 4. [Lua Widgets](lua/overview.md): add custom widgets after the built-ins cover the basics.
 5. [Troubleshooting](runtime/troubleshooting.md): fix startup, service, config, permission, and runtime issues.
 
-If you are changing EasyBar itself, start with [Internals](internals/overview.md) instead. Contributor and architecture notes are intentionally kept out of the first-run path.
-
 ## Common tasks
 
 | Goal                            | Start with                                           |
@@ -52,8 +50,6 @@ If you are changing EasyBar itself, start with [Internals](internals/overview.md
 ## How EasyBar is meant to be used
 
 Start with the native built-ins because they keep platform-sensitive behavior in Swift and require less maintenance. Use `config.toml` for placement, grouping, themes, and built-in behavior. Reach for Lua when a widget needs custom formatting, shell commands, custom interactions, or project-specific status.
-
-For architecture, process boundaries, agent protocols, Lua runtime internals, and contributor notes, use [Internals](internals/overview.md).
 
 ## Screenshots
 

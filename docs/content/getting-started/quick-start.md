@@ -115,6 +115,3 @@ After the initial setup:
 - [Configuration Reference](../configuration/reference.md) for exact config keys and defaults.
 - [Lua Reference](../lua/reference/index.md) for exact Lua API shapes.
 - [CLI Reference](../runtime/cli.md) for every control and diagnostic command.
-- [Internals](../internals/overview.md) for contributors, architecture, agents, process boundaries, and runtime implementation details.
-
-

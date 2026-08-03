@@ -55,6 +55,9 @@ open -g dist/EasyBarNetworkAgent.app
 open dist/EasyBar.app
 ```
 
+Quit any installed EasyBar app before launching `dist/EasyBar.app`; the single-instance guard exits
+the second copy.
+
 The agents are standalone apps that communicate with EasyBar over Unix sockets. Restart them with
 `easybar agent restart calendar`, `easybar agent restart network`, or
 `easybar agent restart all`.
@@ -111,6 +114,22 @@ reference documentation, then use `make check-generated` before committing.
 The build version is written to the untracked `.build/easybar-build-version` input. The SwiftPM
 plugin generates `BuildInfo` in its work directory, and direct SwiftPM builds without that input
 use `dev`. Lua API versions are stamped only into the copy under `dist/`.
+
+## Bundled theme resources
+
+The repository root `themes/` directory is the source of truth for bundled themes. SwiftPM does not
+automatically package that directory, so use `make run` for local testing and `make bundle` for a
+release-style app. Both targets copy the themes into:
+
+```text
+EasyBar.app/Contents/Resources/Themes/
+```
+
+The bundle checks require `default.toml`. Other app-owned resources are staged separately under
+`EasyBar.app/Contents/Resources/EasyBar/`.
+
+Plain `swift run EasyBar` does not stage bundled themes and is therefore unsuitable for testing
+them.
 
 ## Repository layout
 

@@ -123,5 +123,3 @@ See [Themes](themes.md).
 | Debug logging                       | [Logging](logging.md)                   |
 | Check exact defaults                | [Configuration Reference](reference.md) |
 | Control the running app             | [CLI Reference](../runtime/cli.md)      |
-
-Contributor-focused implementation details are in [Internals](../internals/overview.md).

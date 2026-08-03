@@ -86,7 +86,7 @@ end)
 
 The event contains `source`, `target_widget_id` (the item id), and `action_id`.
 
-## Add source actions to the icon menu
+## Add source actions to the header menu
 
 A publisher can add commands to its own submenu under the actions button in the inbox popup header.
 Configure presentation separately from the handler so item actions and source-wide commands remain
@@ -115,10 +115,9 @@ change their menu while work is running—for example, Homebrew replaces Update 
 Cancel. Passing an empty `actions` array removes the submenu. Clearing a source's messages leaves
 its independently configured actions available.
 
-Set `include_in_refresh_all = true` on at most one source action to opt that source into the native
-**Refresh all** button. EasyBar sends the existing `inbox.context_action` event with that action's
-`id`; the action id does not need to be `refresh`. Disabled and busy actions remain visible but are
-skipped by **Refresh all** until they become available. Item actions cannot opt in.
+Set `include_in_refresh_all = true` on the source action that **Refresh all** should run. Each source
+can include at most one action. Disabled and busy actions remain visible but are skipped until they
+become available. Item actions cannot be included.
 
 ## Show asynchronous activity
 
@@ -136,8 +135,7 @@ Choose one busy scope for each operation:
 | Item-specific work, such as marking one notification read or upgrading one package | The affected item's action in `easybar.inbox.replace(...)` | Inside the affected item |
 
 Do not mark both a source action and an item action as busy for the same operation. One operation
-should produce one progress indicator. While a source-wide refresh is busy, a matching inline
-`refresh` action is shown as disabled `Refreshing…` status text instead of a second spinner.
+should produce one progress indicator.
 
 For a source-wide refresh, republish the source configuration before and after the asynchronous work:
 
@@ -168,9 +166,8 @@ fetch_async(function()
 end)
 ```
 
-Use the same fields on an item's `actions` array for an item-specific operation. EasyBar deliberately
-does not infer activity from `spawn_async`; the publisher owns the complete operation lifecycle,
-including retries, pagination, follow-up commands, cancellation, and failures.
+Use the same fields on an item's `actions` array for an item-specific operation. Update `busy` when
+the operation starts and finishes; `spawn_async` does not change action state automatically.
 
 Active source operations remain visible as compact status rows after the actions menu closes. Item
 activity always appears directly in the affected item.
@@ -178,10 +175,10 @@ activity always appears directly in the affected item.
 ## Text and Markdown
 
 `body` defaults to plain text. Set `format = "markdown"` for limited inline Markdown such as
-emphasis, strong text, inline code, and links. EasyBar deliberately does not render raw HTML,
-remote images, tables, or embedded content in inbox messages.
+emphasis, strong text, inline code, and links. Raw HTML, remote images, tables, and embedded content
+are not supported.
 
-## Configure the native center
+## Configure the inbox
 
 ```toml
 [builtins.inbox]
@@ -236,10 +233,9 @@ use `unread_icon` and `unread_icon_color`. Set `use_inactive_style_when_read = f
 unread icon and color after everything is read. Set
 `show_when_empty = false` to remove the native icon when the inbox contains no messages. Set
 `show_unread_count = false` to keep the stateful icon without displaying its numeric badge.
-Set `show_source_actions = false` to hide the popup's publisher action-panel button while keeping
-Mark all as read and Dismiss all available.
-The three inbox-wide controls each have a `show_*` option and an `*_icon` SF Symbol name. Their
-corresponding `*_tooltip` values provide both the hover tooltip and accessible label.
+Set `show_source_actions = false` to hide publisher actions. Configure each inbox-wide control with
+its `show_*` option, `*_icon` SF Symbol name, and `*_tooltip` hover text. The tooltip is also used as
+the accessible label.
 
 `popup_width` controls the complete popup width. `popup_max_height` limits the message list before
 it becomes scrollable, while short inboxes continue to size naturally.

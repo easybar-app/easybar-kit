@@ -714,7 +714,7 @@ extension ConfigSchemaRegistry {
     entry(
       key: "spacing",
       value: "8",
-      description: "Gap between calendar and appointments areas and internal popup sections.",
+      description: "Gap between the calendar and appointments sections.",
     ),
     entry(
       key: "margin_x",

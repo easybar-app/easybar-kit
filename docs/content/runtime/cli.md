@@ -134,7 +134,10 @@ In follow mode, the requested level is independent from `[logging].level`. For e
 easybar logs --widget brew-inbox --runtime lua --level trace --follow
 ```
 
-Trace and debug records requested only by a live subscriber are streamed to that client and are not added to the process log file. Each process gives every client a bounded serial socket queue. Logging never waits for the client to read; a stalled or overflowing subscriber is disconnected. Follow mode does not fall back to file polling: when any requested running-process socket is unavailable or closes, the command reports that error and exits. Disabled agents are omitted from an unfiltered or `--runtime agent` subscription.
+Trace and debug records requested only by a live subscriber are streamed to that client and are not
+added to the process log file. If a requested running process becomes unavailable, the command
+reports the error and exits. Disabled agents are omitted from an unfiltered or `--runtime agent`
+subscription.
 
 `--socket` can override the EasyBar control socket only when following `--runtime lua` or `--runtime native`. Agent and unfiltered follow mode use the configured process socket paths because they may require more than one connection.
 

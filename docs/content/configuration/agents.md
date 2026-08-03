@@ -84,12 +84,3 @@ Use `easybar agent version calendar` or `easybar agent version network` to query
 `--json` when consuming the result from a script.
 
 For agent process checks, socket probes, permission issues, raw field inspection, and Homebrew service logs, use [Debugging Agents](../internals/agents/debugging.md).
-
-## More detail
-
-See the internal agent docs:
-
-- [Agents Overview](../internals/agents/overview.md)
-- [Calendar Agent](../internals/agents/calendar-agent.md)
-- [Network Agent](../internals/agents/network-agent.md)
-- [Debugging Agents](../internals/agents/debugging.md)

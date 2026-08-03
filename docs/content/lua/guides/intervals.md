@@ -96,8 +96,8 @@ Use event subscriptions for real events:
 
 ## One-shot delays
 
-Use `easybar.after(delay_seconds, callback)` for one non-blocking callback. The delay is owned by the
-Swift host, so it does not launch `sleep`, consume an async command slot, or block the Lua runtime.
+Use `easybar.after(delay_seconds, callback)` for one non-blocking callback. It does not launch
+`sleep`, consume an async command slot, or block the Lua runtime.
 
 ```lua
 local pending_refresh

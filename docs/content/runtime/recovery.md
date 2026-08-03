@@ -44,8 +44,6 @@ aerospace --version
 
 Both the CLI client and the running AeroSpace.app server should be at least 0.21.0. If the versions differ after updating, restart AeroSpace.app.
 
-EasyBar updates AeroSpace widgets through a long-lived connection to AeroSpace's native Unix socket. It sends the equivalent of an `aerospace subscribe --all` request without spawning the CLI subscription process.
-
 Raise EasyBar logging to debug and look for subscription lifecycle messages:
 
 ```toml
@@ -56,7 +54,7 @@ level = "debug"
 
 Useful messages include `aerospace subscription started`, `aerospace subscription event received`, `aerospace subscription disconnected`, and `aerospace subscription reconnect scheduled`.
 
-If AeroSpace is restarted or updated while EasyBar is running, EasyBar reconnects with bounded backoff while AeroSpace's socket remains available.
+If AeroSpace is restarted or updated while EasyBar is running, EasyBar reconnects automatically.
 
 You can trigger one refresh manually with:
 
@@ -72,9 +70,7 @@ easybar event emit workspace_change
 
 ## Spaces widget misses an app launch or quit
 
-The built-in spaces widget refreshes AeroSpace-derived state from native socket subscription events. App-focus events use a focused-window fast path, workspace-focus events update the highlight directly from event metadata, and complete snapshots reconcile the workspace and window lists. Events without a dedicated fast path use a 120 ms trailing debounce so bursts produce one snapshot.
-
-If icons still look stale after a launch, trigger a manual refresh once:
+Trigger a manual refresh if app icons look stale after an application launches or quits:
 
 ```bash
 easybar refresh
@@ -136,5 +132,3 @@ open -a EasyBar
 ```
 
 This clears the usual problems caused by duplicate instances or stale agent state.
-
-

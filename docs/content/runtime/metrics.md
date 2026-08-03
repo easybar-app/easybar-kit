@@ -49,8 +49,7 @@ Lua output is split by meaning rather than by file descriptor:
 
 The **Subscribed events** section lists the sorted global event set currently forwarded to Lua.
 It is the union required by all loaded widgets; it is not a per-widget subscription breakdown.
-Timer subscriptions are rendered as the widget ID and a readable interval instead of exposing
-their internal event key.
+Timer subscriptions are shown with the widget ID and a readable interval.
 
 The **Widget trees** and **Events** sections show the eight highest-volume entries. Widget-tree
 timestamps measure tree publications; activity performed through a separate service, such as an
@@ -60,6 +59,6 @@ Watch mode uses a compact dashboard. Terminals at least 100 columns wide place p
 activity side by side, followed by three-column Runtime/Lua/Delivery and
 Subscriptions/Widget-trees/Events rows. Narrow terminals stack the same compact tiles vertically.
 The renderer checks the terminal width for every frame, so resizing takes effect without restarting
-the command. Wide dashboards are capped at 120 columns so their internal columns remain visually
-grouped. If even the compact frame is taller than the viewport, use the scrollable one-shot
+the command. Wide dashboards are capped at 120 columns to keep related columns visually grouped. If
+even the compact frame is taller than the viewport, use the scrollable one-shot
 `easybar metrics` output.

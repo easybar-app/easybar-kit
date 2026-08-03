@@ -109,8 +109,7 @@ extension ConfigSchemaRegistry {
     entry(
       key: "enabled",
       value: "true",
-      description:
-        "Starts the calendar socket client in EasyBar and enables the calendar helper contract.",
+      description: "Enables calendar data and actions through the calendar agent.",
     ),
     optionalEntry(
       key: "socket_path",
@@ -123,8 +122,7 @@ extension ConfigSchemaRegistry {
     entry(
       key: "enabled",
       value: "true",
-      description:
-        "Starts the network socket client in EasyBar and enables the Wi-Fi helper contract.",
+      description: "Enables Wi-Fi and network data through the network agent.",
     ),
     optionalEntry(
       key: "socket_path",

@@ -74,7 +74,3 @@ Examples:
 - Use the native `spaces` built-in for workspace state, then add a Lua widget for VPN state.
 - Use the native `calendar` built-in for appointments, then add Lua for a custom project deadline widget.
 - Use native groups for battery and Wi-Fi, then use Lua groups for interactive custom widgets.
-
-## Contributor notes
-
-Implementation details belong in [Internals](../internals/overview.md), not in the user decision path. Use internals pages when changing Swift targets, helper agents, process boundaries, or the Lua runtime itself.

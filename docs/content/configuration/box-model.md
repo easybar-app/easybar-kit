@@ -23,6 +23,6 @@ Built-in widgets and native groups use the same shared box-model keys.
 For the native `spaces` widget:
 
 - `[builtins.spaces]` controls the outer container placement and shared box model.
-- `[builtins.spaces.layout]` controls the internal workspace-pill layout.
+- `[builtins.spaces.layout]` controls the layout inside each workspace pill.
 
-This keeps the outer bar placement separate from the internal workspace button layout.
+This keeps outer bar placement separate from workspace button layout.

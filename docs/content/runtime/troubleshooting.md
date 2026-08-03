@@ -44,8 +44,6 @@ The Homebrew widgets additionally write `brew-widget.log` in the configured logg
 4. Confirm another build is not holding the single-instance lock.
 5. If Gatekeeper blocks launch, follow [macOS Quarantine](../getting-started/macos-quarantine.md).
 
-When testing `dist/EasyBar.app`, quit the installed app first. Running both does not create two bars; the second instance exits.
-
 ## Built-in widget is empty
 
 Check whether the widget is enabled and whether its source process is available:
@@ -164,5 +162,3 @@ Do not include access tokens, private URLs, calendar content, or other secrets f
 - [Agent Debugging](../internals/agents/debugging.md)
 - [macOS Quarantine](../getting-started/macos-quarantine.md)
 - [Configuration Logging](../configuration/logging.md)
-
-

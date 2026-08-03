@@ -4,7 +4,7 @@
 ---Canonical runtime event-name strings carried inside `EasyBarEventToken.name`.
 ---In normal widget code, prefer `easybar.events.*` tokens over comparing raw strings.
 ---@alias EasyBarEventName
----Internal timer callback name delivered to the widget whose own `interval` schedule elapsed.
+---Timer event delivered to the widget whose own `interval` schedule elapsed.
 ---| '"interval"'
 ---Fired when EasyBar or `easybar` triggers a manual refresh.
 ---| '"forced"'
