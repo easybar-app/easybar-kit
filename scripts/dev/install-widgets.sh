@@ -20,6 +20,11 @@ if [ ! -d "${source_dir}" ]; then
   exit 1
 fi
 
+if ! command -v fzf >/dev/null 2>&1; then
+  echo "fzf is required to select widgets." >&2
+  exit 1
+fi
+
 item_names=()
 item_labels=()
 item_sources=()
@@ -76,95 +81,60 @@ is_default() {
   return 1
 }
 
-is_selected() {
-  local candidate="$1"
-  local selected
+build_default_selection_binding() {
+  local binding="first"
+  local index
+  local last_index="$((${#item_names[@]} - 1))"
 
-  if [ "${#selected_indices[@]}" -eq 0 ]; then
-    return 1
-  fi
+  for index in "${!item_names[@]}"; do
+    if is_default "${item_names[${index}]}"; then
+      binding+="+toggle"
+    fi
 
-  for selected in "${selected_indices[@]}"; do
-    if [ "${selected}" = "${candidate}" ]; then
-      return 0
+    if [ "${index}" -lt "${last_index}" ]; then
+      binding+="+down"
     fi
   done
 
-  return 1
-}
-
-add_selection() {
-  local index="$1"
-
-  if ! is_selected "${index}"; then
-    selected_indices+=("${index}")
-  fi
+  printf '%s+first' "${binding}"
 }
 
 printf 'Install bundled EasyBar widgets into:\n  %s\n\n' "${destination_dir}"
-printf 'Select items by number or name, separated by spaces.\n'
-printf 'Press Return for the defaults, or enter "all" for everything.\n\n'
+printf 'Use Up/Down to move, Space to select or deselect, and Enter to install.\n'
+printf 'The default widgets are preselected. Press Esc to cancel.\n\n'
 
-for index in "${!item_names[@]}"; do
-  marker=" "
+default_selection_binding="$(build_default_selection_binding)"
 
-  if is_default "${item_names[${index}]}"; then
-    marker="*"
-  fi
-
-  printf '  %2d) [%s] %s\n' \
-    "$((index + 1))" \
-    "${marker}" \
-    "${item_labels[${index}]}"
-done
-
-printf '\n* selected by default\n'
-printf '\nSelection: '
-
-IFS= read -r selection
-selection="${selection//,/ }"
-
-if [ -z "${selection//[[:space:]]/}" ]; then
+if ! selection="$(
   for index in "${!item_names[@]}"; do
-    if is_default "${item_names[${index}]}"; then
-      add_selection "${index}"
-    fi
-  done
-elif [ "${selection}" = "all" ]; then
-  for index in "${!item_names[@]}"; do
-    add_selection "${index}"
-  done
-else
-  for token in ${selection}; do
-    matched=false
-
-    if [[ "${token}" =~ ^[0-9]+$ ]]; then
-      number=$((10#${token}))
-
-      if [ "${number}" -ge 1 ] &&
-        [ "${number}" -le "${#item_names[@]}" ]; then
-        add_selection "$((number - 1))"
-        matched=true
-      fi
-    else
-      normalized="${token%/}"
-      normalized="${normalized%.lua}"
-
-      for index in "${!item_names[@]}"; do
-        if [ "${normalized}" = "${item_names[${index}]}" ]; then
-          add_selection "${index}"
-          matched=true
-          break
-        fi
-      done
-    fi
-
-    if [ "${matched}" = false ]; then
-      echo "Unknown selection: ${token}" >&2
-      exit 2
-    fi
-  done
+    printf '%d\t%2d) %s\n' \
+      "${index}" \
+      "$((index + 1))" \
+      "${item_labels[${index}]}"
+  done | fzf \
+    --multi \
+    --sync \
+    --height=80% \
+    --layout=reverse \
+    --border \
+    --no-sort \
+    --delimiter=$'\t' \
+    --with-nth=2.. \
+    --marker='*' \
+    --pointer='>' \
+    --prompt='Widgets> ' \
+    --header='Up/Down move | Space toggle | Enter confirm | Esc cancel' \
+    --bind "start:${default_selection_binding}" \
+    --bind 'space:toggle'
+)"; then
+  echo "Selection cancelled."
+  exit 0
 fi
+
+while IFS=$'\t' read -r index _; do
+  [ -n "${index}" ] || continue
+  selected_indices+=("${index}")
+done <<< "${selection}"
 
 if [ "${#selected_indices[@]}" -eq 0 ]; then
   echo "Nothing selected." >&2
