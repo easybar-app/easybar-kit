@@ -326,7 +326,9 @@ struct InboxPopupView: View {
         .accessibilityHint("Marks this message as read")
       }
 
-      if let actions = presented.item.actions, !actions.isEmpty {
+      let actions = presented.item.actions ?? []
+      let itemURL = presented.item.url.flatMap(URL.init(string:))
+      if !actions.isEmpty || itemURL != nil {
         HStack(spacing: 10) {
           ForEach(actions) { action in
             let presentation = InboxItemActionPresentation(
@@ -360,18 +362,17 @@ struct InboxPopupView: View {
               .disabled(!presentation.isEnabled)
             }
           }
-        }
-        .font(.caption)
-      }
 
-      if let value = presented.item.url, let url = URL(string: value) {
-        Button("Open") {
-          store.markRead(presented)
-          NSWorkspace.shared.open(url)
+          if let itemURL {
+            Button("Open") {
+              store.markRead(presented)
+              NSWorkspace.shared.open(itemURL)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(color(config.popupActionColorHex))
+          }
         }
-        .buttonStyle(.plain)
         .font(.caption)
-        .foregroundStyle(color(config.popupActionColorHex))
       }
     }
     .padding(8)
