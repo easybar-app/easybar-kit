@@ -14,6 +14,15 @@ order = 5
 group_by = "source"
 show_unread_count = true
 show_source_actions = true
+show_refresh_all = true
+refresh_all_icon = "arrow.clockwise"
+refresh_all_tooltip = "Refresh all"
+show_mark_all_read = true
+mark_all_read_icon = "envelope.open"
+mark_all_read_tooltip = "Mark all read"
+show_dismiss_all = true
+dismiss_all_icon = "xmark.circle"
+dismiss_all_tooltip = "Dismiss all"
 popup_width = 360
 popup_max_height = 540
 use_inactive_style_when_read = true
@@ -45,6 +54,10 @@ hover-driven popup dismissal. After selecting an asynchronous source action, the
 while the publisher reports that action as busy and shows a compact progress row below the header.
 Set `show_source_actions = false` to hide the source menus; **Refresh all** remains available for
 sources that explicitly opt in.
+
+The **Refresh all**, **Mark all read**, and **Dismiss all** header controls can each be hidden with
+their `show_*` option. Their icons accept configurable SF Symbol names, and their tooltip text is
+shown on hover and used as the accessible button label.
 
 See [Native Inbox for Lua](../../lua/guides/inbox.md) for publishing snapshots, limited Markdown,
 item actions, source actions, activity states, persistence, and dismissal behavior. Local shell scripts can instead

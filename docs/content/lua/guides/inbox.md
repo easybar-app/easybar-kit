@@ -215,6 +215,15 @@ sort_by = "timestamp"     # timestamp | source | severity | title
 sort_descending = true
 show_unread_count = true
 show_source_actions = true
+show_refresh_all = true
+refresh_all_icon = "arrow.clockwise"
+refresh_all_tooltip = "Refresh all"
+show_mark_all_read = true
+mark_all_read_icon = "envelope.open"
+mark_all_read_tooltip = "Mark all read"
+show_dismiss_all = true
+dismiss_all_icon = "xmark.circle"
+dismiss_all_tooltip = "Dismiss all"
 popup_width = 360
 popup_max_height = 540
 use_inactive_style_when_read = true
@@ -229,6 +238,8 @@ unread icon and color after everything is read. Set
 `show_unread_count = false` to keep the stateful icon without displaying its numeric badge.
 Set `show_source_actions = false` to hide the popup's publisher action-panel button while keeping
 Mark all as read and Dismiss all available.
+The three inbox-wide controls each have a `show_*` option and an `*_icon` SF Symbol name. Their
+corresponding `*_tooltip` values provide both the hover tooltip and accessible label.
 
 `popup_width` controls the complete popup width. `popup_max_height` limits the message list before
 it becomes scrollable, while short inboxes continue to size naturally.

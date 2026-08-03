@@ -15,6 +15,15 @@ extension Config {
     var useInactiveStyleWhenRead: Bool
     var showWhenEmpty: Bool
     var showSourceActions: Bool
+    var showRefreshAll: Bool
+    var refreshAllIcon: String
+    var refreshAllTooltip: String
+    var showMarkAllRead: Bool
+    var markAllReadIcon: String
+    var markAllReadTooltip: String
+    var showDismissAll: Bool
+    var dismissAllIcon: String
+    var dismissAllTooltip: String
     var popupWidth: Int
     var popupMaxHeight: Int
     var popupBackgroundColorHex: String?
@@ -60,6 +69,15 @@ extension Config {
       useInactiveStyleWhenRead: true,
       showWhenEmpty: true,
       showSourceActions: true,
+      showRefreshAll: true,
+      refreshAllIcon: "arrow.clockwise",
+      refreshAllTooltip: "Refresh all",
+      showMarkAllRead: true,
+      markAllReadIcon: "envelope.open",
+      markAllReadTooltip: "Mark all read",
+      showDismissAll: true,
+      dismissAllIcon: "xmark.circle",
+      dismissAllTooltip: "Dismiss all",
       popupWidth: 360,
       popupMaxHeight: 540,
       popupBackgroundColorHex: "theme.background",
@@ -111,6 +129,24 @@ extension Config {
       showWhenEmpty: try content.bool("show_when_empty", fallback: builtinInbox.showWhenEmpty),
       showSourceActions: try content.bool(
         "show_source_actions", fallback: builtinInbox.showSourceActions),
+      showRefreshAll: try content.bool(
+        "show_refresh_all", fallback: builtinInbox.showRefreshAll),
+      refreshAllIcon: try nonEmptyInboxString(
+        "refresh_all_icon", from: content, fallback: builtinInbox.refreshAllIcon),
+      refreshAllTooltip: try nonEmptyInboxString(
+        "refresh_all_tooltip", from: content, fallback: builtinInbox.refreshAllTooltip),
+      showMarkAllRead: try content.bool(
+        "show_mark_all_read", fallback: builtinInbox.showMarkAllRead),
+      markAllReadIcon: try nonEmptyInboxString(
+        "mark_all_read_icon", from: content, fallback: builtinInbox.markAllReadIcon),
+      markAllReadTooltip: try nonEmptyInboxString(
+        "mark_all_read_tooltip", from: content, fallback: builtinInbox.markAllReadTooltip),
+      showDismissAll: try content.bool(
+        "show_dismiss_all", fallback: builtinInbox.showDismissAll),
+      dismissAllIcon: try nonEmptyInboxString(
+        "dismiss_all_icon", from: content, fallback: builtinInbox.dismissAllIcon),
+      dismissAllTooltip: try nonEmptyInboxString(
+        "dismiss_all_tooltip", from: content, fallback: builtinInbox.dismissAllTooltip),
       popupWidth: try content.int(
         "popup_width", fallback: builtinInbox.popupWidth, minimum: 240, maximum: 800),
       popupMaxHeight: try content.int(
@@ -140,5 +176,21 @@ extension Config {
         ?? builtinInbox.errorColorHex,
       maxItems: try content.int("max_items", fallback: builtinInbox.maxItems, minimum: 1, maximum: 1000)
     )
+  }
+
+  private func nonEmptyInboxString(
+    _ key: String,
+    from reader: ConfigReader,
+    fallback: String
+  ) throws -> String {
+    let value = try reader.string(key, fallback: fallback)
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !value.isEmpty else {
+      throw ConfigError.invalidValue(
+        path: reader.path(for: key),
+        message: "expected a non-empty string"
+      )
+    }
+    return value
   }
 }

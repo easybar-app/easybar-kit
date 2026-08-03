@@ -54,6 +54,15 @@ final class ConfigLoaderBuiltinTests: ConfigLoaderTestCase {
       use_inactive_style_when_read = false
       show_when_empty = false
       show_source_actions = false
+      show_refresh_all = false
+      refresh_all_icon = "arrow.trianglehead.2.clockwise"
+      refresh_all_tooltip = "Sync every inbox"
+      show_mark_all_read = false
+      mark_all_read_icon = "checkmark.circle"
+      mark_all_read_tooltip = "Read everything"
+      show_dismiss_all = false
+      dismiss_all_icon = "xmark.square"
+      dismiss_all_tooltip = "Dismiss everything"
       popup_width = 480
       popup_max_height = 600
       max_items = 25
@@ -87,6 +96,15 @@ final class ConfigLoaderBuiltinTests: ConfigLoaderTestCase {
     XCTAssertFalse(config.builtinInbox.useInactiveStyleWhenRead)
     XCTAssertFalse(config.builtinInbox.showWhenEmpty)
     XCTAssertFalse(config.builtinInbox.showSourceActions)
+    XCTAssertFalse(config.builtinInbox.showRefreshAll)
+    XCTAssertEqual(config.builtinInbox.refreshAllIcon, "arrow.trianglehead.2.clockwise")
+    XCTAssertEqual(config.builtinInbox.refreshAllTooltip, "Sync every inbox")
+    XCTAssertFalse(config.builtinInbox.showMarkAllRead)
+    XCTAssertEqual(config.builtinInbox.markAllReadIcon, "checkmark.circle")
+    XCTAssertEqual(config.builtinInbox.markAllReadTooltip, "Read everything")
+    XCTAssertFalse(config.builtinInbox.showDismissAll)
+    XCTAssertEqual(config.builtinInbox.dismissAllIcon, "xmark.square")
+    XCTAssertEqual(config.builtinInbox.dismissAllTooltip, "Dismiss everything")
     XCTAssertEqual(config.builtinInbox.popupWidth, 480)
     XCTAssertEqual(config.builtinInbox.popupMaxHeight, 600)
     XCTAssertEqual(config.builtinInbox.popupBackgroundColorHex, "#010101")
@@ -101,6 +119,27 @@ final class ConfigLoaderBuiltinTests: ConfigLoaderTestCase {
     XCTAssertEqual(config.builtinInbox.warningColorHex, "#101010")
     XCTAssertEqual(config.builtinInbox.errorColorHex, "#111111")
     XCTAssertEqual(config.builtinInbox.maxItems, 25)
+  }
+
+  func testReloadRejectsEmptyInboxActionTooltip() throws {
+    let config = Config.makeUnloadedConfig()
+    let configFileURL = tempDirectoryURL.appendingPathComponent("empty-inbox-tooltip.toml")
+    try writeConfig(
+      """
+      [builtins.inbox.content]
+      mark_all_read_tooltip = "   "
+      """,
+      to: configFileURL
+    )
+    setEnvironmentValue(configFileURL.path, for: SharedEnvironmentKeys.configPath)
+
+    let error = config.reload()
+
+    guard case .invalidValue(let path, let message)? = error as? ConfigError else {
+      return XCTFail("Expected invalidValue ConfigError, got \(String(describing: error))")
+    }
+    XCTAssertEqual(path, "builtins.inbox.content.mark_all_read_tooltip")
+    XCTAssertEqual(message, "expected a non-empty string")
   }
 
   /// Verifies that a missing config file still loads a useful default bar.

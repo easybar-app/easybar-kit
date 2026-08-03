@@ -282,18 +282,27 @@ For concepts and usage examples, use the hand-written configuration guides.
 
 ## `builtins.inbox.content`
 
-| Key                            | Default       | Example | Description                                                           |
-| ------------------------------ | ------------- | ------- | --------------------------------------------------------------------- |
-| `group_by`                     | `"source"`    | —       | Groups messages by source, date, category, severity, or none.         |
-| `sort_by`                      | `"timestamp"` | —       | Sorts messages by timestamp, source, severity, or title.              |
-| `sort_descending`              | `true`        | —       | Reverses the configured sort order when true.                         |
-| `show_unread_count`            | `true`        | —       | Shows the total unread message count beside the icon.                 |
-| `use_inactive_style_when_read` | `true`        | —       | Uses the read icon and color when no unread messages remain.          |
-| `show_when_empty`              | `true`        | —       | Keeps the read-state inbox icon visible when no messages exist.       |
-| `show_source_actions`          | `true`        | —       | Shows publisher-provided actions in the inbox popup header.           |
-| `popup_width`                  | `360`         | —       | Sets the inbox popup width in points (240–800).                       |
-| `popup_max_height`             | `540`         | —       | Sets the maximum scrollable message-list height in points (120–1000). |
-| `max_items`                    | `100`         | —       | Maximum number of current messages accepted from each publisher.      |
+| Key                            | Default             | Example | Description                                                           |
+| ------------------------------ | ------------------- | ------- | --------------------------------------------------------------------- |
+| `group_by`                     | `"source"`          | —       | Groups messages by source, date, category, severity, or none.         |
+| `sort_by`                      | `"timestamp"`       | —       | Sorts messages by timestamp, source, severity, or title.              |
+| `sort_descending`              | `true`              | —       | Reverses the configured sort order when true.                         |
+| `show_unread_count`            | `true`              | —       | Shows the total unread message count beside the icon.                 |
+| `use_inactive_style_when_read` | `true`              | —       | Uses the read icon and color when no unread messages remain.          |
+| `show_when_empty`              | `true`              | —       | Keeps the read-state inbox icon visible when no messages exist.       |
+| `show_source_actions`          | `true`              | —       | Shows publisher-provided actions in the inbox popup header.           |
+| `show_refresh_all`             | `true`              | —       | Shows the Refresh all button when at least one source participates.   |
+| `refresh_all_icon`             | `"arrow.clockwise"` | —       | SF Symbol used for the Refresh all button.                            |
+| `refresh_all_tooltip`          | `"Refresh all"`     | —       | Tooltip and accessible label for the Refresh all button.              |
+| `show_mark_all_read`           | `true`              | —       | Shows the Mark all read button when unread messages exist.            |
+| `mark_all_read_icon`           | `"envelope.open"`   | —       | SF Symbol used for the Mark all read button.                          |
+| `mark_all_read_tooltip`        | `"Mark all read"`   | —       | Tooltip and accessible label for the Mark all read button.            |
+| `show_dismiss_all`             | `true`              | —       | Shows the Dismiss all button when inbox messages exist.               |
+| `dismiss_all_icon`             | `"xmark.circle"`    | —       | SF Symbol used for the Dismiss all button.                            |
+| `dismiss_all_tooltip`          | `"Dismiss all"`     | —       | Tooltip and accessible label for the Dismiss all button.              |
+| `popup_width`                  | `360`               | —       | Sets the inbox popup width in points (240–800).                       |
+| `popup_max_height`             | `540`               | —       | Sets the maximum scrollable message-list height in points (120–1000). |
+| `max_items`                    | `100`               | —       | Maximum number of current messages accepted from each publisher.      |
 
 ## `builtins.cpu`
 

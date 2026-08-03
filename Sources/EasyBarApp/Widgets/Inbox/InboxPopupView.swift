@@ -16,29 +16,50 @@ struct InboxPopupView: View {
     let activities = sourceActivityRows
     let busySourceActions = Dictionary(grouping: activities, by: \.source)
       .mapValues { $0.map(\.action) }
+    let headerActionColor = color(config.popupMutedColorHex)
+    let tooltipTextColor = color(config.popupTitleColorHex)
+    let tooltipBackgroundColor = color(config.popupItemBackgroundColorHex)
+    let tooltipBorderColor = color(config.popupBorderColorHex)
 
     VStack(alignment: .leading, spacing: 8) {
       HStack {
         Text("Inbox").font(.headline).foregroundStyle(color(config.popupTitleColorHex))
         Spacer()
-        if !store.refreshAllTargets.isEmpty {
-          Button("Refresh all", systemImage: "arrow.clockwise", action: refreshAllSources)
-            .labelStyle(.iconOnly)
-            .buttonStyle(.plain)
-            .font(.system(size: 13, weight: .medium))
-            .foregroundStyle(color(config.popupMutedColorHex))
-            .disabled(store.availableRefreshAllTargets.isEmpty)
-            .help("Refresh all inbox sources")
+        if config.showRefreshAll, !store.refreshAllTargets.isEmpty {
+          InboxHeaderActionButton(
+            tooltip: config.refreshAllTooltip,
+            systemImage: config.refreshAllIcon,
+            isEnabled: !store.availableRefreshAllTargets.isEmpty,
+            tintColor: headerActionColor,
+            tooltipTextColor: tooltipTextColor,
+            tooltipBackgroundColor: tooltipBackgroundColor,
+            tooltipBorderColor: tooltipBorderColor,
+            action: refreshAllSources
+          )
         }
-        if store.unreadCount > 0 {
-          Button("Mark all read") { store.markAllRead() }
-            .buttonStyle(.plain)
-            .foregroundStyle(color(config.popupMutedColorHex))
+        if config.showMarkAllRead, store.unreadCount > 0 {
+          InboxHeaderActionButton(
+            tooltip: config.markAllReadTooltip,
+            systemImage: config.markAllReadIcon,
+            isEnabled: true,
+            tintColor: headerActionColor,
+            tooltipTextColor: tooltipTextColor,
+            tooltipBackgroundColor: tooltipBackgroundColor,
+            tooltipBorderColor: tooltipBorderColor,
+            action: store.markAllRead
+          )
         }
-        if !store.presentedItems.isEmpty {
-          Button("Dismiss all") { store.dismissAll() }
-            .buttonStyle(.plain)
-            .foregroundStyle(color(config.popupMutedColorHex))
+        if config.showDismissAll, !store.presentedItems.isEmpty {
+          InboxHeaderActionButton(
+            tooltip: config.dismissAllTooltip,
+            systemImage: config.dismissAllIcon,
+            isEnabled: true,
+            tintColor: headerActionColor,
+            tooltipTextColor: tooltipTextColor,
+            tooltipBackgroundColor: tooltipBackgroundColor,
+            tooltipBorderColor: tooltipBorderColor,
+            action: store.dismissAll
+          )
         }
         if config.showSourceActions, !store.sourceConfigurations.isEmpty {
           InboxSourceActionsMenuButton(
@@ -61,6 +82,7 @@ struct InboxPopupView: View {
           .help("Inbox actions")
         }
       }
+      .zIndex(1)
 
       if !activities.isEmpty {
         VStack(alignment: .leading, spacing: 5) {

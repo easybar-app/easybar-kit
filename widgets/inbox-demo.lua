@@ -162,7 +162,7 @@ local function configure_source_actions()
 		}
 	else
 		actions = {
-			{ id = "refresh", title = "Refresh" },
+			{ id = "refresh", title = "Add demo" },
 			{ id = "clear", title = "Clear demo" },
 		}
 	end

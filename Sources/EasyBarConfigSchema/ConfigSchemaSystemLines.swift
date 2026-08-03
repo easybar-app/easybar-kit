@@ -63,6 +63,33 @@ extension ConfigSchemaRegistry {
       key: "show_source_actions", value: "true",
       description: "Shows publisher-provided actions in the inbox popup header."),
     entry(
+      key: "show_refresh_all", value: "true",
+      description: "Shows the Refresh all button when at least one source participates."),
+    entry(
+      key: "refresh_all_icon", value: "\"arrow.clockwise\"",
+      description: "SF Symbol used for the Refresh all button."),
+    entry(
+      key: "refresh_all_tooltip", value: "\"Refresh all\"",
+      description: "Tooltip and accessible label for the Refresh all button."),
+    entry(
+      key: "show_mark_all_read", value: "true",
+      description: "Shows the Mark all read button when unread messages exist."),
+    entry(
+      key: "mark_all_read_icon", value: "\"envelope.open\"",
+      description: "SF Symbol used for the Mark all read button."),
+    entry(
+      key: "mark_all_read_tooltip", value: "\"Mark all read\"",
+      description: "Tooltip and accessible label for the Mark all read button."),
+    entry(
+      key: "show_dismiss_all", value: "true",
+      description: "Shows the Dismiss all button when inbox messages exist."),
+    entry(
+      key: "dismiss_all_icon", value: "\"xmark.circle\"",
+      description: "SF Symbol used for the Dismiss all button."),
+    entry(
+      key: "dismiss_all_tooltip", value: "\"Dismiss all\"",
+      description: "Tooltip and accessible label for the Dismiss all button."),
+    entry(
       key: "popup_width", value: "360", description: "Sets the inbox popup width in points (240–800)."),
     entry(
       key: "popup_max_height", value: "540",
