@@ -1,16 +1,62 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
   <title id="title">EasyBar Calendar Agent icon</title>
-  <desc id="desc">A minimal calendar agent icon with a top bar and ec wordmark.</desc>
+  <desc id="desc">The EasyBar martini logo with a calendar badge.</desc>
 
-  <rect width="512" height="512" rx="120" fill="#141414"/>
-  <rect x="108" y="104" width="296" height="16" rx="8" fill="#2b2b2b"/>
-  <text
-    x="256"
-    y="314"
-    fill="#f3f4f6"
-    font-family="Menlo, Monaco, Consolas, monospace"
-    font-size="168"
-    font-weight="700"
-    text-anchor="middle"
-  >ec</text>
+  <defs>
+    <linearGradient id="background" x1="72" y1="40" x2="440" y2="472" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#272c35"/>
+      <stop offset="0.52" stop-color="#171a20"/>
+      <stop offset="1" stop-color="#0c0e11"/>
+    </linearGradient>
+    <linearGradient id="letter" x1="108" y1="92" x2="408" y2="416" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#69bdff"/>
+      <stop offset="1" stop-color="#3e8eed"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="168" y1="250" x2="340" y2="446" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffc15b"/>
+      <stop offset="1" stop-color="#ed8a2a"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="336" y1="326" x2="448" y2="454" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c3a2ff"/>
+      <stop offset="1" stop-color="#7657dc"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="120" fill="url(#background)"/>
+  <rect x="10" y="10" width="492" height="492" rx="110" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
+
+  <g transform="translate(18 12) scale(0.9)">
+    <path
+      d="M396 258
+         C396 168 338 108 256 108
+         C160 108 98 176 98 266
+         C98 358 166 416 260 416
+         C318 416 366 396 400 358"
+      fill="none"
+      stroke="url(#letter)"
+      stroke-width="44"
+      stroke-linecap="round"
+    />
+    <path
+      d="M172 258H396L256 344L172 258Z"
+      fill="#ed8a2a"
+      fill-opacity="0.09"
+      stroke="url(#glass)"
+      stroke-width="22"
+      stroke-linejoin="round"
+    />
+    <path d="M256 344V414" fill="none" stroke="url(#glass)" stroke-width="22" stroke-linecap="round"/>
+    <path d="M190 430H322" fill="none" stroke="url(#glass)" stroke-width="22" stroke-linecap="round"/>
+  </g>
+
+  <!-- Product-family badge with a font-free calendar glyph. -->
+  <circle cx="392" cy="392" r="82" fill="#0d0f12"/>
+  <circle cx="392" cy="392" r="68" fill="url(#badge)"/>
+  <rect x="358" y="358" width="68" height="66" rx="12" fill="none" stroke="#ffffff" stroke-width="9"/>
+  <path d="M358 379H426 M375 350V366 M409 350V366" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="377" cy="397" r="5" fill="#ffffff"/>
+  <circle cx="395" cy="397" r="5" fill="#ffffff"/>
+  <circle cx="413" cy="397" r="5" fill="#ffffff"/>
+  <circle cx="377" cy="414" r="5" fill="#ffffff"/>
+  <circle cx="395" cy="414" r="5" fill="#ffffff"/>
 </svg>
