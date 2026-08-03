@@ -173,7 +173,7 @@ local function publish()
 	local items = {}
 	for _, package in ipairs(all_packages()) do
 		local actions = {}
-		local upgrading_this_package = state.operation_id == "upgrade_package" and state.operation_item_id == package.id
+		local upgrading_this_package = state.operation_item_id == package.id
 		if upgrading_this_package then
 			actions = {
 				{
@@ -249,7 +249,7 @@ local function apply_outdated(output)
 	return true
 end
 
-refresh = function(reason)
+refresh = function(reason, activity_item_id)
 	reason = tostring(reason or "unspecified")
 	if operation_is_active() then
 		log(
@@ -272,7 +272,7 @@ refresh = function(reason)
 	state.can_cancel = true
 	state.operation_kind = "refresh"
 	state.operation_id = "refresh"
-	state.operation_item_id = nil
+	state.operation_item_id = activity_item_id
 	log(easybar.level.debug, "inbox refresh started reason=" .. reason)
 	publish()
 
@@ -381,7 +381,7 @@ local function run_operation(operation_id, label, arguments, options, item_id)
 		complete_operation(function()
 			if cancelled then
 				log(easybar.level.info, "inbox mutation cancelled operation=" .. operation_id)
-				refresh("post_mutation")
+				refresh("post_mutation", item_id)
 				return
 			end
 			if code ~= 0 then
@@ -395,7 +395,7 @@ local function run_operation(operation_id, label, arguments, options, item_id)
 				return
 			end
 			log(easybar.level.info, "inbox mutation completed operation=" .. operation_id)
-			refresh("post_mutation")
+			refresh("post_mutation", item_id)
 		end)
 	end)
 	publish()

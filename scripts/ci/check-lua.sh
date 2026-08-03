@@ -28,3 +28,10 @@ while IFS= read -r file; do
 done < <(find widgets -maxdepth 1 -type f -name '*.lua' -print | LC_ALL=C sort)
 
 "${lua_bin}" scripts/ci/smoke-bundled-widgets.lua "${repo_root}" "${widget_files[@]}"
+
+inbox_widget_files=()
+while IFS= read -r file; do
+  inbox_widget_files+=("${file}")
+done < <(find widgets -maxdepth 1 -type f -name '*-inbox.lua' -print | LC_ALL=C sort)
+
+"${lua_bin}" scripts/ci/test-inbox-widget-activity.lua "${repo_root}" "${inbox_widget_files[@]}"

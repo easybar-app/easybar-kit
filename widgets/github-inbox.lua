@@ -125,10 +125,14 @@ local function publish_notifications(output)
 	return publish_current_notifications()
 end
 
-local function refresh(reason)
+local function refresh(reason, activity_item_id)
 	reason = tostring(reason or "unspecified")
 	if refreshing then
 		log(easybar.level.trace, "inbox refresh skipped reason=" .. reason .. " state=already_refreshing")
+		if activity_item_id ~= nil then
+			busy_item_ids[activity_item_id] = nil
+			publish_current_notifications()
+		end
 		return
 	end
 
@@ -138,7 +142,9 @@ local function refresh(reason)
 	end
 
 	refreshing = true
-	set_source_activity("Refreshing…")
+	if activity_item_id == nil then
+		set_source_activity("Refreshing…")
+	end
 	log(easybar.level.debug, "inbox refresh started reason=" .. reason)
 
 	local current_attempt = 0
@@ -177,7 +183,11 @@ local function refresh(reason)
 		end,
 		on_complete = function(output, code, attempts, metadata)
 			refreshing = false
-			set_source_activity(nil)
+			if activity_item_id == nil then
+				set_source_activity(nil)
+			else
+				busy_item_ids[activity_item_id] = nil
+			end
 			if code ~= 0 then
 				log(
 					easybar.level.warn,
@@ -251,12 +261,12 @@ easybar.inbox.on_action(SOURCE, function(event)
 				timeout_seconds = 20,
 				log_operation = "mark_read",
 			}, function(_, code)
-				busy_item_ids[item_id] = nil
-				publish_current_notifications()
 				if code == 0 then
 					log(easybar.level.info, "inbox mutation completed operation=mark_read item_id=" .. item_id)
-					refresh("post_mutation")
+					refresh("post_mutation", item_id)
 				else
+					busy_item_ids[item_id] = nil
+					publish_current_notifications()
 					log(
 						easybar.level.error,
 						"inbox mutation failed operation=mark_read item_id=" .. item_id .. " status=" .. tostring(code)
