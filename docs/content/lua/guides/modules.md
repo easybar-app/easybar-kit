@@ -11,8 +11,8 @@ use standard `require(...)` calls without changing `package.path` themselves.
 ├── clock.lua
 ├── github.lua
 ├── lib/
+│   ├── inbox.lua
 │   ├── retry.lua
-│   ├── shell.lua
 │   ├── text.lua
 │   └── status/
 │       └── init.lua
@@ -80,17 +80,15 @@ resolves to:
 <widgets_dir>/lib/network/format.lua
 ```
 
-## Shared text and shell helpers
+## Shared text helper
 
-The repository's example widgets include two small user modules:
+The repository's example widgets include a small text module:
 
 ```lua
-local shell = require("shell")
 local text = require("text")
 
 local clean = text.trim(command_output)
 local short = text.truncate(clean, 80)
-local command = "open " .. shell.quote(url)
 ```
 
 `text.lua` provides:
@@ -98,12 +96,40 @@ local command = "open " .. shell.quote(url)
 - `text.trim(value)`
 - `text.truncate(value, maximum_length, omission?)`
 
-`shell.lua` provides:
+This file is an example in the user widget directory, not a built-in part of the public
+`easybar` API. You own it and can extend or replace it.
 
-- `shell.quote(value)` for one POSIX shell argument
+## Inbox data helper
 
-These files are examples in the user widget directory, not built-in functions of the public
-`easybar` API. You own them and can extend or replace them.
+The bundled inbox publishers share `lib/inbox.lua` for three data-boundary operations:
+
+```lua
+local inbox = require("inbox")
+
+local values = inbox.decode_array(easybar.json, command_output)
+if values == nil then
+    local message = inbox.error_message(command_output, "The service returned invalid data")
+    -- Keep the last valid snapshot and publish `message` as an additional error item.
+end
+
+local timestamp = inbox.timestamp("2026-08-03T09:45:00.123+02:00")
+```
+
+`inbox.lua` provides:
+
+- `inbox.decode_array(json_module, output)` decodes a dense JSON array and returns `nil` for invalid
+  JSON or an object-shaped response. Pass `easybar.json` explicitly because modules do not receive
+  the widget-scoped API automatically.
+- `inbox.error_message(output, fallback)` trims and limits an error body to
+  `inbox.maximum_error_length` characters, using the fallback when output is empty. The bundled
+  value is 12,000 characters, safely below the native inbox body's byte limit even for UTF-8 text.
+- `inbox.timestamp(value)` converts an ISO-8601 timestamp with `Z` or a numeric timezone offset to
+  Unix seconds. Fractional seconds are accepted and discarded. Invalid dates and timestamps
+  without a timezone return `nil`.
+
+These helpers deliberately do not own snapshots, refresh scheduling, or actions. The publishing
+widget remains responsible for validating service-specific fields and deciding whether a failed
+refresh should retain existing items.
 
 The bundled `retry.lua` module coordinates asynchronous attempts through `easybar.after(...)`. Pass
 the widget-scoped API explicitly because modules do not receive `easybar` automatically:

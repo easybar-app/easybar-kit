@@ -1,4 +1,4 @@
--- Exercises item mutations in every bundled inbox widget against a controllable host API.
+-- Exercises state, parsing, errors, and item mutations in every bundled inbox widget.
 
 local root = assert(arg[1], "repository root argument is required")
 local widget_paths = {}
@@ -7,10 +7,54 @@ for index = 2, #arg do
 end
 
 package.path = table.concat({
+	root .. "/Sources/EasyBarApp/Lua/?.lua",
 	root .. "/widgets/lib/?.lua",
 	root .. "/widgets/lib/?/init.lua",
+	root .. "/Sources/EasyBarApp/Lua/?/init.lua",
 	package.path,
 }, ";")
+
+local json = require("easybar.json")
+local inbox = require("inbox")
+
+local function github_notification(id, title, updated_at)
+	return json.object({
+		id = id,
+		reason = "mention",
+		updated_at = updated_at,
+		repository = json.object({
+			full_name = "easybar/easybar",
+			html_url = "https://github.com/easybar/easybar",
+		}),
+		subject = json.object({
+			title = title,
+			type = "PullRequest",
+			url = "https://api.github.com/repos/easybar/easybar/pulls/1",
+		}),
+	})
+end
+
+local function gitlab_issue(id)
+	return json.object({
+		id = id,
+		iid = id,
+		title = "Assigned issue " .. tostring(id),
+		updated_at = "2026-08-03T09:45:00.123+00:00",
+		references = json.object({ full = "easybar/easybar#" .. tostring(id) }),
+		web_url = "https://gitlab.com/easybar/easybar/-/issues/" .. tostring(id),
+	})
+end
+
+local function gitlab_merge_request(id)
+	return json.object({
+		id = id,
+		iid = id,
+		title = "Assigned merge request " .. tostring(id),
+		updated_at = "2026-08-03T09:46:00Z",
+		references = json.object({ full = "easybar/easybar!" .. tostring(id) }),
+		web_url = "https://gitlab.com/easybar/easybar/-/merge_requests/" .. tostring(id),
+	})
+end
 
 local function callable_noop()
 	return setmetatable({}, { __call = function() end })
@@ -18,48 +62,44 @@ end
 
 local function decoded_fixture(value)
 	if value == "github-one" then
-		return {
-			{
-				{
-					id = "thread-1",
-					reason = "mention",
-					repository = { full_name = "easybar/easybar", html_url = "https://github.com/easybar/easybar" },
-					subject = {
-						title = "Review requested",
-						type = "PullRequest",
-						url = "https://api.github.com/repos/easybar/easybar/pulls/1",
-					},
-				},
-			},
-		}
+		return json.array({ json.array({ github_notification("thread-1", "Review requested", "2026-08-03T09:45:00Z") }) })
+	elseif value == "github-two" then
+		return json.array({
+			json.array({
+				github_notification("thread-1", "First review", "2026-08-03T09:45:00Z"),
+				github_notification("thread-2", "Second review", "2026-08-03T09:46:00Z"),
+			}),
+		})
+	elseif value == "github-second" then
+		return json.array({ json.array({ github_notification("thread-2", "Second review", "2026-08-03T09:46:00Z") }) })
 	elseif value == "github-empty" then
-		return {}
+		return json.array({ json.array({}) })
+	elseif value == "github-object" then
+		return json.object({ message = "not an array" })
 	elseif value == "gitlab-issues" then
-		return {
-			{
-				id = 1,
-				iid = 1,
-				title = "Assigned issue",
-				references = { full = "easybar/easybar#1" },
-				web_url = "https://gitlab.com/easybar/easybar/-/issues/1",
-			},
-		}
+		return json.array({ gitlab_issue(1) })
+	elseif value == "gitlab-merge-requests" then
+		return json.array({ gitlab_merge_request(2) })
 	elseif value == "gitlab-empty" then
-		return {}
+		return json.array({})
+	elseif value == "gitlab-object" then
+		return json.object({ message = "not an array" })
 	elseif value:find("brew%-one", 1, false) ~= nil then
-		return {
-			formulae = {
-				{
+		return json.object({
+			formulae = json.array({
+				json.object({
 					name = "easybar",
-					installed_versions = { "1.0.0" },
+					installed_versions = json.array({ "1.0.0" }),
 					current_version = "1.1.0",
 					pinned = false,
-				},
-			},
-			casks = {},
-		}
+				}),
+			}),
+			casks = json.array({}),
+		})
 	elseif value:find("brew%-empty", 1, false) ~= nil then
-		return { formulae = {}, casks = {} }
+		return json.object({ formulae = json.array({}), casks = json.array({}) })
+	elseif value:find("brew%-malformed", 1, false) ~= nil then
+		return json.object({ formulae = json.object({}) })
 	end
 
 	error("unexpected JSON fixture: " .. tostring(value))
@@ -98,7 +138,7 @@ local function make_host()
 			system_woke = "system_woke",
 			session_active = "session_active",
 		},
-		json = { decode = decoded_fixture },
+		json = { decode = decoded_fixture, is_array = json.is_array, null = json.null },
 		log = callable_noop(),
 		inbox = inbox,
 	}
@@ -148,7 +188,11 @@ local function make_host()
 	end
 
 	function state:complete_next_command(output, code)
-		local command = table.remove(self.commands, 1)
+		return self:complete_command(1, output, code)
+	end
+
+	function state:complete_command(index, output, code)
+		local command = table.remove(self.commands, index)
 		assert(command ~= nil, "expected a pending command")
 		command.callback(output, code, { duration_ms = 1 })
 		return command
@@ -185,6 +229,16 @@ local function make_host()
 		return false
 	end
 
+	function state:item_has_action(item_id, action_id)
+		local item = self:item(item_id)
+		for _, action in ipairs(item and item.actions or {}) do
+			if action.id == action_id then
+				return true
+			end
+		end
+		return false
+	end
+
 	return easybar, state
 end
 
@@ -205,6 +259,10 @@ local function test_github_item_refresh_stays_inline()
 	assert(state:has_busy_source_action(), "GitHub startup refresh must show source activity")
 	state:complete_next_command("github-one", 0)
 	assert(not state:has_busy_source_action(), "GitHub source activity must end after refresh")
+	local item = assert(state:item("thread-1"), "GitHub notification must be published")
+	assert(item.url == "https://github.com/easybar/easybar/pull/1", "GitHub notification must use the native URL field")
+	assert(item.timestamp == inbox.timestamp("2026-08-03T09:45:00Z"), "GitHub notification must publish updated_at")
+	assert(not state:item_has_action("thread-1", "open"), "GitHub notification must not duplicate the native Open action")
 
 	state.action_handler({ action_id = "mark_read", target_widget_id = "thread-1" })
 	assert(state:item_action_is_busy("thread-1", "mark_read"), "GitHub item mutation must show inline activity")
@@ -224,8 +282,13 @@ local function test_gitlab_mark_read_stays_local()
 	state:run_next_timer()
 	assert(state:has_busy_source_action(), "GitLab startup refresh must show source activity")
 	state:complete_next_command("gitlab-issues", 0)
-	state:complete_next_command("gitlab-empty", 0)
+	state:complete_next_command("gitlab-merge-requests", 0)
 	assert(not state:has_busy_source_action(), "GitLab source activity must end after refresh")
+	assert(state.items[1].id == "merge_request:2", "GitLab work items must merge by updated_at")
+	local item = assert(state:item("issue:1"), "GitLab issue must be published")
+	assert(item.url == "https://gitlab.com/easybar/easybar/-/issues/1", "GitLab issue must use the native URL field")
+	assert(item.timestamp == inbox.timestamp("2026-08-03T09:45:00.123+00:00"), "GitLab issue must publish updated_at")
+	assert(not state:item_has_action("issue:1", "open"), "GitLab issue must not duplicate the native Open action")
 
 	local command_count = #state.commands
 	state.action_handler({ action_id = "mark_read", target_widget_id = "issue:1" })
@@ -256,6 +319,124 @@ local function test_brew_item_refresh_stays_inline()
 	assert(not state:has_busy_source_action(), "Homebrew item completion must remain source-idle")
 end
 
+local function test_github_overlapping_mutations_coalesce_refresh()
+	local state = load_widget("github-inbox.lua")
+	state:run_next_timer()
+	state:complete_next_command("github-two", 0)
+
+	state.action_handler({ action_id = "mark_read", target_widget_id = "thread-1" })
+	state.action_handler({ action_id = "mark_read", target_widget_id = "thread-2" })
+	assert(#state.commands == 2, "GitHub mutations must be allowed to overlap across items")
+
+	state:complete_command(1, "", 0)
+	assert(#state.commands == 2, "first GitHub mutation must start its refresh")
+	state:complete_command(1, "", 0)
+	assert(#state.commands == 1, "second GitHub mutation must queue behind the active refresh")
+	assert(state:item_action_is_busy("thread-2", "mark_read"), "queued GitHub mutation must remain visibly busy")
+
+	state:complete_next_command("github-second", 0)
+	assert(#state.commands == 1, "queued GitHub mutation must start a follow-up refresh")
+	assert(state:item_action_is_busy("thread-2", "mark_read"), "queued item must stay busy through the first refresh")
+	state:complete_next_command("github-empty", 0)
+	assert(state:item("thread-2") == nil, "follow-up refresh must observe the second mutation")
+end
+
+local function test_remote_errors_retain_snapshots()
+	local github = load_widget("github-inbox.lua")
+	github:run_next_timer()
+	github:complete_next_command("github-one", 0)
+	github.context_action_handler({ action_id = "refresh" })
+	github:complete_next_command(string.rep("x", 20000), 1)
+	assert(github:item("thread-1") ~= nil, "GitHub refresh errors must retain the last good snapshot")
+	assert(github.items[1].id == "error", "GitHub errors must be published before capped snapshot items")
+	assert(utf8.len(assert(github:item("error")).body) <= inbox.maximum_error_length, "GitHub errors must be bounded")
+
+	github.context_action_handler({ action_id = "refresh" })
+	github:complete_next_command("github-object", 0)
+	assert(github:item("thread-1") ~= nil, "GitHub malformed responses must retain the last good snapshot")
+	assert(github:item("error") ~= nil, "GitHub malformed responses must publish an error")
+
+	local gitlab = load_widget("gitlab-inbox.lua")
+	gitlab:run_next_timer()
+	gitlab:complete_next_command("gitlab-issues", 0)
+	gitlab:complete_next_command("gitlab-empty", 0)
+	gitlab.context_action_handler({ action_id = "refresh" })
+	gitlab:complete_next_command(string.rep("y", 20000), 1)
+	assert(gitlab:item("issue:1") ~= nil, "GitLab refresh errors must retain the last good snapshot")
+	assert(gitlab.items[1].id == "error", "GitLab errors must be published before capped snapshot items")
+	assert(utf8.len(assert(gitlab:item("error")).body) <= inbox.maximum_error_length, "GitLab errors must be bounded")
+
+	gitlab.context_action_handler({ action_id = "refresh" })
+	gitlab:complete_next_command("gitlab-object", 0)
+	assert(gitlab:item("issue:1") ~= nil, "GitLab malformed responses must retain the last good snapshot")
+	assert(gitlab:item("error") ~= nil, "GitLab malformed responses must publish an error")
+end
+
+local function test_brew_parser_retains_snapshot_and_handles_warning_braces()
+	local state = load_widget("brew-inbox.lua")
+	state:run_next_timer()
+	state:complete_next_command('{"scenario":"brew-one"}', 0)
+	state:run_next_timer()
+
+	state.context_action_handler({ action_id = "refresh" })
+	state:complete_next_command('{"scenario":"brew-malformed"}', 0)
+	state:run_next_timer()
+	assert(state:item("formula:easybar") ~= nil, "Homebrew malformed responses must retain the last good snapshot")
+	assert(state:item("error") ~= nil, "Homebrew malformed responses must publish an error")
+	assert(state.items[1].id == "error", "Homebrew errors must be published before capped snapshot items")
+
+	state.context_action_handler({ action_id = "refresh" })
+	state:complete_next_command('Warning {details}\n{"scenario":"brew-one"}\nTrailing {hint}', 0)
+	state:run_next_timer()
+	assert(state:item("formula:easybar") ~= nil, "Homebrew must decode JSON surrounded by brace-containing warnings")
+	assert(state:item("warning") ~= nil, "Homebrew must retain surrounding warning output")
+	assert(state:item("error") == nil, "a valid Homebrew snapshot must clear the prior error")
+end
+
+local function test_brew_refresh_cancellation_clears_activity()
+	local state = load_widget("brew-inbox.lua")
+	state:run_next_timer()
+	assert(state:has_busy_source_action(), "Homebrew refresh must start with source activity")
+	state.context_action_handler({ action_id = "cancel" })
+	assert(state:has_busy_source_action(), "Homebrew cancellation must retain activity during its completion delay")
+	state:run_next_timer()
+	assert(not state:has_busy_source_action(), "Homebrew cancellation must clear source activity")
+end
+
+local function test_brew_mutation_cancellation_reconciles_snapshot()
+	local state = load_widget("brew-inbox.lua")
+	state:run_next_timer()
+	state:complete_next_command('{"scenario":"brew-one"}', 0)
+	state:run_next_timer()
+
+	state.action_handler({ action_id = "upgrade", target_widget_id = "formula:easybar" })
+	state.context_action_handler({ action_id = "cancel" })
+	assert(state:item_action_is_busy("formula:easybar", "upgrade"), "Homebrew cancellation must stay inline")
+	assert(not state:has_busy_source_action(), "Homebrew item cancellation must not show source activity")
+
+	state:complete_next_command("", 130)
+	state:run_next_timer()
+	assert(#state.commands == 1, "Homebrew cancellation must reconcile package state")
+	assert(state:item_action_is_busy("formula:easybar", "upgrade"), "Homebrew reconciliation must stay inline")
+	state:complete_next_command('{"scenario":"brew-one"}', 0)
+	state:run_next_timer()
+	assert(
+		not state:item_action_is_busy("formula:easybar", "upgrade"),
+		"Homebrew reconciliation must finish inline activity"
+	)
+end
+
+local function test_inbox_timestamp_parser()
+	assert(inbox.decode_array(json, "[]") ~= nil, "JSON arrays must decode")
+	assert(inbox.decode_array(json, "{}") == nil, "JSON objects must not be accepted as arrays")
+	assert(inbox.timestamp("1970-01-01T00:00:00Z") == 0, "UTC epoch timestamp must parse")
+	assert(inbox.timestamp("1970-01-01T01:00:00+01:00") == 0, "positive timezone offset must parse")
+	assert(inbox.timestamp("1969-12-31T19:00:00-0500") == 0, "compact negative timezone offset must parse")
+	assert(inbox.timestamp("2000-02-29T12:34:56.789Z") ~= nil, "fractional leap-day timestamp must parse")
+	assert(inbox.timestamp("2026-02-29T00:00:00Z") == nil, "invalid calendar dates must be rejected")
+	assert(inbox.timestamp("2026-08-03T09:45:00") == nil, "timestamps without a timezone must be rejected")
+end
+
 local expected_widgets = {
 	["brew-inbox.lua"] = true,
 	["github-inbox.lua"] = true,
@@ -272,5 +453,11 @@ end
 test_github_item_refresh_stays_inline()
 test_gitlab_mark_read_stays_local()
 test_brew_item_refresh_stays_inline()
+test_github_overlapping_mutations_coalesce_refresh()
+test_remote_errors_retain_snapshots()
+test_brew_parser_retains_snapshot_and_handles_warning_braces()
+test_brew_refresh_cancellation_clears_activity()
+test_brew_mutation_cancellation_reconciles_snapshot()
+test_inbox_timestamp_parser()
 
-print("inbox widget activity checks passed")
+print("inbox widget regression checks passed")

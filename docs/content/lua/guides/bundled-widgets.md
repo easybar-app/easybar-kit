@@ -40,6 +40,21 @@ persistent state; EasyBar does not duplicate the selected node in `config.toml`.
 
 GitHub and GitLab inbox items expose a dedicated **Mark as read** action. GitHub also acknowledges the notification through the GitHub API. GitLab publishes assigned work items rather than notification records, so its action updates EasyBar's persistent local read state.
 
+GitHub and GitLab publish each item's native `url` and `timestamp`, so EasyBar supplies the **Open**
+button and sorts mixed sources by their service-provided update time. Failed or malformed refreshes
+keep the last valid snapshot visible and add a bounded error item. GitHub coalesces refreshes that
+finish while another refresh is active, ensuring overlapping notification acknowledgements receive
+one final server snapshot.
+
+Homebrew also preserves its last valid package snapshot when command output is malformed or a
+refresh fails. Its parser validates formula, cask, and installed-version shapes before replacing
+the snapshot, while still publishing warnings printed around Homebrew's JSON response.
+
+Each inbox publisher sends at most 500 items per snapshot and prioritizes error and warning
+records. GitLab merges issues and merge requests by update time before applying that limit, while
+GitHub preserves the API's notification order. The native inbox may display fewer items when
+`max_items` has a lower value.
+
 ## GUI environment
 
 Apps opened from Finder or Spotlight do not inherit `.zshrc`. Make required CLIs and instance settings explicit:
@@ -62,7 +77,11 @@ See [Environment](../../configuration/environment.md) for precedence and GUI-lau
 
 ## Shared modules and assets
 
-Several examples import `retry`, `shell`, `text`, or `secrets` from `widgets/lib`. Preserve that directory structure when copying them. File-backed assets are resolved relative to the widget with `easybar.asset(...)`; copy those assets as well.
+Several examples import `inbox`, `retry`, `text`, or `secrets` from `widgets/lib`. Preserve that directory structure when copying them. File-backed assets are resolved relative to the widget with `easybar.asset(...)`; copy those assets as well.
+
+The inbox publishers use `lib/inbox.lua` to reject object-shaped responses where arrays are
+expected, bound external error messages, and convert ISO-8601 update times without depending on the
+Mac's local timezone. See [Reusable Modules](modules.md#inbox-data-helper) for its public functions.
 
 Keep the secrets helper at `widgets/lib/secrets.lua`. Do not place a copy at the top level: EasyBar executes every top-level `*.lua` file as a widget entrypoint, while files below `lib/` are loaded only through `require(...)`. Edit the module before copying `wireguard.lua`, then copy `lib/secrets.lua` with the widget.
 

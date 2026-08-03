@@ -1,5 +1,6 @@
 -- Inbox-only GitHub notifications. Requires an authenticated `gh` CLI.
 
+local inbox = require("inbox")
 local retry = require("retry")
 local text = require("text")
 
@@ -13,8 +14,11 @@ local SOURCE_PRESENTATION = {
 local POLL_INTERVAL_SECONDS = 300
 local NETWORK_READY_DELAY_SECONDS = 3
 local REFRESH_BACKOFF_SECONDS = { 2, 5 }
+local MAX_ITEMS = 500
 local notifications = {}
-local refreshing = false
+local current_error = nil
+local active_refresh = nil
+local queued_refresh = nil
 local pending_refresh = nil
 local source_activity = nil
 local busy_item_ids = {}
@@ -46,9 +50,10 @@ end
 configure_source_actions()
 
 local function notification_url(notification)
-	local repository = type(notification.repository) == "table" and text.trim(notification.repository.html_url) or ""
+	local repository = type(notification.repository.html_url) == "string" and text.trim(notification.repository.html_url)
+		or ""
 	local subject = type(notification.subject) == "table" and notification.subject or {}
-	local api_url = text.trim(subject.url)
+	local api_url = type(subject.url) == "string" and text.trim(subject.url) or ""
 	local number = api_url:match("/(%d+)$")
 	if repository ~= "" and number ~= nil then
 		if subject.type == "PullRequest" then
@@ -62,89 +67,163 @@ local function notification_url(notification)
 	return "https://github.com/notifications"
 end
 
-local function publish_error(message)
-	easybar.inbox.replace(SOURCE, {
-		{
-			id = "error",
-			title = "GitHub notifications unavailable",
-			body = message,
-			severity = "error",
-			source = SOURCE_PRESENTATION,
-			actions = { { id = "refresh", title = "Refresh" } },
-		},
-	})
-end
-
 local function publish_current_notifications()
 	local items = {}
-	for _, notification in ipairs(notifications) do
-		local repository = type(notification.repository) == "table" and notification.repository.full_name or "GitHub"
-		local subject = type(notification.subject) == "table" and notification.subject or {}
-		local item_id = tostring(notification.id or repository .. ":" .. tostring(subject.title))
-		local marking_read = busy_item_ids[item_id] == true
+	if current_error ~= nil then
 		items[#items + 1] = {
-			id = item_id,
-			title = text.trim(subject.title) ~= "" and subject.title or "Untitled notification",
-			body = repository .. (text.trim(notification.reason) ~= "" and " · " .. notification.reason or ""),
-			category = text.trim(subject.type) ~= "" and subject.type or "Notification",
-			severity = "info",
+			id = "error",
+			title = "GitHub notifications unavailable",
+			body = current_error.message,
+			severity = "error",
 			unread = true,
+			timestamp = current_error.timestamp,
 			source = SOURCE_PRESENTATION,
-			actions = {
-				{
-					id = "mark_read",
-					title = marking_read and "Marking read…" or "Mark as read",
-					enabled = not marking_read,
-					busy = marking_read,
-				},
-				{ id = "open", title = "Open" },
-			},
+			actions = { { id = "refresh", title = "Refresh" } },
 		}
+	end
+	for _, notification in ipairs(notifications) do
+		if #items < MAX_ITEMS then
+			local repository = notification.repository.full_name
+			local subject = notification.subject
+			local item_id = tostring(notification.id)
+			local marking_read = busy_item_ids[item_id] == true
+			items[#items + 1] = {
+				id = item_id,
+				title = subject.title,
+				body = repository .. (text.trim(notification.reason) ~= "" and " · " .. notification.reason or ""),
+				category = text.trim(subject.type) ~= "" and subject.type or "Notification",
+				severity = "info",
+				unread = true,
+				timestamp = inbox.timestamp(notification.updated_at),
+				url = notification_url(notification),
+				source = SOURCE_PRESENTATION,
+				actions = {
+					{
+						id = "mark_read",
+						title = marking_read and "Marking read…" or "Mark as read",
+						enabled = not marking_read,
+						busy = marking_read,
+					},
+				},
+			}
+		end
 	end
 
 	easybar.inbox.replace(SOURCE, items)
-	log(easybar.level.debug, "inbox snapshot published operation=refresh items=" .. tostring(#items))
-	return #items
+	log(easybar.level.debug, "inbox snapshot published operation=refresh items=" .. tostring(#notifications))
+	return #notifications
 end
 
-local function publish_notifications(output)
-	local ok, pages = pcall(easybar.json.decode, output)
-	if not ok or type(pages) ~= "table" then
-		log(easybar.level.warn, "inbox response invalid operation=refresh format=json")
-		publish_error("GitHub returned invalid JSON")
+local function publish_error(output, fallback)
+	current_error = { message = inbox.error_message(output, fallback), timestamp = os.time() }
+	publish_current_notifications()
+end
+
+local function valid_notification(notification)
+	if type(notification) ~= "table" then
+		return false
+	end
+	local id_type = type(notification.id)
+	if (id_type ~= "string" and id_type ~= "number") or text.trim(notification.id) == "" then
+		return false
+	end
+	if
+		type(notification.repository) ~= "table"
+		or type(notification.repository.full_name) ~= "string"
+		or text.trim(notification.repository.full_name) == ""
+	then
+		return false
+	end
+	if
+		type(notification.subject) ~= "table"
+		or type(notification.subject.title) ~= "string"
+		or text.trim(notification.subject.title) == ""
+	then
+		return false
+	end
+	if
+		notification.repository.html_url ~= nil
+		and notification.repository.html_url ~= easybar.json.null
+		and type(notification.repository.html_url) ~= "string"
+	then
+		return false
+	end
+	if notification.reason ~= nil and type(notification.reason) ~= "string" then
+		return false
+	end
+	if notification.subject.type ~= nil and type(notification.subject.type) ~= "string" then
+		return false
+	end
+	if
+		notification.subject.url ~= nil
+		and notification.subject.url ~= easybar.json.null
+		and type(notification.subject.url) ~= "string"
+	then
+		return false
+	end
+	return inbox.timestamp(notification.updated_at) ~= nil
+end
+
+local function decode_notifications(output)
+	local pages = inbox.decode_array(easybar.json, output)
+	if pages == nil then
 		return nil
 	end
 
-	notifications = {}
+	local decoded = {}
 	for _, page in ipairs(pages) do
-		for _, notification in ipairs(type(page) == "table" and page or {}) do
-			notifications[#notifications + 1] = notification
+		if not easybar.json.is_array(page) then
+			return nil
+		end
+		for _, notification in ipairs(page) do
+			if not valid_notification(notification) then
+				return nil
+			end
+			if #decoded < MAX_ITEMS then
+				decoded[#decoded + 1] = notification
+			end
 		end
 	end
+	return decoded
+end
 
+local function publish_notifications(output)
+	local decoded = decode_notifications(output)
+	if decoded == nil then
+		log(easybar.level.warn, "inbox response invalid operation=refresh format=json")
+		publish_error(nil, "GitHub returned an invalid notification response")
+		return nil
+	end
+
+	notifications = decoded
+	current_error = nil
 	return publish_current_notifications()
 end
 
-local function refresh(reason, activity_item_id)
-	reason = tostring(reason or "unspecified")
-	if refreshing then
-		log(easybar.level.trace, "inbox refresh skipped reason=" .. reason .. " state=already_refreshing")
-		if activity_item_id ~= nil then
-			busy_item_ids[activity_item_id] = nil
-			publish_current_notifications()
-		end
-		return
-	end
+local refresh
 
+local function merge_refresh_request(request, reason, activity_item_id)
+	request = request or { reasons = {}, activity_item_ids = {}, show_source_activity = false }
+	request.reasons[#request.reasons + 1] = tostring(reason or "unspecified")
+	if activity_item_id == nil then
+		request.show_source_activity = true
+	else
+		request.activity_item_ids[activity_item_id] = true
+	end
+	return request
+end
+
+local function start_refresh(request)
 	if pending_refresh ~= nil then
 		pending_refresh:cancel()
 		pending_refresh = nil
 	end
 
-	refreshing = true
-	if activity_item_id == nil then
+	active_refresh = request
+	if request.show_source_activity then
 		set_source_activity("Refreshing…")
 	end
+	local reason = table.concat(request.reasons, "+")
 	log(easybar.level.debug, "inbox refresh started reason=" .. reason)
 
 	local current_attempt = 0
@@ -182,37 +261,54 @@ local function refresh(reason, activity_item_id)
 			return retryable
 		end,
 		on_complete = function(output, code, attempts, metadata)
-			refreshing = false
-			if activity_item_id == nil then
+			active_refresh = nil
+			if request.show_source_activity then
 				set_source_activity(nil)
-			else
-				busy_item_ids[activity_item_id] = nil
+			end
+			for item_id in pairs(request.activity_item_ids) do
+				busy_item_ids[item_id] = nil
 			end
 			if code ~= 0 then
 				log(
 					easybar.level.warn,
 					"inbox refresh failed reason=" .. reason .. " attempts=" .. tostring(attempts) .. " status=" .. tostring(code)
 				)
-				publish_error(text.trim(output) ~= "" and text.trim(output) or "Run 'gh auth login' and check app.env PATH")
-				return
+				publish_error(output, "Run 'gh auth login' and check app.env PATH")
+			else
+				local item_count = publish_notifications(output)
+				if item_count ~= nil then
+					log(
+						easybar.level.debug,
+						"inbox refresh completed reason="
+							.. reason
+							.. " attempts="
+							.. tostring(attempts)
+							.. " items="
+							.. tostring(item_count)
+							.. " duration_ms="
+							.. tostring(metadata.duration_ms or 0)
+					)
+				end
 			end
 
-			local item_count = publish_notifications(output)
-			if item_count ~= nil then
-				log(
-					easybar.level.debug,
-					"inbox refresh completed reason="
-						.. reason
-						.. " attempts="
-						.. tostring(attempts)
-						.. " items="
-						.. tostring(item_count)
-						.. " duration_ms="
-						.. tostring(metadata.duration_ms or 0)
-				)
+			local next_request = queued_refresh
+			queued_refresh = nil
+			if next_request ~= nil then
+				log(easybar.level.trace, "inbox queued refresh starting reasons=" .. table.concat(next_request.reasons, "+"))
+				start_refresh(next_request)
 			end
 		end,
 	})
+end
+
+refresh = function(reason, activity_item_id)
+	reason = tostring(reason or "unspecified")
+	if active_refresh ~= nil then
+		queued_refresh = merge_refresh_request(queued_refresh, reason, activity_item_id)
+		log(easybar.level.trace, "inbox refresh queued reason=" .. reason .. " state=already_refreshing")
+		return
+	end
+	start_refresh(merge_refresh_request(nil, reason, activity_item_id))
 end
 
 local function schedule_refresh(reason, delay_seconds)
@@ -229,20 +325,6 @@ local function schedule_refresh(reason, delay_seconds)
 		pending_refresh = nil
 		refresh(reason)
 	end)
-end
-
-local function open_notification(notification)
-	local item_id = tostring(notification.id)
-	log(easybar.level.debug, "inbox item open started item_id=" .. item_id)
-	easybar.spawn_async(
-		{ "open", notification_url(notification) },
-		{ log_operation = "open_notification" },
-		function(_, code)
-			if code ~= 0 then
-				log(easybar.level.warn, "inbox item open failed item_id=" .. item_id .. " status=" .. tostring(code))
-			end
-		end
-	)
 end
 
 easybar.inbox.on_action(SOURCE, function(event)
@@ -266,20 +348,13 @@ easybar.inbox.on_action(SOURCE, function(event)
 					refresh("post_mutation", item_id)
 				else
 					busy_item_ids[item_id] = nil
-					publish_current_notifications()
 					log(
 						easybar.level.error,
 						"inbox mutation failed operation=mark_read item_id=" .. item_id .. " status=" .. tostring(code)
 					)
+					publish_error(nil, "GitHub could not mark the notification as read")
 				end
 			end)
-		end
-	elseif action_id == "open" then
-		for _, notification in ipairs(notifications) do
-			if tostring(notification.id) == item_id then
-				open_notification(notification)
-				break
-			end
 		end
 	end
 end)

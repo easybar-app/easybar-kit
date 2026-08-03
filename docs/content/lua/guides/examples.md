@@ -72,6 +72,11 @@ variant to publish the same work items into EasyBar's shared [native inbox](inbo
 
 The equivalent inbox-only GitHub publisher is
 [`widgets/github-inbox.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/github-inbox.lua).
+Both publishers use EasyBar's native item URL handling, preserve the last valid snapshot when a
+refresh fails, and publish service update times for the inbox's default timestamp sorting. Their
+shared validation, bounded-error, and ISO-8601 parsing functions live in
+[`widgets/lib/inbox.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/lib/inbox.lua) and are
+documented under [Reusable Modules](modules.md#inbox-data-helper).
 Use [`widgets/inbox-demo.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/inbox-demo.lua)
 to preview inbox grouping, severities, Markdown, unread state, and actions without external services.
 

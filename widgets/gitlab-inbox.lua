@@ -1,5 +1,6 @@
 -- Inbox-only assigned GitLab work items. Requires an authenticated `glab` CLI.
 
+local inbox = require("inbox")
 local retry = require("retry")
 local text = require("text")
 
@@ -13,7 +14,10 @@ local SOURCE_PRESENTATION = {
 local POLL_INTERVAL_SECONDS = 300
 local NETWORK_READY_DELAY_SECONDS = 3
 local REFRESH_BACKOFF_SECONDS = { 2, 5 }
-local work_items = {}
+local MAX_ITEMS = 500
+local issues = {}
+local merge_requests = {}
+local current_error = nil
 local refreshing = false
 local pending_refresh = nil
 local source_activity = nil
@@ -43,19 +47,6 @@ local function set_source_activity(title)
 end
 
 configure_source_actions()
-
-local function publish_error(message)
-	easybar.inbox.replace(SOURCE, {
-		{
-			id = "error",
-			title = "GitLab work items unavailable",
-			body = message,
-			severity = "error",
-			source = SOURCE_PRESENTATION,
-			actions = { { id = "refresh", title = "Refresh" } },
-		},
-	})
-end
 
 local function fetch(endpoint, operation, complete)
 	local current_attempt = 0
@@ -103,35 +94,54 @@ local function fetch(endpoint, operation, complete)
 	})
 end
 
-local function publish(issues, merge_requests)
-	work_items = {}
-
-	for _, pair in ipairs({
-		{ "issue", issues },
-		{ "merge_request", merge_requests },
-	}) do
-		for _, item in ipairs(type(pair[2]) == "table" and pair[2] or {}) do
-			item.kind = pair[1]
-			work_items[#work_items + 1] = item
+local function publish()
+	local work_items = {}
+	for _, pair in ipairs({ { "issue", issues }, { "merge_request", merge_requests } }) do
+		for _, item in ipairs(pair[2]) do
+			work_items[#work_items + 1] = {
+				id = pair[1] .. ":" .. tostring(item.id),
+				kind = pair[1],
+				item = item,
+				timestamp = inbox.timestamp(item.updated_at),
+			}
 		end
 	end
+	table.sort(work_items, function(left, right)
+		if left.timestamp == right.timestamp then
+			return left.id < right.id
+		end
+		return left.timestamp > right.timestamp
+	end)
 
 	local items = {}
-	for _, item in ipairs(work_items) do
-		local id = item.kind .. ":" .. tostring(item.id or item.iid)
+	if current_error ~= nil then
 		items[#items + 1] = {
-			id = id,
-			title = text.trim(item.title) ~= "" and item.title or "Untitled work item",
-			body = type(item.references) == "table" and item.references.full or nil,
-			category = item.kind == "merge_request" and "Merge requests" or "Issues",
-			severity = "info",
+			id = "error",
+			title = "GitLab work items unavailable",
+			body = current_error.message,
+			severity = "error",
 			unread = true,
+			timestamp = current_error.timestamp,
 			source = SOURCE_PRESENTATION,
-			actions = {
-				{ id = "mark_read", title = "Mark as read" },
-				{ id = "open", title = "Open" },
-			},
+			actions = { { id = "refresh", title = "Refresh" } },
 		}
+	end
+	for _, work_item in ipairs(work_items) do
+		if #items < MAX_ITEMS then
+			local item = work_item.item
+			items[#items + 1] = {
+				id = work_item.id,
+				title = item.title,
+				body = type(item.references) == "table" and item.references.full or nil,
+				category = work_item.kind == "merge_request" and "Merge requests" or "Issues",
+				severity = "info",
+				unread = true,
+				timestamp = work_item.timestamp,
+				url = item.web_url,
+				source = SOURCE_PRESENTATION,
+				actions = { { id = "mark_read", title = "Mark as read" } },
+			}
+		end
 	end
 
 	easybar.inbox.replace(SOURCE, items)
@@ -148,6 +158,49 @@ local function publish(issues, merge_requests)
 	return #items
 end
 
+local function publish_error(output, fallback)
+	current_error = { message = inbox.error_message(output, fallback), timestamp = os.time() }
+	publish()
+end
+
+local function valid_work_item(item)
+	if type(item) ~= "table" then
+		return false
+	end
+	local id_type = type(item.id)
+	if (id_type ~= "string" and id_type ~= "number") or text.trim(item.id) == "" then
+		return false
+	end
+	if type(item.title) ~= "string" or text.trim(item.title) == "" then
+		return false
+	end
+	if type(item.web_url) ~= "string" or text.trim(item.web_url) == "" then
+		return false
+	end
+	if item.references ~= nil and item.references ~= easybar.json.null then
+		if type(item.references) ~= "table" then
+			return false
+		end
+		if item.references.full ~= nil and type(item.references.full) ~= "string" then
+			return false
+		end
+	end
+	return inbox.timestamp(item.updated_at) ~= nil
+end
+
+local function decode_work_items(output)
+	local decoded = inbox.decode_array(easybar.json, output)
+	if decoded == nil then
+		return nil
+	end
+	for _, item in ipairs(decoded) do
+		if not valid_work_item(item) then
+			return nil
+		end
+	end
+	return decoded
+end
+
 local function finish_error(operation, output, fallback, attempts, code)
 	refreshing = false
 	set_source_activity(nil)
@@ -161,7 +214,7 @@ local function finish_error(operation, output, fallback, attempts, code)
 			.. tostring(code or 1)
 	)
 
-	publish_error(text.trim(output) ~= "" and text.trim(output) or fallback)
+	publish_error(output, fallback)
 end
 
 local function refresh(reason)
@@ -197,16 +250,10 @@ local function refresh(reason)
 			return
 		end
 
-		local issues_ok, issues = pcall(easybar.json.decode, issues_output)
-		if not issues_ok or type(issues) ~= "table" then
+		local refreshed_issues = decode_work_items(issues_output)
+		if refreshed_issues == nil then
 			log(easybar.level.warn, "inbox response invalid operation=fetch_issues format=json")
-			finish_error(
-				"fetch_issues",
-				"GitLab returned invalid issues JSON",
-				"GitLab returned invalid issues JSON",
-				issues_attempts,
-				1
-			)
+			finish_error("fetch_issues", nil, "GitLab returned an invalid issues response", issues_attempts, 1)
 			return
 		end
 
@@ -222,20 +269,21 @@ local function refresh(reason)
 						.. " status="
 						.. tostring(mrs_code)
 				)
-				publish_error(
-					text.trim(mrs_output) ~= "" and text.trim(mrs_output) or "Run 'glab auth login' and check app.env PATH"
-				)
+				publish_error(mrs_output, "Run 'glab auth login' and check app.env PATH")
 				return
 			end
 
-			local mrs_ok, merge_requests = pcall(easybar.json.decode, mrs_output)
-			if not mrs_ok or type(merge_requests) ~= "table" then
+			local refreshed_merge_requests = decode_work_items(mrs_output)
+			if refreshed_merge_requests == nil then
 				log(easybar.level.warn, "inbox response invalid operation=fetch_merge_requests format=json")
-				publish_error("GitLab returned invalid merge request JSON")
+				publish_error(nil, "GitLab returned an invalid merge request response")
 				return
 			end
 
-			local item_count = publish(issues, merge_requests)
+			issues = refreshed_issues
+			merge_requests = refreshed_merge_requests
+			current_error = nil
+			local item_count = publish()
 			log(
 				easybar.level.debug,
 				"inbox refresh completed reason="
@@ -269,16 +317,6 @@ local function schedule_refresh(reason, delay_seconds)
 	end)
 end
 
-local function open_work_item(item, item_id)
-	log(easybar.level.debug, "inbox item open started item_id=" .. item_id)
-
-	easybar.spawn_async({ "open", item.web_url }, { log_operation = "open_work_item" }, function(_, code)
-		if code ~= 0 then
-			log(easybar.level.warn, "inbox item open failed item_id=" .. item_id .. " status=" .. tostring(code))
-		end
-	end)
-end
-
 easybar.inbox.on_action(SOURCE, function(event)
 	local action_id = tostring(event.action_id or "unknown")
 	local item_id = tostring(event.target_widget_id or "")
@@ -287,15 +325,6 @@ easybar.inbox.on_action(SOURCE, function(event)
 
 	if action_id == "refresh" then
 		refresh("manual")
-	elseif action_id == "mark_read" then
-		log(easybar.level.trace, "inbox item marked read locally item_id=" .. item_id)
-	elseif action_id == "open" then
-		for _, item in ipairs(work_items) do
-			if item.kind .. ":" .. tostring(item.id or item.iid) == item_id then
-				open_work_item(item, item_id)
-				break
-			end
-		end
 	end
 end)
 
