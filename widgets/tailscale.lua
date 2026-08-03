@@ -305,7 +305,7 @@ end
 
 local function render(snapshot)
 	local status_color = snapshot.tailscale_connected and COLORS.success or COLORS.muted
-	local exit_node_color = snapshot.exit_node_enabled and COLORS.accent or COLORS.muted
+	local exit_node_color = snapshot.exit_node_enabled and COLORS.text or COLORS.muted
 
 	tailscale_icon:set({
 		icon = {
