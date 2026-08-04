@@ -211,6 +211,8 @@ extension CalendarMonthPopupConfig {
       todayCellBackgroundColorHex: "#222222",
       todayCellBorderColorHex: "#ffffff",
       todayCellBorderWidth: 1,
+      todayMarkerVariant: .doubleSketch,
+      todayMarkerSize: 22,
       indicatorColorHex: "#00ff00",
       selectedTextColorHex: "#000000",
       selectedBackgroundColorHex: "#ffffff",
@@ -229,8 +231,10 @@ extension CalendarMonthPopupConfig {
       anchorShowDateText: true,
       todayButtonTitle: "Today",
       todayButtonIcon: "􀉉",
-      todayButtonBorderColorHex: "#ffffff",
-      todayButtonBorderWidth: 1
+      todayButtonPaddingX: 7,
+      todayButtonPaddingY: 2,
+      todayButtonMarginX: 0,
+      todayButtonMarginY: 0
     )
   }
 }

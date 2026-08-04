@@ -30,7 +30,6 @@
 ---@field transparent string Fully transparent color.
 ---@field overlay_outline string Overlay outline color with alpha.
 ---@field overlay_text string High-contrast overlay glyph or text color.
----@field today_button_border string Border color used by the calendar today button.
 
 ---Theme reference strings accepted by color fields.
 ---These always mirror the active `EasyBarThemeColors` keys.
@@ -62,7 +61,6 @@
 ---@field transparent string Reference string for `theme.transparent`.
 ---@field overlay_outline string Reference string for `theme.overlay_outline`.
 ---@field overlay_text string Reference string for `theme.overlay_text`.
----@field today_button_border string Reference string for `theme.today_button_border`.
 
 ---Active resolved theme exposed to Lua widgets.
 ---Use `theme.colors.<token>` for resolved hex colors and `theme.ref.<token>` when you want to keep a node color bound to the active theme.

@@ -203,7 +203,6 @@ final class Config: ObservableObject, @unchecked Sendable {
   var themeTransparentColorHex: String { themeSection.colors.transparent }
   var themeOverlayOutlineColorHex: String { themeSection.colors.overlayOutline }
   var themeOverlayTextColorHex: String { themeSection.colors.overlayText }
-  var themeTodayButtonBorderColorHex: String { themeSection.colors.todayButtonBorder }
 
   // MARK: - Bar accessors
 

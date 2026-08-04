@@ -6,10 +6,15 @@ enum CalendarContextMenuAction: Equatable {
   case setPopupMode(CalendarPopupMode)
   case setAnchorLayout(CalendarAnchorLayout)
   case toggleAnchorField(CalendarAnchorFieldKind)
+  case setTodayMarkerVariant(CalendarTodayMarkerVariant)
+  case setTodayMarkerSize(Int)
   case toggleAppointmentOption(String)
   case toggleBirthdayOption(String)
   case refresh
   case openCalendarSettings
+
+  static let allowedTodayMarkerSizes = [18, 20, 22, 24, 26, 28]
+  static let customTodayMarkerSizeID = "calendar.today_marker.size.custom"
 
   init?(id: String) {
     if let value = id.removingPrefix("calendar.popup."),
@@ -28,6 +33,19 @@ enum CalendarContextMenuAction: Equatable {
       let field = CalendarAnchorFieldKind(rawValue: value)
     {
       self = .toggleAnchorField(field)
+      return
+    }
+    if let value = id.removingPrefix("calendar.today_marker.variant."),
+      let variant = CalendarTodayMarkerVariant(rawValue: value)
+    {
+      self = .setTodayMarkerVariant(variant)
+      return
+    }
+    if let value = id.removingPrefix("calendar.today_marker.size."),
+      let size = Int(value),
+      Self.allowedTodayMarkerSizes.contains(size)
+    {
+      self = .setTodayMarkerSize(size)
       return
     }
     if let option = id.removingPrefix("calendar.appointment."),
@@ -77,11 +95,43 @@ enum CalendarContextMenu {
         checked: selected
       )
     }
+    let todayMarkerVariants = CalendarTodayMarkerVariant.allCases.map { variant in
+      WidgetContextMenuItem(
+        id: "calendar.today_marker.variant.\(variant.rawValue)",
+        title: todayMarkerTitle(variant),
+        checked: config.month.popup.todayMarkerVariant == variant
+      )
+    }
+    var todayMarkerSizes = CalendarContextMenuAction.allowedTodayMarkerSizes.map { size in
+      WidgetContextMenuItem(
+        id: "calendar.today_marker.size.\(size)",
+        title: "\(size) pt",
+        checked: config.month.popup.todayMarkerSize == Double(size)
+      )
+    }
+    if !CalendarContextMenuAction.allowedTodayMarkerSizes.contains(where: {
+      config.month.popup.todayMarkerSize == Double($0)
+    }) {
+      todayMarkerSizes.insert(
+        WidgetContextMenuItem(
+          id: CalendarContextMenuAction.customTodayMarkerSizeID,
+          title: "Custom: \(formattedMarkerSize(config.month.popup.todayMarkerSize)) pt",
+          enabled: false,
+          checked: true
+        ),
+        at: 0
+      )
+    }
+    let todayItems = [
+      WidgetContextMenuItem(title: "Marker Style", submenu: todayMarkerVariants),
+      WidgetContextMenuItem(title: "Marker Size", submenu: todayMarkerSizes),
+    ]
 
     return [
       WidgetContextMenuItem(title: "Popup", submenu: popupModes),
       WidgetContextMenuItem(title: "Anchor Layout", submenu: layouts),
       WidgetContextMenuItem(title: "Anchor Fields", submenu: anchorFields),
+      WidgetContextMenuItem(title: "Today", submenu: todayItems),
       WidgetContextMenuItem(
         title: "Appointment Details",
         submenu: appointmentMenu(config.appointments)
@@ -102,6 +152,19 @@ enum CalendarContextMenu {
     case .upcoming: "Upcoming"
     case .month: "Month"
     }
+  }
+
+  private static func todayMarkerTitle(_ variant: CalendarTodayMarkerVariant) -> String {
+    switch variant {
+    case .regularRoundedRectangle: "Rounded Rectangle"
+    case .softWobble: "Soft Wobble"
+    case .doubleSketch: "Double Sketch"
+    case .openLoop: "Open Loop"
+    }
+  }
+
+  private static func formattedMarkerSize(_ value: Double) -> String {
+    value.formatted(.number.precision(.fractionLength(0...2)))
   }
 
   private static func appointmentMenu(

@@ -324,6 +324,42 @@ final class ConfigLoaderBuiltinTests: ConfigLoaderTestCase {
     )
   }
 
+  func testReloadAppliesMonthTodayMarkerOverrides() throws {
+    let config = Config.makeUnloadedConfig()
+    let configFileURL = tempDirectoryURL.appendingPathComponent("calendar-today-marker.toml")
+
+    try writeConfig(
+      """
+      [builtins.calendar.month.popup.calendar]
+      today_marker_variant = "open_loop"
+      today_marker_size = 24.5
+
+      [builtins.calendar.month.popup.today_button]
+      padding_x = 9
+      padding_y = 3
+      margin_x = 2
+      margin_y = 1
+      """,
+      to: configFileURL
+    )
+
+    setEnvironmentValue(configFileURL.path, for: SharedEnvironmentKeys.configPath)
+
+    XCTAssertNil(config.reload())
+    XCTAssertEqual(config.builtinCalendar.month.popup.todayMarkerVariant, .openLoop)
+    XCTAssertEqual(config.builtinCalendar.month.popup.todayMarkerSize, 24.5)
+    XCTAssertEqual(config.builtinCalendar.month.popup.todayButtonPaddingX, 9)
+    XCTAssertEqual(config.builtinCalendar.month.popup.todayButtonPaddingY, 3)
+    XCTAssertEqual(config.builtinCalendar.month.popup.todayButtonMarginX, 2)
+    XCTAssertEqual(config.builtinCalendar.month.popup.todayButtonMarginY, 1)
+    XCTAssertEqual(config.builtinCalendar.calendarMonthPopupUIConfig.todayMarkerVariant, .openLoop)
+    XCTAssertEqual(config.builtinCalendar.calendarMonthPopupUIConfig.todayMarkerSize, 24.5)
+    XCTAssertEqual(config.builtinCalendar.calendarMonthPopupUIConfig.todayButtonPaddingX, 9)
+    XCTAssertEqual(config.builtinCalendar.calendarMonthPopupUIConfig.todayButtonPaddingY, 3)
+    XCTAssertEqual(config.builtinCalendar.calendarMonthPopupUIConfig.todayButtonMarginX, 2)
+    XCTAssertEqual(config.builtinCalendar.calendarMonthPopupUIConfig.todayButtonMarginY, 1)
+  }
+
   func testReloadUsesDefaultCalendarMeetingURLPatternsWhenSettingIsOmitted() throws {
     let config = Config.makeUnloadedConfig()
     let configFileURL = tempDirectoryURL.appendingPathComponent(

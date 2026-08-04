@@ -153,7 +153,6 @@ selection_background = "#89B4FA"
 transparent = "#00000000"
 overlay_outline = "#000000F0"
 overlay_text = "#FFFFFFFF"
-today_button_border = "#3F2F6B"
 ```
 
 ## Required color tokens
@@ -189,7 +188,6 @@ Every complete theme should define the full semantic palette:
 | `transparent`          | Fully transparent color, usually `#00000000`.       |
 | `overlay_outline`      | Overlay outline color with alpha.                   |
 | `overlay_text`         | High-contrast overlay glyph or text color.          |
-| `today_button_border`  | Border color for the calendar today button.         |
 
 ## Color references
 
@@ -242,7 +240,6 @@ theme.selection_background
 theme.transparent
 theme.overlay_outline
 theme.overlay_text
-theme.today_button_border
 ```
 
 Plain hex colors still work everywhere.

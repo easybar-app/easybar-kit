@@ -94,6 +94,8 @@ extension CalendarBuiltinConfig {
       todayCellBackgroundColorHex: month.popup.todayCellBackgroundColorHex,
       todayCellBorderColorHex: month.popup.todayCellBorderColorHex,
       todayCellBorderWidth: month.popup.todayCellBorderWidth,
+      todayMarkerVariant: month.popup.todayMarkerVariant.calendarTodayMarkerVariant,
+      todayMarkerSize: month.popup.todayMarkerSize,
       indicatorColorHex: month.popup.indicatorColorHex,
       selectedTextColorHex: month.popup.selectedTextColorHex,
       selectedBackgroundColorHex: month.popup.selectedBackgroundColorHex,
@@ -112,8 +114,10 @@ extension CalendarBuiltinConfig {
       anchorShowDateText: month.popup.anchor.showDateText,
       todayButtonTitle: month.popup.todayButtonTitle,
       todayButtonIcon: month.popup.todayButtonIcon,
-      todayButtonBorderColorHex: month.popup.todayButtonBorderColorHex,
-      todayButtonBorderWidth: month.popup.todayButtonBorderWidth
+      todayButtonPaddingX: month.popup.todayButtonPaddingX,
+      todayButtonPaddingY: month.popup.todayButtonPaddingY,
+      todayButtonMarginX: month.popup.todayButtonMarginX,
+      todayButtonMarginY: month.popup.todayButtonMarginY
     )
   }
 
@@ -148,6 +152,17 @@ extension MonthCalendarPopupLayout {
       return .calendarAppointmentsVertical
     case .appointmentsCalendarVertical:
       return .appointmentsCalendarVertical
+    }
+  }
+}
+
+extension CalendarTodayMarkerVariant {
+  fileprivate var calendarTodayMarkerVariant: TodayMarkerVariant {
+    switch self {
+    case .regularRoundedRectangle: .regularRoundedRectangle
+    case .softWobble: .softWobble
+    case .doubleSketch: .doubleSketch
+    case .openLoop: .openLoop
     }
   }
 }

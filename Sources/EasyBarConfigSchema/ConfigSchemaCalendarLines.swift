@@ -795,6 +795,17 @@ extension ConfigSchemaRegistry {
       description: "Border width of today's day cell when it is not selected.",
     ),
     entry(
+      key: "today_marker_variant",
+      value: "\"double_sketch\"",
+      description:
+        "Today's marker style: regular_rounded_rectangle | soft_wobble | double_sketch | open_loop.",
+    ),
+    entry(
+      key: "today_marker_size",
+      value: "28",
+      description: "Size of today's marker in points. Valid range: 12...28.",
+    ),
+    entry(
       key: "indicator_color",
       value: "\"theme.accent_soft\"",
       description: "Default color of day event indicators when an event has no calendar color.",
@@ -891,14 +902,24 @@ extension ConfigSchemaRegistry {
       description: "Title of the Today button.",
     ),
     entry(
-      key: "border_color",
-      value: "\"theme.today_button_border\"",
-      description: "Border color of the Today button.",
+      key: "padding_x",
+      value: "7",
+      description: "Horizontal inner padding of the Today button.",
     ),
     entry(
-      key: "border_width",
-      value: "1.5",
-      description: "Border width of the Today button.",
+      key: "padding_y",
+      value: "2",
+      description: "Vertical inner padding of the Today button.",
+    ),
+    entry(
+      key: "margin_x",
+      value: "0",
+      description: "Horizontal outer margin around the Today button.",
+    ),
+    entry(
+      key: "margin_y",
+      value: "0",
+      description: "Vertical outer margin around the Today button.",
     ),
     entry(
       key: "icon",

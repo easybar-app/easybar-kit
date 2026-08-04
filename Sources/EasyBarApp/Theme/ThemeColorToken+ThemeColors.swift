@@ -28,7 +28,6 @@ extension ThemeColorToken {
       .transparent: \.transparent,
       .overlayOutline: \.overlayOutline,
       .overlayText: \.overlayText,
-      .todayButtonBorder: \.todayButtonBorder,
     ]
 
   fileprivate var themeColorKeyPath: WritableKeyPath<Config.ThemeColors, String> {
@@ -68,8 +67,7 @@ extension Config.ThemeColors {
     selectionBackground: "",
     transparent: "",
     overlayOutline: "",
-    overlayText: "",
-    todayButtonBorder: ""
+    overlayText: ""
   )
 
   /// Creates one theme color set from values keyed by token.

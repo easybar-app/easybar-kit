@@ -51,6 +51,8 @@ extension CalendarBuiltinConfig {
         public var todayCellBackgroundColorHex: String
         public var todayCellBorderColorHex: String
         public var todayCellBorderWidth: Double
+        public var todayMarkerVariant: CalendarTodayMarkerVariant
+        public var todayMarkerSize: Double
         public var indicatorColorHex: String
 
         public init(
@@ -67,6 +69,8 @@ extension CalendarBuiltinConfig {
           todayCellBackgroundColorHex: String,
           todayCellBorderColorHex: String,
           todayCellBorderWidth: Double,
+          todayMarkerVariant: CalendarTodayMarkerVariant,
+          todayMarkerSize: Double,
           indicatorColorHex: String
         ) {
           self.showWeekNumbers = showWeekNumbers
@@ -82,6 +86,8 @@ extension CalendarBuiltinConfig {
           self.todayCellBackgroundColorHex = todayCellBackgroundColorHex
           self.todayCellBorderColorHex = todayCellBorderColorHex
           self.todayCellBorderWidth = todayCellBorderWidth
+          self.todayMarkerVariant = todayMarkerVariant
+          self.todayMarkerSize = todayMarkerSize
           self.indicatorColorHex = indicatorColorHex
         }
       }
@@ -151,19 +157,25 @@ extension CalendarBuiltinConfig {
       public struct TodayButtonStyle: Sendable {
         public var title: String
         public var icon: String
-        public var borderColorHex: String
-        public var borderWidth: Double
+        public var paddingX: Double
+        public var paddingY: Double
+        public var marginX: Double
+        public var marginY: Double
 
         public init(
           title: String,
           icon: String,
-          borderColorHex: String,
-          borderWidth: Double
+          paddingX: Double,
+          paddingY: Double,
+          marginX: Double,
+          marginY: Double
         ) {
           self.title = title
           self.icon = icon
-          self.borderColorHex = borderColorHex
-          self.borderWidth = borderWidth
+          self.paddingX = paddingX
+          self.paddingY = paddingY
+          self.marginX = marginX
+          self.marginY = marginY
         }
       }
 
@@ -300,6 +312,16 @@ extension CalendarBuiltinConfig {
         set { calendar.todayCellBorderWidth = newValue }
       }
 
+      public var todayMarkerVariant: CalendarTodayMarkerVariant {
+        get { calendar.todayMarkerVariant }
+        set { calendar.todayMarkerVariant = newValue }
+      }
+
+      public var todayMarkerSize: Double {
+        get { calendar.todayMarkerSize }
+        set { calendar.todayMarkerSize = newValue }
+      }
+
       public var indicatorColorHex: String {
         get { calendar.indicatorColorHex }
         set { calendar.indicatorColorHex = newValue }
@@ -375,14 +397,24 @@ extension CalendarBuiltinConfig {
         set { todayButton.icon = newValue }
       }
 
-      public var todayButtonBorderColorHex: String {
-        get { todayButton.borderColorHex }
-        set { todayButton.borderColorHex = newValue }
+      public var todayButtonPaddingX: Double {
+        get { todayButton.paddingX }
+        set { todayButton.paddingX = newValue }
       }
 
-      public var todayButtonBorderWidth: Double {
-        get { todayButton.borderWidth }
-        set { todayButton.borderWidth = newValue }
+      public var todayButtonPaddingY: Double {
+        get { todayButton.paddingY }
+        set { todayButton.paddingY = newValue }
+      }
+
+      public var todayButtonMarginX: Double {
+        get { todayButton.marginX }
+        set { todayButton.marginX = newValue }
+      }
+
+      public var todayButtonMarginY: Double {
+        get { todayButton.marginY }
+        set { todayButton.marginY = newValue }
       }
     }
 

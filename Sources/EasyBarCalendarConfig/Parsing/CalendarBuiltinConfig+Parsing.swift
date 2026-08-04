@@ -10,6 +10,10 @@ extension MonthCalendarPopupLayout: TOMLStringDecodable {
   public static let allowedValues = allCases.map(\.rawValue)
 }
 
+extension CalendarTodayMarkerVariant: TOMLStringDecodable {
+  public static let allowedValues = allCases.map(\.rawValue)
+}
+
 extension CalendarAnchorLayout: TOMLStringDecodable {
   public static let allowedValues = allCases.map(\.rawValue)
 }

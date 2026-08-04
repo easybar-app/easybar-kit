@@ -45,7 +45,6 @@ final class ConfigLoaderThemeTests: ConfigLoaderTestCase {
       .transparent: "#00000000",
       .overlayOutline: "#000000F0",
       .overlayText: "#FFFFFFFF",
-      .todayButtonBorder: "#3F2F6B",
     ]
 
     XCTAssertEqual(config.themeName, "default")

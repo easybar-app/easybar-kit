@@ -134,11 +134,6 @@
       "name": "overlay_text",
       "swiftCase": "overlayText",
       "doc": "High-contrast overlay glyph or text color."
-    },
-    {
-      "name": "today_button_border",
-      "swiftCase": "todayButtonBorder",
-      "doc": "Border color used by the calendar today button."
     }
   ]
 }

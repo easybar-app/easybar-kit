@@ -74,7 +74,6 @@ extension Config {
     var transparent: String
     var overlayOutline: String
     var overlayText: String
-    var todayButtonBorder: String
   }
 
   /// Theme config values.
@@ -114,8 +113,7 @@ extension Config {
         selectionBackground: "#89B4FA",
         transparent: "#00000000",
         overlayOutline: "#000000F0",
-        overlayText: "#FFFFFFFF",
-        todayButtonBorder: "#3F2F6B"
+        overlayText: "#FFFFFFFF"
       )
     )
   }

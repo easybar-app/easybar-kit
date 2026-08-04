@@ -265,7 +265,6 @@ extension Config {
       (\.builtinCalendar.month.popup.calendar.indicatorColorHex, \.themeAccentSoftColorHex),
       (\.builtinCalendar.month.popup.selection.selectedTextColorHex, \.themeSelectionTextColorHex),
       (\.builtinCalendar.month.popup.selection.selectedBackgroundColorHex, \.themeSelectionBackgroundColorHex),
-      (\.builtinCalendar.month.popup.todayButton.borderColorHex, \.themeTodayButtonBorderColorHex),
     ])
 
     applyOptionalThemeColorDefaults([

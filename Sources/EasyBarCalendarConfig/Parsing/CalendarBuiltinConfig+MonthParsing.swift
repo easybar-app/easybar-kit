@@ -120,6 +120,16 @@ extension CalendarBuiltinConfig {
         fallback: fallback.todayCellBorderWidth,
         minimum: 0
       ),
+      todayMarkerVariant: try reader.enum(
+        "today_marker_variant",
+        fallback: fallback.todayMarkerVariant
+      ),
+      todayMarkerSize: try reader.double(
+        "today_marker_size",
+        fallback: fallback.todayMarkerSize,
+        minimum: 12,
+        maximum: 28
+      ),
       indicatorColorHex: try reader.string("indicator_color", fallback: fallback.indicatorColorHex)
     )
   }
@@ -213,8 +223,10 @@ extension CalendarBuiltinConfig {
     CalendarBuiltinConfig.Month.Popup.TodayButtonStyle(
       title: try reader.string("title", fallback: fallback.title),
       icon: try reader.string("icon", fallback: fallback.icon),
-      borderColorHex: try reader.string("border_color", fallback: fallback.borderColorHex),
-      borderWidth: try reader.double("border_width", fallback: fallback.borderWidth, minimum: 0)
+      paddingX: try reader.double("padding_x", fallback: fallback.paddingX, minimum: 0),
+      paddingY: try reader.double("padding_y", fallback: fallback.paddingY, minimum: 0),
+      marginX: try reader.double("margin_x", fallback: fallback.marginX, minimum: 0),
+      marginY: try reader.double("margin_y", fallback: fallback.marginY, minimum: 0)
     )
   }
 

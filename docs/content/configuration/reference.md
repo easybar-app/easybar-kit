@@ -773,6 +773,8 @@ For concepts and usage examples, use the hand-written configuration guides.
 | `today_cell_background_color` | `"theme.transparent"`    | —                                     | Background color of today's day cell when it is not selected.                                                                       |
 | `today_cell_border_color`     | `"theme.danger"`         | —                                     | Border color of today's day cell when it is not selected.                                                                           |
 | `today_cell_border_width`     | `1.4`                    | —                                     | Border width of today's day cell when it is not selected.                                                                           |
+| `today_marker_variant`        | `"double_sketch"`        | —                                     | Today's marker style: regular_rounded_rectangle \| soft_wobble \| double_sketch \| open_loop.                                       |
+| `today_marker_size`           | `28`                     | —                                     | Size of today's marker in points. Valid range: 12...28.                                                                             |
 | `indicator_color`             | `"theme.accent_soft"`    | —                                     | Default color of day event indicators when an event has no calendar color.                                                          |
 
 ## `builtins.calendar.month.popup.selection`
@@ -807,12 +809,14 @@ For concepts and usage examples, use the hand-written configuration guides.
 
 ## `builtins.calendar.month.popup.today_button`
 
-| Key            | Default                       | Example | Description                                               |
-| -------------- | ----------------------------- | ------- | --------------------------------------------------------- |
-| `title`        | `"Today"`                     | —       | Title of the Today button.                                |
-| `border_color` | `"theme.today_button_border"` | —       | Border color of the Today button.                         |
-| `border_width` | `1.5`                         | —       | Border width of the Today button.                         |
-| `icon`         | `""`                          | —       | Optional leading icon of the Today button, for example 󰃭. |
+| Key         | Default   | Example | Description                                               |
+| ----------- | --------- | ------- | --------------------------------------------------------- |
+| `title`     | `"Today"` | —       | Title of the Today button.                                |
+| `padding_x` | `7`       | —       | Horizontal inner padding of the Today button.             |
+| `padding_y` | `2`       | —       | Vertical inner padding of the Today button.               |
+| `margin_x`  | `0`       | —       | Horizontal outer margin around the Today button.          |
+| `margin_y`  | `0`       | —       | Vertical outer margin around the Today button.            |
+| `icon`      | `""`      | —       | Optional leading icon of the Today button, for example 󰃭. |
 
 ## `builtins.time`
 

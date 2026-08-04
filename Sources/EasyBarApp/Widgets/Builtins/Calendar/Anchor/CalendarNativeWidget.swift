@@ -189,6 +189,12 @@ extension CalendarNativeWidget {
       persistConfiguration()
     case .toggleAnchorField(let field):
       toggleAnchorField(field)
+    case .setTodayMarkerVariant(let variant):
+      sessionConfig.month.popup.todayMarkerVariant = variant
+      persistConfiguration()
+    case .setTodayMarkerSize(let size):
+      sessionConfig.month.popup.todayMarkerSize = Double(size)
+      persistConfiguration()
     case .toggleAppointmentOption(let optionID):
       toggleAppointmentOption(optionID)
     case .toggleBirthdayOption(let optionID):
@@ -252,6 +258,14 @@ extension CalendarNativeWidget {
       TOMLEdit(
         path: ["builtins", "calendar", "anchor", "fields"],
         value: .stringArray(sessionConfig.anchor.fields.map(\.rawValue))
+      ),
+      TOMLEdit(
+        path: ["builtins", "calendar", "month", "popup", "calendar", "today_marker_variant"],
+        value: .string(sessionConfig.month.popup.todayMarkerVariant.rawValue)
+      ),
+      TOMLEdit(
+        path: ["builtins", "calendar", "month", "popup", "calendar", "today_marker_size"],
+        value: .double(sessionConfig.month.popup.todayMarkerSize)
       ),
     ]
     edits.append(

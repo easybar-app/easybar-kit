@@ -155,6 +155,8 @@ extension CalendarBuiltinConfig {
           todayCellBackgroundColorHex: "#00000000",
           todayCellBorderColorHex: "#FF0000",
           todayCellBorderWidth: 1.4,
+          todayMarkerVariant: .doubleSketch,
+          todayMarkerSize: 28,
           indicatorColorHex: "#8bd5ca"
         ),
         selection: .init(
@@ -177,8 +179,10 @@ extension CalendarBuiltinConfig {
         todayButton: .init(
           title: "Today",
           icon: "",
-          borderColorHex: "#3F2F6B",
-          borderWidth: 1.5
+          paddingX: 7,
+          paddingY: 2,
+          marginX: 0,
+          marginY: 0
         )
       )
     )

@@ -30,7 +30,6 @@ enum ThemeColorToken: String, CaseIterable {
   case transparent
   case overlayOutline = "overlay_outline"
   case overlayText = "overlay_text"
-  case todayButtonBorder = "today_button_border"
 
   /// Theme reference string used in config and Lua APIs.
   var reference: String {

@@ -112,6 +112,10 @@ extension CalendarMonthPopupView {
             .font(.system(size: 12, weight: .medium))
             .foregroundStyle(color(config.headerTextColorHex))
         }
+        .padding(.horizontal, config.todayButtonPaddingX)
+        .padding(.vertical, config.todayButtonPaddingY)
+        .padding(.horizontal, config.todayButtonMarginX)
+        .padding(.vertical, config.todayButtonMarginY)
       }
       .buttonStyle(.plain)
 

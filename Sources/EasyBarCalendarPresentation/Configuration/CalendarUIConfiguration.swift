@@ -213,6 +213,8 @@ public struct CalendarMonthPopupConfig: Sendable {
   public let todayCellBackgroundColorHex: String
   public let todayCellBorderColorHex: String
   public let todayCellBorderWidth: Double
+  public let todayMarkerVariant: TodayMarkerVariant
+  public let todayMarkerSize: Double
   public let indicatorColorHex: String
   public let selectedTextColorHex: String
   public let selectedBackgroundColorHex: String
@@ -231,8 +233,10 @@ public struct CalendarMonthPopupConfig: Sendable {
   public let anchorShowDateText: Bool
   public let todayButtonTitle: String
   public let todayButtonIcon: String
-  public let todayButtonBorderColorHex: String
-  public let todayButtonBorderWidth: Double
+  public let todayButtonPaddingX: Double
+  public let todayButtonPaddingY: Double
+  public let todayButtonMarginX: Double
+  public let todayButtonMarginY: Double
 
   public init(
     backgroundColorHex: String,
@@ -255,6 +259,8 @@ public struct CalendarMonthPopupConfig: Sendable {
     todayCellBackgroundColorHex: String,
     todayCellBorderColorHex: String,
     todayCellBorderWidth: Double,
+    todayMarkerVariant: TodayMarkerVariant,
+    todayMarkerSize: Double,
     indicatorColorHex: String,
     selectedTextColorHex: String,
     selectedBackgroundColorHex: String,
@@ -273,8 +279,10 @@ public struct CalendarMonthPopupConfig: Sendable {
     anchorShowDateText: Bool,
     todayButtonTitle: String,
     todayButtonIcon: String,
-    todayButtonBorderColorHex: String,
-    todayButtonBorderWidth: Double
+    todayButtonPaddingX: Double,
+    todayButtonPaddingY: Double,
+    todayButtonMarginX: Double,
+    todayButtonMarginY: Double
   ) {
     self.backgroundColorHex = backgroundColorHex
     self.borderColorHex = borderColorHex
@@ -296,6 +304,8 @@ public struct CalendarMonthPopupConfig: Sendable {
     self.todayCellBackgroundColorHex = todayCellBackgroundColorHex
     self.todayCellBorderColorHex = todayCellBorderColorHex
     self.todayCellBorderWidth = todayCellBorderWidth
+    self.todayMarkerVariant = todayMarkerVariant
+    self.todayMarkerSize = todayMarkerSize
     self.indicatorColorHex = indicatorColorHex
     self.selectedTextColorHex = selectedTextColorHex
     self.selectedBackgroundColorHex = selectedBackgroundColorHex
@@ -314,8 +324,10 @@ public struct CalendarMonthPopupConfig: Sendable {
     self.anchorShowDateText = anchorShowDateText
     self.todayButtonTitle = todayButtonTitle
     self.todayButtonIcon = todayButtonIcon
-    self.todayButtonBorderColorHex = todayButtonBorderColorHex
-    self.todayButtonBorderWidth = todayButtonBorderWidth
+    self.todayButtonPaddingX = todayButtonPaddingX
+    self.todayButtonPaddingY = todayButtonPaddingY
+    self.todayButtonMarginX = todayButtonMarginX
+    self.todayButtonMarginY = todayButtonMarginY
   }
 }
 

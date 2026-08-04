@@ -91,20 +91,22 @@ extension CalendarMonthPopupView {
   /// Builds one interactive day cell.
   func dayCellView(_ day: DayCell) -> some View {
     let normalizedDate = resolvedCalendar.startOfDay(for: day.date)
+    let todayMarkerSize = config.todayMarkerSize
 
     return VStack(spacing: 2) {
       Text("\(resolvedCalendar.component(.day, from: day.date))")
         .font(.system(size: 12, weight: fontWeight(for: day)))
-        .frame(width: 28, height: 22)
+        .frame(width: max(28, todayMarkerSize), height: max(22, todayMarkerSize))
         .background(dayBackground(day))
         .overlay {
           if resolvedCalendar.isDateInToday(day.date) {
-            RoundedRectangle(cornerRadius: 5, style: .continuous)
-              .inset(by: 1.5)
-              .stroke(
-                color(config.todayCellBorderColorHex).opacity(0.9),
-                lineWidth: CGFloat(max(config.todayCellBorderWidth, 0.8))
-              )
+            TodayMarker(
+              variant: config.todayMarkerVariant,
+              color: color(config.todayCellBorderColorHex),
+              lineWidth: config.todayCellBorderWidth
+            )
+            .frame(width: todayMarkerSize, height: todayMarkerSize)
+            .allowsHitTesting(false)
           }
         }
         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))

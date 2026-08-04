@@ -169,7 +169,6 @@ extension CalendarBuiltinConfig {
     try resolveMonthCalendarGridColors(using: resolver)
     try resolveMonthSelectionColors(using: resolver)
     try resolveMonthAnchorColors(using: resolver)
-    try resolveMonthTodayButtonColors(using: resolver)
   }
 
   /// Resolves month popup frame colors.
@@ -241,16 +240,6 @@ extension CalendarBuiltinConfig {
     try resolver.optional(
       &month.popup.anchor.textColorHex,
       path: "builtins.calendar.month.popup.anchor.text_color"
-    )
-  }
-
-  /// Resolves month popup today-button colors.
-  private mutating func resolveMonthTodayButtonColors(
-    using resolver: CalendarColorReferenceResolver
-  ) throws {
-    try resolver.required(
-      &month.popup.todayButton.borderColorHex,
-      path: "builtins.calendar.month.popup.today_button.border_color"
     )
   }
 }

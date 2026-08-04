@@ -60,6 +60,31 @@ every valid event link as **Open URL**.
 
 Use `included_calendar_names` and `excluded_calendar_names` for calendar titles visible in Calendar.app. Exact ID and source-ID include/exclude lists are also available for advanced matching. Exclusions always win and blank entries are ignored.
 
+## Today marker
+
+The month view can mark today's date with a clean rounded rectangle or a hand-drawn treatment:
+
+```toml
+[builtins.calendar.month.popup.calendar]
+today_marker_variant = "double_sketch"
+today_marker_size = 28
+```
+
+Supported variants are `regular_rounded_rectangle`, `soft_wobble`, `double_sketch`, and
+`open_loop`. Marker sizes from `12` through `28` points are accepted.
+
+## Today button
+
+Padding controls the Today button's internal spacing, while margin controls the space around it:
+
+```toml
+[builtins.calendar.month.popup.today_button]
+padding_x = 7
+padding_y = 2
+margin_x = 0
+margin_y = 0
+```
+
 ## Permissions
 
 macOS grants Calendar access to the calendar agent, not the main EasyBar application. After changing access, restart the agent:
@@ -72,8 +97,8 @@ easybar agent restart calendar
 
 Right-click the calendar anchor to select the month, upcoming, or disabled popup mode. The menu can
 also change the anchor layout, toggle the time and date fields,
-control appointment and birthday details, refresh calendar data, and open Calendar privacy
-settings.
+change today's marker style and size from the **Today** submenu, control appointment and birthday
+details, refresh calendar data, and open Calendar privacy settings.
 
 At least one anchor field remains enabled so the calendar keeps a visible interaction target.
 Each configuration change is written to `config.toml` immediately. Comments, whitespace, and

@@ -34,7 +34,6 @@ M.keys = {
 	"transparent",
 	"overlay_outline",
 	"overlay_text",
-	"today_button_border",
 }
 
 return M
