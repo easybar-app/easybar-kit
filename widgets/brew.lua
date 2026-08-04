@@ -3,6 +3,7 @@
 -- Icon-only widget for the bar, with a popup that shows outdated packages and
 -- actions for updating Homebrew and upgrading packages.
 
+local brew_policy = require("brew_policy")
 local text = require("text")
 
 ---@alias BrewPackageKind "formula"|"cask"
@@ -16,6 +17,8 @@ local text = require("text")
 ---@field installed string
 ---@field current string
 ---@field pinned boolean
+---@field upgradeable boolean
+---@field upgrade_reason? string
 
 ---@class BrewDiagnostic
 ---@field title? string
@@ -54,10 +57,6 @@ local MAX_WARNING_LINES = 4
 local MAX_ERROR_DETAIL_LINES = 80
 local BREW_LOG_FILE_NAME = "brew-widget.log"
 local BREW_LOG_MAX_LINES = 4000
-
-local CASK_DENYLIST = {
-	["docker-desktop"] = true,
-}
 
 local EXEC = {
 	check = {
@@ -182,50 +181,55 @@ local function prune_brew_log()
 	end
 end
 
---- Returns whether one cask should be upgraded by the widget.
----@param cask unknown
+--- Returns whether EasyBar may upgrade one package automatically.
+---@param package BrewPackage
 ---@return boolean
-local function cask_allowed(cask)
-	return CASK_DENYLIST[tostring(cask or "")] ~= true
+local function package_is_upgradeable(package)
+	return not package.pinned and package.upgradeable ~= false
 end
 
---- Parses newline-delimited cask names and returns allowed casks.
----@param output unknown
+--- Returns the currently upgradeable package names for one kind.
+---@param kind BrewPackageKind
 ---@return string[]
-local function allowed_casks_from_output(output)
-	local casks = {}
+local function upgradeable_package_names(kind)
+	local source = kind == "formula" and state.formulae or state.casks
+	local names = {}
 
-	for line in tostring(output or ""):gmatch("[^\r\n]+") do
-		local cask = text.trim(line)
-		if cask ~= "" then
-			if cask_allowed(cask) then
-				casks[#casks + 1] = cask
-			else
-				log.append("skip denied cask: " .. cask)
-			end
+	for _, package in ipairs(source) do
+		if package_is_upgradeable(package) then
+			names[#names + 1] = package.name
+		else
+			log.append(
+				"skip non-upgradeable "
+					.. kind
+					.. ": "
+					.. package.name
+					.. (package.upgrade_reason ~= nil and " (" .. package.upgrade_reason .. ")" or "")
+			)
 		end
 	end
 
-	table.sort(casks)
-	return casks
+	table.sort(names)
+	return names
 end
 
---- Builds the direct argument vector for allowed cask upgrades.
----@param casks string[]
+--- Builds a direct argument vector for explicit package upgrades.
+---@param kind BrewPackageKind
+---@param names string[]
 ---@return string[]
-local function cask_upgrade_arguments(casks)
+local function package_upgrade_arguments(kind, names)
 	local arguments = {
 		"/usr/bin/env",
 		"HOMEBREW_NO_AUTO_UPDATE=1",
 		"HOMEBREW_NO_ASK=1",
 		"brew",
 		"upgrade",
-		"--cask",
+		"--" .. kind,
 		"--yes",
 	}
 
-	for _, cask in ipairs(casks) do
-		arguments[#arguments + 1] = cask
+	for _, name in ipairs(names) do
+		arguments[#arguments + 1] = name
 	end
 
 	return arguments
@@ -312,44 +316,23 @@ local function run_outdated_json(callback)
 	}, EXEC.check, "brew outdated", callback)
 end
 
---- Runs formula upgrades.
+--- Runs explicit upgrades for one package kind, or skips when none qualify.
+---@param kind BrewPackageKind
 ---@param callback BrewCommandCallback
-local function run_formula_upgrade(callback)
-	run_logged_command({
-		"/usr/bin/env",
-		"HOMEBREW_NO_AUTO_UPDATE=1",
-		"HOMEBREW_NO_ASK=1",
-		"brew",
-		"upgrade",
-		"--formula",
-		"--yes",
-	}, EXEC.upgrade, "brew upgrade --formula", callback)
-end
-
---- Runs the cask outdated list command.
----@param callback BrewCommandCallback
-local function run_outdated_casks(callback)
-	run_logged_command({
-		"/usr/bin/env",
-		"HOMEBREW_NO_AUTO_UPDATE=1",
-		"brew",
-		"outdated",
-		"--cask",
-		"--quiet",
-	}, EXEC.check, "brew outdated --cask", callback)
-end
-
---- Runs cask upgrades for allowed casks, or skips when none remain.
----@param casks string[]
----@param callback BrewCommandCallback
-local function run_allowed_cask_upgrade(casks, callback)
-	if #casks == 0 then
-		log.append("no casks to upgrade after denylist")
+local function run_package_upgrade(kind, callback)
+	local names = upgradeable_package_names(kind)
+	if #names == 0 then
+		log.append("no upgradeable " .. kind .. " packages")
 		callback("", 0)
 		return
 	end
 
-	run_logged_command(cask_upgrade_arguments(casks), EXEC.upgrade, "brew upgrade --cask", callback)
+	run_logged_command(
+		package_upgrade_arguments(kind, names),
+		EXEC.upgrade,
+		"brew upgrade --" .. kind,
+		callback
+	)
 end
 
 --- Returns whether the widget should run another Homebrew update now.
@@ -404,12 +387,17 @@ local function parse_package_list(entries, kind)
 			installed = entry.installed_version
 		end
 
+		local name = entry.name or entry.token or entry.full_token or "unknown"
+		local upgradeable = brew_policy.is_upgradeable(kind, name)
+
 		packages[#packages + 1] = {
 			kind = kind,
-			name = entry.name or entry.token or entry.full_token or "unknown",
+			name = name,
 			installed = installed,
 			current = entry.current_version or "?",
 			pinned = entry.pinned == true,
+			upgradeable = upgradeable,
+			upgrade_reason = upgradeable and nil or brew_policy.reason(kind, name),
 		}
 	end
 
@@ -704,10 +692,59 @@ local function render_error(order)
 	return order
 end
 
+--- Returns all currently outdated packages.
+---@return BrewPackage[]
+local function all_packages()
+	local packages = {}
+	for _, package in ipairs(state.formulae) do
+		packages[#packages + 1] = package
+	end
+	for _, package in ipairs(state.casks) do
+		packages[#packages + 1] = package
+	end
+	return packages
+end
+
 --- Returns the number of outdated packages.
 ---@return integer
 local function count_packages()
 	return #state.formulae + #state.casks
+end
+
+--- Returns the number of packages EasyBar may upgrade.
+---@return integer
+local function count_upgradeable_packages()
+	local count = 0
+	for _, package in ipairs(all_packages()) do
+		if package_is_upgradeable(package) then
+			count = count + 1
+		end
+	end
+	return count
+end
+
+--- Returns the number of packages that require a manual update.
+---@return integer
+local function count_manual_packages()
+	local count = 0
+	for _, package in ipairs(all_packages()) do
+		if not package.pinned and package.upgradeable == false then
+			count = count + 1
+		end
+	end
+	return count
+end
+
+--- Returns the number of pinned packages.
+---@return integer
+local function count_pinned_packages()
+	local count = 0
+	for _, package in ipairs(all_packages()) do
+		if package.pinned then
+			count = count + 1
+		end
+	end
+	return count
 end
 
 --- Removes all dynamically created popup rows.
@@ -779,17 +816,30 @@ local function render_list_section(title, packages, row_prefix, order, remaining
 			return order, rendered_count
 		end
 
-		local pin = package.pinned and "  pinned" or ""
+		local status = ""
+		local row_color = COLORS.text
+		if package.pinned then
+			status = "  · pinned"
+			row_color = COLORS.warn
+		elseif package.upgradeable == false then
+			status = "  · manual"
+			if package.upgrade_reason ~= nil then
+				status = status .. " — " .. text.truncate(package.upgrade_reason, 54, "…")
+			end
+			row_color = COLORS.warn
+		end
+
 		local row_text = string.format(
 			"  • %s  %s → %s%s",
 			text.truncate(package.name, 28, "…"),
 			text.truncate(package.installed, 18, "…"),
 			text.truncate(package.current, 18, "…"),
-			pin
+			status
 		)
 
 		add_popup_row(row_prefix .. "_" .. tostring(order), row_text, {
 			order = order,
+			color = row_color,
 		})
 
 		order = order + 1
@@ -837,7 +887,8 @@ local function action_button_labels()
 	end
 
 	if not running then
-		return "Upgrade", "Update"
+		local upgradeable = count_upgradeable_packages()
+		return upgradeable > 0 and "Upgrade " .. tostring(upgradeable) or "No automatic upgrades", "Update"
 	end
 
 	if state.phase == "checking" then
@@ -850,6 +901,9 @@ end
 --- Renders the popup contents.
 local function render_popup()
 	local total = count_packages()
+	local upgradeable = count_upgradeable_packages()
+	local manual = count_manual_packages()
+	local pinned = count_pinned_packages()
 	local count_color = threshold_color(total)
 
 	title_item:set({
@@ -884,19 +938,29 @@ local function render_popup()
 				color = COLORS.ok,
 			},
 		})
-	elseif total == 1 then
-		summary_item:set({
-			order = POPUP_ORDER.summary,
-			label = {
-				string = "1 outdated package" .. (state.warning ~= nil and "  ⚠" or ""),
-				color = count_color,
-			},
-		})
 	else
+		local summary = total == 1 and "1 outdated package" or tostring(total) .. " outdated packages"
+		local details = {}
+		if manual > 0 or pinned > 0 then
+			details[#details + 1] = tostring(upgradeable) .. " automatic"
+		end
+		if manual > 0 then
+			details[#details + 1] = tostring(manual) .. " manual"
+		end
+		if pinned > 0 then
+			details[#details + 1] = tostring(pinned) .. " pinned"
+		end
+		if #details > 0 then
+			summary = summary .. "  ·  " .. table.concat(details, "  ·  ")
+		end
+		if state.warning ~= nil then
+			summary = summary .. "  ⚠"
+		end
+
 		summary_item:set({
 			order = POPUP_ORDER.summary,
 			label = {
-				string = tostring(total) .. " outdated packages" .. (state.warning ~= nil and "  ⚠" or ""),
+				string = summary,
 				color = count_color,
 			},
 		})
@@ -928,7 +992,7 @@ local function render_popup()
 			),
 		label = {
 			string = upgrade_label,
-			color = COLORS.text,
+			color = not running and upgradeable == 0 and COLORS.muted or COLORS.text,
 		},
 	})
 
@@ -1150,8 +1214,27 @@ local function update_if_due()
 end
 
 local handle_upgrade_formula
-local handle_upgrade_outdated_casks
 local handle_upgrade_casks
+
+--- Handles the refreshed package list before explicit upgrades begin.
+---@param output string
+---@param code EasyBarCommandExitCode
+local function handle_upgrade_outdated(output, code)
+	if code ~= 0 then
+		fail_brew_operation("upgrade", "brew outdated failed with exit code " .. tostring(code))
+		return
+	end
+
+	if not apply_outdated_result(output) then
+		fail_brew_operation("upgrade", state.error or "brew outdated returned invalid JSON")
+		return
+	end
+
+	state.phase = "upgrading"
+	state.status = "Upgrading formulae…"
+	render()
+	run_package_upgrade("formula", handle_upgrade_formula)
+end
 
 --- Handles the `brew update` result for the upgrade flow.
 ---@param _ string
@@ -1162,7 +1245,7 @@ local function handle_upgrade_brew_update(_, update_code)
 		return
 	end
 
-	run_formula_upgrade(handle_upgrade_formula)
+	run_outdated_json(handle_upgrade_outdated)
 end
 
 --- Handles the formula upgrade result for the upgrade flow.
@@ -1174,19 +1257,10 @@ handle_upgrade_formula = function(_, formula_code)
 		return
 	end
 
-	run_outdated_casks(handle_upgrade_outdated_casks)
-end
-
---- Handles the outdated-cask list result before cask upgrades.
----@param cask_output string
----@param cask_code EasyBarCommandExitCode
-handle_upgrade_outdated_casks = function(cask_output, cask_code)
-	if cask_code ~= 0 then
-		fail_brew_operation("upgrade", "brew outdated --cask failed with exit code " .. tostring(cask_code))
-		return
-	end
-
-	run_allowed_cask_upgrade(allowed_casks_from_output(cask_output), handle_upgrade_casks)
+	state.phase = "upgrading"
+	state.status = "Upgrading casks…"
+	render()
+	run_package_upgrade("cask", handle_upgrade_casks)
 end
 
 --- Handles the cask upgrade result for the upgrade flow.
@@ -1207,6 +1281,11 @@ end
 local function upgrade_now()
 	if running then
 		log(easybar.level.debug, "upgrade_now skipped", "running=true")
+		return
+	end
+
+	if count_upgradeable_packages() == 0 then
+		log(easybar.level.debug, "upgrade_now skipped", "upgradeable=0")
 		return
 	end
 
@@ -1349,7 +1428,11 @@ end)
 
 --- Starts the upgrade flow when the upgrade button is left-clicked.
 upgrade_button:subscribe(easybar.events.mouse.clicked, function(event)
-	if (event.button == nil or event.button == easybar.events.mouse.left_button) and not running then
+	if
+		(event.button == nil or event.button == easybar.events.mouse.left_button)
+		and not running
+		and count_upgradeable_packages() > 0
+	then
 		log(easybar.level.debug, "upgrade click")
 		upgrade_now()
 	end

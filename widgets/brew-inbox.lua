@@ -1,5 +1,6 @@
 -- Inbox-only Homebrew updates. Requires Homebrew in app.env PATH.
 
+local brew_policy = require("brew_policy")
 local inbox = require("inbox")
 local retry = require("retry")
 local text = require("text")
@@ -124,6 +125,7 @@ local function parse_packages(entries, kind)
 		end
 
 		local installed = #versions > 0 and table.concat(versions, ", ") or installed_version
+		local upgradeable = brew_policy.is_upgradeable(kind, name)
 		packages[#packages + 1] = {
 			id = kind .. ":" .. name,
 			kind = kind,
@@ -131,6 +133,8 @@ local function parse_packages(entries, kind)
 			installed = text.trim(installed) ~= "" and tostring(installed) or "?",
 			current = text.trim(current_version) ~= "" and tostring(current_version) or "?",
 			pinned = pinned == true,
+			upgradeable = upgradeable,
+			upgrade_reason = upgradeable and nil or brew_policy.reason(kind, name),
 		}
 	end
 	table.sort(packages, function(left, right)
@@ -183,6 +187,48 @@ local function all_packages()
 	return packages
 end
 
+local function package_is_upgradeable(package)
+	return not package.pinned and package.upgradeable ~= false
+end
+
+local function upgradeable_package_names(kind)
+	local source = kind == "formula" and state.formulae or state.casks
+	local names = {}
+	for _, package in ipairs(source) do
+		if package_is_upgradeable(package) then
+			names[#names + 1] = package.name
+		end
+	end
+	table.sort(names)
+	return names
+end
+
+local function count_upgradeable_packages()
+	local count = 0
+	for _, package in ipairs(all_packages()) do
+		if package_is_upgradeable(package) then
+			count = count + 1
+		end
+	end
+	return count
+end
+
+local function upgrade_arguments(kind, names)
+	local arguments = {
+		"/usr/bin/env",
+		"HOMEBREW_NO_AUTO_UPDATE=1",
+		"HOMEBREW_NO_ASK=1",
+		"brew",
+		"upgrade",
+		"--" .. kind,
+		"--yes",
+	}
+	for _, name in ipairs(names) do
+		arguments[#arguments + 1] = name
+	end
+	return arguments
+end
+
 local function operation_is_active()
 	return state.operation ~= nil
 end
@@ -209,10 +255,15 @@ local function configure_source_actions()
 			}
 		end
 	else
+		local upgradeable = count_upgradeable_packages()
 		actions = {
 			{ id = "refresh", title = "Refresh", include_in_refresh_all = true },
 			{ id = "update", title = "Update" },
-			{ id = "upgrade_all", title = "Upgrade all" },
+			{
+				id = "upgrade_all",
+				title = upgradeable > 0 and "Upgrade all (" .. tostring(upgradeable) .. ")" or "No automatic upgrades",
+				enabled = upgradeable > 0,
+			},
 		}
 	end
 	easybar.inbox.configure(SOURCE, { actions = actions })
@@ -257,15 +308,28 @@ local function publish()
 						busy = true,
 					},
 				}
-			elseif not package.pinned and operation == nil then
+			elseif operation == nil and package_is_upgradeable(package) then
 				actions = { { id = "upgrade", title = "Upgrade" } }
+			elseif operation == nil and package.upgradeable == false then
+				actions = { { id = "manual_update", title = "Manual update", enabled = false } }
 			end
+
+			local status = ""
+			if package.pinned then
+				status = " · pinned"
+			elseif package.upgradeable == false then
+				status = " · manual update"
+				if package.upgrade_reason ~= nil then
+					status = status .. " · " .. package.upgrade_reason
+				end
+			end
+
 			items[#items + 1] = {
 				id = package.id,
 				title = package.name,
-				body = package.installed .. " → " .. package.current .. (package.pinned and " · pinned" or ""),
+				body = package.installed .. " → " .. package.current .. status,
 				category = package.kind == "cask" and "Casks" or "Formulae",
-				severity = package.pinned and "warning" or "info",
+				severity = (package.pinned or package.upgradeable == false) and "warning" or "info",
 				unread = true,
 				source = SOURCE_PRESENTATION,
 				actions = actions,
@@ -409,11 +473,16 @@ refresh = function(reason, activity_item_id)
 	})
 end
 
-local function run_operation(operation_id, label, arguments, options, item_id)
+local function run_operation_steps(operation_id, label, steps, item_id)
 	if operation_is_active() then
 		log(easybar.level.trace, "inbox mutation skipped operation=" .. operation_id .. " state=operation_active")
 		return
 	end
+	if #steps == 0 then
+		log(easybar.level.trace, "inbox mutation skipped operation=" .. operation_id .. " reason=no_steps")
+		return
+	end
+
 	local operation = {
 		id = operation_id,
 		kind = "mutation",
@@ -425,7 +494,7 @@ local function run_operation(operation_id, label, arguments, options, item_id)
 	}
 	state.operation = operation
 	state.error = nil
-	log(easybar.level.info, "inbox mutation started operation=" .. operation_id)
+	log(easybar.level.info, "inbox mutation started operation=" .. operation_id .. " steps=" .. tostring(#steps))
 
 	local token
 	local handle = {}
@@ -433,13 +502,8 @@ local function run_operation(operation_id, label, arguments, options, item_id)
 		return type(token) == "string" and easybar.cancel_async(token) or false
 	end
 	operation.handle = handle
-	local command_options = {}
-	for key, value in pairs(options or {}) do
-		command_options[key] = value
-	end
-	command_options.log_operation = operation_id
-	token = easybar.spawn_async(arguments, command_options, function(output, code)
-		local cancelled = operation.cancellation_requested
+
+	local function finish(cancelled, output, code)
 		complete_operation(operation, function()
 			if cancelled then
 				log(easybar.level.info, "inbox mutation cancelled operation=" .. operation_id)
@@ -459,8 +523,77 @@ local function run_operation(operation_id, label, arguments, options, item_id)
 			log(easybar.level.info, "inbox mutation completed operation=" .. operation_id)
 			refresh("post_mutation", item_id)
 		end)
-	end)
-	publish()
+	end
+
+	local step_index = 0
+	local run_next
+	run_next = function()
+		if operation.cancellation_requested then
+			finish(true, "", 0)
+			return
+		end
+
+		step_index = step_index + 1
+		local step = steps[step_index]
+		if step == nil then
+			finish(false, "", 0)
+			return
+		end
+
+		operation.title = step.title or label .. "…"
+		local command_options = {}
+		for key, value in pairs(step.options or {}) do
+			command_options[key] = value
+		end
+		command_options.log_operation = operation_id .. "_" .. tostring(step_index)
+		publish()
+
+		token = easybar.spawn_async(step.arguments, command_options, function(output, code)
+			token = nil
+			if operation.cancellation_requested then
+				finish(true, output, code)
+			elseif code ~= 0 then
+				finish(false, output, code)
+			else
+				run_next()
+			end
+		end)
+	end
+
+	run_next()
+end
+
+local function run_operation(operation_id, label, arguments, options, item_id)
+	run_operation_steps(operation_id, label, {
+		{
+			title = label .. "…",
+			arguments = arguments,
+			options = options,
+		},
+	}, item_id)
+end
+
+local function run_upgrade_all()
+	local formulae = upgradeable_package_names("formula")
+	local casks = upgradeable_package_names("cask")
+	local steps = {}
+
+	if #formulae > 0 then
+		steps[#steps + 1] = {
+			title = "Upgrading formulae…",
+			arguments = upgrade_arguments("formula", formulae),
+			options = EXEC.upgrade,
+		}
+	end
+	if #casks > 0 then
+		steps[#steps + 1] = {
+			title = "Upgrading casks…",
+			arguments = upgrade_arguments("cask", casks),
+			options = EXEC.upgrade,
+		}
+	end
+
+	run_operation_steps("upgrade_all", "Homebrew upgrade", steps)
 end
 
 local function package_for_id(id)
@@ -497,7 +630,7 @@ easybar.inbox.on_action(SOURCE, function(event)
 		refresh("manual")
 	elseif action_id == "upgrade" then
 		local package = package_for_id(item_id)
-		if package ~= nil and not package.pinned then
+		if package ~= nil and package_is_upgradeable(package) then
 			run_operation("upgrade_package", "Upgrade " .. package.name, {
 				"/usr/bin/env",
 				"HOMEBREW_NO_AUTO_UPDATE=1",
@@ -552,15 +685,8 @@ easybar.inbox.on_context_action(SOURCE, function(event)
 		refresh("manual")
 	elseif action_id == "update" then
 		run_operation("update", "Homebrew update", { "brew", "update" }, EXEC.update)
-	elseif action_id == "upgrade_all" then
-		run_operation("upgrade_all", "Homebrew upgrade", {
-			"/usr/bin/env",
-			"HOMEBREW_NO_AUTO_UPDATE=1",
-			"HOMEBREW_NO_ASK=1",
-			"brew",
-			"upgrade",
-			"--yes",
-		}, EXEC.upgrade)
+	elseif action_id == "upgrade_all" and count_upgradeable_packages() > 0 then
+		run_upgrade_all()
 	end
 end)
 

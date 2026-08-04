@@ -59,13 +59,14 @@ if [ "${#item_names[@]}" -eq 0 ]; then
 fi
 
 default_names=(
+  assets
+  brew_policy
   brew-inbox
   github-inbox
   gitlab-inbox
   inbox-demo
-  tailscale
   lib
-  assets
+  tailscale
 )
 
 is_default() {
@@ -134,7 +135,7 @@ fi
 while IFS=$'\t' read -r index _; do
   [ -n "${index}" ] || continue
   selected_indices+=("${index}")
-done <<< "${selection}"
+done <<<"${selection}"
 
 if [ "${#selected_indices[@]}" -eq 0 ]; then
   echo "Nothing selected." >&2
