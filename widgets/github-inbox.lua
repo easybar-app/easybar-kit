@@ -15,13 +15,23 @@ local POLL_INTERVAL_SECONDS = 300
 local NETWORK_READY_DELAY_SECONDS = 3
 local REFRESH_BACKOFF_SECONDS = { 2, 5 }
 local MAX_ITEMS = 500
+local PR_MERGE_METHOD = "squash"
+local PR_VIEW_TIMEOUT_SECONDS = 20
+local PR_MERGE_TIMEOUT_SECONDS = 5 * 60
+
+local PR_MERGE_FLAGS = {
+	merge = "--merge",
+	rebase = "--rebase",
+	squash = "--squash",
+}
 local notifications = {}
 local current_error = nil
 local active_refresh = nil
 local queued_refresh = nil
 local pending_refresh = nil
 local source_activity = nil
-local busy_item_ids = {}
+local busy_item_actions = {}
+local merge_confirmations = {}
 local log = easybar.log
 
 local function configure_source_actions()
@@ -67,12 +77,45 @@ local function notification_url(notification)
 	return "https://github.com/notifications"
 end
 
+local function append_action(actions, id, title, enabled, busy)
+	actions[#actions + 1] = {
+		id = id,
+		title = title,
+		enabled = enabled,
+		busy = busy,
+	}
+end
+
+local function item_actions(notification, item_id)
+	local actions = {}
+	local busy_action = busy_item_actions[item_id]
+	local confirmation = merge_confirmations[item_id]
+
+	if busy_action == "mark_read" then
+		append_action(actions, "mark_read", "Marking read…", false, true)
+	elseif busy_action == "prepare_merge" then
+		append_action(actions, "prepare_merge", "Checking merge…", false, true)
+	elseif busy_action == "confirm_merge" then
+		append_action(actions, "confirm_merge", "Merging…", false, true)
+	elseif confirmation ~= nil then
+		append_action(actions, "confirm_merge", "Confirm " .. PR_MERGE_METHOD .. " merge", true, false)
+		append_action(actions, "cancel_merge", "Cancel", true, false)
+	else
+		append_action(actions, "mark_read", "Mark as read", true, false)
+		if notification.subject.type == "PullRequest" then
+			append_action(actions, "prepare_merge", "Merge", true, false)
+		end
+	end
+
+	return actions
+end
+
 local function publish_current_notifications()
 	local items = {}
 	if current_error ~= nil then
 		items[#items + 1] = {
 			id = "error",
-			title = "GitHub notifications unavailable",
+			title = current_error.title or "GitHub notifications unavailable",
 			body = current_error.message,
 			severity = "error",
 			unread = true,
@@ -86,25 +129,21 @@ local function publish_current_notifications()
 			local repository = notification.repository.full_name
 			local subject = notification.subject
 			local item_id = tostring(notification.id)
-			local marking_read = busy_item_ids[item_id] == true
+			local body = repository .. (text.trim(notification.reason) ~= "" and " · " .. notification.reason or "")
+			if merge_confirmations[item_id] ~= nil then
+				body = body .. " · ready to " .. PR_MERGE_METHOD .. " merge"
+			end
 			items[#items + 1] = {
 				id = item_id,
 				title = subject.title,
-				body = repository .. (text.trim(notification.reason) ~= "" and " · " .. notification.reason or ""),
+				body = body,
 				category = text.trim(subject.type) ~= "" and subject.type or "Notification",
 				severity = "info",
 				unread = true,
 				timestamp = inbox.timestamp(notification.updated_at),
 				url = notification_url(notification),
 				source = SOURCE_PRESENTATION,
-				actions = {
-					{
-						id = "mark_read",
-						title = marking_read and "Marking read…" or "Mark as read",
-						enabled = not marking_read,
-						busy = marking_read,
-					},
-				},
+				actions = item_actions(notification, item_id),
 			}
 		end
 	end
@@ -114,8 +153,12 @@ local function publish_current_notifications()
 	return #notifications
 end
 
-local function publish_error(output, fallback)
-	current_error = { message = inbox.error_message(output, fallback), timestamp = os.time() }
+local function publish_error(output, fallback, title)
+	current_error = {
+		title = title or "GitHub notifications unavailable",
+		message = inbox.error_message(output, fallback),
+		timestamp = os.time(),
+	}
 	publish_current_notifications()
 end
 
@@ -196,6 +239,7 @@ local function publish_notifications(output)
 	end
 
 	notifications = decoded
+	merge_confirmations = {}
 	current_error = nil
 	return publish_current_notifications()
 end
@@ -266,7 +310,8 @@ local function start_refresh(request)
 				set_source_activity(nil)
 			end
 			for item_id in pairs(request.activity_item_ids) do
-				busy_item_ids[item_id] = nil
+				busy_item_actions[item_id] = nil
+				merge_confirmations[item_id] = nil
 			end
 			if code ~= 0 then
 				log(
@@ -327,6 +372,257 @@ local function schedule_refresh(reason, delay_seconds)
 	end)
 end
 
+local function notification_for_id(item_id)
+	for _, notification in ipairs(notifications) do
+		if tostring(notification.id) == item_id then
+			return notification
+		end
+	end
+	return nil
+end
+
+local function pull_request_target(notification)
+	if notification == nil or notification.subject.type ~= "PullRequest" then
+		return nil, nil
+	end
+
+	local repository = text.trim(notification.repository.full_name)
+	local api_url = type(notification.subject.url) == "string" and text.trim(notification.subject.url) or ""
+	local number = api_url:match("/(%d+)$")
+	if repository == "" or number == nil then
+		return nil, nil
+	end
+
+	return repository, number
+end
+
+local function decode_pull_request_state(output)
+	local ok, payload = pcall(easybar.json.decode, tostring(output or ""))
+	if not ok or type(payload) ~= "table" or easybar.json.is_array(payload) then
+		return nil, "GitHub returned invalid pull request details"
+	end
+
+	local review_decision = payload.reviewDecision
+	if review_decision == easybar.json.null then
+		review_decision = nil
+	end
+
+	if type(payload.state) ~= "string" then
+		return nil, "GitHub returned a pull request without a state"
+	end
+	if type(payload.isDraft) ~= "boolean" then
+		return nil, "GitHub returned an invalid draft state"
+	end
+	if type(payload.mergeable) ~= "string" then
+		return nil, "GitHub returned an invalid mergeable state"
+	end
+	if type(payload.mergeStateStatus) ~= "string" then
+		return nil, "GitHub returned an invalid merge status"
+	end
+	if review_decision ~= nil and type(review_decision) ~= "string" then
+		return nil, "GitHub returned an invalid review decision"
+	end
+	if type(payload.headRefOid) ~= "string" or text.trim(payload.headRefOid) == "" then
+		return nil, "GitHub returned a pull request without a head commit"
+	end
+
+	return {
+		state = payload.state,
+		is_draft = payload.isDraft,
+		mergeable = payload.mergeable,
+		merge_state_status = payload.mergeStateStatus,
+		review_decision = review_decision,
+		head_oid = payload.headRefOid,
+	},
+		nil
+end
+
+local function merge_block_reason(pull_request)
+	if pull_request.state ~= "OPEN" then
+		return "The pull request is no longer open."
+	end
+	if pull_request.is_draft then
+		return "Draft pull requests cannot be merged from the inbox."
+	end
+	if pull_request.review_decision == "CHANGES_REQUESTED" then
+		return "Changes have been requested on this pull request."
+	end
+	if pull_request.review_decision == "REVIEW_REQUIRED" then
+		return "The pull request still requires a review."
+	end
+	if pull_request.mergeable == "CONFLICTING" then
+		return "The pull request has merge conflicts."
+	end
+	if pull_request.mergeable ~= "MERGEABLE" then
+		return "GitHub has not determined that the pull request is mergeable yet."
+	end
+	if pull_request.merge_state_status == "BEHIND" then
+		return "The pull request branch must be updated before merging."
+	elseif pull_request.merge_state_status == "BLOCKED" then
+		return "Repository rules currently block this pull request from merging."
+	elseif pull_request.merge_state_status == "DIRTY" then
+		return "The pull request cannot be merged cleanly."
+	elseif pull_request.merge_state_status == "UNSTABLE" then
+		return "The pull request checks are not passing."
+	elseif pull_request.merge_state_status == "UNKNOWN" then
+		return "GitHub has not finished calculating the merge state."
+	elseif pull_request.merge_state_status ~= "CLEAN" and pull_request.merge_state_status ~= "HAS_HOOKS" then
+		return "The pull request is not currently ready to merge."
+	end
+
+	return nil
+end
+
+local function prepare_merge(item_id)
+	if item_id == "" or busy_item_actions[item_id] ~= nil then
+		return
+	end
+
+	local notification = notification_for_id(item_id)
+	local repository, number = pull_request_target(notification)
+	if repository == nil then
+		publish_error(nil, "The notification does not contain a valid pull request target", "Could not prepare merge")
+		return
+	end
+
+	busy_item_actions[item_id] = "prepare_merge"
+	merge_confirmations[item_id] = nil
+	current_error = nil
+	publish_current_notifications()
+	log(
+		easybar.level.info,
+		"inbox mutation started operation=prepare_merge item_id="
+			.. item_id
+			.. " repository="
+			.. repository
+			.. " number="
+			.. number
+	)
+
+	easybar.spawn_async({
+		"gh",
+		"pr",
+		"view",
+		number,
+		"--repo",
+		repository,
+		"--json",
+		"state,isDraft,mergeable,mergeStateStatus,reviewDecision,headRefOid",
+	}, {
+		timeout_seconds = PR_VIEW_TIMEOUT_SECONDS,
+		max_output_bytes = 1024 * 1024,
+		log_operation = "prepare_merge",
+	}, function(output, code)
+		busy_item_actions[item_id] = nil
+		if code ~= 0 then
+			log(
+				easybar.level.error,
+				"inbox mutation failed operation=prepare_merge item_id=" .. item_id .. " status=" .. tostring(code)
+			)
+			publish_error(output, "GitHub could not inspect the pull request", "Could not prepare merge")
+			return
+		end
+
+		local pull_request, decode_error = decode_pull_request_state(output)
+		if pull_request == nil then
+			publish_error(nil, decode_error, "Could not prepare merge")
+			return
+		end
+
+		local blocked_reason = merge_block_reason(pull_request)
+		if blocked_reason ~= nil then
+			publish_error(nil, blocked_reason, "Pull request cannot be merged")
+			return
+		end
+
+		merge_confirmations[item_id] = {
+			repository = repository,
+			number = number,
+			head_oid = pull_request.head_oid,
+		}
+		current_error = nil
+		log(easybar.level.info, "inbox mutation completed operation=prepare_merge item_id=" .. item_id)
+		publish_current_notifications()
+	end)
+end
+
+local function refresh_after_merge(item_id)
+	easybar.spawn_async({ "gh", "api", "--method", "PATCH", "notifications/threads/" .. item_id }, {
+		timeout_seconds = 20,
+		log_operation = "mark_read_after_merge",
+	}, function(_, code)
+		if code ~= 0 then
+			log(
+				easybar.level.warn,
+				"inbox mutation failed operation=mark_read_after_merge item_id=" .. item_id .. " status=" .. tostring(code)
+			)
+		end
+		refresh("post_merge", item_id)
+	end)
+end
+
+local function confirm_merge(item_id)
+	local confirmation = merge_confirmations[item_id]
+	if confirmation == nil or busy_item_actions[item_id] ~= nil then
+		return
+	end
+
+	local merge_flag = PR_MERGE_FLAGS[PR_MERGE_METHOD]
+	if merge_flag == nil then
+		publish_error(
+			nil,
+			"Unsupported pull request merge method: " .. tostring(PR_MERGE_METHOD),
+			"Could not merge pull request"
+		)
+		return
+	end
+
+	busy_item_actions[item_id] = "confirm_merge"
+	merge_confirmations[item_id] = nil
+	current_error = nil
+	publish_current_notifications()
+	log(
+		easybar.level.info,
+		"inbox mutation started operation=merge item_id="
+			.. item_id
+			.. " repository="
+			.. confirmation.repository
+			.. " number="
+			.. confirmation.number
+	)
+
+	easybar.spawn_async({
+		"/usr/bin/env",
+		"GH_PROMPT_DISABLED=1",
+		"gh",
+		"pr",
+		"merge",
+		confirmation.number,
+		"--repo",
+		confirmation.repository,
+		merge_flag,
+		"--match-head-commit",
+		confirmation.head_oid,
+	}, {
+		timeout_seconds = PR_MERGE_TIMEOUT_SECONDS,
+		max_output_bytes = 1024 * 1024,
+		log_operation = "merge",
+	}, function(output, code)
+		if code ~= 0 then
+			busy_item_actions[item_id] = nil
+			log(
+				easybar.level.error,
+				"inbox mutation failed operation=merge item_id=" .. item_id .. " status=" .. tostring(code)
+			)
+			publish_error(output, "GitHub could not merge the pull request", "Pull request merge failed")
+			return
+		end
+
+		log(easybar.level.info, "inbox mutation completed operation=merge item_id=" .. item_id)
+		refresh_after_merge(item_id)
+	end)
+end
+
 easybar.inbox.on_action(SOURCE, function(event)
 	local action_id = tostring(event.action_id or "unknown")
 	local item_id = tostring(event.target_widget_id or "")
@@ -335,8 +631,9 @@ easybar.inbox.on_action(SOURCE, function(event)
 	if action_id == "refresh" then
 		refresh("manual")
 	elseif action_id == "mark_read" then
-		if item_id ~= "" and not busy_item_ids[item_id] then
-			busy_item_ids[item_id] = true
+		if item_id ~= "" and busy_item_actions[item_id] == nil then
+			busy_item_actions[item_id] = "mark_read"
+			merge_confirmations[item_id] = nil
 			publish_current_notifications()
 			log(easybar.level.info, "inbox mutation started operation=mark_read item_id=" .. item_id)
 			easybar.spawn_async({ "gh", "api", "--method", "PATCH", "notifications/threads/" .. item_id }, {
@@ -347,7 +644,7 @@ easybar.inbox.on_action(SOURCE, function(event)
 					log(easybar.level.info, "inbox mutation completed operation=mark_read item_id=" .. item_id)
 					refresh("post_mutation", item_id)
 				else
-					busy_item_ids[item_id] = nil
+					busy_item_actions[item_id] = nil
 					log(
 						easybar.level.error,
 						"inbox mutation failed operation=mark_read item_id=" .. item_id .. " status=" .. tostring(code)
@@ -356,6 +653,13 @@ easybar.inbox.on_action(SOURCE, function(event)
 				end
 			end)
 		end
+	elseif action_id == "prepare_merge" then
+		prepare_merge(item_id)
+	elseif action_id == "confirm_merge" then
+		confirm_merge(item_id)
+	elseif action_id == "cancel_merge" then
+		merge_confirmations[item_id] = nil
+		publish_current_notifications()
 	end
 end)
 
