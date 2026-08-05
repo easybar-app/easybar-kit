@@ -33,44 +33,9 @@ fi
 
 item_names=()
 item_labels=()
-item_sources=()
+item_entrypoints=()
 selected_indices=()
 dependency_paths=()
-
-for path in "${source_dir}"/*.lua; do
-  [ -f "${path}" ] || continue
-
-  filename="$(basename "${path}")"
-  item_names+=("${filename%.lua}")
-  item_labels+=("${filename}")
-  item_sources+=("${path}")
-done
-
-if [ "${#item_names[@]}" -eq 0 ]; then
-  echo "No bundled widget entrypoints found in ${source_dir}" >&2
-  exit 1
-fi
-
-default_names=(
-  brew-inbox
-  github-inbox
-  gitlab-inbox
-  inbox-demo
-  tailscale
-)
-
-is_default() {
-  local candidate="$1"
-  local default_name
-
-  for default_name in "${default_names[@]}"; do
-    if [ "${candidate}" = "${default_name}" ]; then
-      return 0
-    fi
-  done
-
-  return 1
-}
 
 contains_value() {
   local candidate="$1"
@@ -79,6 +44,70 @@ contains_value() {
 
   for value in "$@"; do
     if [ "${value}" = "${candidate}" ]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+trim_whitespace() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf '%s' "${value}"
+}
+
+while IFS=';' read -r entrypoint _ extra || [ -n "${entrypoint}${extra}" ]; do
+  case "${entrypoint}" in
+    ''|'#'*) continue ;;
+  esac
+
+  if [ -n "${extra}" ]; then
+    echo "Invalid manifest row for ${entrypoint}: expected exactly two semicolon-separated fields" >&2
+    exit 1
+  fi
+
+  if contains_value "${entrypoint}" "${item_entrypoints[@]}"; then
+    echo "Duplicate widget entrypoint in manifest: ${entrypoint}" >&2
+    exit 1
+  fi
+
+  case "${entrypoint}" in
+    *.lua)
+      name="${entrypoint%.lua}"
+      label="${entrypoint}"
+      ;;
+    *)
+      echo "Invalid widget entrypoint in manifest: ${entrypoint}" >&2
+      exit 1
+      ;;
+  esac
+
+  item_names+=("${name}")
+  item_labels+=("${label}")
+  item_entrypoints+=("${entrypoint}")
+done <"${manifest_path}"
+
+if [ "${#item_names[@]}" -eq 0 ]; then
+  echo "No bundled widget entrypoints found in ${manifest_path}" >&2
+  exit 1
+fi
+
+default_names=(
+  inbox/brew/widget
+  inbox/github/widget
+  inbox/gitlab/widget
+  inbox/demo/widget
+  tailscale/widget
+)
+
+is_default() {
+  local candidate="$1"
+  local default_name
+
+  for default_name in "${default_names[@]}"; do
+    if [ "${candidate}" = "${default_name}" ]; then
       return 0
     fi
   done
@@ -123,26 +152,48 @@ append_dependency() {
   fi
 }
 
-collect_dependencies() {
-  local selected_filename="$1"
-  local widget
+append_dependencies() {
+  local dependencies="$1"
   local dependency
+  local -a parsed_dependencies=()
+
+  [ -n "${dependencies}" ] || return 0
+
+  IFS=',' read -r -a parsed_dependencies <<<"${dependencies}"
+  for dependency in "${parsed_dependencies[@]}"; do
+    dependency="$(trim_whitespace "${dependency}")"
+    if [ -z "${dependency}" ]; then
+      echo "Invalid empty dependency in manifest" >&2
+      exit 1
+    fi
+    append_dependency "${dependency}"
+  done
+}
+
+collect_dependencies() {
+  local selected_entrypoint="$1"
+  local entrypoint
+  local dependencies
   local extra
 
-  while IFS=';' read -r widget dependency extra || [ -n "${widget}${dependency}${extra}" ]; do
-    case "${widget}" in
+  while IFS=';' read -r entrypoint dependencies extra || [ -n "${entrypoint}${dependencies}${extra}" ]; do
+    case "${entrypoint}" in
       ''|'#'*) continue ;;
     esac
 
     if [ -n "${extra}" ]; then
-      echo "Invalid manifest row for ${widget}: expected exactly two semicolon-separated fields" >&2
+      echo "Invalid manifest row for ${entrypoint}: expected exactly two semicolon-separated fields" >&2
       exit 1
     fi
 
-    if [ "${widget}" = "${selected_filename}" ]; then
-      append_dependency "${dependency}"
+    if [ "${entrypoint}" = "${selected_entrypoint}" ]; then
+      append_dependencies "${dependencies}"
+      return
     fi
   done <"${manifest_path}"
+
+  echo "Selected widget is missing from manifest: ${selected_entrypoint}" >&2
+  exit 1
 }
 
 copy_relative_path() {
@@ -214,12 +265,10 @@ mkdir -p "${destination_dir}"
 printf '\nCopying widget entrypoints:\n'
 
 for index in "${selected_indices[@]}"; do
-  filename="${item_labels[${index}]}"
-  source="${item_sources[${index}]}"
+  entrypoint="${item_entrypoints[${index}]}"
 
-  printf '  %s\n' "${filename}"
-  cp "${source}" "${destination_dir}/${filename}"
-  collect_dependencies "${filename}"
+  copy_relative_path "${entrypoint}"
+  collect_dependencies "${entrypoint}"
 done
 
 if [ -f "${source_dir}/.luarc.json" ]; then

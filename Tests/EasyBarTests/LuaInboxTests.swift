@@ -62,7 +62,6 @@ final class LuaInboxTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "inbox.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),

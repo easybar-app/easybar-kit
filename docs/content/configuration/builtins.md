@@ -90,28 +90,28 @@ See [Box Model](box-model.md).
 
 The generated [Configuration Reference](reference.md) lists every key and default. These guides explain behavior and interactions for the more complex built-ins:
 
-| Built-in       | Guide                                            |
-| -------------- | ------------------------------------------------ |
-| Spaces         | [Spaces](builtins/spaces.md)                     |
-| Inbox          | [Inbox](builtins/inbox.md)                       |
-| Privacy Spacer | [Privacy Spacer](builtins/privacy-spacer.md)     |
-| Wi-Fi          | [Wi-Fi](builtins/wifi.md)                        |
-| Calendar       | [Calendar](builtins/calendar.md)                 |
+| Built-in       | Guide                                        |
+| -------------- | -------------------------------------------- |
+| Spaces         | [Spaces](builtins/spaces.md)                 |
+| Inbox          | [Inbox](builtins/inbox.md)                   |
+| Privacy Spacer | [Privacy Spacer](builtins/privacy-spacer.md) |
+| Wi-Fi          | [Wi-Fi](builtins/wifi.md)                    |
+| Calendar       | [Calendar](builtins/calendar.md)             |
 
 ## Widget-specific context menus
 
 Interactive built-ins expose their common settings and native actions directly from the bar:
 
-| Built-in       | Context-menu controls |
-| -------------- | --------------------- |
-| Battery        | Display mode, color mode, and refresh. |
+| Built-in       | Context-menu controls                                                                                                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Battery        | Display mode, color mode, and refresh.                                                                                                                                       |
 | Volume         | Mute or unmute, percentage visibility, hover-slider expansion, and Sound settings. Unsupported device controls are disabled and a non-writable output is rendered read-only. |
-| CPU            | Activity Monitor, history size, refresh interval, and history reset. Custom TOML values remain visible as checked, read-only menu entries. |
-| Front App      | Hide the focused app, show or hide its icon and name, and show an existing app bundle in Finder. Unavailable actions are disabled. |
-| AeroSpace Mode | Change the focused layout, show or hide icon and text, open the active AeroSpace config, and refresh AeroSpace state. |
-| Wi-Fi          | Content mode, visible fields, refresh, and Network settings. |
-| Calendar       | Popup mode, anchor layout and fields, appointment details, refresh, and Calendar privacy settings. |
-| Inbox          | Grouping, sorting, unread and empty-state behavior, and publisher actions. |
+| CPU            | Activity Monitor, history size, refresh interval, and history reset. Custom TOML values remain visible as checked, read-only menu entries.                                   |
+| Front App      | Hide the focused app, show or hide its icon and name, and show an existing app bundle in Finder. Unavailable actions are disabled.                                           |
+| AeroSpace Mode | Change the focused layout, show or hide icon and text, open the active AeroSpace config, and refresh AeroSpace state.                                                        |
+| Wi-Fi          | Content mode, visible fields, refresh, and Network settings.                                                                                                                 |
+| Calendar       | Popup mode, anchor layout and fields, appointment details, refresh, and Calendar privacy settings.                                                                           |
+| Inbox          | Grouping, sorting, unread and empty-state behavior, and publisher actions.                                                                                                   |
 
 Configuration choices are written to `config.toml` immediately. Comments, whitespace, and unrelated
 settings are preserved. Runtime actions such as muting audio, hiding an app, resetting CPU history,

@@ -129,7 +129,7 @@ endif
 .PHONY: help all \
         generate check-generated generate-event-catalog generate-theme-tokens generate-config generate-default-config generate-swift-env \
         build bundle package release app cli validate-config \
-        fmt fmt-all fmt-swift fmt-lua fmt-markdown \
+        fmt fmt-swift fmt-lua fmt-markdown \
         lint lint-swift lint-lua check-lua test test-hardening \
         clean clean-dist run run-debug run-trace install-local install-widgets uninstall-local stop restart-app icons screenshot-context-menu screenshots check-screenshots \
         build-app build-lua-runtime build-calendar-agent build-network-agent build-cli \
@@ -208,9 +208,7 @@ validate-config: cli ## Validate a config file with CONFIG=/path/to/config.toml.
 
 ##@ Formatting
 
-fmt: fmt-swift fmt-lua ## Format Swift and Lua source files.
-
-fmt-all: fmt-swift fmt-lua fmt-markdown ## Format Swift, Lua, and Markdown files.
+fmt: fmt-swift fmt-lua fmt-markdown ## Format Swift, Lua, and Markdown files.
 
 fmt-swift: ## Format all Swift source files in the repository.
 	@swift format format --in-place --recursive --parallel .
@@ -230,9 +228,8 @@ lint-lua: ## Check Lua formatting, syntax, and bundled widget startup.
 	@$(STYLUA) --check .
 	@$(MAKE) --no-print-directory check-lua
 
-check-lua: ## Parse Lua sources and smoke-test every bundled widget.
+check-lua: ## Validate Lua sources, runtime behavior, and bundled widgets.
 	@LUA="$(LUA)" scripts/ci/check-lua.sh
-	@$(LUA) scripts/ci/test-lua-runtime.lua "$(CURDIR)"
 
 test: generate-swift-env check-lua ## Run the Swift and Lua test suites without regenerating checked-in artifacts.
 	@env $(LOCAL_SWIFT_ENV) swift test --disable-sandbox
@@ -494,4 +491,5 @@ ICON_SIZES := 16x16 32x32 48x48 64x64
 
 favicon: ## Create favicons.
 	@scripts/assets/favicons.sh "$(SVG_CONVERT)" "$(SVG)" "$(ICON_DIR)" $(ICON_SIZES)
+
 

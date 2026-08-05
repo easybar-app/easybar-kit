@@ -31,7 +31,6 @@ final class LuaRenderStorageTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "storage-test.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),

@@ -86,5 +86,3 @@ themes_dir = "~/.config/easybar/themes"
 ```
 
 See [Themes](themes.md) for the theme file format.
-
-

@@ -128,4 +128,3 @@ Use this from local scripts when an external action should notify widgets that w
 - [Metrics](metrics.md)
 - [Troubleshooting](troubleshooting.md)
 - [Control Socket](../internals/architecture/control-socket.md)
-

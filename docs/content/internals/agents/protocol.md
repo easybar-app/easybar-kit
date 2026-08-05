@@ -74,8 +74,6 @@ Error responses may include a stable `errorCode` in addition to the human-readab
 calendar agent uses `invalid_request` when a decoded request violates protocol limits, including its
 maximum 366-day date range.
 
-
-
 ## Live log subscriptions
 
 Both agents accept a `logs` request carrying the same optional filters as the EasyBar control socket:
@@ -192,9 +190,3 @@ easybar config reload
 - reloads `config.toml`
 - rebuilds runtime state
 - recreates agent-backed subscriptions
-
-
-
-
-
-

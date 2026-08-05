@@ -1,5 +1,5 @@
 --- Module contract:
---- Owns the public EasyBar Lua API surface for one runtime registry.
+--- Owns recursive widget discovery and the public EasyBar Lua API surface.
 --- Returns a registry-like object consumed by the loader, events, and renderer.
 
 --- Public EasyBar API module table.
@@ -105,6 +105,78 @@ local WIDGET_LOG_READ_CHUNK_BYTES = 32 * 1024
 
 local function shell_quote(value)
 	return "'" .. tostring(value):gsub("'", "'\\''") .. "'"
+end
+
+local function normalize_widget_root(widget_dir)
+	assert(type(widget_dir) == "string" and widget_dir ~= "", "widget directory must be a non-empty string")
+
+	local root = widget_dir
+	while #root > 1 and root:sub(-1) == "/" do
+		root = root:sub(1, -2)
+	end
+	return root
+end
+
+local function relative_widget_path(root, path)
+	if root == "/" then
+		if path:sub(1, 1) ~= "/" then
+			return nil
+		end
+		return path:sub(2)
+	end
+
+	local prefix = root .. "/"
+	if path:sub(1, #prefix) ~= prefix then
+		return nil
+	end
+	return path:sub(#prefix + 1)
+end
+
+--- Recursively returns every regular Lua file below the configured widget directory.
+--- Paths are relative to the widget directory and sorted for deterministic startup.
+function M.discover_widget_files(widget_dir)
+	local root = normalize_widget_root(widget_dir)
+	local quoted_root = shell_quote(root)
+	local command = "if [ -d "
+		.. quoted_root
+		.. " ]; then /usr/bin/find "
+		.. quoted_root
+		.. " -type f -iname "
+		.. shell_quote("*.lua")
+		.. " -print0; fi"
+	local pipe, open_error = io.popen(command, "r")
+	if pipe == nil then
+		return nil, "could not start widget discovery: " .. tostring(open_error)
+	end
+
+	local output = pipe:read("*a") or ""
+	local close_ok, close_reason, close_code = pipe:close()
+	if close_ok ~= true and close_ok ~= 0 then
+		return nil, "widget discovery failed reason=" .. tostring(close_reason) .. " status=" .. tostring(close_code)
+	end
+
+	local files = {}
+	for path in output:gmatch("([^%z]+)%z") do
+		local relative = relative_widget_path(root, path)
+		if relative ~= nil and relative ~= "" and relative:sub(-4):lower() == ".lua" then
+			files[#files + 1] = relative
+		end
+	end
+
+	table.sort(files)
+	return files, nil
+end
+
+--- Discovers and transactionally loads every Lua file below the widget directory.
+function M.load_widgets(widget_dir, loader, registry, log)
+	local files, discovery_error = M.discover_widget_files(widget_dir)
+	if files == nil then
+		log.error("runtime widget discovery failed error=" .. tostring(discovery_error))
+		return 0, 1
+	end
+
+	log.debug("runtime widget_files=" .. tostring(#files))
+	return loader.load_widgets(widget_dir, files, registry, log)
 end
 
 local ensured_log_directories = {}
@@ -283,10 +355,24 @@ local function valid_interval(value)
 	return validation.interval_seconds(value) ~= nil
 end
 
-local function widget_log_source(source)
-	local path = tostring(source or "widget")
-	local file = path:match("([^/]+)$") or path
-	return file:gsub("%.lua$", "")
+local function widget_log_source(source, widget_root)
+	local path = tostring(source or ""):gsub("\\", "/")
+	local root = tostring(widget_root or ""):gsub("\\", "/"):gsub("/+$", "")
+
+	if root ~= "" and path:sub(1, #root + 1) == root .. "/" then
+		path = path:sub(#root + 2)
+	else
+		path = path:match("([^/]+)$") or path
+	end
+
+	path = path:gsub("^%./", "")
+	if path:sub(-4):lower() == ".lua" then
+		path = path:sub(1, -5)
+	end
+	if path == "" then
+		return "lua"
+	end
+	return path
 end
 
 --- Returns one validated widget-storage path segment.
@@ -543,11 +629,12 @@ function M.new(log, hooks)
 
 	--- Returns one widget-scoped EasyBar API.
 	--- Defaults are isolated to this widget instance.
-	function api.make_widget_api(source)
+	function api.make_widget_api(source, widget_root)
 		local widget_api = {}
 		local widget_defaults = {}
 		local source_directory = tostring(source):match("^(.*)/[^/]+$") or "."
-		local widget_name = widget_log_source(source)
+		widget_root = tostring(widget_root or source_directory)
+		local widget_name = widget_log_source(source, widget_root)
 
 		--- Resolves one safe path relative to this widget's source directory.
 		function widget_api.asset(path)
@@ -559,11 +646,18 @@ function M.new(log, hooks)
 				error("easybar.asset(path) rejects absolute paths")
 			end
 
+			local base_directory = source_directory
+			local relative_path = path
+			if path:sub(1, 2) == "@/" then
+				base_directory = widget_root
+				relative_path = path:sub(3)
+			end
+
 			local segments = {}
-			for segment in path:gmatch("[^/]+") do
+			for segment in relative_path:gmatch("[^/]+") do
 				if segment == ".." then
 					if #segments == 0 then
-						error("easybar.asset(path) cannot escape the widget directory")
+						error("easybar.asset(path) cannot escape its asset root")
 					end
 					segments[#segments] = nil
 				elseif segment ~= "." then
@@ -575,7 +669,7 @@ function M.new(log, hooks)
 				error("easybar.asset(path) requires a non-empty relative path")
 			end
 
-			return source_directory .. "/" .. table.concat(segments, "/")
+			return base_directory .. "/" .. table.concat(segments, "/")
 		end
 
 		--- Merges properties into one item and optionally updates its interval callback.
@@ -809,7 +903,7 @@ function M.new(log, hooks)
 			)
 		end
 
-		widget_api.log = make_log_api(widget_log_source(source))
+		widget_api.log = make_log_api(widget_name)
 
 		return widget_api
 	end

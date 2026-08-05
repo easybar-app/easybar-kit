@@ -29,7 +29,6 @@ extension LuaProcessController {
       widgetsPath: config.app.widgetsPath,
       defaultCommandTimeoutSeconds: config.app.luaCommandLimits.timeoutSeconds,
       defaultCommandMaxOutputBytes: config.app.luaCommandLimits.maxOutputBytes,
-      widgetFiles: resolvedWidgetFiles(in: config.app.widgetsPath),
       environment: luaRuntimeEnvironment(config: config)
     )
   }
@@ -73,31 +72,6 @@ extension LuaProcessController {
     return nil
   }
 
-  /// Returns the sorted Lua widget filenames present in the configured widget directory.
-  func resolvedWidgetFiles(in widgetsPath: String) -> [String] {
-    let widgetsURL = URL(fileURLWithPath: widgetsPath, isDirectory: true)
-
-    guard
-      let files = try? FileManager.default.contentsOfDirectory(
-        at: widgetsURL,
-        includingPropertiesForKeys: [.isRegularFileKey],
-        options: [.skipsHiddenFiles]
-      )
-    else {
-      return []
-    }
-
-    return
-      files
-      .filter { url in
-        guard url.pathExtension == "lua" else { return false }
-        let values = try? url.resourceValues(forKeys: [.isRegularFileKey])
-        return values?.isRegularFile == true
-      }
-      .map(\.lastPathComponent)
-      .sorted()
-  }
-
   /// Logs one Lua runtime launch request.
   func logLaunch(context: LaunchContext) {
     logger.debug("starting lua runtime")
@@ -106,22 +80,20 @@ extension LuaProcessController {
     logger.debug("lua socket", .field("path", context.luaSocketPath))
     logger.debug("lua script", .field("path", context.runtimePath))
     logger.debug("widgets path", .field("path", context.widgetsPath))
-    logger.debug("widget files", .field("count", context.widgetFiles.count))
     logger.debug("lua env keys", .field("keys", context.environment.keys.sorted()))
   }
 
   /// Spawns one Lua runtime process with a dedicated process group assigned at spawn time.
   func spawnProcess(context: LaunchContext, resources: LaunchResources) throws -> Int32 {
-    let arguments =
-      [
-        context.runtimeAgentPath,
-        context.luaSocketPath,
-        context.luaPath,
-        context.runtimePath,
-        context.widgetsPath,
-        String(context.defaultCommandTimeoutSeconds),
-        String(context.defaultCommandMaxOutputBytes),
-      ] + context.widgetFiles
+    let arguments = [
+      context.runtimeAgentPath,
+      context.luaSocketPath,
+      context.luaPath,
+      context.runtimePath,
+      context.widgetsPath,
+      String(context.defaultCommandTimeoutSeconds),
+      String(context.defaultCommandMaxOutputBytes),
+    ]
 
     var environment = ProcessInfo.processInfo.environment
     environment.merge(context.environment) { _, configuredValue in configuredValue }

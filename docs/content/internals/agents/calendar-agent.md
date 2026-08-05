@@ -139,6 +139,3 @@ public typed API that covers both reading and writing the native value.
 The calendar agent collects calendar data and performs calendar mutations.
 
 EasyBar decides how calendar data is rendered.
-
-
-

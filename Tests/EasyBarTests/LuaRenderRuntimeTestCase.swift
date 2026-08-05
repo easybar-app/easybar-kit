@@ -254,7 +254,6 @@ extension LuaRenderRuntimeTestCase {
     init(
       runtimePath: String,
       widgetsDirectoryURL: URL,
-      widgetFile: String,
       recorder: RuntimeUpdateRecorder,
       decoder: JSONDecoder,
       environment: [String: String],
@@ -270,7 +269,7 @@ extension LuaRenderRuntimeTestCase {
 
       LuaRenderRuntimeTestCase.configureLuaProcess(
         process,
-        arguments: [runtimePath, widgetsDirectoryURL.path, "5", "65536", widgetFile]
+        arguments: [runtimePath, widgetsDirectoryURL.path, "5", "65536"]
       )
       process.standardInput = stdinPipe
       process.standardOutput = stdoutPipe

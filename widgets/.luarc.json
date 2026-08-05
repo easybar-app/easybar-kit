@@ -5,8 +5,6 @@
     "path": [
       "?.lua",
       "?/init.lua",
-      "integrations/?.lua",
-      "integrations/?/init.lua",
       "shared/?.lua",
       "shared/?/init.lua",
       "lib/?.lua",
@@ -14,9 +12,13 @@
     ]
   },
   "workspace": {
-    "library": ["~/.local/share/easybar/easybar_api.lua"]
+    "library": [
+      "~/.local/share/easybar/easybar_api.lua"
+    ]
   },
   "diagnostics": {
-    "globals": ["easybar"]
+    "globals": [
+      "easybar"
+    ]
   }
 }

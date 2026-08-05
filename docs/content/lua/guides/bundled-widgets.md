@@ -1,94 +1,47 @@
 # Bundled Widgets
 
-The repository's `widgets/` directory contains examples ranging from minimal API demonstrations to
-complete integrations. Top-level `*.lua` files are executable entrypoints. Larger integrations keep
-their implementation and README below `widgets/integrations/<service>/`, while generic helpers live
-below `widgets/shared/`.
+The repository's `widgets/` directory is organized by complexity and presentation. Small examples live in `simple/`, multi-node examples live in `compositions/`, standalone service widgets use their own package directories, and native-inbox publishers live below `inbox/`.
 
-Use `make install-widgets` to select entrypoints and copy their declared integration packages,
-shared helpers, assets, and LuaLS configuration automatically.
+Use `make install-widgets` to select widgets. The installer reads `widgets/install-manifest.csv`, preserves the categorized paths, and copies each selected entrypoint together with its declared modules, README files, assets, and LuaLS configuration.
 
 ## Catalog
 
-| Widget                   | Purpose                            | Requirements                                      | Inbox publisher |
-| ------------------------ | ---------------------------------- | ------------------------------------------------- | --------------- |
-| `simple.lua`             | Minimal stateful toggle            | None                                              | No              |
-| `group_demo.lua`         | Groups, shared styling, and popups | None                                              | No              |
-| `context-menu.lua`       | Native right-click menu API        | `gh` for its example action                       | No              |
-| `popup-context-menu.lua` | Popup and context menu on one item | None                                              | No              |
-| `inbox-demo.lua`         | Representative inbox test messages | Native inbox enabled                              | Yes             |
-| `brew.lua`               | Homebrew updates in its own popup  | `brew` in `[app.env].PATH`                        | No              |
-| `brew-inbox.lua`         | Homebrew updates and actions       | `brew` in `[app.env].PATH`                        | Yes             |
-| `github.lua`             | GitHub notifications popup         | Authenticated `gh`; bundled GitHub SVG asset      | No              |
-| `github-inbox.lua`       | GitHub notifications               | Authenticated `gh`                                | Yes             |
-| `gitlab.lua`             | Assigned GitLab work items         | Authenticated `glab`; optional `GITLAB_HOST`      | No              |
-| `gitlab-inbox.lua`       | Assigned GitLab work items         | Authenticated `glab`; optional `GITLAB_HOST`      | Yes             |
-| `network.lua`            | Native network snapshot            | Network agent                                     | No              |
-| `wifi+vpn.lua`           | Read-only tunnel indicator         | Network agent                                     | No              |
-| `tailscale.lua`          | Tailscale state and controls       | `tailscale`; optional `TAILSCALE` command setting | No              |
-| `wireguard.lua`          | Network Extension VPN control      | Service name in integration settings              | No              |
+| Entrypoint                            | Purpose                             | Requirements                                 | Inbox publisher |
+| ------------------------------------- | ----------------------------------- | -------------------------------------------- | --------------- |
+| `simple/simple.lua`                   | Minimal stateful toggle             | None                                         | No              |
+| `simple/caffeinate.lua`               | Prevents display and idle sleep     | macOS `caffeinate`                           | No              |
+| `simple/context-menu.lua`             | Native right-click menu API         | `gh` for one example action                  | No              |
+| `simple/network.lua`                  | Native network snapshot             | Network agent                                | No              |
+| `compositions/group_demo.lua`         | Groups, shared styling, and popups  | None                                         | No              |
+| `compositions/popup-context-menu.lua` | Popup and context menu on one item  | None                                         | No              |
+| `compositions/wifi+vpn.lua`           | Read-only tunnel indicator          | Network agent                                | No              |
+| `inbox/demo/widget.lua`               | Representative inbox messages       | Native inbox enabled                         | Yes             |
+| `brew/widget.lua`                     | Homebrew updates in a popup         | `brew` in `[app.env].PATH`                   | No              |
+| `inbox/brew/widget.lua`               | Homebrew updates and actions        | `brew` in `[app.env].PATH`                   | Yes             |
+| `github/widget.lua`                   | GitHub notifications popup          | Authenticated `gh`                           | No              |
+| `inbox/github/widget.lua`             | GitHub notifications and PR actions | Authenticated `gh`                           | Yes             |
+| `gitlab/widget.lua`                   | Assigned GitLab work popup          | Authenticated `glab`; optional `GITLAB_HOST` | No              |
+| `inbox/gitlab/widget.lua`             | Assigned GitLab work and MR actions | Authenticated `glab`; optional `GITLAB_HOST` | Yes             |
+| `tailscale/widget.lua`                | Tailscale state and controls        | `tailscale`; optional `TAILSCALE` executable | No              |
+| `wireguard/widget.lua`                | Network Extension VPN control       | VPN service name in widget config            | No              |
+
+The service packages contain their own README files with configuration and behavior details.
 
 ## Choose one presentation
 
-Do not load both presentation variants for the same service:
+Homebrew, GitHub, and GitLab each have a standalone popup presentation and a native-inbox presentation:
 
-- choose `brew.lua` or `brew-inbox.lua`
-- choose `github.lua` or `github-inbox.lua`
-- choose `gitlab.lua` or `gitlab-inbox.lua`
+- choose `brew/widget.lua` or `inbox/brew/widget.lua`
+- choose `github/widget.lua` or `inbox/github/widget.lua`
+- choose `gitlab/widget.lua` or `inbox/gitlab/widget.lua`
 
-The regular variants own a bar icon and popup. The inbox variants publish snapshots into the shared
-native inbox, register their operations as source actions, and opt their refresh action into the
-inbox-wide **Refresh all** command.
+Loading both variants is supported but normally causes duplicate polling and actions.
 
-The Tailscale widget uses left click to bring Tailscale up or down. Its right-click menu lists the
-currently advertised exit nodes and a **Disabled** option. Selecting one changes Tailscale's own
-persistent state; EasyBar does not duplicate the selected node in `config.toml`.
-
-GitHub and GitLab inbox items expose a dedicated **Mark as read** action. GitHub also acknowledges the notification through the GitHub API. GitLab publishes assigned work items rather than notification records, so its action updates EasyBar's persistent local read state.
-
-Both inbox integrations support guarded merging. Open the inbox source-actions menu, expand the
-service, and choose **Project default** (GitLab) or **Merge commit** (GitHub), **Squash and merge**, or **Rebase and merge**. The selected
-method is applied immediately and persisted in `config.toml`:
-
-```toml
-[widgets.github-inbox]
-merge_method = "squash" # merge, rebase, or squash
-confirm_merge = false
-
-[widgets.gitlab-inbox]
-merge_method = "merge" # merge, rebase, or squash
-confirm_merge = false
-```
-
-Each widget retrieves the current request state and rejects drafts, conflicts, failed checks, missing
-approvals, and other repository-rule blockers. With `confirm_merge = true`, a second action confirms
-the inspected request. Set it to `false`, or choose **Merge immediately** from the source menu, to merge
-automatically after those checks pass. The final merge is still guarded by the inspected source-branch
-SHA. GitLab additionally disables the CLI's default auto-merge behavior so a running pipeline is not
-silently scheduled for later.
-
-You can also edit these values directly. Unsupported GitHub merge methods fall back to `squash`;
-unsupported GitLab merge methods fall back to `merge`. Invalid `confirm_merge` values fall back to
-`true`. Each case produces a widget log warning. See [Widget Settings](storage.md) for the Lua storage API.
-
-GitHub and GitLab publish each item's native `url` and `timestamp`, so EasyBar supplies the **Open**
-button and sorts mixed sources by their service-provided update time. Failed or malformed refreshes
-keep the last valid snapshot visible and add a bounded error item. GitHub coalesces refreshes that
-finish while another refresh is active, ensuring overlapping notification acknowledgements receive
-one final server snapshot.
-
-Homebrew also preserves its last valid package snapshot when command output is malformed or a
-refresh fails. Its parser validates formula, cask, and installed-version shapes before replacing
-the snapshot, while still publishing warnings printed around Homebrew's JSON response.
-
-Each inbox publisher sends at most 500 items per snapshot and prioritizes error and warning
-records. GitLab merges issues and merge requests by update time before applying that limit, while
-GitHub preserves the API's notification order. The native inbox may display fewer items when
-`max_items` has a lower value.
+The inbox variants publish snapshots into the shared native inbox, expose service operations as source actions, and participate in the inbox-wide **Refresh all** action. GitHub and GitLab inbox widgets also provide guarded merge actions and persist their merge choices under `[widgets.github-inbox]` and `[widgets.gitlab-inbox]`.
 
 ## GUI environment
 
-Apps opened from Finder or Spotlight do not inherit `.zshrc`. Make required CLIs and instance settings explicit:
+Apps opened from Finder or Spotlight do not inherit `.zshrc`. Make required executables and service settings explicit:
 
 ```toml
 [app.env]
@@ -97,56 +50,88 @@ GITLAB_HOST = "https://gitlab.example.com"
 TAILSCALE = "/opt/homebrew/bin/tailscale"
 ```
 
-Authenticate tools in a terminal before starting the corresponding widget:
+Authenticate CLIs in a terminal before starting the matching widget:
 
 ```bash
 gh auth login
 glab auth login --hostname gitlab.example.com
 ```
 
-See [Environment](../../configuration/environment.md) for precedence and GUI-launch behavior.
+WireGuard uses widget configuration instead of an environment variable. Use `scutil --nc list` to find the exact Network Extension service name, then configure it:
 
-## Integration packages, shared modules, and assets
+```toml
+[widgets.wireguard]
+vpn_name = "WireGuard"
+```
 
-The bundled install manifest maps each top-level entrypoint to its dependencies. `make install-widgets`
-reads that manifest and preserves paths while copying only the support files needed by the selected
-widgets.
+See [Environment](../../configuration/environment.md) and [Widget Settings](storage.md).
 
-Service-specific code belongs below `widgets/integrations/<service>/`:
+## Lua files and support files
 
-- Homebrew uses `integrations/brew/policy.lua` for its manual-upgrade rules.
-- WireGuard uses `integrations/wireguard/secrets.lua` for the local Network Extension service name.
-- Each larger integration has a README beside its implementation.
+EasyBar recursively executes every regular `.lua` file, case-insensitively, below `widgets_dir`:
 
-Generic helpers remain below `widgets/shared/`. The inbox publishers use `shared/inbox.lua` to
-reject object-shaped responses where arrays are expected, bound external error messages, and
-convert ISO-8601 update times without depending on the Mac's local timezone. See [Reusable
-Modules](modules.md#inbox-data-helper) for its public functions.
+```text
+<widgets_dir>/**/*.lua
+```
 
-Do not place implementation or settings modules at the top level: EasyBar executes every top-level
-`*.lua` file as a widget entrypoint. Files below `integrations/`, `shared/`, and legacy `lib/` load
-only through `require(...)`.
+The categorized directory names and the bundled `widget.lua` filenames are organizational choices, not loader rules. Reusable Lua modules are discovered too, so their top level must remain side-effect-free. Assets, README files, and other non-Lua files are never executed.
 
-File-backed assets remain below `widgets/assets/` and are resolved through `easybar.asset(...)`.
-Copy the paths declared for a widget in `widgets/install-manifest.csv`; the install helper does this
-automatically.
+The categorized bundled layout is:
 
-The GitHub, GitLab, and Homebrew inbox widgets wait briefly after the Mac wakes before contacting
-network services. They retry transient read-only failures, but authentication failures and
-state-changing operations are not retried automatically.
+```text
+widgets/
+├── assets/
+├── simple/
+├── compositions/
+├── brew/
+├── github/
+├── gitlab/
+├── tailscale/
+├── wireguard/
+├── inbox/
+│   ├── demo/
+│   ├── brew/
+│   ├── github/
+│   └── gitlab/
+├── shared/
+└── install-manifest.csv
+```
+
+Logs and command diagnostics use each file's relative path without `.lua`. For example, `inbox/github/widget.lua` uses `inbox/github/widget`.
+
+## Shared assets
+
+`easybar.asset(...)` normally resolves relative to the current entrypoint. Prefix a path with `@/` to resolve it from the configured widgets directory:
+
+```lua
+local local_icon = easybar.asset("icon.svg")
+local shared_icon = easybar.asset("@/assets/github.svg")
+```
+
+The bundled service widgets use widgets-root-relative paths because the SVG files are shared across packages. The `@/` prefix does not allow absolute paths or escaping the widgets directory.
+
+## Reliability behavior
+
+The GitHub, GitLab, and Homebrew inbox publishers wait briefly after wake or session activation before contacting network services. Read-only refreshes retry transient network failures. Authentication failures and mutations are not retried automatically.
+
+Failed or malformed refreshes preserve the last valid snapshot and add a bounded error item. Each inbox publisher caps its outgoing snapshot at 500 items; the native inbox may display fewer when its configured `max_items` value is lower.
 
 ## Diagnostics
 
-The GitHub, GitLab, and Homebrew inbox widgets emit semantic operation logs:
+Service widgets emit structured operation logs. Identities are derived generically from relative paths:
 
-- `debug` for refresh reasons, action routing, and published item counts
-- `trace` for command attempts, retry scheduling, and wake-delay handling
-- `info` for user-triggered mutations and cancellation
-- `warn` or `error` for invalid responses, exhausted retries, and failed mutations
+```text
+brew/widget.lua              -> brew/widget
+inbox/brew/widget.lua        -> inbox/brew/widget
+inbox/github/widget.lua      -> inbox/github/widget
+inbox/gitlab/widget.lua      -> inbox/gitlab/widget
+```
 
-The widget file name is attached automatically as a structured `widget` field.
+Use the log CLI to isolate one publisher:
 
-Lua loader and command failures also appear in EasyBar's logs. The Homebrew examples maintain a
-bounded `brew-widget.log` in the configured logging directory. Use [Lua Logging](logging.md),
-[Commands](commands.md), and [Troubleshooting](../../runtime/troubleshooting.md) when an example does
-not update.
+```bash
+easybar logs --widget inbox/github/widget --runtime lua --level debug
+easybar logs --widget inbox/brew/widget --runtime lua --level trace --follow
+```
+
+See [Logging](logging.md) and [Troubleshooting](../../runtime/troubleshooting.md).

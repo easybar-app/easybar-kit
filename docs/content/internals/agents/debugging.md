@@ -284,7 +284,3 @@ flowchart LR
     Lua --> UI["UI"]
     Native --> UI
 ```
-
-
-
-

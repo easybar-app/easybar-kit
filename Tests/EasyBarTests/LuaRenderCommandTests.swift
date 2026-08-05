@@ -28,7 +28,6 @@ final class LuaRenderCommandTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "brew.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),
@@ -300,7 +299,6 @@ final class LuaRenderCommandTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "brew.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),
@@ -357,7 +355,6 @@ final class LuaRenderCommandTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "brew.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),
@@ -407,7 +404,6 @@ final class LuaRenderCommandTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "brew.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),
@@ -461,7 +457,6 @@ final class LuaRenderCommandTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     let oldRuntime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "old.lua",
       recorder: oldRecorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),
@@ -477,6 +472,9 @@ final class LuaRenderCommandTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     )
 
     oldRuntime.stop()
+    try FileManager.default.removeItem(
+      at: widgetsDirectoryURL.appendingPathComponent("old.lua")
+    )
 
     try """
     easybar.add("item", "brew", {
@@ -502,7 +500,6 @@ final class LuaRenderCommandTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     let newRuntime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "new.lua",
       recorder: newRecorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),

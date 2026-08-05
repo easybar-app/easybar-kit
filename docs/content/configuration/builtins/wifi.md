@@ -60,5 +60,3 @@ Configuration changes are written to `config.toml` immediately. Comments, whites
 unrelated settings are preserved. Checked menu items show the persisted values.
 
 See [Agents](../agents.md) and [Recovery](../../runtime/recovery.md) for further checks.
-
-

@@ -70,5 +70,3 @@ That means:
 - Lua widgets should log using the public Lua API values.
 - Widget messages should describe operations and outcomes, not transport byte movement.
 - Swift remains the canonical implementation of filtering and output behavior.
-
-

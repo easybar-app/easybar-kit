@@ -33,11 +33,11 @@ The empty-string behavior is special to `PATH`. Other `[app.env]` values may be 
 
 EasyBar supports a small, explicit set of process-level overrides:
 
-| Variable              | Purpose                                      |
-| --------------------- | -------------------------------------------- |
-| `EASYBAR_CONFIG_PATH` | Selects the runtime config file.             |
-| `EASYBAR_RUNTIME_DIR` | Overrides `[app].runtime_dir`.               |
-| `EASYBAR_LOG_LEVEL`   | Temporarily overrides `[logging].level`.     |
+| Variable              | Purpose                                  |
+| --------------------- | ---------------------------------------- |
+| `EASYBAR_CONFIG_PATH` | Selects the runtime config file.         |
+| `EASYBAR_RUNTIME_DIR` | Overrides `[app].runtime_dir`.           |
+| `EASYBAR_LOG_LEVEL`   | Temporarily overrides `[logging].level`. |
 
 `EASYBAR_RUNTIME_DIR` is read by the app, CLI, and helper agents. Derived socket and lock defaults therefore remain consistent across processes.
 

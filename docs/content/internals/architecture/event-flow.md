@@ -43,5 +43,3 @@ The Lua runtime flow is:
 7. Swift decodes those trees and applies them to the widget store.
 
 This design intentionally avoids embedding arbitrary Lua execution into the UI process.
-
-

@@ -28,7 +28,6 @@ final class LuaRenderSchedulingTests: LuaRenderRuntimeTestCase, @unchecked Senda
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "spawn.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),
@@ -75,7 +74,6 @@ final class LuaRenderSchedulingTests: LuaRenderRuntimeTestCase, @unchecked Senda
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "timer.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),
@@ -124,7 +122,6 @@ final class LuaRenderSchedulingTests: LuaRenderRuntimeTestCase, @unchecked Senda
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "timer-cancel.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),
@@ -184,7 +181,7 @@ final class LuaRenderSchedulingTests: LuaRenderRuntimeTestCase, @unchecked Senda
       })
     end)
     """.write(
-      to: widgetsDirectoryURL.appendingPathComponent("retry.lua"),
+      to: widgetsDirectoryURL.appendingPathComponent("retry-widget.lua"),
       atomically: true,
       encoding: .utf8
     )
@@ -197,7 +194,6 @@ final class LuaRenderSchedulingTests: LuaRenderRuntimeTestCase, @unchecked Senda
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "retry.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),

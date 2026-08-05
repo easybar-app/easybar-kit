@@ -66,7 +66,7 @@ Use [Recovery](recovery.md) for source-specific checks and [Agent Debugging](../
 Loader errors identify the widget filename and failing API call in `easybar.out`. Check:
 
 - the widget is inside the configured `widgets_dir`
-- service modules exist under `widgets/integrations`, while generic modules such as `text` exist under `widgets/shared` or the legacy `widgets/lib` fallback
+- private package modules exist beside `<name>/widget.lua`, while generic modules such as `text` exist under `widgets/shared` or the legacy `widgets/lib` fallback
 - file-backed assets were copied with the widget
 - properties that schedule work, such as `interval`, include their required callback
 - required commands are present in `[app.env].PATH`
@@ -162,4 +162,3 @@ Do not include access tokens, private URLs, calendar content, or other secrets f
 - [Agent Debugging](../internals/agents/debugging.md)
 - [macOS Quarantine](../getting-started/macos-quarantine.md)
 - [Configuration Logging](../configuration/logging.md)
-

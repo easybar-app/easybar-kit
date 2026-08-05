@@ -1,55 +1,41 @@
 # Reusable Modules
 
-EasyBar separates widget entrypoints from two kinds of reusable Lua modules:
+EasyBar recursively executes every regular file below `widgets_dir` with a `.lua` extension. Extension matching is case-insensitive. Directory names such as `simple`, `shared`, or `lib`, and filenames such as `widget.lua`, are organizational conventions only.
 
-- `integrations/<service>/` contains service-specific implementations and settings.
-- `shared/` contains generic helpers reusable across unrelated widgets.
-
-Both directories are added to Lua's module search path before widget files load, so entrypoints can
-use standard `require(...)` calls without changing `package.path`. The older `lib/` directory
-remains a supported fallback so existing widget setups continue to work.
+The widget root, `shared/`, and legacy `lib/` are also added to Lua's module search path before files load, so code can continue to use standard `require(...)` calls without changing `package.path`.
 
 ## Recommended layout
 
 ```text
 ~/.config/easybar/widgets/
-├── clock.lua
-├── github.lua
-├── integrations/
-│   └── github/
-│       ├── README.md
-│       └── widget.lua
+├── simple/
+│   └── clock.lua
+├── github/
+│   ├── widget.lua
+│   └── README.md
+├── brew/
+│   ├── widget.lua
+│   ├── policy.lua
+│   └── README.md
 ├── shared/
 │   ├── inbox.lua
 │   ├── retry.lua
 │   ├── text.lua
 │   └── status/
 │       └── init.lua
+├── lib/
+│   └── legacy.lua
 └── assets/
     └── github.svg
 ```
 
-Only regular `*.lua` files directly inside the widgets directory are started as widgets. Lua files
-below `integrations/`, `shared/`, or legacy `lib/` run only when a widget requires them.
+All `.lua` files in this tree run during startup. A reusable module should therefore do only declarative work at top level: create local functions or tables and return its public value. Do not start timers, commands, subscriptions, or inbox publishing until an explicit function is called by the consuming widget.
 
-Keep small, self-contained examples as top-level files. For a larger integration, use a thin
-entrypoint and pass its widget-scoped API to the implementation:
+The same module may later execute through `require(...)`. Direct startup execution does not populate `package.loaded`, while `require(...)` does, so top-level module code must be safe to evaluate more than once.
 
-```lua
--- github.lua
-require("github.widget")(easybar)
-```
+Keep small examples in the matching category. Use a service directory when an integration gains configuration, helper modules, documentation, tests, or assets. The filename inside that directory is your choice.
 
-```lua
--- integrations/github/widget.lua
----@param easybar EasyBar
-return function(easybar)
-    -- Complete GitHub widget implementation.
-end
-```
-
-This preserves top-level discovery and source identity while keeping implementation code and its
-README together.
+Do not install multiple presentation variants for the same service unless duplicate polling is intentional.
 
 ## Create a module
 
@@ -66,7 +52,7 @@ end
 return M
 ```
 
-Use it from any top-level widget:
+Use it from any Lua file:
 
 ```lua
 local text = require("text")
@@ -230,11 +216,9 @@ cache.
 
 ## EasyBar API access
 
-User modules are loaded by Lua's standard module system, not as widget entrypoints. They do not get
-a widget-scoped `easybar` value injected automatically.
+Every discovered file receives a widget-scoped `easybar` value during direct startup execution. The same file does not receive that injected value when Lua loads it later through standard `require(...)`.
 
-Keep general modules independent from EasyBar when possible. When a helper needs host-specific data,
-pass the value explicitly:
+Keep reusable modules independent from `easybar` at top level. When a helper needs host-specific data, pass the value explicitly:
 
 ```lua
 -- shared/widget_style.lua
@@ -257,33 +241,30 @@ local widget_style = require("widget_style")
 local label = widget_style.label(easybar.theme.ref.text, os.date("%H:%M"))
 ```
 
-Resolve widget-relative files such as images in the widget itself with `easybar.asset(...)`, then
-pass the resolved path to a helper only when needed.
+Resolve files beside the current entrypoint with `easybar.asset(...)`. Use `easybar.asset("@/assets/name.svg")` for assets shared from the configured widgets root, then pass the resolved path to a helper only when needed.
 
 ## Naming and precedence
 
 EasyBar searches widget modules in this order:
 
 ```text
-<widgets_dir>/integrations/?.lua
-<widgets_dir>/integrations/?/init.lua
+<widgets_dir>/?.lua
+<widgets_dir>/?/init.lua
 <widgets_dir>/shared/?.lua
 <widgets_dir>/shared/?/init.lua
 <widgets_dir>/lib/?.lua
 <widgets_dir>/lib/?/init.lua
 ```
 
-Dots map to subdirectories within each root. For example, `require("brew.policy")` resolves first
-to `integrations/brew/policy.lua`, then to `shared/brew/policy.lua`, and finally to the legacy
-`lib/brew/policy.lua` fallback.
+Dots map to subdirectories. For example, `require("brew.policy")` resolves first to
+`<widgets_dir>/brew/policy.lua`. A generic `require("text")` normally resolves to
+`<widgets_dir>/shared/text.lua` when no top-level `text.lua` or `text/init.lua` exists.
 
-Use the service name as the first component for integration modules. Keep generic module names in
+Use the widget name as the first component for private package modules. Keep generic module names in
 `shared/`, and avoid names likely to collide with third-party Lua packages.
 
 ## Errors
 
-A missing or failing required module makes that widget fail during startup and writes the normal Lua
-loader error to the EasyBar log. Other widget files continue loading.
+Every discovered `.lua` file is executed. A syntax error or top-level failure is reported for that file, its transactional changes are rolled back, and the remaining files continue loading.
 
-A broken module that is never required is not executed.
-
+A missing or failing `require(...)` call fails the consuming file in the same way. Because support modules are also discovered directly, a broken module is reported even when no other file requires it.

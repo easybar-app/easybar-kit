@@ -58,5 +58,3 @@ calendar or network socket directly through the shared agent protocol. Version q
 report the processes that are actually running. `easybar logs` reads retained history from the configured log directory. With `--follow`, it then connects to the EasyBar socket and the selected enabled agent sockets; it does not poll files for new records.
 
 The CLI is a transport client, not a second source of application logic.
-
-

@@ -14,17 +14,17 @@ Without `--follow`, the command merges retained main-app, calendar-agent, and ne
 
 With `--follow`, EasyBar subscribes before printing retained history so records produced during startup are not missed. It then suppresses any overlap between the retained and live streams. The selected runtime filter determines which process sockets are contacted.
 
-| Option                | Purpose                                                                                          |
-| --------------------- | ------------------------------------------------------------------------------------------------ |
-| `--widget NAME`       | Match a Lua or native widget name.                                                               |
-| `--runtime KIND`      | Match `app`, `lua`, or `agent`.                                                                  |
+| Option                | Purpose                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `--widget NAME`       | Match a Lua or native widget name.                                                                                   |
+| `--runtime KIND`      | Match `app`, `lua`, or `agent`.                                                                                      |
 | `--level LEVEL`       | Match `trace`, `debug`, `info`, `warn`, or `error` and higher. In follow mode, also set the live subscription level. |
-| `--request-id ID`     | Match one request across every retained process log.                                             |
-| `--since TIME`        | Match entries since a duration such as `30m` or an ISO-8601 timestamp.                            |
-| `--lines COUNT`, `-n` | Limit the latest matching retained history to a positive number of entries.                      |
-| `--all`               | Print all matching retained history.                                                             |
-| `--follow`, `-f`      | Continue with new matching records after retained history.                                       |
-| `--json`              | Emit JSON Lines with parsed fields, source, runtime, and widget metadata.                         |
+| `--request-id ID`     | Match one request across every retained process log.                                                                 |
+| `--since TIME`        | Match entries since a duration such as `30m` or an ISO-8601 timestamp.                                               |
+| `--lines COUNT`, `-n` | Limit the latest matching retained history to a positive number of entries.                                          |
+| `--all`               | Print all matching retained history.                                                                                 |
+| `--follow`, `-f`      | Continue with new matching records after retained history.                                                           |
+| `--json`              | Emit JSON Lines with parsed fields, source, runtime, and widget metadata.                                            |
 
 Filters compose. This prints errors from the Lua runtime during the last hour and exits:
 

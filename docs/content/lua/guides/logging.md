@@ -62,9 +62,9 @@ log.trim(4000)
 
 ## Widget context
 
-EasyBar automatically attaches the widget file name to host log entries. A call from
-`github-inbox.lua` is therefore rendered with `widget=github-inbox`; widgets do not need to repeat
-their own name in every message.
+EasyBar automatically attaches the Lua file path relative to `widgets_dir`, without the `.lua`
+extension, to host log entries. A call from `inbox/github/widget.lua` is therefore rendered with
+`widget=inbox/github/widget`; files do not need to repeat their own path in every message.
 
 Prefer compact `key=value` context for operations that span multiple callbacks:
 

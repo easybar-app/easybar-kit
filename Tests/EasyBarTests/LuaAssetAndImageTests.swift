@@ -45,12 +45,26 @@ final class LuaAssetAndImageTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     XCTAssertEqual(node.text, nested.appendingPathComponent("github.svg").path)
   }
 
+  func testAssetCanResolveFromWidgetsRoot() async throws {
+    let widgets = try makeWidgetsDirectory()
+    let nested = widgets.appendingPathComponent("github", isDirectory: true)
+    try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
+
+    let node = try await render(
+      "easybar.add(\"item\", \"asset\", { label = easybar.asset(\"@/assets/github.svg\") })",
+      as: "github/widget.lua",
+      in: widgets
+    )
+
+    XCTAssertEqual(node.text, widgets.appendingPathComponent("assets/github.svg").path)
+  }
+
   func testAssetRejectsInvalidPaths() async throws {
     let widgets = try makeWidgetsDirectory()
     let node = try await render(
       """
       local values = {}
-      for _, path in ipairs({ "", "/tmp/icon.svg", "../icon.svg", "nested/../../icon.svg" }) do
+      for _, path in ipairs({ "", "/tmp/icon.svg", "../icon.svg", "nested/../../icon.svg", "@/", "@/../icon.svg" }) do
         local ok = pcall(easybar.asset, path)
         values[#values + 1] = tostring(ok)
       end
@@ -60,7 +74,7 @@ final class LuaAssetAndImageTests: LuaRenderRuntimeTestCase, @unchecked Sendable
       in: widgets
     )
 
-    XCTAssertEqual(node.text, "false,false,false,false")
+    XCTAssertEqual(node.text, "false,false,false,false,false,false")
   }
 
   func testWidgetAPIsKeepIndependentAssetDirectories() async throws {
@@ -175,7 +189,6 @@ final class LuaAssetAndImageTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: widgetFile,
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),
@@ -186,7 +199,8 @@ final class LuaAssetAndImageTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     let update = try await nextTreeUpdate(from: recorder) { update in
       update.treePayload?.nodes.contains(where: { $0.id == widgetFileRootID(source) }) == true
     }
-    return try XCTUnwrap(update.treePayload?.nodes.first(where: { $0.id == widgetFileRootID(source) }))
+    return try XCTUnwrap(
+      update.treePayload?.nodes.first(where: { $0.id == widgetFileRootID(source) }))
   }
 }
 

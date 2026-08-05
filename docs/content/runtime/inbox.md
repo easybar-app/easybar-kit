@@ -30,16 +30,16 @@ easybar inbox send \
   --title "Backup completed"
 ```
 
-| Option             | Required | Purpose                                                       |
-| ------------------ | -------- | ------------------------------------------------------------- |
-| `--source NAME`    | Yes      | Set the publisher source.                                     |
-| `--title TEXT`     | Yes      | Set the message title.                                        |
-| `--id ID`          | No       | Use a stable message identifier instead of a generated UUID.  |
-| `--message TEXT`   | No       | Set the message body.                                         |
-| `--severity LEVEL` | No       | Set `info`, `success`, `warning`, or `error`.                  |
-| `--category NAME`  | No       | Set the value used by inbox category grouping.                |
-| `--url URL`        | No       | Add an HTTP(S) URL opened by the message action.               |
-| `--read`           | No       | Create or update the message in the read state.                |
+| Option             | Required | Purpose                                                      |
+| ------------------ | -------- | ------------------------------------------------------------ |
+| `--source NAME`    | Yes      | Set the publisher source.                                    |
+| `--title TEXT`     | Yes      | Set the message title.                                       |
+| `--id ID`          | No       | Use a stable message identifier instead of a generated UUID. |
+| `--message TEXT`   | No       | Set the message body.                                        |
+| `--severity LEVEL` | No       | Set `info`, `success`, `warning`, or `error`.                |
+| `--category NAME`  | No       | Set the value used by inbox category grouping.               |
+| `--url URL`        | No       | Add an HTTP(S) URL opened by the message action.             |
+| `--read`           | No       | Create or update the message in the read state.              |
 
 ## `easybar inbox list`
 
@@ -52,11 +52,11 @@ easybar inbox list --source backup --unread
 easybar inbox list --json
 ```
 
-| Option          | Purpose                                   |
-| --------------- | ----------------------------------------- |
-| `--source NAME` | Match one publisher source.               |
-| `--unread`      | Return only unread messages.              |
-| `--json`        | Print machine-readable JSON output.       |
+| Option          | Purpose                             |
+| --------------- | ----------------------------------- |
+| `--source NAME` | Match one publisher source.         |
+| `--unread`      | Return only unread messages.        |
+| `--json`        | Print machine-readable JSON output. |
 
 ## `easybar inbox mark-read`
 

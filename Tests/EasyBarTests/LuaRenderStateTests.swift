@@ -40,7 +40,6 @@ final class LuaRenderStateTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "brew.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),
@@ -103,7 +102,6 @@ final class LuaRenderStateTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "brew.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),
@@ -162,7 +160,6 @@ final class LuaRenderStateTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "brew.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),
@@ -290,7 +287,6 @@ final class LuaRenderStateTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "brew.lua",
       recorder: recorder,
       decoder: decoder,
       environment: environment,
@@ -370,7 +366,6 @@ final class LuaRenderStateTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "brew.lua",
       recorder: recorder,
       decoder: decoder,
       environment: environment,

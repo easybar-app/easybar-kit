@@ -19,7 +19,6 @@ final class AppController {
     let widgetsPath: String
     let defaultCommandTimeoutSeconds: String
     let defaultCommandMaxOutputBytes: String
-    let widgetFiles: [String]
   }
 
   private struct AuthenticationRecord: Encodable {
@@ -57,7 +56,7 @@ final class AppController {
   /// Parses the runtime process command-line arguments.
   private func parseArguments() throws -> RuntimeArguments {
     let args = Array(CommandLine.arguments.dropFirst())
-    guard args.count >= 6 else {
+    guard args.count == 6 else {
       throw RuntimeBootstrapError.usage
     }
 
@@ -67,8 +66,7 @@ final class AppController {
       runtimePath: args[2],
       widgetsPath: args[3],
       defaultCommandTimeoutSeconds: args[4],
-      defaultCommandMaxOutputBytes: args[5],
-      widgetFiles: Array(args.dropFirst(6))
+      defaultCommandMaxOutputBytes: args[5]
     )
   }
 
@@ -133,7 +131,6 @@ final class AppController {
       strdup(arguments.defaultCommandMaxOutputBytes),
     ]
 
-    argv.append(contentsOf: arguments.widgetFiles.map { strdup($0) })
     argv.append(nil)
 
     defer {
@@ -171,7 +168,7 @@ private enum RuntimeBootstrapError: LocalizedError {
     switch self {
     case .usage:
       return
-        "usage: EasyBarLuaRuntime <socket-path> <lua-path> <runtime-path> <widgets-path> <default-command-timeout-seconds> <default-command-max-output-bytes> [widget-file...]"
+        "usage: EasyBarLuaRuntime <socket-path> <lua-path> <runtime-path> <widgets-path> <default-command-timeout-seconds> <default-command-max-output-bytes>"
     case .missingAuthenticationToken:
       return "missing Lua transport authentication token"
     case .connectFailed(let path, let message):

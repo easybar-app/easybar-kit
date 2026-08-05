@@ -13,7 +13,6 @@ final class LuaProcessController: @unchecked Sendable {
     let widgetsPath: String
     let defaultCommandTimeoutSeconds: TimeInterval
     let defaultCommandMaxOutputBytes: Int
-    let widgetFiles: [String]
     let environment: [String: String]
   }
 

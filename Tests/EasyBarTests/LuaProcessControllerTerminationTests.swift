@@ -179,7 +179,6 @@ final class LuaProcessControllerTerminationTests: XCTestCase, @unchecked Sendabl
       widgetsPath: "/tmp/widgets",
       defaultCommandTimeoutSeconds: 5,
       defaultCommandMaxOutputBytes: 65_536,
-      widgetFiles: [],
       environment: [:]
     )
   }

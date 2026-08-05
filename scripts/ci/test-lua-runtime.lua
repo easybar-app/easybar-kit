@@ -141,7 +141,7 @@ do
 	end)
 end
 
--- Widget host logs use a stable entrypoint name instead of the complete source path.
+-- Widget host logs use the generic path relative to the configured widgets root.
 do
 	local api = new_api()
 	local widget = api.make_widget_api("/widgets/github-inbox.lua")
@@ -150,6 +150,24 @@ do
 	assert(entry.source == "github-inbox")
 	assert(entry.level == "DEBUG")
 	assert(entry.message == "refresh started")
+
+	local packaged = api.make_widget_api("/widgets/brew/status.lua", "/widgets")
+	packaged.log(packaged.level.debug, "package refresh started")
+	entry = widget_logs[#widget_logs]
+	assert(entry.source == "brew/status")
+	assert(entry.message == "package refresh started")
+
+	local inbox_packaged = api.make_widget_api("/widgets/inbox/github/main.lua", "/widgets")
+	inbox_packaged.log(inbox_packaged.level.debug, "inbox package refresh started")
+	entry = widget_logs[#widget_logs]
+	assert(entry.source == "inbox/github/main")
+	assert(entry.message == "inbox package refresh started")
+
+	local uppercase_extension = api.make_widget_api("/widgets/tools/STATUS.LUA", "/widgets")
+	uppercase_extension.log(uppercase_extension.level.debug, "uppercase extension")
+	entry = widget_logs[#widget_logs]
+	assert(entry.source == "tools/STATUS")
+	assert(entry.message == "uppercase extension")
 end
 
 -- Duplicate ids identify both owners and do not overwrite the first node.
@@ -252,11 +270,41 @@ do
 	assert(handle:cancel() == false)
 end
 
--- Integration modules are preferred, followed by generic shared modules and the legacy lib fallback.
+-- Widget discovery belongs to Lua and includes every regular Lua file recursively.
+do
+	local temp_dir = os.tmpname() .. "-easybar-discovery"
+	os.remove(temp_dir)
+	assert(os.execute('mkdir -p "' .. temp_dir .. '/assets" "' .. temp_dir .. '/nested"'))
+
+	for _, relative_path in ipairs({
+		".hidden.lua",
+		"assets/preview.lua",
+		"clock.lua",
+		"nested/STATUS.LUA",
+	}) do
+		local file = assert(io.open(temp_dir .. "/" .. relative_path, "w"))
+		file:write("return nil\n")
+		file:close()
+	end
+	local ignored = assert(io.open(temp_dir .. "/ignored.txt", "w"))
+	ignored:write("not lua\n")
+	ignored:close()
+
+	local files, discovery_error = api_module.discover_widget_files(temp_dir)
+	assert(discovery_error == nil)
+	assert(table.concat(files, "|") == ".hidden.lua|assets/preview.lua|clock.lua|nested/STATUS.LUA")
+
+	local missing, missing_error = api_module.discover_widget_files(temp_dir .. "/missing")
+	assert(missing_error == nil and #missing == 0)
+
+	os.execute('rm -rf "' .. temp_dir .. '"')
+end
+
+-- Widget-package modules are preferred, followed by generic shared modules and the legacy lib fallback.
 do
 	local temp_dir = os.tmpname() .. "-easybar-module-paths"
 	os.remove(temp_dir)
-	assert(os.execute('mkdir -p "' .. temp_dir .. '/integrations" "' .. temp_dir .. '/shared" "' .. temp_dir .. '/lib"'))
+	assert(os.execute('mkdir -p "' .. temp_dir .. '/brew" "' .. temp_dir .. '/shared" "' .. temp_dir .. '/lib"'))
 
 	local function write_module(relative_path, value)
 		local module_file = assert(io.open(temp_dir .. "/" .. relative_path, "w"))
@@ -264,21 +312,21 @@ do
 		module_file:close()
 	end
 
-	write_module("integrations/integration_resolution.lua", "integration")
+	write_module("brew/policy.lua", "package")
 	write_module("shared/shared_resolution.lua", "shared")
 	write_module("lib/legacy_resolution.lua", "legacy")
-	write_module("integrations/precedence_resolution.lua", "integration")
+	write_module("precedence_resolution.lua", "package")
 	write_module("shared/precedence_resolution.lua", "shared")
 	write_module("lib/precedence_resolution.lua", "legacy")
 
 	local widget_file = assert(io.open(temp_dir .. "/modules.lua", "w"))
 	widget_file:write([[
-local integration = require("integration_resolution")
+local package_module = require("brew.policy")
 local shared = require("shared_resolution")
 local legacy = require("legacy_resolution")
 local precedence = require("precedence_resolution")
 easybar.add(easybar.kind.item, "module-resolution", {
-	label = integration .. ":" .. shared .. ":" .. legacy .. ":" .. precedence,
+	label = package_module .. ":" .. shared .. ":" .. legacy .. ":" .. precedence,
 })
 ]])
 	widget_file:close()
@@ -286,10 +334,10 @@ easybar.add(easybar.kind.item, "module-resolution", {
 	local api = new_api()
 	local loaded, failed = loader.load_widgets(temp_dir, { "modules.lua" }, api, log)
 	assert(loaded == 1 and failed == 0)
-	assert(api._state.items["module-resolution"].props.label.string == "integration:shared:legacy:integration")
+	assert(api._state.items["module-resolution"].props.label.string == "package:shared:legacy:package")
 
 	for _, module_name in ipairs({
-		"integration_resolution",
+		"brew.policy",
 		"shared_resolution",
 		"legacy_resolution",
 		"precedence_resolution",
@@ -297,13 +345,13 @@ easybar.add(easybar.kind.item, "module-resolution", {
 		package.loaded[module_name] = nil
 	end
 	os.remove(temp_dir .. "/modules.lua")
-	os.remove(temp_dir .. "/integrations/integration_resolution.lua")
-	os.remove(temp_dir .. "/integrations/precedence_resolution.lua")
+	os.remove(temp_dir .. "/brew/policy.lua")
 	os.remove(temp_dir .. "/shared/shared_resolution.lua")
 	os.remove(temp_dir .. "/shared/precedence_resolution.lua")
 	os.remove(temp_dir .. "/lib/legacy_resolution.lua")
 	os.remove(temp_dir .. "/lib/precedence_resolution.lua")
-	os.execute('rmdir "' .. temp_dir .. '/integrations" "' .. temp_dir .. '/shared" "' .. temp_dir .. '/lib"')
+	os.remove(temp_dir .. "/precedence_resolution.lua")
+	os.execute('rmdir "' .. temp_dir .. '/brew" "' .. temp_dir .. '/shared" "' .. temp_dir .. '/lib"')
 	os.execute('rmdir "' .. temp_dir .. '"')
 end
 

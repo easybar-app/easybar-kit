@@ -36,8 +36,6 @@ Example `.luarc.json`:
     "path": [
       "?.lua",
       "?/init.lua",
-      "integrations/?.lua",
-      "integrations/?/init.lua",
       "shared/?.lua",
       "shared/?/init.lua",
       "lib/?.lua",
@@ -57,11 +55,10 @@ If your editor still only knows about the `easybar` global but not nested proper
 
 ## User modules
 
-The `runtime.path` entries above let LuaLS resolve the same widget-local modules that EasyBar
-loads from `integrations/`, `shared/`, and legacy `lib/`. See [Reusable Modules](modules.md) for
-directory layout, `require(...)` behavior, and module lifetime.
+The `runtime.path` entries above let LuaLS resolve the same widget-package, `shared/`, and legacy
+`lib/` modules that EasyBar loads. See [Reusable Modules](modules.md) for directory layout,
+`require(...)` behavior, and module lifetime.
 
 Keep reusable-module annotations beside the module implementation. For example, the bundled
 `shared/retry.lua` declares `RetryOptions` and `RetryOperation` locally, so LuaLS can validate retry
 callbacks when the module is required without polluting the global EasyBar API.
-

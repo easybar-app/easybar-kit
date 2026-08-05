@@ -49,7 +49,6 @@ final class LuaContextMenuTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: "github.lua",
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),

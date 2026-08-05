@@ -113,8 +113,9 @@ Keep stable developer commands in the Makefile and delegate large reusable shell
 ## Notes
 
 - widget directory is executable Lua
-- every regular top-level `*.lua` file is loaded as a widget entrypoint
-- service-specific modules live below `integrations/`, generic modules below `shared/`, and legacy `lib/` remains a fallback
+- Swift passes only `widgets_dir`; recursive file discovery belongs to `api.lua`
+- compatible top-level files, categorized example files, service packages, and nested inbox packages are loaded as widget entrypoints
+- service-local modules live beside their consuming files, generic modules below `shared/`, and legacy `lib/` remains a fallback; every `.lua` file is also executed directly during startup
 - reload is a full reset
 - protocol:
   - Lua socket JSON in/out via `EasyBarLuaRuntime`
@@ -128,6 +129,3 @@ When changing the Lua API:
 2. update stubs
 3. run `make generate-docs`
 4. update hand-written guides and examples
-
-
-

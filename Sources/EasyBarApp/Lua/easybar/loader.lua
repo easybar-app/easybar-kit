@@ -1,5 +1,5 @@
 --- Module contract:
---- Owns widget discovery paths, isolated environments, and transactional widget startup.
+--- Owns widget module paths, isolated environments, and transactional widget startup.
 local M = {}
 
 local function prepend_package_path(entry)
@@ -17,13 +17,13 @@ local function configure_widget_module_paths(widget_dir)
 	prepend_package_path(widget_dir .. "/lib/?.lua")
 	prepend_package_path(widget_dir .. "/shared/?/init.lua")
 	prepend_package_path(widget_dir .. "/shared/?.lua")
-	prepend_package_path(widget_dir .. "/integrations/?/init.lua")
-	prepend_package_path(widget_dir .. "/integrations/?.lua")
+	prepend_package_path(widget_dir .. "/?/init.lua")
+	prepend_package_path(widget_dir .. "/?.lua")
 end
 
-local function make_widget_env(registry, source_path)
+local function make_widget_env(registry, source_path, widget_dir)
 	local env = {
-		easybar = registry.make_widget_api(source_path),
+		easybar = registry.make_widget_api(source_path, widget_dir),
 	}
 	setmetatable(env, { __index = _G })
 	return env
@@ -47,7 +47,7 @@ end
 local function load_widget_file(widget_dir, file, registry, log)
 	local path = widget_dir .. "/" .. file
 	local transaction = registry.begin_widget_load(path)
-	local env = make_widget_env(registry, path)
+	local env = make_widget_env(registry, path, widget_dir)
 	local chunk, load_err = loadfile(path, "t", env)
 	if not chunk then
 		rollback(registry, transaction, log, file, "load", load_err)
@@ -74,7 +74,7 @@ function M.load_widgets(widget_dir, widget_files, registry, log)
 	log.debug("runtime started")
 	log.debug("runtime widget_dir=" .. widget_dir)
 	configure_widget_module_paths(widget_dir)
-	log.debug("runtime widget_integrations=" .. widget_dir .. "/integrations")
+	log.debug("runtime widget_packages=" .. widget_dir)
 	log.debug("runtime widget_shared=" .. widget_dir .. "/shared")
 	log.debug("runtime widget_lib_legacy=" .. widget_dir .. "/lib")
 

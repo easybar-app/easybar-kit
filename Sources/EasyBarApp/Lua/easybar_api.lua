@@ -694,7 +694,7 @@ function EasyBarStorage.set(widget, key, value) end
 ---@field DEFAULT_EXEC_OPTIONS EasyBarCommandOptions Read-only table exposing the current host default command limits.
 ---@field version string EasyBar application version (`dev`).
 ---@field add fun(kind: EasyBarKind, id: string, props?: EasyBarNodeProps): EasyBarNodeHandle Creates one node and returns its handle.
----@field asset fun(path: string): string Resolves a path relative to the current widget file.
+---@field asset fun(path: string): string Resolves a path relative to the current widget file, or from the widgets root with `@/`.
 ---@field clear_defaults fun() Clears widget-local defaults previously set with `easybar.default(...)`.
 ---@field default fun(props: EasyBarNodeProps) Sets widget-local default props for future `easybar.add(...)` calls.
 ---@field events EasyBarEvents Event token namespace used by `node:subscribe(...)`, plus mouse constants.
@@ -718,9 +718,9 @@ function EasyBarStorage.set(widget, key, value) end
 ---@field storage EasyBarStorage Widget settings backed by the reserved `[widgets]` config namespace.
 local EasyBar = {}
 
----Resolves a path relative to the current widget file.
----@param path string Relative asset path, or an absolute path to preserve unchanged.
----@return string resolved_path Filesystem path resolved for the current widget source.
+---Resolves a path relative to the current widget file, or from the widgets root with `@/`.
+---@param path string Relative asset path. Prefix with `@/` to resolve from the configured widgets directory.
+---@return string resolved_path Safe filesystem path resolved from the selected asset root.
 function EasyBar.asset(path) end
 
 ---@class EasyBarFileLogger

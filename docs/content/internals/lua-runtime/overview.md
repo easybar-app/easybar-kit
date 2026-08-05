@@ -81,7 +81,7 @@ flowchart TD
 - `runtime.lua`
   runtime bootstrap and main loop over socket-backed stdin/stdout
 - `loader.lua`
-  configures user module paths and loads top-level widget files into per-file environments that still fall back to `_G`
+  configures user module paths and loads discovered widget entrypoints into per-file environments that still fall back to `_G`
 - `api.lua`
   public `easybar` API, node handles, and registry bridge
 - `registry.lua`
@@ -232,4 +232,3 @@ Keeping retry policy outside the command string means:
 
 See [Commands](../../lua/guides/commands.md) for the public API behavior and
 [Reusable Modules](../../lua/guides/modules.md) for the bundled retry helper.
-

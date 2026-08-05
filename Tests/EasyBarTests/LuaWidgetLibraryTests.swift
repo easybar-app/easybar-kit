@@ -65,25 +65,58 @@ final class LuaWidgetLibraryTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     XCTAssertEqual(node.text, "true")
   }
 
-  func testWidgetDiscoveryIgnoresLuaModulesBelowLibDirectory() throws {
+  func testLuaRuntimeDiscoversEveryLuaFileRecursively() async throws {
     let widgets = try makeWidgetsDirectory()
-    let library = widgets.appendingPathComponent("lib", isDirectory: true)
-    try FileManager.default.createDirectory(at: library, withIntermediateDirectories: true)
-    try "return {}\n".write(
-      to: library.appendingPathComponent("helper.lua"),
-      atomically: true,
-      encoding: .utf8
-    )
-    try "return nil\n".write(
-      to: widgets.appendingPathComponent("widget.lua"),
+    let discoveredFiles = [
+      ("clock.lua", "discovery_root"),
+      (".hidden.lua", "discovery_hidden"),
+      ("assets/preview.lua", "discovery_assets"),
+      ("inbox/github/status.lua", "discovery_inbox"),
+      ("lib/compat.LUA", "discovery_uppercase"),
+      ("shared/helper.lua", "discovery_shared"),
+      ("simple/toggle.lua", "discovery_simple"),
+    ]
+
+    for (relativePath, rootID) in discoveredFiles {
+      let fileURL = widgets.appendingPathComponent(relativePath)
+      try FileManager.default.createDirectory(
+        at: fileURL.deletingLastPathComponent(),
+        withIntermediateDirectories: true
+      )
+      try "easybar.add(easybar.kind.item, \"\(rootID)\", { label = \"\(rootID)\" })\n".write(
+        to: fileURL,
+        atomically: true,
+        encoding: .utf8
+      )
+    }
+
+    try "error(\"non-Lua file executed\")\n".write(
+      to: widgets.appendingPathComponent("ignored.txt"),
       atomically: true,
       encoding: .utf8
     )
 
     let logger = ProcessLogger(label: "lua.widget-library.test", minimumLevel: .error)
     let controller = LuaProcessController(logger: logger)
+    let runtimePath = try XCTUnwrap(controller.resolvedRuntimePath())
+    let recorder = RuntimeUpdateRecorder()
+    let runtime = try RuntimeProcess(
+      runtimePath: runtimePath,
+      widgetsDirectoryURL: widgets,
+      recorder: recorder,
+      decoder: decoder,
+      environment: try luaRuntimeEnvironment(for: widgets),
+      autoRespondToCommands: true
+    )
+    defer { runtime.stop() }
 
-    XCTAssertEqual(controller.resolvedWidgetFiles(in: widgets.path), ["widget.lua"])
+    for (_, rootID) in discoveredFiles {
+      let update = try await nextTreeUpdate(from: recorder) { update in
+        update.treePayload?.nodes.contains(where: { $0.id == rootID }) == true
+      }
+      let node = try XCTUnwrap(update.treePayload?.nodes.first(where: { $0.id == rootID }))
+      XCTAssertEqual(node.text, rootID)
+    }
   }
 
   private func renderWidget(
@@ -105,7 +138,6 @@ final class LuaWidgetLibraryTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     let runtime = try RuntimeProcess(
       runtimePath: runtimePath,
       widgetsDirectoryURL: widgetsDirectoryURL,
-      widgetFile: widgetFile,
       recorder: recorder,
       decoder: decoder,
       environment: try luaRuntimeEnvironment(for: widgetsDirectoryURL),

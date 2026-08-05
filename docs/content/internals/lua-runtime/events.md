@@ -90,8 +90,6 @@ Important properties:
 - all communication is JSON-based
 - rendering is always derived, never incremental mutation
 
-
-
 Screen recording by another process is intentionally not part of the capture event source. The public
 ScreenCaptureKit APIs describe streams and shareable content for the calling application; they do not
 provide a supported system-wide start/stop subscription for unrelated screen-capture sessions.

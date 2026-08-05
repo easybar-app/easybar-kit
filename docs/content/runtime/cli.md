@@ -88,8 +88,8 @@ Validate another file:
 easybar config validate --config /path/to/config.toml
 ```
 
-| Option          | Purpose                                                |
-| --------------- | ------------------------------------------------------ |
+| Option          | Purpose                                                 |
+| --------------- | ------------------------------------------------------- |
 | `--config PATH` | Validate this file instead of the active configuration. |
 
 `EASYBAR_CONFIG_PATH` can also select the active configuration file.
@@ -203,12 +203,12 @@ Hyphens and underscores are accepted in event names. Use this from local scripts
 
 ## Global options
 
-| Option                | Purpose                                                  |
-| --------------------- | -------------------------------------------------------- |
-| `--socket PATH`, `-s` | Override the socket contacted by a supported operation.  |
-| `--debug`, `-d`       | Print CLI diagnostics without changing app log levels.   |
-| `--version`, `-v`     | Print the installed CLI version.                         |
-| `--help`, `-h`        | Print root, group, or command-specific usage.             |
+| Option                | Purpose                                                 |
+| --------------------- | ------------------------------------------------------- |
+| `--socket PATH`, `-s` | Override the socket contacted by a supported operation. |
+| `--debug`, `-d`       | Print CLI diagnostics without changing app log levels.  |
+| `--version`, `-v`     | Print the installed CLI version.                        |
+| `--help`, `-h`        | Print root, group, or command-specific usage.           |
 
 Command-specific options such as `--config`, `--watch`, inbox fields, and log filters appear only in the relevant command's help.
 

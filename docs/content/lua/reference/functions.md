@@ -335,19 +335,19 @@ Removes one or more nested properties from this node.
 
 ### `EasyBar.asset`
 
-Resolves a path relative to the current widget file.
+Resolves a path relative to the current widget file, or from the widgets root with `@/`.
 
 #### Parameters
 
-| Name   | Type     | Description                                                     |
-| ------ | -------- | --------------------------------------------------------------- |
-| `path` | `string` | Relative asset path, or an absolute path to preserve unchanged. |
+| Name   | Type     | Description                                                                             |
+| ------ | -------- | --------------------------------------------------------------------------------------- |
+| `path` | `string` | Relative asset path. Prefix with `@/` to resolve from the configured widgets directory. |
 
 #### Returns
 
-| Type     | Name            | Description                                             |
-| -------- | --------------- | ------------------------------------------------------- |
-| `string` | `resolved_path` | Filesystem path resolved for the current widget source. |
+| Type     | Name            | Description                                                 |
+| -------- | --------------- | ----------------------------------------------------------- |
+| `string` | `resolved_path` | Safe filesystem path resolved from the selected asset root. |
 
 ### `EasyBar.log.with_file`
 
