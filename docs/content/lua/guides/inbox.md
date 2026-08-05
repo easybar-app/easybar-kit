@@ -4,14 +4,18 @@ EasyBar provides one shared native inbox for messages published by Lua widgets. 
 the total unread count, and the popup can group messages from GitHub, GitLab, Homebrew, agents, or
 any other widget source.
 
-Copy [`widgets/inbox-demo.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/inbox-demo.lua)
-into your widgets directory to populate every severity with test data. Inbox-only GitHub and GitLab
-publishers are available as `widgets/github-inbox.lua` and `widgets/gitlab-inbox.lua`; the original
-widgets remain standalone alternatives.
+Use `make install-widgets` and select `inbox-demo.lua` to populate every severity with test data,
+or select `brew-inbox.lua`, `github-inbox.lua`, or `gitlab-inbox.lua` to install an inbox publisher.
 
-[`widgets/brew-inbox.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/brew-inbox.lua)
-publishes outdated formulae and casks. Its source action panel provides refresh, update, upgrade-all,
-and cancellation actions without adding control messages to the inbox.
+Each installed top-level `*-inbox.lua` file is a thin executable entrypoint. The implementation and
+service-specific documentation live below `integrations/<service>/`, while reusable helpers live
+below `shared/`. Do not copy only the entrypoint manually because its integration package, shared
+modules, and assets are also required.
+
+The Homebrew publisher reports outdated formulae and casks. Its source action panel provides
+refresh, update, upgrade-all, and cancellation actions without adding control messages to the
+inbox. The GitHub and GitLab publishers report notifications and expose repository actions such as
+opening, marking as read, and guarded pull-request or merge-request merging.
 
 ## Publish a source snapshot
 

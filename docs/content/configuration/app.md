@@ -153,4 +153,3 @@ max_async_jobs = 8
 - `timeout_seconds`: default hard timeout for one command before EasyBar terminates it. Widgets can override this per `easybar.exec(...)` or `easybar.exec_async(...)` call.
 - `max_output_bytes`: default maximum combined stdout and stderr captured for one command. Widgets can override this per call.
 - `max_async_jobs`: maximum concurrent `easybar.exec_async(...)` jobs before new jobs are rejected.
-
