@@ -22,13 +22,11 @@ The inbox widget stores the preferred merge-request method in `config.toml`:
 ```toml
 [widgets.gitlab-inbox]
 merge_method = "merge"
-confirm_merge = true
+confirm_merge = false
 ```
 
 Supported values are `merge`, `squash`, and `rebase`. `merge` uses the project's configured merge strategy. The method can also be changed from the GitLab inbox source menu.
 
-`confirm_merge` defaults to `true`. Choose **Merge immediately** from the same source menu or set it to `false` to skip the second click. The widget still retrieves the current merge-request state, rejects blocked requests, matches the inspected source-branch SHA, and disables GitLab CLI auto-merge so a blocked or running pipeline is not silently scheduled for later.
+`confirm_merge` defaults to `false`. Merges happen immediately by default. Choose `Require confirmation` from the source menu or `set confirm_merge = true` to require a second click. The widget still retrieves the current merge-request state, rejects blocked requests, matches the inspected source-branch SHA, and disables GitLab CLI auto-merge so a blocked or running pipeline is not silently scheduled for later.
 
 Only install one presentation variant at a time. The top-level files remain the executable entrypoints; files in this directory are loaded through `require(...)`.
-
-

@@ -26,7 +26,7 @@ shared helpers, assets, and LuaLS configuration automatically.
 | `network.lua`            | Native network snapshot            | Network agent                                     | No              |
 | `wifi+vpn.lua`           | Read-only tunnel indicator         | Network agent                                     | No              |
 | `tailscale.lua`          | Tailscale state and controls       | `tailscale`; optional `TAILSCALE` command setting | No              |
-| `wireguard.lua`          | Network Extension VPN control      | Service name in integration settings             | No              |
+| `wireguard.lua`          | Network Extension VPN control      | Service name in integration settings              | No              |
 
 ## Choose one presentation
 
@@ -53,11 +53,11 @@ method is applied immediately and persisted in `config.toml`:
 ```toml
 [widgets.github-inbox]
 merge_method = "squash" # merge, rebase, or squash
-confirm_merge = true
+confirm_merge = false
 
 [widgets.gitlab-inbox]
 merge_method = "merge" # merge, rebase, or squash
-confirm_merge = true
+confirm_merge = false
 ```
 
 Each widget retrieves the current request state and rejects drafts, conflicts, failed checks, missing
@@ -150,6 +150,3 @@ Lua loader and command failures also appear in EasyBar's logs. The Homebrew exam
 bounded `brew-widget.log` in the configured logging directory. Use [Lua Logging](logging.md),
 [Commands](commands.md), and [Troubleshooting](../../runtime/troubleshooting.md) when an example does
 not update.
-
-
-

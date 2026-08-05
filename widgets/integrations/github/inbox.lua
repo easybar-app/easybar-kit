@@ -25,7 +25,7 @@ return function(easybar)
 	local STORAGE_MERGE_METHOD_KEY = "merge_method"
 	local STORAGE_CONFIRM_MERGE_KEY = "confirm_merge"
 	local DEFAULT_PR_MERGE_METHOD = "squash"
-	local DEFAULT_CONFIRM_MERGE = true
+	local DEFAULT_CONFIRM_MERGE = false
 	local PR_MERGE_METHOD_ORDER = { "merge", "squash", "rebase" }
 	local PR_MERGE_FLAGS = {
 		merge = "--merge",
@@ -67,7 +67,7 @@ return function(easybar)
 	if merge_confirmation_required ~= configured_confirm_merge then
 		log(
 			easybar.level.warn,
-			"unsupported configured confirm_merge=" .. tostring(configured_confirm_merge) .. "; using true"
+			"unsupported configured confirm_merge=" .. tostring(configured_confirm_merge) .. "; using false"
 		)
 	end
 
