@@ -46,17 +46,26 @@ persistent state; EasyBar does not duplicate the selected node in `config.toml`.
 
 GitHub and GitLab inbox items expose a dedicated **Mark as read** action. GitHub also acknowledges the notification through the GitHub API. GitLab publishes assigned work items rather than notification records, so its action updates EasyBar's persistent local read state.
 
-The GitHub inbox uses squash merging by default. Open the inbox source-actions menu, expand
-**GitHub**, and choose **Merge commit**, **Squash and merge**, or **Rebase and merge**. The selected
+Both inbox integrations support guarded merging. Open the inbox source-actions menu, expand the
+service, and choose **Project default** (GitLab) or **Merge commit** (GitHub), **Squash and merge**, or **Rebase and merge**. The selected
 method is applied immediately and persisted in `config.toml`:
 
 ```toml
 [widgets.github-inbox]
 merge_method = "squash" # merge, rebase, or squash
+
+[widgets.gitlab-inbox]
+merge_method = "merge" # merge, rebase, or squash
 ```
 
-You can also edit the value directly. Unsupported values fall back to `squash` and produce a widget
-log warning. See [Widget Settings](storage.md) for the Lua storage API.
+Before showing the confirmation action, each widget retrieves the current request state and rejects
+drafts, conflicts, failed checks, missing approvals, and other repository-rule blockers. The final
+merge is guarded by the inspected source-branch SHA. GitLab additionally disables the CLI's default
+auto-merge behavior so a running pipeline is not silently scheduled for later.
+
+You can also edit either value directly. Unsupported GitHub values fall back to `squash`; unsupported
+GitLab values fall back to `merge`. Both cases produce a widget log warning. See [Widget Settings](storage.md)
+for the Lua storage API.
 
 GitHub and GitLab publish each item's native `url` and `timestamp`, so EasyBar supplies the **Open**
 button and sorts mixed sources by their service-provided update time. Failed or malformed refreshes

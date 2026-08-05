@@ -53,6 +53,7 @@ local function gitlab_merge_request(id)
 	return json.object({
 		id = id,
 		iid = id,
+		project_id = 123,
 		title = "Assigned merge request " .. tostring(id),
 		updated_at = "2026-08-03T09:46:00Z",
 		references = json.object({ full = "easybar/easybar!" .. tostring(id) }),
@@ -93,6 +94,13 @@ local function decoded_fixture(value)
 		return json.array({ gitlab_issue(1) })
 	elseif value == "gitlab-merge-requests" then
 		return json.array({ gitlab_merge_request(2) })
+	elseif value == "gitlab-mr-ready" then
+		return json.object({
+			state = "opened",
+			draft = false,
+			detailed_merge_status = "mergeable",
+			sha = "fedcba9876543210",
+		})
 	elseif value == "gitlab-empty" then
 		return json.array({})
 	elseif value == "gitlab-object" then
@@ -342,6 +350,49 @@ local function test_github_merge_method_setting_persists_and_drives_merge()
 	assert(not has_squash, "GitHub merge command must not retain the previous squash method")
 end
 
+local function test_gitlab_merge_method_setting_persists_and_drives_merge()
+	local state = load_widget("gitlab-inbox.lua")
+	assert(
+		assert(state:source_action("merge_method:merge")).title == "✓ Project default",
+		"GitLab must mark the project-default merge method in source actions"
+	)
+
+	state.context_action_handler({ action_id = "merge_method:rebase" })
+	assert(state.storage_values["gitlab-inbox:merge_method"] == "rebase", "GitLab must persist the selected merge method")
+	assert(
+		assert(state:source_action("merge_method:rebase")).title == "✓ Rebase and merge",
+		"GitLab must immediately mark the persisted merge method"
+	)
+
+	state:run_next_timer()
+	state:complete_next_command("gitlab-issues", 0)
+	state:complete_next_command("gitlab-merge-requests", 0)
+	assert(state:item_has_action("merge_request:2", "prepare_merge"), "GitLab merge requests must expose merge")
+
+	state.action_handler({ action_id = "prepare_merge", target_widget_id = "merge_request:2" })
+	local inspect_command = assert(state.commands[1], "GitLab must inspect the merge request before merging").command
+	assert(
+		inspect_command[#inspect_command] == "projects/123/merge_requests/2?with_merge_status_recheck=true",
+		"GitLab must inspect the exact project and merge request"
+	)
+	state:complete_next_command("gitlab-mr-ready", 0)
+	assert(state:item_has_action("merge_request:2", "confirm_merge"), "ready merge requests must expose confirmation")
+
+	state.action_handler({ action_id = "confirm_merge", target_widget_id = "merge_request:2" })
+	local merge_command = assert(state.commands[1], "GitLab must start a merge command").command
+	local arguments = {}
+	for _, argument in ipairs(merge_command) do
+		arguments[argument] = true
+	end
+	assert(arguments["--rebase"], "GitLab merge command must use the persisted rebase method")
+	assert(not arguments["--squash"], "GitLab merge command must not use the previous method")
+	assert(arguments["--auto-merge=false"], "GitLab merge command must not silently enable auto-merge")
+	assert(arguments["--yes"], "GitLab merge command must disable the interactive confirmation prompt")
+	assert(arguments["--sha"], "GitLab merge command must guard the reviewed source commit")
+	assert(arguments["fedcba9876543210"], "GitLab merge command must match the inspected head commit")
+	assert(arguments["https://gitlab.com/easybar/easybar"], "GitLab merge command must target the source project")
+end
+
 local function test_gitlab_mark_read_stays_local()
 	local state = load_widget("gitlab-inbox.lua")
 	state:run_next_timer()
@@ -517,6 +568,7 @@ end
 
 test_github_item_refresh_stays_inline()
 test_github_merge_method_setting_persists_and_drives_merge()
+test_gitlab_merge_method_setting_persists_and_drives_merge()
 test_gitlab_mark_read_stays_local()
 test_brew_item_refresh_stays_inline()
 test_github_overlapping_mutations_coalesce_refresh()
