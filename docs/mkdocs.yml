@@ -92,6 +92,8 @@ nav:
       - CLI Reference: runtime/cli.md
       - Control: runtime/control.md
       - Metrics: runtime/metrics.md
+      - Logs: runtime/logs.md
+      - Inbox: runtime/inbox.md
       - Troubleshooting: runtime/troubleshooting.md
       - Recovery: runtime/recovery.md
 

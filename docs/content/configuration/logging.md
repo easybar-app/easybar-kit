@@ -20,7 +20,7 @@ easybar logs --widget tailscale --level debug
 easybar logs --since 30m
 ```
 
-The command prints recent retained history and exits. Add `--follow` to subscribe directly to the running EasyBar app and every enabled helper agent. See the [CLI Reference](../runtime/cli.md#logs) for every filter and output option.
+The command prints recent retained history and exits. Add `--follow` to subscribe directly to the running EasyBar app and every enabled helper agent. See the [Logs](../runtime/logs.md) for every filter and output option.
 
 Live follow subscriptions have their own minimum level. They do not change `[logging].level` and do not force additional records into the retained files:
 

@@ -58,7 +58,7 @@ shown on hover and used as the accessible button label.
 
 See [Native Inbox for Lua](../../lua/guides/inbox.md) for publishing snapshots, limited Markdown,
 item actions, source actions, activity states, persistence, and dismissal behavior. Local shell scripts can instead
-use [`easybar inbox`](../../runtime/cli.md#inbox-commands) to send, inspect, update, dismiss, remove,
+use [`easybar inbox`](../../runtime/inbox.md) to send, inspect, update, dismiss, remove,
 and clear messages through the control socket.
 
 ## Context menu
