@@ -150,7 +150,8 @@ final class LuaRenderSchedulingTests: LuaRenderRuntimeTestCase, @unchecked Senda
 
   func testRetryModuleSchedulesBackoffAndCompletesAfterSuccess() async throws {
     let widgetsDirectoryURL = try makeWidgetsDirectory()
-    let libraryDirectoryURL = widgetsDirectoryURL.appendingPathComponent("lib", isDirectory: true)
+    let libraryDirectoryURL = widgetsDirectoryURL.appendingPathComponent(
+      "shared", isDirectory: true)
     try FileManager.default.createDirectory(
       at: libraryDirectoryURL,
       withIntermediateDirectories: true
@@ -160,7 +161,7 @@ final class LuaRenderSchedulingTests: LuaRenderRuntimeTestCase, @unchecked Senda
       .deletingLastPathComponent()
       .deletingLastPathComponent()
     try FileManager.default.copyItem(
-      at: repositoryRootURL.appendingPathComponent("widgets/lib/retry.lua"),
+      at: repositoryRootURL.appendingPathComponent("widgets/shared/retry.lua"),
       to: libraryDirectoryURL.appendingPathComponent("retry.lua")
     )
 

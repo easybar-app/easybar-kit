@@ -75,7 +75,7 @@ The equivalent inbox-only GitHub publisher is
 Both publishers use EasyBar's native item URL handling, preserve the last valid snapshot when a
 refresh fails, and publish service update times for the inbox's default timestamp sorting. Their
 shared validation, bounded-error, and ISO-8601 parsing functions live in
-[`widgets/lib/inbox.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/lib/inbox.lua) and are
+[`widgets/shared/inbox.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/shared/inbox.lua) and are
 documented under [Reusable Modules](modules.md#inbox-data-helper).
 Use [`widgets/inbox-demo.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/inbox-demo.lua)
 to preview inbox grouping, severities, Markdown, unread state, and actions without external services.
@@ -94,7 +94,7 @@ PATH = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 GITLAB_HOST = "https://gitlab.example.com"
 ```
 
-Then add `gitlab.lua` to the configured `widgets_dir` together with the bundled `lib` directory.
+Then add `gitlab.lua` to the configured `widgets_dir` together with the bundled `shared` directory.
 The widget refreshes every five minutes, orders assigned work by its most recent update, opens an
 item when its popup row is clicked, and provides Refresh and Open GitLab actions in its native
 right-click menu. `GITLAB_HOST` is optional for GitLab.com.
@@ -187,3 +187,4 @@ remain trusted local code.
 - [Popups](popups.md)
 - [Native Context Menus](context-menus.md)
 - [API Summary](../api-summary.md)
+

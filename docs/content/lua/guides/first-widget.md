@@ -50,7 +50,7 @@ The `clock` variable stores the handle returned by EasyBar, which lets the callb
 
 ## Where this widget goes
 
-EasyBar loads every regular `*.lua` file directly inside your widgets directory. Files in subdirectories are not started as widgets. Put reusable helpers below `lib/` and load them with `require(...)`.
+EasyBar loads every regular `*.lua` file directly inside your widgets directory. Files in subdirectories are not started as widgets. Put reusable helpers below `shared/` and load them with `require(...)`. Existing `lib/` modules remain supported for compatibility.
 
 That directory is configured with `[app].widgets_dir` in `config.toml`.
 
@@ -72,3 +72,4 @@ Once the basic widget works, you can add:
 - Read [Subscribe To Events](subscribe-to-events.md) to make the widget interactive.
 - Read [Style Popups And Groups](style-popups-and-groups.md) to shape more complex widgets.
 - Keep [API Summary](../api-summary.md) open as a quick reference.
+

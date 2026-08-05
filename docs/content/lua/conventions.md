@@ -10,7 +10,7 @@ That file can create one node or many nodes. It can also keep local state, run c
 
 ## Module
 
-A module is reusable Lua code stored below the widget `lib/` directory and loaded with standard `require(...)` calls. Modules are not started as widgets.
+A module is reusable Lua code stored below the widget `shared/` directory and loaded with standard `require(...)` calls. Modules are not started as widgets.
 
 See [Reusable Modules](guides/modules.md).
 
@@ -112,3 +112,4 @@ The shortest accurate mental model is:
 5. `set(...)` mutates current node state
 
 If you are just getting started, continue with [First Widget](guides/first-widget.md).
+

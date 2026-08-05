@@ -48,7 +48,7 @@ The Lua runtime is for custom widgets and user-specific behavior. Built-in platf
 ## User-facing guides
 
 - [First Widget](guides/first-widget.md) for a step-by-step starting point.
-- [Reusable Modules](guides/modules.md) for shared helpers below the widget `lib/` directory.
+- [Reusable Modules](guides/modules.md) for shared helpers below the widget `shared/` directory.
 - [Subscribe To Events](guides/subscribe-to-events.md) for event-driven updates.
 - [Commands](guides/commands.md) for shell-command integration.
 - [Widget Settings](guides/storage.md) for reading and persisting widget-owned configuration.
@@ -67,3 +67,4 @@ The generated API reference is useful when you need exact function names, event 
 - [Properties](reference/properties.md)
 
 Use the guides for concepts and patterns. Use the reference pages for exact API details.
+

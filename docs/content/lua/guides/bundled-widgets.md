@@ -1,6 +1,8 @@
 # Bundled Widgets
 
-The repository's `widgets/` directory contains examples ranging from minimal API demonstrations to complete integrations. Copy only the widgets you want into your configured `widgets_dir`, together with the `lib/` directory when the widget imports shared modules.
+The repository's `widgets/` directory contains examples ranging from minimal API demonstrations to
+complete integrations. Copy only the widgets you want into your configured `widgets_dir`, together
+with the `shared/` directory when the widget imports shared modules.
 
 ## Catalog
 
@@ -20,7 +22,7 @@ The repository's `widgets/` directory contains examples ranging from minimal API
 | `network.lua`            | Native network snapshot            | Network agent                                     | No              |
 | `wifi+vpn.lua`           | Read-only tunnel indicator         | Network agent                                     | No              |
 | `tailscale.lua`          | Tailscale state and controls       | `tailscale`; optional `TAILSCALE` command setting | No              |
-| `wireguard.lua`          | Network Extension VPN control      | Service name in `lib/secrets.lua`                 | No              |
+| `wireguard.lua`          | Network Extension VPN control      | Service name in `shared/secrets.lua`              | No              |
 
 ## Choose one presentation
 
@@ -86,13 +88,19 @@ See [Environment](../../configuration/environment.md) for precedence and GUI-lau
 
 ## Shared modules and assets
 
-Several examples import `inbox`, `retry`, `text`, or `secrets` from `widgets/lib`. Preserve that directory structure when copying them. File-backed assets are resolved relative to the widget with `easybar.asset(...)`; copy those assets as well.
+Several examples import `inbox`, `retry`, `text`, or `secrets` from `widgets/shared`. Preserve
+that directory structure when copying them. EasyBar still accepts the legacy `lib/` layout for
+existing installations. File-backed assets are resolved relative to the widget with
+`easybar.asset(...)`; copy those assets as well.
 
-The inbox publishers use `lib/inbox.lua` to reject object-shaped responses where arrays are
+The inbox publishers use `shared/inbox.lua` to reject object-shaped responses where arrays are
 expected, bound external error messages, and convert ISO-8601 update times without depending on the
 Mac's local timezone. See [Reusable Modules](modules.md#inbox-data-helper) for its public functions.
 
-Keep the secrets helper at `widgets/lib/secrets.lua`. Do not place a copy at the top level: EasyBar executes every top-level `*.lua` file as a widget entrypoint, while files below `lib/` are loaded only through `require(...)`. Edit the module before copying `wireguard.lua`, then copy `lib/secrets.lua` with the widget.
+Keep the secrets helper at `widgets/shared/secrets.lua`. Do not place a copy at the top level:
+EasyBar executes every top-level `*.lua` file as a widget entrypoint, while files below `shared/`
+are loaded only through `require(...)`. Edit the module before copying `wireguard.lua`, then copy
+`shared/secrets.lua` with the widget.
 
 The GitHub, GitLab, and Homebrew inbox widgets wait briefly after the Mac wakes before contacting
 network services. They retry transient read-only failures, but authentication failures and
@@ -113,3 +121,4 @@ Lua loader and command failures also appear in EasyBar's logs. The Homebrew exam
 bounded `brew-widget.log` in the configured logging directory. Use [Lua Logging](logging.md),
 [Commands](commands.md), and [Troubleshooting](../../runtime/troubleshooting.md) when an example does
 not update.
+

@@ -3,7 +3,7 @@
 -- Icon-only widget for the bar, with a popup that shows outdated packages and
 -- actions for updating Homebrew and upgrading packages.
 
-local brew_policy = require("brew_policy")
+local brew_policy = require("brew.policy")
 local text = require("text")
 
 ---@alias BrewPackageKind "formula"|"cask"

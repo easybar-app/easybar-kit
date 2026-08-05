@@ -37,7 +37,7 @@ The directory where EasyBar loads Lua widget files from.
 widgets_dir = "~/.config/easybar/widgets"
 ```
 
-Every regular `*.lua` file directly inside this directory is loaded by the Lua runtime. Files below the `lib/` subdirectory are available through standard Lua `require(...)` calls and are not started as widgets.
+Every regular `*.lua` file directly inside this directory is loaded by the Lua runtime. Files below the preferred `shared/` subdirectory are available through standard Lua `require(...)` calls and are not started as widgets. The legacy `lib/` subdirectory remains supported for compatibility.
 
 If you are creating your first custom widget, continue with [First Widget](../lua/guides/first-widget.md). For shared helper code, see [Reusable Modules](../lua/guides/modules.md).
 
@@ -153,3 +153,4 @@ max_async_jobs = 8
 - `timeout_seconds`: default hard timeout for one command before EasyBar terminates it. Widgets can override this per `easybar.exec(...)` or `easybar.exec_async(...)` call.
 - `max_output_bytes`: default maximum combined stdout and stderr captured for one command. Widgets can override this per call.
 - `max_async_jobs`: maximum concurrent `easybar.exec_async(...)` jobs before new jobs are rejected.
+

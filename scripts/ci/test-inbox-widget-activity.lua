@@ -8,6 +8,8 @@ end
 
 package.path = table.concat({
 	root .. "/Sources/EasyBarApp/Lua/?.lua",
+	root .. "/widgets/shared/?.lua",
+	root .. "/widgets/shared/?/init.lua",
 	root .. "/widgets/lib/?.lua",
 	root .. "/widgets/lib/?/init.lua",
 	root .. "/Sources/EasyBarApp/Lua/?/init.lua",

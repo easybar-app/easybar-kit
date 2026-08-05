@@ -1,6 +1,6 @@
 -- Inbox-only Homebrew updates. Requires Homebrew in app.env PATH.
 
-local brew_policy = require("brew_policy")
+local brew_policy = require("brew.policy")
 local inbox = require("inbox")
 local retry = require("retry")
 local text = require("text")

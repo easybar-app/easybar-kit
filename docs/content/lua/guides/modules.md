@@ -1,8 +1,9 @@
 # Reusable Modules
 
-Put shared Lua helpers below the `lib` directory inside your configured widgets directory.
+Put shared Lua helpers below the `shared` directory inside your configured widgets directory.
 EasyBar adds that directory to Lua's module search path before loading widget files, so widgets can
-use standard `require(...)` calls without changing `package.path` themselves.
+use standard `require(...)` calls without changing `package.path` themselves. The older `lib/`
+directory remains a supported fallback so existing widget setups continue to work.
 
 ## Recommended layout
 
@@ -10,7 +11,7 @@ use standard `require(...)` calls without changing `package.path` themselves.
 ~/.config/easybar/widgets/
 ├── clock.lua
 ├── github.lua
-├── lib/
+├── shared/
 │   ├── inbox.lua
 │   ├── retry.lua
 │   ├── text.lua
@@ -21,14 +22,14 @@ use standard `require(...)` calls without changing `package.path` themselves.
 ```
 
 Only regular `*.lua` files directly inside the widgets directory are started as widgets. Lua files
-below `lib/` are modules and run only when a widget requires them.
+below `shared/` are modules and run only when a widget requires them.
 
 ## Create a module
 
 A module normally returns one table containing its public functions:
 
 ```lua
--- ~/.config/easybar/widgets/lib/text.lua
+-- ~/.config/easybar/widgets/shared/text.lua
 local M = {}
 
 function M.trim(value)
@@ -49,7 +50,7 @@ local value = text.trim("  ready  ")
 EasyBar resolves that call from:
 
 ```text
-<widgets_dir>/lib/text.lua
+<widgets_dir>/shared/text.lua
 ```
 
 ## Package directories
@@ -57,7 +58,7 @@ EasyBar resolves that call from:
 For a larger module, use an `init.lua` file:
 
 ```text
-lib/
+shared/
 └── status/
     └── init.lua
 ```
@@ -77,7 +78,7 @@ local format = require("network.format")
 resolves to:
 
 ```text
-<widgets_dir>/lib/network/format.lua
+<widgets_dir>/shared/network/format.lua
 ```
 
 ## Shared text helper
@@ -101,7 +102,7 @@ This file is an example in the user widget directory, not a built-in part of the
 
 ## Inbox data helper
 
-The bundled inbox publishers share `lib/inbox.lua` for three data-boundary operations:
+The bundled inbox publishers share `shared/inbox.lua` for three data-boundary operations:
 
 ```lua
 local inbox = require("inbox")
@@ -209,7 +210,7 @@ Keep general modules independent from EasyBar when possible. When a helper needs
 pass the value explicitly:
 
 ```lua
--- lib/widget_style.lua
+-- shared/widget_style.lua
 local M = {}
 
 function M.label(color, value)
@@ -234,8 +235,18 @@ pass the resolved path to a helper only when needed.
 
 ## Naming and precedence
 
-EasyBar prepends the widget `lib` paths to the existing Lua module search path. A user module can
-therefore override an installed module with the same name.
+EasyBar searches widget modules in this order:
+
+```text
+<widgets_dir>/shared/?.lua
+<widgets_dir>/shared/?/init.lua
+<widgets_dir>/lib/?.lua
+<widgets_dir>/lib/?/init.lua
+```
+
+`shared/` is the recommended location and wins when the same module name exists in both directories.
+The legacy `lib/` paths remain available for compatibility. Widget modules still take precedence
+over installed Lua modules with the same name.
 
 Use specific module names or subdirectories for larger collections, and avoid names that are likely
 to collide with third-party Lua packages.
@@ -246,3 +257,4 @@ A missing or failing required module makes that widget fail during startup and w
 loader error to the EasyBar log. Other widget files continue loading.
 
 A broken module that is never required is not executed.
+
