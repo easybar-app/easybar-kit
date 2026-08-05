@@ -26,7 +26,8 @@ tokyo-night -> tokyo-night.toml
 my-theme -> my-theme.toml
 ```
 
-`themes_dir` is the custom theme directory.
+`themes_dir` is the custom theme directory. EasyBar reads from it when it exists but does not
+create it automatically. Bundled themes work without a custom theme directory.
 
 ## Switch themes from the menus
 

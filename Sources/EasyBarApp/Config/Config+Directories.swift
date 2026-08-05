@@ -6,8 +6,10 @@ extension Config {
   struct RequiredDirectory: Sendable {
     /// Filesystem requirement kind.
     enum Kind: Sendable {
-      /// The configured path must be a directory.
+      /// The configured path must exist as a directory, creating it when missing.
       case directory
+      /// The configured path may be absent, but must be a directory when it exists.
+      case optionalDirectory
       /// The configured path is a file and its parent must exist.
       case parentDirectory
     }
@@ -25,7 +27,7 @@ extension Config {
     registeredDirectories.removeAll()
   }
 
-  /// Registers or replaces one required runtime directory.
+  /// Registers or replaces one runtime filesystem requirement.
   ///
   /// The registry is keyed by config path so later values for the same config
   /// field replace earlier ones cleanly within the same load cycle.
@@ -41,7 +43,7 @@ extension Config {
     )
   }
 
-  /// Ensures all registered runtime-required directories exist.
+  /// Creates required directories and validates optional directory paths.
   func ensureRequiredDirectoriesExist() throws {
     for requiredDirectory in registeredDirectories.values.sorted(by: {
       $0.configPath < $1.configPath
@@ -50,7 +52,15 @@ extension Config {
       case .directory:
         try ensureDirectoryExists(
           at: requiredDirectory.path,
-          path: requiredDirectory.configPath
+          path: requiredDirectory.configPath,
+          createIfMissing: true
+        )
+
+      case .optionalDirectory:
+        try ensureDirectoryExists(
+          at: requiredDirectory.path,
+          path: requiredDirectory.configPath,
+          createIfMissing: false
         )
 
       case .parentDirectory:
@@ -62,10 +72,11 @@ extension Config {
     }
   }
 
-  /// Creates one configured directory when it does not already exist.
+  /// Validates one configured directory and optionally creates it when missing.
   private func ensureDirectoryExists(
     at pathValue: String,
-    path: String
+    path: String,
+    createIfMissing: Bool
   ) throws {
     let trimmedPath = pathValue.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmedPath.isEmpty else { return }
@@ -88,6 +99,8 @@ extension Config {
       }
       return
     }
+
+    guard createIfMissing else { return }
 
     do {
       try FileManager.default.createDirectory(
@@ -116,7 +129,8 @@ extension Config {
 
     try ensureDirectoryExists(
       at: parentURL.path,
-      path: path
+      path: path,
+      createIfMissing: true
     )
   }
 }

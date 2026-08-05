@@ -32,7 +32,7 @@ extension Config {
     registerDirectoryRequirement(
       for: "theme.themes_dir",
       path: resolvedThemesDir,
-      kind: .directory
+      kind: .optionalDirectory
     )
   }
 

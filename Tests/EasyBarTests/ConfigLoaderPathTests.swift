@@ -282,40 +282,59 @@ final class ConfigLoaderPathTests: ConfigLoaderTestCase {
     }
   }
 
-  /// Verifies that reload expands tilde paths from config file.
-  func testReloadExpandsTildePathsFromConfigFile() throws {
-    let config = Config.makeUnloadedConfig()
+  /// Verifies that validation expands tilde paths without creating directories.
+  func testValidateExpandsTildePathsWithoutCreatingDirectories() throws {
     let configFileURL = tempDirectoryURL.appendingPathComponent("tilde-paths.toml")
     let homePath = FileManager.default.homeDirectoryForCurrentUser.path
+    let relativeRoot = ".config/easybar-tests/\(UUID().uuidString)"
+    let expandedRoot = "\(homePath)/\(relativeRoot)"
 
     try writeConfig(
       """
       [app]
-      widgets_dir = "~/.config/easybar/widgets-test"
-      lock_dir = "~/.cache/easybar-locks-test"
+      runtime_dir = "~/\(relativeRoot)/runtime"
+      widgets_dir = "~/\(relativeRoot)/widgets"
+      lock_dir = "~/\(relativeRoot)/locks"
+      widget_editor_stub_path = "~/\(relativeRoot)/editor/easybar_api.lua"
 
       [logging]
-      directory = "~/.local/state/easybar-tests"
+      directory = "~/\(relativeRoot)/logs"
 
       [agents.calendar]
-      socket_path = "~/.cache/easybar-tests/calendar.sock"
+      socket_path = "~/\(relativeRoot)/runtime/calendar.sock"
 
       [agents.network]
-      socket_path = "~/.cache/easybar-tests/network.sock"
+      socket_path = "~/\(relativeRoot)/runtime/network.sock"
+
+      [theme]
+      themes_dir = "~/\(relativeRoot)/themes"
       """,
       to: configFileURL
     )
 
-    setEnvironmentValue(configFileURL.path, for: SharedEnvironmentKeys.configPath)
+    setEnvironmentValue(nil, for: SharedEnvironmentKeys.runtimeDirectory)
 
-    let error = config.reload()
+    let loadedState = try Config.validate(configPathOverride: configFileURL.path)
+    let snapshot = loadedState.snapshot
 
-    XCTAssertNil(error)
-    XCTAssertEqual(config.widgetsPath, "\(homePath)/.config/easybar/widgets-test")
-    XCTAssertEqual(config.lockDirectory, "\(homePath)/.cache/easybar-locks-test")
-    XCTAssertEqual(config.loggingDirectory, "\(homePath)/.local/state/easybar-tests")
-    XCTAssertEqual(config.calendarAgentSocketPath, "\(homePath)/.cache/easybar-tests/calendar.sock")
-    XCTAssertEqual(config.networkAgentSocketPath, "\(homePath)/.cache/easybar-tests/network.sock")
+    XCTAssertEqual(snapshot.app.runtimeDirectory, "\(expandedRoot)/runtime")
+    XCTAssertEqual(snapshot.app.widgetsPath, "\(expandedRoot)/widgets")
+    XCTAssertEqual(snapshot.app.lockDirectory, "\(expandedRoot)/locks")
+    XCTAssertEqual(
+      snapshot.app.widgetEditorStubPath,
+      "\(expandedRoot)/editor/easybar_api.lua"
+    )
+    XCTAssertEqual(snapshot.logging.directory, "\(expandedRoot)/logs")
+    XCTAssertEqual(
+      snapshot.calendarAgent.socketPath,
+      "\(expandedRoot)/runtime/calendar.sock"
+    )
+    XCTAssertEqual(
+      snapshot.networkAgent.socketPath,
+      "\(expandedRoot)/runtime/network.sock"
+    )
+    XCTAssertEqual(snapshot.theme.themesDir, "\(expandedRoot)/themes")
+    XCTAssertFalse(FileManager.default.fileExists(atPath: expandedRoot))
   }
 
   /// Verifies that reload returns error when directory setting points to existing file.

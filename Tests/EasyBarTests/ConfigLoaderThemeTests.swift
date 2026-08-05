@@ -176,6 +176,77 @@ final class ConfigLoaderThemeTests: ConfigLoaderTestCase {
     XCTAssertEqual(reloaded.snapshot.theme.name, "nord")
   }
 
+  /// Verifies that loading bundled themes does not create the custom theme directory.
+  func testReloadDoesNotCreateMissingCustomThemesDirectory() throws {
+    let config = Config.makeUnloadedConfig()
+    let runtimeDirectoryURL = tempDirectoryURL.appendingPathComponent("runtime")
+    let themesDirectoryURL = tempDirectoryURL.appendingPathComponent("custom-themes")
+    let configFileURL = tempDirectoryURL.appendingPathComponent("missing-themes-dir.toml")
+
+    try writeConfig(
+      """
+      [app]
+      runtime_dir = "\(runtimeDirectoryURL.path)"
+      widgets_dir = "\(tempDirectoryURL.appendingPathComponent("widgets").path)"
+      lock_dir = "\(tempDirectoryURL.appendingPathComponent("locks").path)"
+      widget_editor_stub_path = "\(tempDirectoryURL.appendingPathComponent("editor/easybar_api.lua").path)"
+
+      [logging]
+      directory = "\(tempDirectoryURL.appendingPathComponent("logs").path)"
+
+      [theme]
+      name = "default"
+      themes_dir = "\(themesDirectoryURL.path)"
+      """,
+      to: configFileURL
+    )
+    setEnvironmentValue(configFileURL.path, for: SharedEnvironmentKeys.configPath)
+
+    XCTAssertNil(config.reload())
+    XCTAssertEqual(config.themeName, "default")
+    XCTAssertEqual(config.themesDir, themesDirectoryURL.path)
+    XCTAssertFalse(FileManager.default.fileExists(atPath: themesDirectoryURL.path))
+  }
+
+  /// Verifies that an existing non-directory custom theme path remains invalid.
+  func testReloadRejectsCustomThemesPathThatIsAFile() throws {
+    let config = Config.makeUnloadedConfig()
+    let runtimeDirectoryURL = tempDirectoryURL.appendingPathComponent("runtime-file-check")
+    let themesFileURL = tempDirectoryURL.appendingPathComponent("themes-file")
+    let configFileURL = tempDirectoryURL.appendingPathComponent("themes-file.toml")
+
+    try "not a directory".write(to: themesFileURL, atomically: true, encoding: .utf8)
+    try writeConfig(
+      """
+      [app]
+      runtime_dir = "\(runtimeDirectoryURL.path)"
+      widgets_dir = "\(tempDirectoryURL.appendingPathComponent("widgets-file-check").path)"
+      lock_dir = "\(tempDirectoryURL.appendingPathComponent("locks-file-check").path)"
+      widget_editor_stub_path = "\(tempDirectoryURL.appendingPathComponent("editor-file-check/easybar_api.lua").path)"
+
+      [logging]
+      directory = "\(tempDirectoryURL.appendingPathComponent("logs-file-check").path)"
+
+      [theme]
+      name = "default"
+      themes_dir = "\(themesFileURL.path)"
+      """,
+      to: configFileURL
+    )
+    setEnvironmentValue(configFileURL.path, for: SharedEnvironmentKeys.configPath)
+
+    let error = config.reload()
+
+    guard let configError = error as? ConfigError else {
+      return XCTFail("Expected ConfigError, got \(String(describing: error))")
+    }
+    XCTAssertEqual(configError.configPath, "theme.themes_dir")
+    XCTAssertEqual(
+      configError.detail,
+      "expected directory path, but found file at \(themesFileURL.path)"
+    )
+  }
+
   /// Verifies that invalid config color values fail during validation instead of rendering later.
   func testValidateRejectsUnknownThemeColorReference() throws {
     let configFileURL = tempDirectoryURL.appendingPathComponent("invalid-color-reference.toml")
