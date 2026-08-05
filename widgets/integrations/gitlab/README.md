@@ -15,17 +15,20 @@ glab auth login
 
 The `glab` executable must be available through `[app.env].PATH`. Set `GITLAB_HOST` in `[app.env]` for a self-managed or dedicated instance.
 
-## Merge method setting
+## Merge settings
 
 The inbox widget stores the preferred merge-request method in `config.toml`:
 
 ```toml
 [widgets.gitlab-inbox]
 merge_method = "merge"
+confirm_merge = true
 ```
 
 Supported values are `merge`, `squash`, and `rebase`. `merge` uses the project's configured merge strategy. The method can also be changed from the GitLab inbox source menu.
 
-Before merging, the widget retrieves the current merge-request state, rejects blocked requests, and asks for confirmation. The merge command matches the inspected source-branch SHA and disables GitLab CLI auto-merge so a blocked or running pipeline is not silently scheduled for later.
+`confirm_merge` defaults to `true`. Choose **Merge immediately** from the same source menu or set it to `false` to skip the second click. The widget still retrieves the current merge-request state, rejects blocked requests, matches the inspected source-branch SHA, and disables GitLab CLI auto-merge so a blocked or running pipeline is not silently scheduled for later.
 
 Only install one presentation variant at a time. The top-level files remain the executable entrypoints; files in this directory are loaded through `require(...)`.
+
+

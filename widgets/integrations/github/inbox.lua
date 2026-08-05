@@ -23,7 +23,9 @@ return function(easybar)
 
 	local STORAGE_WIDGET = "github-inbox"
 	local STORAGE_MERGE_METHOD_KEY = "merge_method"
+	local STORAGE_CONFIRM_MERGE_KEY = "confirm_merge"
 	local DEFAULT_PR_MERGE_METHOD = "squash"
+	local DEFAULT_CONFIRM_MERGE = true
 	local PR_MERGE_METHOD_ORDER = { "merge", "squash", "rebase" }
 	local PR_MERGE_FLAGS = {
 		merge = "--merge",
@@ -43,6 +45,9 @@ return function(easybar)
 	local configured_merge_method = easybar.storage.get(STORAGE_WIDGET, STORAGE_MERGE_METHOD_KEY, DEFAULT_PR_MERGE_METHOD)
 	local pr_merge_method = PR_MERGE_FLAGS[configured_merge_method] ~= nil and configured_merge_method
 		or DEFAULT_PR_MERGE_METHOD
+	local configured_confirm_merge = easybar.storage.get(STORAGE_WIDGET, STORAGE_CONFIRM_MERGE_KEY, DEFAULT_CONFIRM_MERGE)
+	local merge_confirmation_required = type(configured_confirm_merge) == "boolean" and configured_confirm_merge
+		or DEFAULT_CONFIRM_MERGE
 	local notifications = {}
 	local current_error = nil
 	local active_refresh = nil
@@ -57,6 +62,12 @@ return function(easybar)
 		log(
 			easybar.level.warn,
 			"unsupported configured merge_method=" .. tostring(configured_merge_method) .. "; using squash"
+		)
+	end
+	if merge_confirmation_required ~= configured_confirm_merge then
+		log(
+			easybar.level.warn,
+			"unsupported configured confirm_merge=" .. tostring(configured_confirm_merge) .. "; using true"
 		)
 	end
 
@@ -78,6 +89,22 @@ return function(easybar)
 		end
 	end
 
+	local function append_merge_confirmation_actions(actions)
+		actions[#actions + 1] = {
+			id = "merge_confirmation",
+			title = "Merge confirmation",
+			enabled = false,
+		}
+		actions[#actions + 1] = {
+			id = "merge_confirmation:required",
+			title = (merge_confirmation_required and "✓ " or "") .. "Require confirmation",
+		}
+		actions[#actions + 1] = {
+			id = "merge_confirmation:immediate",
+			title = (not merge_confirmation_required and "✓ " or "") .. "Merge immediately",
+		}
+	end
+
 	local function configure_source_actions()
 		local actions
 		if source_activity ~= nil then
@@ -94,6 +121,7 @@ return function(easybar)
 			actions = { { id = "refresh", title = "Refresh", include_in_refresh_all = true } }
 		end
 		append_merge_method_actions(actions)
+		append_merge_confirmation_actions(actions)
 		easybar.inbox.configure(SOURCE, { actions = actions })
 	end
 
@@ -527,6 +555,8 @@ return function(easybar)
 		return nil
 	end
 
+	local confirm_merge
+
 	local function prepare_merge(item_id)
 		if item_id == "" or busy_item_actions[item_id] ~= nil then
 			return
@@ -596,7 +626,11 @@ return function(easybar)
 			}
 			current_error = nil
 			log(easybar.level.info, "inbox mutation completed operation=prepare_merge item_id=" .. item_id)
-			publish_current_notifications()
+			if merge_confirmation_required then
+				publish_current_notifications()
+			else
+				confirm_merge(item_id)
+			end
 		end)
 	end
 
@@ -615,7 +649,7 @@ return function(easybar)
 		end)
 	end
 
-	local function confirm_merge(item_id)
+	confirm_merge = function(item_id)
 		local confirmation = merge_confirmations[item_id]
 		if confirmation == nil or busy_item_actions[item_id] ~= nil then
 			return
@@ -675,6 +709,40 @@ return function(easybar)
 			log(easybar.level.info, "inbox mutation completed operation=merge item_id=" .. item_id)
 			refresh_after_merge(item_id)
 		end)
+	end
+
+	local function set_merge_confirmation_required(required)
+		if type(required) ~= "boolean" then
+			log(easybar.level.warn, "unsupported merge confirmation selection=" .. tostring(required))
+			return
+		end
+		if required == merge_confirmation_required then
+			configure_source_actions()
+			return
+		end
+
+		local ok, err = easybar.storage.set(STORAGE_WIDGET, STORAGE_CONFIRM_MERGE_KEY, required)
+		if not ok then
+			log(easybar.level.error, "inbox setting failed key=" .. STORAGE_CONFIRM_MERGE_KEY .. " error=" .. tostring(err))
+			publish_error(err, "EasyBar could not update config.toml", "Could not save merge confirmation")
+			return
+		end
+
+		local previous_value = merge_confirmation_required
+		merge_confirmation_required = required
+		merge_confirmations = {}
+		current_error = nil
+		log(
+			easybar.level.info,
+			"inbox setting updated key="
+				.. STORAGE_CONFIRM_MERGE_KEY
+				.. " previous="
+				.. tostring(previous_value)
+				.. " value="
+				.. tostring(required)
+		)
+		configure_source_actions()
+		publish_current_notifications()
 	end
 
 	local function set_merge_method(method)
@@ -749,11 +817,16 @@ return function(easybar)
 	easybar.inbox.on_context_action(SOURCE, function(event)
 		local action_id = tostring(event.action_id or "unknown")
 		local merge_method = action_id:match("^merge_method:([%w_%-]+)$")
+		local merge_confirmation = action_id:match("^merge_confirmation:([%w_%-]+)$")
 		log(easybar.level.debug, "inbox context action received action=" .. action_id)
 		if action_id == "refresh" then
 			refresh("manual")
 		elseif merge_method ~= nil then
 			set_merge_method(merge_method)
+		elseif merge_confirmation == "required" then
+			set_merge_confirmation_required(true)
+		elseif merge_confirmation == "immediate" then
+			set_merge_confirmation_required(false)
 		end
 	end)
 

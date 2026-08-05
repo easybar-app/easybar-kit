@@ -324,6 +324,10 @@ local function test_github_merge_method_setting_persists_and_drives_merge()
 		assert(state:source_action("merge_method:squash")).title == "✓ Squash and merge",
 		"GitHub must mark the default squash method in source actions"
 	)
+	assert(
+		assert(state:source_action("merge_confirmation:required")).title == "✓ Require confirmation",
+		"GitHub must require merge confirmation by default"
+	)
 
 	state.context_action_handler({ action_id = "merge_method:rebase" })
 	assert(state.storage_values["github-inbox:merge_method"] == "rebase", "GitHub must persist the selected merge method")
@@ -350,11 +354,42 @@ local function test_github_merge_method_setting_persists_and_drives_merge()
 	assert(not has_squash, "GitHub merge command must not retain the previous squash method")
 end
 
+local function test_github_merge_confirmation_can_be_disabled()
+	local state = load_widget("github-inbox.lua")
+	state.context_action_handler({ action_id = "merge_confirmation:immediate" })
+	assert(state.storage_values["github-inbox:confirm_merge"] == false, "GitHub must persist immediate merging")
+	assert(
+		assert(state:source_action("merge_confirmation:immediate")).title == "✓ Merge immediately",
+		"GitHub must immediately mark the persisted confirmation mode"
+	)
+
+	state:run_next_timer()
+	state:complete_next_command("github-one", 0)
+	state.action_handler({ action_id = "prepare_merge", target_widget_id = "thread-1" })
+	state:complete_next_command("github-pr-ready", 0)
+	assert(
+		state:item_action_is_busy("thread-1", "confirm_merge"),
+		"GitHub immediate mode must start merging without a confirmation action"
+	)
+	local merge_command = assert(state.commands[1], "GitHub immediate mode must start a merge command").command
+	local arguments = {}
+	for _, argument in ipairs(merge_command) do
+		arguments[argument] = true
+	end
+	assert(arguments["merge"], "GitHub immediate mode must execute gh pr merge after inspection")
+	assert(arguments["--match-head-commit"], "GitHub immediate mode must retain the inspected head guard")
+	assert(arguments["0123456789abcdef"], "GitHub immediate mode must merge the inspected head commit")
+end
+
 local function test_gitlab_merge_method_setting_persists_and_drives_merge()
 	local state = load_widget("gitlab-inbox.lua")
 	assert(
 		assert(state:source_action("merge_method:merge")).title == "✓ Project default",
 		"GitLab must mark the project-default merge method in source actions"
+	)
+	assert(
+		assert(state:source_action("merge_confirmation:required")).title == "✓ Require confirmation",
+		"GitLab must require merge confirmation by default"
 	)
 
 	state.context_action_handler({ action_id = "merge_method:rebase" })
@@ -391,6 +426,34 @@ local function test_gitlab_merge_method_setting_persists_and_drives_merge()
 	assert(arguments["--sha"], "GitLab merge command must guard the reviewed source commit")
 	assert(arguments["fedcba9876543210"], "GitLab merge command must match the inspected head commit")
 	assert(arguments["https://gitlab.com/easybar/easybar"], "GitLab merge command must target the source project")
+end
+
+local function test_gitlab_merge_confirmation_can_be_disabled()
+	local state = load_widget("gitlab-inbox.lua")
+	state.context_action_handler({ action_id = "merge_confirmation:immediate" })
+	assert(state.storage_values["gitlab-inbox:confirm_merge"] == false, "GitLab must persist immediate merging")
+	assert(
+		assert(state:source_action("merge_confirmation:immediate")).title == "✓ Merge immediately",
+		"GitLab must immediately mark the persisted confirmation mode"
+	)
+
+	state:run_next_timer()
+	state:complete_next_command("gitlab-issues", 0)
+	state:complete_next_command("gitlab-merge-requests", 0)
+	state.action_handler({ action_id = "prepare_merge", target_widget_id = "merge_request:2" })
+	state:complete_next_command("gitlab-mr-ready", 0)
+	assert(
+		state:item_action_is_busy("merge_request:2", "confirm_merge"),
+		"GitLab immediate mode must start merging without a confirmation action"
+	)
+	local merge_command = assert(state.commands[1], "GitLab immediate mode must start a merge command").command
+	local arguments = {}
+	for _, argument in ipairs(merge_command) do
+		arguments[argument] = true
+	end
+	assert(arguments["merge"], "GitLab immediate mode must execute glab mr merge after inspection")
+	assert(arguments["--sha"], "GitLab immediate mode must retain the inspected SHA guard")
+	assert(arguments["fedcba9876543210"], "GitLab immediate mode must merge the inspected head commit")
 end
 
 local function test_gitlab_mark_read_stays_local()
@@ -568,7 +631,9 @@ end
 
 test_github_item_refresh_stays_inline()
 test_github_merge_method_setting_persists_and_drives_merge()
+test_github_merge_confirmation_can_be_disabled()
 test_gitlab_merge_method_setting_persists_and_drives_merge()
+test_gitlab_merge_confirmation_can_be_disabled()
 test_gitlab_mark_read_stays_local()
 test_brew_item_refresh_stays_inline()
 test_github_overlapping_mutations_coalesce_refresh()

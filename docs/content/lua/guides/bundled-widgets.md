@@ -53,19 +53,23 @@ method is applied immediately and persisted in `config.toml`:
 ```toml
 [widgets.github-inbox]
 merge_method = "squash" # merge, rebase, or squash
+confirm_merge = true
 
 [widgets.gitlab-inbox]
 merge_method = "merge" # merge, rebase, or squash
+confirm_merge = true
 ```
 
-Before showing the confirmation action, each widget retrieves the current request state and rejects
-drafts, conflicts, failed checks, missing approvals, and other repository-rule blockers. The final
-merge is guarded by the inspected source-branch SHA. GitLab additionally disables the CLI's default
-auto-merge behavior so a running pipeline is not silently scheduled for later.
+Each widget retrieves the current request state and rejects drafts, conflicts, failed checks, missing
+approvals, and other repository-rule blockers. With `confirm_merge = true`, a second action confirms
+the inspected request. Set it to `false`, or choose **Merge immediately** from the source menu, to merge
+automatically after those checks pass. The final merge is still guarded by the inspected source-branch
+SHA. GitLab additionally disables the CLI's default auto-merge behavior so a running pipeline is not
+silently scheduled for later.
 
-You can also edit either value directly. Unsupported GitHub values fall back to `squash`; unsupported
-GitLab values fall back to `merge`. Both cases produce a widget log warning. See [Widget Settings](storage.md)
-for the Lua storage API.
+You can also edit these values directly. Unsupported GitHub merge methods fall back to `squash`;
+unsupported GitLab merge methods fall back to `merge`. Invalid `confirm_merge` values fall back to
+`true`. Each case produces a widget log warning. See [Widget Settings](storage.md) for the Lua storage API.
 
 GitHub and GitLab publish each item's native `url` and `timestamp`, so EasyBar supplies the **Open**
 button and sorts mixed sources by their service-provided update time. Failed or malformed refreshes
@@ -146,4 +150,6 @@ Lua loader and command failures also appear in EasyBar's logs. The Homebrew exam
 bounded `brew-widget.log` in the configured logging directory. Use [Lua Logging](logging.md),
 [Commands](commands.md), and [Troubleshooting](../../runtime/troubleshooting.md) when an example does
 not update.
+
+
 

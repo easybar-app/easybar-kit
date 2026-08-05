@@ -5,6 +5,7 @@ Lua widgets can keep user-configurable settings in `config.toml`. Every setting 
 ```toml
 [widgets.github-inbox]
 merge_method = "squash"
+confirm_merge = true
 ```
 
 Read a setting with a fallback value:
@@ -40,3 +41,5 @@ Tables, functions, `nil`, mixed arrays, and nested values are not supported. Use
 Widget namespaces and keys may contain letters, numbers, underscores, and hyphens. EasyBar always builds the full path itself as `widgets.<widget>.<key>`; Lua code cannot use this API to write another top-level config section.
 
 The entire `[widgets]` tree is intentionally free-form. `easybar config validate` does not report widget-owned keys as unknown configuration.
+
+
