@@ -6,6 +6,8 @@ widgets_dir="${repo_root}/widgets"
 manifest_path="${widgets_dir}/install-manifest.csv"
 lua_bin="${LUA:-lua}"
 
+cd "${repo_root}"
+
 fail() {
   echo "Lua check failed: $*" >&2
   exit 1
@@ -39,12 +41,12 @@ validate_relative_path() {
 
   [ -n "${path}" ] || fail "manifest line ${line_number} has an empty ${description}"
   case "${path}" in
-    /*|../*|*/../*|*/..)
-      fail "manifest line ${line_number} has an unsafe ${description}: ${path}"
-      ;;
+  /* | ../* | */../* | */..)
+    fail "manifest line ${line_number} has an unsafe ${description}: ${path}"
+    ;;
   esac
-  [ -e "${widgets_dir}/${path}" ] \
-    || fail "manifest ${description} does not exist: ${path}"
+  [ -e "${widgets_dir}/${path}" ] ||
+    fail "manifest ${description} does not exist: ${path}"
 }
 
 [ -d "${widgets_dir}" ] || fail "missing widgets directory: ${widgets_dir}"
@@ -53,28 +55,29 @@ validate_relative_path() {
 manifest_entrypoints=()
 manifest_names=()
 manifest_dependencies=()
+manifest_entrypoint_count=0
 line_number=0
 while IFS=';' read -r entrypoint dependencies extra || [ -n "${entrypoint}${dependencies}${extra}" ]; do
   line_number=$((line_number + 1))
   case "${entrypoint}" in
-    ''|'#'*) continue ;;
+  '' | '#'*) continue ;;
   esac
 
-  [ -z "${extra}" ] \
-    || fail "manifest line ${line_number} must contain exactly two semicolon-separated fields"
+  [ -z "${extra}" ] ||
+    fail "manifest line ${line_number} must contain exactly two semicolon-separated fields"
 
   validate_relative_path "${entrypoint}" "entrypoint" "${line_number}"
   case "${entrypoint}" in
-    *.lua) ;;
-    *) fail "manifest line ${line_number} has a non-Lua entrypoint: ${entrypoint}" ;;
+  *.lua) ;;
+  *) fail "manifest line ${line_number} has a non-Lua entrypoint: ${entrypoint}" ;;
   esac
 
-  if contains_value "${entrypoint}" "${manifest_entrypoints[@]}"; then
+  if contains_value "${entrypoint}" "${manifest_entrypoints[@]-}"; then
     fail "manifest contains a duplicate entrypoint: ${entrypoint}"
   fi
 
   name="${entrypoint%.lua}"
-  if contains_value "${name}" "${manifest_names[@]}"; then
+  if contains_value "${name}" "${manifest_names[@]-}"; then
     fail "manifest contains a duplicate widget name: ${name}"
   fi
 
@@ -85,12 +88,12 @@ while IFS=';' read -r entrypoint dependencies extra || [ -n "${entrypoint}${depe
       dependency="$(trim_whitespace "${dependency}")"
       validate_relative_path "${dependency}" "dependency" "${line_number}"
 
-      if contains_value "${dependency}" "${row_dependencies[@]}"; then
+      if contains_value "${dependency}" "${row_dependencies[@]-}"; then
         fail "manifest line ${line_number} contains a duplicate dependency: ${dependency}"
       fi
 
       row_dependencies+=("${dependency}")
-      if ! contains_value "${dependency}" "${manifest_dependencies[@]}"; then
+      if ! contains_value "${dependency}" "${manifest_dependencies[@]-}"; then
         manifest_dependencies+=("${dependency}")
       fi
     done
@@ -98,35 +101,37 @@ while IFS=';' read -r entrypoint dependencies extra || [ -n "${entrypoint}${depe
 
   manifest_entrypoints+=("${entrypoint}")
   manifest_names+=("${name}")
+  manifest_entrypoint_count=$((manifest_entrypoint_count + 1))
 done <"${manifest_path}"
 
-[ "${#manifest_entrypoints[@]}" -gt 0 ] || fail "manifest contains no widget entrypoints"
+[ "${manifest_entrypoint_count}" -gt 0 ] || fail "manifest contains no widget entrypoints"
 
-lua_files=()
+lua_file_count=0
 while IFS= read -r file; do
   relative_path="${file#"${widgets_dir}/"}"
-  lua_files+=("${relative_path}")
+  lua_file_count=$((lua_file_count + 1))
 
-  if ! contains_value "${relative_path}" "${manifest_entrypoints[@]}" \
-    && ! contains_value "${relative_path}" "${manifest_dependencies[@]}"; then
+  if ! contains_value "${relative_path}" "${manifest_entrypoints[@]-}" &&
+    ! contains_value "${relative_path}" "${manifest_dependencies[@]-}"; then
     fail "bundled Lua file is not declared by the install manifest: ${relative_path}"
   fi
 done < <(find "${widgets_dir}" -type f -iname '*.lua' -print | LC_ALL=C sort)
 
-[ "${#lua_files[@]}" -gt 0 ] || fail "widgets directory contains no Lua files"
+[ "${lua_file_count}" -gt 0 ] || fail "widgets directory contains no Lua files"
 
-for entrypoint in "${manifest_entrypoints[@]}"; do
+for entrypoint in "${manifest_entrypoints[@]-}"; do
+  [ -n "${entrypoint}" ] || continue
   if grep -Eq '^[[:space:]]*require\("[^"]+"\)\(easybar\)[[:space:]]*$' "${widgets_dir}/${entrypoint}"; then
     fail "thin implementation wrapper remains: ${entrypoint}"
   fi
 done
 
 printf 'Widget Lua manifest validated (%d selectable widgets, %d Lua files).\n' \
-  "${#manifest_entrypoints[@]}" \
-  "${#lua_files[@]}"
+  "${manifest_entrypoint_count}" \
+  "${lua_file_count}"
 
-command -v "${lua_bin}" >/dev/null 2>&1 \
-  || fail "Lua 5.5 is required for syntax and bundled-widget checks: ${lua_bin}"
+command -v "${lua_bin}" >/dev/null 2>&1 ||
+  fail "Lua 5.5 is required for syntax and bundled-widget checks: ${lua_bin}"
 
 "${lua_bin}" -e 'assert(_VERSION == "Lua 5.5", "expected Lua 5.5, got " .. tostring(_VERSION))'
 
