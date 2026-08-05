@@ -3,20 +3,26 @@ set -euo pipefail
 
 usage() {
   cat >&2 <<'EOF_USAGE'
-Usage: scripts/dev/install-widgets.sh <source-dir> <destination-dir>
+Usage: scripts/dev/install-widgets.sh <source-dir> <destination-dir> <manifest>
 EOF_USAGE
 }
 
-if [ "$#" -ne 2 ]; then
+if [ "$#" -ne 3 ]; then
   usage
   exit 2
 fi
 
 source_dir="$1"
 destination_dir="$2"
+manifest_path="$3"
 
 if [ ! -d "${source_dir}" ]; then
   echo "Widget source directory does not exist: ${source_dir}" >&2
+  exit 1
+fi
+
+if [ ! -f "${manifest_path}" ]; then
+  echo "Widget install manifest does not exist: ${manifest_path}" >&2
   exit 1
 fi
 
@@ -28,44 +34,28 @@ fi
 item_names=()
 item_labels=()
 item_sources=()
-item_kinds=()
 selected_indices=()
+dependency_paths=()
 
 for path in "${source_dir}"/*.lua; do
   [ -f "${path}" ] || continue
 
   filename="$(basename "${path}")"
-
   item_names+=("${filename%.lua}")
   item_labels+=("${filename}")
   item_sources+=("${path}")
-  item_kinds+=("file")
-done
-
-for directory in lib assets; do
-  path="${source_dir}/${directory}"
-
-  if [ -d "${path}" ]; then
-    item_names+=("${directory}")
-    item_labels+=("${directory}/")
-    item_sources+=("${path}")
-    item_kinds+=("directory")
-  fi
 done
 
 if [ "${#item_names[@]}" -eq 0 ]; then
-  echo "No bundled widgets or shared directories found in ${source_dir}" >&2
+  echo "No bundled widget entrypoints found in ${source_dir}" >&2
   exit 1
 fi
 
 default_names=(
-  assets
-  brew_policy
   brew-inbox
   github-inbox
   gitlab-inbox
   inbox-demo
-  lib
   tailscale
 )
 
@@ -75,6 +65,20 @@ is_default() {
 
   for default_name in "${default_names[@]}"; do
     if [ "${candidate}" = "${default_name}" ]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+contains_value() {
+  local candidate="$1"
+  shift
+  local value
+
+  for value in "$@"; do
+    if [ "${value}" = "${candidate}" ]; then
       return 0
     fi
   done
@@ -100,8 +104,71 @@ build_default_selection_binding() {
   printf '%s+first' "${binding}"
 }
 
+append_dependency() {
+  local relative_path="$1"
+
+  if [ -z "${relative_path}" ]; then
+    return
+  fi
+
+  case "${relative_path}" in
+    /*|../*|*/../*|*/..)
+      echo "Invalid dependency path in manifest: ${relative_path}" >&2
+      exit 1
+      ;;
+  esac
+
+  if ! contains_value "${relative_path}" "${dependency_paths[@]}"; then
+    dependency_paths+=("${relative_path}")
+  fi
+}
+
+collect_dependencies() {
+  local selected_filename="$1"
+  local widget
+  local dependency
+  local extra
+
+  while IFS=';' read -r widget dependency extra || [ -n "${widget}${dependency}${extra}" ]; do
+    case "${widget}" in
+      ''|'#'*) continue ;;
+    esac
+
+    if [ -n "${extra}" ]; then
+      echo "Invalid manifest row for ${widget}: expected exactly two semicolon-separated fields" >&2
+      exit 1
+    fi
+
+    if [ "${widget}" = "${selected_filename}" ]; then
+      append_dependency "${dependency}"
+    fi
+  done <"${manifest_path}"
+}
+
+copy_relative_path() {
+  local relative_path="$1"
+  local source="${source_dir}/${relative_path}"
+  local destination="${destination_dir}/${relative_path}"
+
+  if [ ! -e "${source}" ]; then
+    echo "Bundled widget dependency does not exist: ${relative_path}" >&2
+    exit 1
+  fi
+
+  printf '  %s\n' "${relative_path}"
+
+  if [ -d "${source}" ]; then
+    mkdir -p "${destination}"
+    cp -R "${source}/." "${destination}/"
+  else
+    mkdir -p "$(dirname "${destination}")"
+    cp "${source}" "${destination}"
+  fi
+}
+
 printf 'Install bundled EasyBar widgets into:\n  %s\n\n' "${destination_dir}"
 printf 'Use Up/Down to move, Space to select or deselect, and Enter to install.\n'
+printf 'Dependencies are copied automatically from the widget manifest.\n'
 printf 'The default widgets are preselected. Press Esc to cancel.\n\n'
 
 default_selection_binding="$(build_default_selection_binding)"
@@ -144,23 +211,27 @@ fi
 
 mkdir -p "${destination_dir}"
 
-printf '\nCopying:\n'
+printf '\nCopying widget entrypoints:\n'
 
 for index in "${selected_indices[@]}"; do
-  name="${item_names[${index}]}"
-  label="${item_labels[${index}]}"
+  filename="${item_labels[${index}]}"
   source="${item_sources[${index}]}"
-  kind="${item_kinds[${index}]}"
 
-  printf '  %s\n' "${label}"
-
-  if [ "${kind}" = "file" ]; then
-    cp "${source}" "${destination_dir}/${label}"
-  else
-    mkdir -p "${destination_dir}/${name}"
-    cp -R "${source}/." "${destination_dir}/${name}/"
-  fi
+  printf '  %s\n' "${filename}"
+  cp "${source}" "${destination_dir}/${filename}"
+  collect_dependencies "${filename}"
 done
 
-printf '\nInstalled selected widgets into %s\n' "${destination_dir}"
+if [ -f "${source_dir}/.luarc.json" ]; then
+  append_dependency ".luarc.json"
+fi
+
+if [ "${#dependency_paths[@]}" -gt 0 ]; then
+  printf '\nCopying dependencies:\n'
+  for dependency in "${dependency_paths[@]}"; do
+    copy_relative_path "${dependency}"
+  done
+fi
+
+printf '\nInstalled selected widgets and dependencies into %s\n' "${destination_dir}"
 printf 'Restart the Lua runtime with: easybar runtime restart\n'

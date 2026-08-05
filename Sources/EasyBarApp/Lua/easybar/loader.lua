@@ -12,11 +12,13 @@ local function prepend_package_path(entry)
 end
 
 local function configure_widget_module_paths(widget_dir)
-	-- Prepend legacy paths first because each call inserts at the front.
+	-- Prepend lower-priority paths first because each call inserts at the front.
 	prepend_package_path(widget_dir .. "/lib/?/init.lua")
 	prepend_package_path(widget_dir .. "/lib/?.lua")
 	prepend_package_path(widget_dir .. "/shared/?/init.lua")
 	prepend_package_path(widget_dir .. "/shared/?.lua")
+	prepend_package_path(widget_dir .. "/integrations/?/init.lua")
+	prepend_package_path(widget_dir .. "/integrations/?.lua")
 end
 
 local function make_widget_env(registry, source_path)
@@ -72,6 +74,7 @@ function M.load_widgets(widget_dir, widget_files, registry, log)
 	log.debug("runtime started")
 	log.debug("runtime widget_dir=" .. widget_dir)
 	configure_widget_module_paths(widget_dir)
+	log.debug("runtime widget_integrations=" .. widget_dir .. "/integrations")
 	log.debug("runtime widget_shared=" .. widget_dir .. "/shared")
 	log.debug("runtime widget_lib_legacy=" .. widget_dir .. "/lib")
 

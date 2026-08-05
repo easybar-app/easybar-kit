@@ -5,6 +5,8 @@
     "path": [
       "?.lua",
       "?/init.lua",
+      "integrations/?.lua",
+      "integrations/?/init.lua",
       "shared/?.lua",
       "shared/?/init.lua",
       "lib/?.lua",

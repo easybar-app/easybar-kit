@@ -10,7 +10,7 @@ That file can create one node or many nodes. It can also keep local state, run c
 
 ## Module
 
-A module is reusable Lua code stored below the widget `shared/` directory and loaded with standard `require(...)` calls. Modules are not started as widgets.
+A module is reusable Lua code stored below `integrations/`, `shared/`, or legacy `lib/` and loaded with standard `require(...)` calls. Modules are not started as widgets.
 
 See [Reusable Modules](guides/modules.md).
 

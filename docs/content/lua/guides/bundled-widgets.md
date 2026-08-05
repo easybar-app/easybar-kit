@@ -1,8 +1,12 @@
 # Bundled Widgets
 
 The repository's `widgets/` directory contains examples ranging from minimal API demonstrations to
-complete integrations. Copy only the widgets you want into your configured `widgets_dir`, together
-with the `shared/` directory when the widget imports shared modules.
+complete integrations. Top-level `*.lua` files are executable entrypoints. Larger integrations keep
+their implementation and README below `widgets/integrations/<service>/`, while generic helpers live
+below `widgets/shared/`.
+
+Use `make install-widgets` to select entrypoints and copy their declared integration packages,
+shared helpers, assets, and LuaLS configuration automatically.
 
 ## Catalog
 
@@ -22,7 +26,7 @@ with the `shared/` directory when the widget imports shared modules.
 | `network.lua`            | Native network snapshot            | Network agent                                     | No              |
 | `wifi+vpn.lua`           | Read-only tunnel indicator         | Network agent                                     | No              |
 | `tailscale.lua`          | Tailscale state and controls       | `tailscale`; optional `TAILSCALE` command setting | No              |
-| `wireguard.lua`          | Network Extension VPN control      | Service name in `shared/secrets.lua`              | No              |
+| `wireguard.lua`          | Network Extension VPN control      | Service name in integration settings             | No              |
 
 ## Choose one presentation
 
@@ -42,14 +46,17 @@ persistent state; EasyBar does not duplicate the selected node in `config.toml`.
 
 GitHub and GitLab inbox items expose a dedicated **Mark as read** action. GitHub also acknowledges the notification through the GitHub API. GitLab publishes assigned work items rather than notification records, so its action updates EasyBar's persistent local read state.
 
-The GitHub inbox uses squash merging by default. Choose the pull-request merge strategy with widget settings:
+The GitHub inbox uses squash merging by default. Open the inbox source-actions menu, expand
+**GitHub**, and choose **Merge commit**, **Squash and merge**, or **Rebase and merge**. The selected
+method is applied immediately and persisted in `config.toml`:
 
 ```toml
 [widgets.github-inbox]
 merge_method = "squash" # merge, rebase, or squash
 ```
 
-Unsupported values fall back to `squash` and produce a widget log warning. See [Widget Settings](storage.md) for the Lua storage API.
+You can also edit the value directly. Unsupported values fall back to `squash` and produce a widget
+log warning. See [Widget Settings](storage.md) for the Lua storage API.
 
 GitHub and GitLab publish each item's native `url` and `timestamp`, so EasyBar supplies the **Open**
 button and sorts mixed sources by their service-provided update time. Failed or malformed refreshes
@@ -86,21 +93,30 @@ glab auth login --hostname gitlab.example.com
 
 See [Environment](../../configuration/environment.md) for precedence and GUI-launch behavior.
 
-## Shared modules and assets
+## Integration packages, shared modules, and assets
 
-Several examples import `inbox`, `retry`, `text`, or `secrets` from `widgets/shared`. Preserve
-that directory structure when copying them. EasyBar still accepts the legacy `lib/` layout for
-existing installations. File-backed assets are resolved relative to the widget with
-`easybar.asset(...)`; copy those assets as well.
+The bundled install manifest maps each top-level entrypoint to its dependencies. `make install-widgets`
+reads that manifest and preserves paths while copying only the support files needed by the selected
+widgets.
 
-The inbox publishers use `shared/inbox.lua` to reject object-shaped responses where arrays are
-expected, bound external error messages, and convert ISO-8601 update times without depending on the
-Mac's local timezone. See [Reusable Modules](modules.md#inbox-data-helper) for its public functions.
+Service-specific code belongs below `widgets/integrations/<service>/`:
 
-Keep the secrets helper at `widgets/shared/secrets.lua`. Do not place a copy at the top level:
-EasyBar executes every top-level `*.lua` file as a widget entrypoint, while files below `shared/`
-are loaded only through `require(...)`. Edit the module before copying `wireguard.lua`, then copy
-`shared/secrets.lua` with the widget.
+- Homebrew uses `integrations/brew/policy.lua` for its manual-upgrade rules.
+- WireGuard uses `integrations/wireguard/secrets.lua` for the local Network Extension service name.
+- Each larger integration has a README beside its implementation.
+
+Generic helpers remain below `widgets/shared/`. The inbox publishers use `shared/inbox.lua` to
+reject object-shaped responses where arrays are expected, bound external error messages, and
+convert ISO-8601 update times without depending on the Mac's local timezone. See [Reusable
+Modules](modules.md#inbox-data-helper) for its public functions.
+
+Do not place implementation or settings modules at the top level: EasyBar executes every top-level
+`*.lua` file as a widget entrypoint. Files below `integrations/`, `shared/`, and legacy `lib/` load
+only through `require(...)`.
+
+File-backed assets remain below `widgets/assets/` and are resolved through `easybar.asset(...)`.
+Copy the paths declared for a widget in `widgets/install-manifest.csv`; the install helper does this
+automatically.
 
 The GitHub, GitLab, and Homebrew inbox widgets wait briefly after the Mac wakes before contacting
 network services. They retry transient read-only failures, but authentication failures and

@@ -1,9 +1,13 @@
 # Reusable Modules
 
-Put shared Lua helpers below the `shared` directory inside your configured widgets directory.
-EasyBar adds that directory to Lua's module search path before loading widget files, so widgets can
-use standard `require(...)` calls without changing `package.path` themselves. The older `lib/`
-directory remains a supported fallback so existing widget setups continue to work.
+EasyBar separates widget entrypoints from two kinds of reusable Lua modules:
+
+- `integrations/<service>/` contains service-specific implementations and settings.
+- `shared/` contains generic helpers reusable across unrelated widgets.
+
+Both directories are added to Lua's module search path before widget files load, so entrypoints can
+use standard `require(...)` calls without changing `package.path`. The older `lib/` directory
+remains a supported fallback so existing widget setups continue to work.
 
 ## Recommended layout
 
@@ -11,6 +15,10 @@ directory remains a supported fallback so existing widget setups continue to wor
 ~/.config/easybar/widgets/
 ├── clock.lua
 ├── github.lua
+├── integrations/
+│   └── github/
+│       ├── README.md
+│       └── widget.lua
 ├── shared/
 │   ├── inbox.lua
 │   ├── retry.lua
@@ -22,7 +30,26 @@ directory remains a supported fallback so existing widget setups continue to wor
 ```
 
 Only regular `*.lua` files directly inside the widgets directory are started as widgets. Lua files
-below `shared/` are modules and run only when a widget requires them.
+below `integrations/`, `shared/`, or legacy `lib/` run only when a widget requires them.
+
+Keep small, self-contained examples as top-level files. For a larger integration, use a thin
+entrypoint and pass its widget-scoped API to the implementation:
+
+```lua
+-- github.lua
+require("github.widget")(easybar)
+```
+
+```lua
+-- integrations/github/widget.lua
+---@param easybar EasyBar
+return function(easybar)
+    -- Complete GitHub widget implementation.
+end
+```
+
+This preserves top-level discovery and source identity while keeping implementation code and its
+README together.
 
 ## Create a module
 
@@ -238,18 +265,20 @@ pass the resolved path to a helper only when needed.
 EasyBar searches widget modules in this order:
 
 ```text
+<widgets_dir>/integrations/?.lua
+<widgets_dir>/integrations/?/init.lua
 <widgets_dir>/shared/?.lua
 <widgets_dir>/shared/?/init.lua
 <widgets_dir>/lib/?.lua
 <widgets_dir>/lib/?/init.lua
 ```
 
-`shared/` is the recommended location and wins when the same module name exists in both directories.
-The legacy `lib/` paths remain available for compatibility. Widget modules still take precedence
-over installed Lua modules with the same name.
+Dots map to subdirectories within each root. For example, `require("brew.policy")` resolves first
+to `integrations/brew/policy.lua`, then to `shared/brew/policy.lua`, and finally to the legacy
+`lib/brew/policy.lua` fallback.
 
-Use specific module names or subdirectories for larger collections, and avoid names that are likely
-to collide with third-party Lua packages.
+Use the service name as the first component for integration modules. Keep generic module names in
+`shared/`, and avoid names likely to collide with third-party Lua packages.
 
 ## Errors
 

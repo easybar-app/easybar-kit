@@ -252,11 +252,11 @@ do
 	assert(handle:cancel() == false)
 end
 
--- Shared modules are preferred while the legacy lib directory remains a fallback.
+-- Integration modules are preferred, followed by generic shared modules and the legacy lib fallback.
 do
 	local temp_dir = os.tmpname() .. "-easybar-module-paths"
 	os.remove(temp_dir)
-	assert(os.execute('mkdir -p "' .. temp_dir .. '/shared" "' .. temp_dir .. '/lib"'))
+	assert(os.execute('mkdir -p "' .. temp_dir .. '/integrations" "' .. temp_dir .. '/shared" "' .. temp_dir .. '/lib"'))
 
 	local function write_module(relative_path, value)
 		local module_file = assert(io.open(temp_dir .. "/" .. relative_path, "w"))
@@ -264,18 +264,21 @@ do
 		module_file:close()
 	end
 
-	write_module("shared/preferred_resolution.lua", "shared")
+	write_module("integrations/integration_resolution.lua", "integration")
+	write_module("shared/shared_resolution.lua", "shared")
 	write_module("lib/legacy_resolution.lua", "legacy")
+	write_module("integrations/precedence_resolution.lua", "integration")
 	write_module("shared/precedence_resolution.lua", "shared")
 	write_module("lib/precedence_resolution.lua", "legacy")
 
 	local widget_file = assert(io.open(temp_dir .. "/modules.lua", "w"))
 	widget_file:write([[
-local preferred = require("preferred_resolution")
+local integration = require("integration_resolution")
+local shared = require("shared_resolution")
 local legacy = require("legacy_resolution")
 local precedence = require("precedence_resolution")
 easybar.add(easybar.kind.item, "module-resolution", {
-	label = preferred .. ":" .. legacy .. ":" .. precedence,
+	label = integration .. ":" .. shared .. ":" .. legacy .. ":" .. precedence,
 })
 ]])
 	widget_file:close()
@@ -283,17 +286,24 @@ easybar.add(easybar.kind.item, "module-resolution", {
 	local api = new_api()
 	local loaded, failed = loader.load_widgets(temp_dir, { "modules.lua" }, api, log)
 	assert(loaded == 1 and failed == 0)
-	assert(api._state.items["module-resolution"].props.label.string == "shared:legacy:shared")
+	assert(api._state.items["module-resolution"].props.label.string == "integration:shared:legacy:integration")
 
-	for _, module_name in ipairs({ "preferred_resolution", "legacy_resolution", "precedence_resolution" }) do
+	for _, module_name in ipairs({
+		"integration_resolution",
+		"shared_resolution",
+		"legacy_resolution",
+		"precedence_resolution",
+	}) do
 		package.loaded[module_name] = nil
 	end
 	os.remove(temp_dir .. "/modules.lua")
-	os.remove(temp_dir .. "/shared/preferred_resolution.lua")
+	os.remove(temp_dir .. "/integrations/integration_resolution.lua")
+	os.remove(temp_dir .. "/integrations/precedence_resolution.lua")
+	os.remove(temp_dir .. "/shared/shared_resolution.lua")
 	os.remove(temp_dir .. "/shared/precedence_resolution.lua")
 	os.remove(temp_dir .. "/lib/legacy_resolution.lua")
 	os.remove(temp_dir .. "/lib/precedence_resolution.lua")
-	os.execute('rmdir "' .. temp_dir .. '/shared" "' .. temp_dir .. '/lib"')
+	os.execute('rmdir "' .. temp_dir .. '/integrations" "' .. temp_dir .. '/shared" "' .. temp_dir .. '/lib"')
 	os.execute('rmdir "' .. temp_dir .. '"')
 end
 

@@ -12,17 +12,20 @@ Before `loader.lua` executes widget entrypoints, it prepends these user-module p
 standard module search path in this order:
 
 ```text
+<widgets_dir>/integrations/?.lua
+<widgets_dir>/integrations/?/init.lua
 <widgets_dir>/shared/?.lua
 <widgets_dir>/shared/?/init.lua
 <widgets_dir>/lib/?.lua
 <widgets_dir>/lib/?/init.lua
 ```
 
-The `shared/` paths take precedence when the same module name also exists below `lib/`.
+Integration modules take precedence over generic shared modules, which take precedence over the
+legacy `lib/` fallback.
 
 Inside `loader.lua`:
 
-1. configure the preferred `shared/` module paths and legacy `lib/` fallback paths
+1. configure integration, generic shared, and legacy `lib/` module paths
 2. create an isolated environment per top-level widget file
 3. inject the scoped `easybar` API
 4. execute the widget file
@@ -32,7 +35,7 @@ Inside `loader.lua`:
 - each widget has isolated defaults
 - all widgets share one runtime registry
 - only regular top-level `*.lua` files are loaded as widget entrypoints
-- modules below `shared/` or legacy `lib/` run only through standard `require(...)` calls
+- modules below `integrations/`, `shared/`, or legacy `lib/` run only through standard `require(...)` calls
 - required modules use Lua's process-wide `package.loaded` cache
 - reload is a full reset
 - widget environments fall back to `_G`, so isolation is about local state, not security

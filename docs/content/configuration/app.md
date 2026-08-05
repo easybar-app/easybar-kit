@@ -37,7 +37,7 @@ The directory where EasyBar loads Lua widget files from.
 widgets_dir = "~/.config/easybar/widgets"
 ```
 
-Every regular `*.lua` file directly inside this directory is loaded by the Lua runtime. Files below the preferred `shared/` subdirectory are available through standard Lua `require(...)` calls and are not started as widgets. The legacy `lib/` subdirectory remains supported for compatibility.
+Every regular `*.lua` file directly inside this directory is loaded by the Lua runtime. Service-specific modules below `integrations/` and generic modules below `shared/` are available through standard Lua `require(...)` calls and are not started as widgets. The legacy `lib/` subdirectory remains supported for compatibility.
 
 If you are creating your first custom widget, continue with [First Widget](../lua/guides/first-widget.md). For shared helper code, see [Reusable Modules](../lua/guides/modules.md).
 

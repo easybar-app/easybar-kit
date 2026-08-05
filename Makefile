@@ -95,6 +95,7 @@ LOCAL_LAUNCH_AGENT_DIR ?= $(HOME)/Library/LaunchAgents
 LOCAL_LOG_DIR ?= $(HOME)/Library/Logs/EasyBar
 LOCAL_STATE_DIR ?= $(HOME)/Library/Application Support/EasyBar/LocalInstall
 WIDGETS_INSTALL_DIR ?= $(HOME)/.config/easybar/widgets
+WIDGETS_INSTALL_MANIFEST ?= $(CURDIR)/widgets/install-manifest.csv
 IMAGE_CONVERT ?= magick
 SVG_CONVERT ?= rsvg-convert
 CLICLICK ?= cliclick
@@ -346,10 +347,11 @@ install-local: ## Build and install the current checkout with a Git-derived loca
 		--log-dir "$(LOCAL_LOG_DIR)" \
 		--state-dir "$(LOCAL_STATE_DIR)"
 
-install-widgets: ## Interactively copy bundled widgets into WIDGETS_INSTALL_DIR.
+install-widgets: ## Interactively copy bundled widgets and declared dependencies.
 	@scripts/dev/install-widgets.sh \
 		"$(CURDIR)/widgets" \
-		"$(WIDGETS_INSTALL_DIR)"
+		"$(WIDGETS_INSTALL_DIR)" \
+		"$(WIDGETS_INSTALL_MANIFEST)"
 
 uninstall-local: ## Remove the local installation and restore the previous Homebrew service states.
 	@scripts/dev/uninstall-local.sh \
@@ -492,3 +494,4 @@ ICON_SIZES := 16x16 32x32 48x48 64x64
 
 favicon: ## Create favicons.
 	@scripts/assets/favicons.sh "$(SVG_CONVERT)" "$(SVG)" "$(ICON_DIR)" $(ICON_SIZES)
+

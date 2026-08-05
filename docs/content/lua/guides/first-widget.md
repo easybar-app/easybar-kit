@@ -50,7 +50,7 @@ The `clock` variable stores the handle returned by EasyBar, which lets the callb
 
 ## Where this widget goes
 
-EasyBar loads every regular `*.lua` file directly inside your widgets directory. Files in subdirectories are not started as widgets. Put reusable helpers below `shared/` and load them with `require(...)`. Existing `lib/` modules remain supported for compatibility.
+EasyBar loads every regular `*.lua` file directly inside your widgets directory. Files in subdirectories are not started as widgets. Put service-specific implementations below `integrations/<service>/`, generic helpers below `shared/`, and load them with `require(...)`. Existing `lib/` modules remain supported for compatibility.
 
 That directory is configured with `[app].widgets_dir` in `config.toml`.
 

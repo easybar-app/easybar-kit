@@ -114,7 +114,7 @@ Keep stable developer commands in the Makefile and delegate large reusable shell
 
 - widget directory is executable Lua
 - every regular top-level `*.lua` file is loaded as a widget entrypoint
-- reusable modules live below the widget `shared/` directory; legacy `lib/` remains a fallback
+- service-specific modules live below `integrations/`, generic modules below `shared/`, and legacy `lib/` remains a fallback
 - reload is a full reset
 - protocol:
   - Lua socket JSON in/out via `EasyBarLuaRuntime`

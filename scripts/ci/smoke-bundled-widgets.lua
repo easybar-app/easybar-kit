@@ -11,6 +11,8 @@ assert(#widget_files > 0, "at least one bundled widget file is required")
 
 package.path = table.concat({
 	root .. "/Sources/EasyBarApp/Lua/?.lua",
+	root .. "/widgets/integrations/?.lua",
+	root .. "/widgets/integrations/?/init.lua",
 	root .. "/widgets/shared/?.lua",
 	root .. "/widgets/shared/?/init.lua",
 	root .. "/widgets/lib/?.lua",

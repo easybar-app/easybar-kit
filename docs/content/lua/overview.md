@@ -48,7 +48,7 @@ The Lua runtime is for custom widgets and user-specific behavior. Built-in platf
 ## User-facing guides
 
 - [First Widget](guides/first-widget.md) for a step-by-step starting point.
-- [Reusable Modules](guides/modules.md) for shared helpers below the widget `shared/` directory.
+- [Reusable Modules](guides/modules.md) for service packages below `integrations/` and generic helpers below `shared/`.
 - [Subscribe To Events](guides/subscribe-to-events.md) for event-driven updates.
 - [Commands](guides/commands.md) for shell-command integration.
 - [Widget Settings](guides/storage.md) for reading and persisting widget-owned configuration.

@@ -8,6 +8,8 @@ end
 
 package.path = table.concat({
 	root .. "/Sources/EasyBarApp/Lua/?.lua",
+	root .. "/widgets/integrations/?.lua",
+	root .. "/widgets/integrations/?/init.lua",
 	root .. "/widgets/shared/?.lua",
 	root .. "/widgets/shared/?/init.lua",
 	root .. "/widgets/lib/?.lua",
@@ -78,6 +80,15 @@ local function decoded_fixture(value)
 		return json.array({ json.array({}) })
 	elseif value == "github-object" then
 		return json.object({ message = "not an array" })
+	elseif value == "github-pr-ready" then
+		return json.object({
+			state = "OPEN",
+			isDraft = false,
+			mergeable = "MERGEABLE",
+			mergeStateStatus = "CLEAN",
+			reviewDecision = "APPROVED",
+			headRefOid = "0123456789abcdef",
+		})
 	elseif value == "gitlab-issues" then
 		return json.array({ gitlab_issue(1) })
 	elseif value == "gitlab-merge-requests" then
@@ -115,6 +126,7 @@ local function make_host()
 		context_action_handler = nil,
 		commands = {},
 		timers = {},
+		storage_values = {},
 		next_token = 0,
 	}
 
@@ -144,10 +156,12 @@ local function make_host()
 		log = callable_noop(),
 		inbox = inbox,
 		storage = {
-			get = function(_, _, default)
-				return default
+			get = function(widget, key, default)
+				local value = state.storage_values[widget .. ":" .. key]
+				return value == nil and default or value
 			end,
-			set = function()
+			set = function(widget, key, value)
+				state.storage_values[widget .. ":" .. key] = value
 				return true, nil
 			end,
 		},
@@ -249,6 +263,15 @@ local function make_host()
 		return false
 	end
 
+	function state:source_action(action_id)
+		for _, action in ipairs((self.configuration or {}).actions or {}) do
+			if action.id == action_id then
+				return action
+			end
+		end
+		return nil
+	end
+
 	return easybar, state
 end
 
@@ -285,6 +308,38 @@ local function test_github_item_refresh_stays_inline()
 	state:complete_next_command("github-empty", 0)
 	assert(state:item("thread-1") == nil, "GitHub refreshed item must disappear")
 	assert(not state:has_busy_source_action(), "GitHub item completion must remain source-idle")
+end
+
+local function test_github_merge_method_setting_persists_and_drives_merge()
+	local state = load_widget("github-inbox.lua")
+	assert(
+		assert(state:source_action("merge_method:squash")).title == "✓ Squash and merge",
+		"GitHub must mark the default squash method in source actions"
+	)
+
+	state.context_action_handler({ action_id = "merge_method:rebase" })
+	assert(state.storage_values["github-inbox:merge_method"] == "rebase", "GitHub must persist the selected merge method")
+	assert(
+		assert(state:source_action("merge_method:rebase")).title == "✓ Rebase and merge",
+		"GitHub must immediately mark the persisted merge method"
+	)
+
+	state:run_next_timer()
+	state:complete_next_command("github-one", 0)
+	state.action_handler({ action_id = "prepare_merge", target_widget_id = "thread-1" })
+	state:complete_next_command("github-pr-ready", 0)
+	assert(state:item_has_action("thread-1", "confirm_merge"), "ready pull requests must expose merge confirmation")
+
+	state.action_handler({ action_id = "confirm_merge", target_widget_id = "thread-1" })
+	local merge_command = assert(state.commands[1], "GitHub must start a merge command").command
+	local has_rebase = false
+	local has_squash = false
+	for _, argument in ipairs(merge_command) do
+		has_rebase = has_rebase or argument == "--rebase"
+		has_squash = has_squash or argument == "--squash"
+	end
+	assert(has_rebase, "GitHub merge command must use the persisted rebase method")
+	assert(not has_squash, "GitHub merge command must not retain the previous squash method")
 end
 
 local function test_gitlab_mark_read_stays_local()
@@ -461,6 +516,7 @@ for name in pairs(expected_widgets) do
 end
 
 test_github_item_refresh_stays_inline()
+test_github_merge_method_setting_persists_and_drives_merge()
 test_gitlab_mark_read_stays_local()
 test_brew_item_refresh_stays_inline()
 test_github_overlapping_mutations_coalesce_refresh()
