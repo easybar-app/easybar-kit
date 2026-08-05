@@ -56,11 +56,30 @@ extension LuaRenderRuntimeTestCase {
   }
 
   actor RuntimeHostBridge {
+    private struct StorageResponse: Encodable {
+      let protocolVersion = easyBarLuaRuntimeProtocolVersion
+      let type = "storage_response"
+      let token: String
+      let ok = true
+      let found: Bool
+      let value: WidgetStorageValue?
+
+      enum CodingKeys: String, CodingKey {
+        case protocolVersion = "protocol_version"
+        case type
+        case token
+        case ok
+        case found
+        case value
+      }
+    }
+
     private let recorder: RuntimeUpdateRecorder
     let decoder: JSONDecoder
     private let stdinHandle: FileHandle
     private let asyncResponseDelayNanoseconds: UInt64
     private let autoRespondToCommands: Bool
+    private var storageValues: [String: WidgetStorageValue] = [:]
 
     init(
       recorder: RuntimeUpdateRecorder,
@@ -104,6 +123,18 @@ extension LuaRenderRuntimeTestCase {
         return
       }
 
+      if let request = update.storageRequestPayload {
+        let storageKey = request.widget + ":" + request.key
+        if request.operation == "set", let value = request.value {
+          storageValues[storageKey] = value
+          try sendStorageResponse(token: request.token, found: true, value: value)
+        } else {
+          let value = storageValues[storageKey]
+          try sendStorageResponse(token: request.token, found: value != nil, value: value)
+        }
+        return
+      }
+
       await recorder.append(update)
     }
 
@@ -134,6 +165,8 @@ extension LuaRenderRuntimeTestCase {
         return "inbox_clear:\(update.source ?? "unknown")"
       case .inboxConfigure:
         return "inbox_configure:\(update.source ?? "unknown"):\(update.actions?.count ?? 0)"
+      case .storageRequest:
+        return "storage_request:\(update.widget ?? "unknown"):\(update.key ?? "unknown")"
       case .tree:
         if let payload = update.treePayload,
           let root = payload.nodes.first(where: { $0.id == payload.root })
@@ -150,6 +183,17 @@ extension LuaRenderRuntimeTestCase {
         \n
         """
       try stdinHandle.write(contentsOf: Data(payload.utf8))
+    }
+
+    private func sendStorageResponse(
+      token: String,
+      found: Bool,
+      value: WidgetStorageValue?
+    ) throws {
+      let payload = try JSONEncoder().encode(
+        StorageResponse(token: token, found: found, value: value)
+      )
+      try stdinHandle.write(contentsOf: payload + Data("\n".utf8))
     }
   }
 

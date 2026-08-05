@@ -47,6 +47,7 @@ local widget_logs = {}
 local last_command_context = nil
 local last_async_hook_options = nil
 local last_completed_hook_options = nil
+local storage_values = {}
 
 local log = {
 	trace = function() end,
@@ -105,6 +106,14 @@ local function new_api()
 		request_cancel_timer = function(token)
 			cancelled_timers[#cancelled_timers + 1] = token
 		end,
+		storage_get = function(widget, key)
+			local value = storage_values[widget .. ":" .. key]
+			return { ok = true, found = value ~= nil, value = value }
+		end,
+		storage_set = function(widget, key, value)
+			storage_values[widget .. ":" .. key] = value
+			return { ok = true, found = true, value = value }
+		end,
 		publish_inbox = function()
 			inbox_publish_count = inbox_publish_count + 1
 		end,
@@ -115,6 +124,21 @@ local function new_api()
 			max_output_bytes = 65536,
 		},
 	})
+end
+
+-- Widget storage uses validated namespace segments and returns defaults for missing values.
+do
+	local api = new_api()
+	local widget = api.make_widget_api("/widgets/github-inbox.lua")
+	assert(widget.storage.get("github-inbox", "merge_method", "squash") == "squash")
+	assert(widget.storage.set("github-inbox", "merge_method", "rebase") == true)
+	assert(widget.storage.get("github-inbox", "merge_method") == "rebase")
+	expect_error("storage widget", function()
+		widget.storage.get("../app", "merge_method")
+	end)
+	expect_error("finite", function()
+		widget.storage.set("github-inbox", "bad_number", math.huge)
+	end)
 end
 
 -- Widget host logs use a stable entrypoint name instead of the complete source path.

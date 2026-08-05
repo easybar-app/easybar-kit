@@ -165,6 +165,14 @@ local function make_easybar(widget_name)
 			on_action = function() end,
 			on_context_action = function() end,
 		},
+		storage = {
+			get = function(_, _, default)
+				return default
+			end,
+			set = function()
+				return true, nil
+			end,
+		},
 	}
 
 	function easybar.add(_, id, props)

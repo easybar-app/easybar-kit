@@ -176,6 +176,44 @@ final class WidgetTreeUpdateTests: XCTestCase {
     )
   }
 
+  func testStorageRequestsAreDecodedAndBoundedToPlainSegments() throws {
+    let get = try WidgetRuntimeProtocolDecoder().decodeMessage(
+      from:
+        #"{"protocol_version":1,"type":"storage_request","token":"storage-1","operation":"get","widget":"github-inbox","key":"merge_method"}"#
+    )
+    guard case .storageRequest(let token, let widget, let key, let operation, let value) = get else {
+      return XCTFail("Expected storage request")
+    }
+    XCTAssertEqual(token, "storage-1")
+    XCTAssertEqual(widget, "github-inbox")
+    XCTAssertEqual(key, "merge_method")
+    XCTAssertEqual(operation, .get)
+    XCTAssertNil(value)
+
+    let set = try WidgetRuntimeProtocolDecoder().decodeMessage(
+      from:
+        #"{"protocol_version":1,"type":"storage_request","token":"storage-2","operation":"set","widget":"github-inbox","key":"merge_method","value":"rebase"}"#
+    )
+    guard case .storageRequest(_, _, _, let setOperation, let setValue) = set else {
+      return XCTFail("Expected storage request")
+    }
+    XCTAssertEqual(setOperation, .set)
+    XCTAssertEqual(setValue, .string("rebase"))
+
+    XCTAssertThrowsError(
+      try WidgetRuntimeProtocolDecoder().decodeMessage(
+        from:
+          #"{"protocol_version":1,"type":"storage_request","token":"storage-3","operation":"get","widget":"../app","key":"merge_method"}"#
+      )
+    )
+    XCTAssertThrowsError(
+      try WidgetRuntimeProtocolDecoder().decodeMessage(
+        from:
+          #"{"protocol_version":1,"type":"storage_request","token":"storage-4","operation":"set","widget":"github-inbox","key":"merge_method"}"#
+      )
+    )
+  }
+
   func testImagePathDecodesToPathSource() throws {
     let node = try decodeNode(imageFields: ",\"image_path\":\"/tmp/icon.svg\"")
 

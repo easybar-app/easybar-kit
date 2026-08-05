@@ -15,7 +15,6 @@ local POLL_INTERVAL_SECONDS = 300
 local NETWORK_READY_DELAY_SECONDS = 3
 local REFRESH_BACKOFF_SECONDS = { 2, 5 }
 local MAX_ITEMS = 500
-local PR_MERGE_METHOD = "squash"
 local PR_VIEW_TIMEOUT_SECONDS = 20
 local PR_MERGE_TIMEOUT_SECONDS = 5 * 60
 
@@ -24,6 +23,8 @@ local PR_MERGE_FLAGS = {
 	rebase = "--rebase",
 	squash = "--squash",
 }
+local configured_merge_method = easybar.storage.get("github-inbox", "merge_method", "squash")
+local PR_MERGE_METHOD = PR_MERGE_FLAGS[configured_merge_method] ~= nil and configured_merge_method or "squash"
 local notifications = {}
 local current_error = nil
 local active_refresh = nil
@@ -33,6 +34,13 @@ local source_activity = nil
 local busy_item_actions = {}
 local merge_confirmations = {}
 local log = easybar.log
+
+if PR_MERGE_METHOD ~= configured_merge_method then
+	log(
+		easybar.level.warn,
+		"unsupported configured merge_method=" .. tostring(configured_merge_method) .. "; using squash"
+	)
+end
 
 local function configure_source_actions()
 	local actions

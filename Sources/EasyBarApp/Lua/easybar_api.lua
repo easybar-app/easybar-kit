@@ -534,6 +534,28 @@ function EasyBarInbox.on_action(source, handler) end
 ---@return EasyBarSubscriptionHandle subscription Disposable registration handle.
 function EasyBarInbox.on_context_action(source, handler) end
 
+---Values supported by widget config storage.
+---@alias EasyBarStorageValue string|boolean|number|string[]
+
+---Widget settings persisted below `[widgets.<widget>]` in `config.toml`.
+---@class EasyBarStorage
+local EasyBarStorage = {}
+
+---Reads one widget setting from `config.toml`.
+---@param widget string Widget namespace below `[widgets]`; letters, numbers, underscores, and hyphens are accepted.
+---@param key string Setting key; letters, numbers, underscores, and hyphens are accepted.
+---@param default? EasyBarStorageValue Value returned when the setting does not exist.
+---@return EasyBarStorageValue|nil value Stored value, `default`, or `nil` when absent.
+function EasyBarStorage.get(widget, key, default) end
+
+---Persists one widget setting in `config.toml`.
+---@param widget string Widget namespace below `[widgets]`; letters, numbers, underscores, and hyphens are accepted.
+---@param key string Setting key; letters, numbers, underscores, and hyphens are accepted.
+---@param value EasyBarStorageValue String, boolean, finite number, or dense string array to persist.
+---@return boolean ok Whether the config was updated.
+---@return string? error_message Failure detail when `ok` is `false`.
+function EasyBarStorage.set(widget, key, value) end
+
 ---@class EasyBarJsonNull
 
 ---@class EasyBarJson
@@ -693,6 +715,7 @@ function EasyBarInbox.on_context_action(source, handler) end
 ---@field subscribe fun(id: string, events: EasyBarEventToken|EasyBarEventToken[], handler: EasyBarEventHandler): EasyBarSubscriptionHandle Subscribes one node by id and returns a disposable handle.
 ---@field theme EasyBarTheme Active resolved theme.
 ---@field inbox EasyBarInbox Shared native inbox publishing API.
+---@field storage EasyBarStorage Widget settings backed by the reserved `[widgets]` config namespace.
 local EasyBar = {}
 
 ---Resolves a path relative to the current widget file.
@@ -872,6 +895,10 @@ EasyBar.theme = {}
 ---Shared native inbox publishing API.
 ---@type EasyBarInbox
 EasyBar.inbox = {}
+
+---Widget settings backed by the reserved `[widgets]` config namespace.
+---@type EasyBarStorage
+EasyBar.storage = {}
 
 ---Writes one widget-scoped log line to the EasyBar host logger.
 ---Supported levels are `trace`, `debug`, `info`, `warn`, and `error`.

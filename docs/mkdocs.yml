@@ -44,6 +44,7 @@ nav:
       - Overview: configuration/overview.md
       - Reference: configuration/reference.md
       - App Settings: configuration/app.md
+      - Widget Settings: configuration/widget-settings.md
       - Environment: configuration/environment.md
       - Themes: configuration/themes.md
       - Built-ins: configuration/builtins.md
@@ -75,6 +76,7 @@ nav:
           - Native Inbox: lua/guides/inbox.md
           - Intervals: lua/guides/intervals.md
           - Commands: lua/guides/commands.md
+          - Widget Settings: lua/guides/storage.md
           - Logging: lua/guides/logging.md
           - Examples: lua/guides/examples.md
           - Bundled Widgets: lua/guides/bundled-widgets.md

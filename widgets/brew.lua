@@ -327,12 +327,7 @@ local function run_package_upgrade(kind, callback)
 		return
 	end
 
-	run_logged_command(
-		package_upgrade_arguments(kind, names),
-		EXEC.upgrade,
-		"brew upgrade --" .. kind,
-		callback
-	)
+	run_logged_command(package_upgrade_arguments(kind, names), EXEC.upgrade, "brew upgrade --" .. kind, callback)
 end
 
 --- Returns whether the widget should run another Homebrew update now.

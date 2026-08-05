@@ -1,5 +1,53 @@
 import Foundation
 
+/// Scalar or string-array value accepted by widget-backed TOML storage.
+enum WidgetStorageValue: Codable, Equatable, Sendable {
+  case string(String)
+  case integer(Int)
+  case double(Double)
+  case bool(Bool)
+  case stringArray([String])
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    if let value = try? container.decode(Bool.self) {
+      self = .bool(value)
+    } else if let value = try? container.decode(Int.self) {
+      self = .integer(value)
+    } else if let value = try? container.decode(Double.self) {
+      self = .double(value)
+    } else if let value = try? container.decode(String.self) {
+      self = .string(value)
+    } else if let value = try? container.decode([String].self) {
+      self = .stringArray(value)
+    } else {
+      throw DecodingError.typeMismatch(
+        WidgetStorageValue.self,
+        .init(
+          codingPath: decoder.codingPath,
+          debugDescription: "widget storage values must be strings, booleans, numbers, or string arrays"
+        )
+      )
+    }
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.singleValueContainer()
+    switch self {
+    case .string(let value):
+      try container.encode(value)
+    case .integer(let value):
+      try container.encode(value)
+    case .double(let value):
+      try container.encode(value)
+    case .bool(let value):
+      try container.encode(value)
+    case .stringArray(let value):
+      try container.encode(value)
+    }
+  }
+}
+
 /// Protocol version expected between EasyBar and the Lua widget runtime.
 let easyBarLuaRuntimeProtocolVersion = 1
 
@@ -23,6 +71,8 @@ struct WidgetTreeUpdate: Codable, Sendable {
   let source: String?
   let items: [InboxItem]?
   let actions: [InboxAction]?
+  let key: String?
+  let value: WidgetStorageValue?
 
   enum CodingKeys: String, CodingKey {
     case protocolVersion
@@ -42,6 +92,8 @@ struct WidgetTreeUpdate: Codable, Sendable {
     case source
     case items
     case actions
+    case key
+    case value
   }
 
   enum Kind: String, Codable, Sendable {
@@ -56,6 +108,7 @@ struct WidgetTreeUpdate: Codable, Sendable {
     case inboxReplace = "inbox_replace"
     case inboxClear = "inbox_clear"
     case inboxConfigure = "inbox_configure"
+    case storageRequest = "storage_request"
   }
 
   /// Returns whether this update contains subscriptions.
@@ -119,6 +172,13 @@ struct WidgetTreeUpdate: Codable, Sendable {
   var inboxConfigurationPayload: InboxSourceConfiguration? {
     guard type == .inboxConfigure, let source, let actions else { return nil }
     return InboxSourceConfiguration(source: source, actions: actions)
+  }
+
+  var storageRequestPayload:
+    (token: String, widget: String, key: String, operation: String, value: WidgetStorageValue?)?
+  {
+    guard type == .storageRequest, let token, let widget, let key, let operation else { return nil }
+    return (token: token, widget: widget, key: key, operation: operation, value: value)
   }
 
   /// Returns the subscribed event names or an empty list.

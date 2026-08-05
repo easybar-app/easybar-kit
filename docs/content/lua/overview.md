@@ -51,6 +51,7 @@ The Lua runtime is for custom widgets and user-specific behavior. Built-in platf
 - [Reusable Modules](guides/modules.md) for shared helpers below the widget `lib/` directory.
 - [Subscribe To Events](guides/subscribe-to-events.md) for event-driven updates.
 - [Commands](guides/commands.md) for shell-command integration.
+- [Widget Settings](guides/storage.md) for reading and persisting widget-owned configuration.
 - [Grouping](guides/grouping.md) and [Popups](guides/popups.md) for richer layouts.
 - [Editor Support](guides/editor-support.md) for LuaLS setup.
 - [Examples](guides/examples.md) for complete patterns.

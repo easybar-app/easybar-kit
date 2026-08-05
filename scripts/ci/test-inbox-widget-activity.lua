@@ -141,6 +141,14 @@ local function make_host()
 		json = { decode = decoded_fixture, is_array = json.is_array, null = json.null },
 		log = callable_noop(),
 		inbox = inbox,
+		storage = {
+			get = function(_, _, default)
+				return default
+			end,
+			set = function()
+				return true, nil
+			end,
+		},
 	}
 
 	function easybar.asset(path)

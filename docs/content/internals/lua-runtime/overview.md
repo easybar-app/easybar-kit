@@ -114,7 +114,8 @@ external process execution and one-shot scheduling to Swift:
 - `command_cancel` cancels the active process group for one asynchronous command token.
 - `timer_request` schedules a one-shot host timer with `delay_seconds`. Command and timer tokens are nonempty, contain no control characters, and are limited to 256 UTF-8 bytes.
 - `timer_cancel` removes a pending host timer.
-- Swift sends `command_response`, `timer_fired`, or `timer_rejected` back to Lua, which dispatches or releases the stored callback
+- `storage_request` synchronously reads or writes one validated scalar or string array below `widgets.<widget>.<key>` in `config.toml`; the host constructs this prefix and rejects path syntax in widget names and keys.
+- Swift sends `command_response`, `storage_response`, `timer_fired`, or `timer_rejected` back to Lua, which dispatches or releases the stored callback
   and flushes any resulting tree mutations.
 
 This keeps retries and backoff orchestration in Lua while process lifecycle, PATH resolution,
@@ -231,5 +232,4 @@ Keeping retry policy outside the command string means:
 
 See [Commands](../../lua/guides/commands.md) for the public API behavior and
 [Reusable Modules](../../lua/guides/modules.md) for the bundled retry helper.
-
 

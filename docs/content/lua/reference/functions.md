@@ -515,6 +515,43 @@ Atomically replaces every current inbox item for one source.
 | `source` | `string`             | Stable publisher name used for grouping and action routing. |
 | `items`  | `EasyBarInboxItem[]` | Complete current snapshot for this source.                  |
 
+### `EasyBarStorage.get`
+
+Reads one widget setting from `config.toml`.
+
+#### Parameters
+
+| Name                   | Type                  | Description                                                                                  |
+| ---------------------- | --------------------- | -------------------------------------------------------------------------------------------- |
+| `widget`               | `string`              | Widget namespace below `[widgets]`; letters, numbers, underscores, and hyphens are accepted. |
+| `key`                  | `string`              | Setting key; letters, numbers, underscores, and hyphens are accepted.                        |
+| `default` _(optional)_ | `EasyBarStorageValue` | Value returned when the setting does not exist.                                              |
+
+#### Returns
+
+| Type                       | Name    | Description                                    |
+| -------------------------- | ------- | ---------------------------------------------- |
+| `EasyBarStorageValue\|nil` | `value` | Stored value, `default`, or `nil` when absent. |
+
+### `EasyBarStorage.set`
+
+Persists one widget setting in `config.toml`.
+
+#### Parameters
+
+| Name     | Type                  | Description                                                                                  |
+| -------- | --------------------- | -------------------------------------------------------------------------------------------- |
+| `widget` | `string`              | Widget namespace below `[widgets]`; letters, numbers, underscores, and hyphens are accepted. |
+| `key`    | `string`              | Setting key; letters, numbers, underscores, and hyphens are accepted.                        |
+| `value`  | `EasyBarStorageValue` | String, boolean, finite number, or dense string array to persist.                            |
+
+#### Returns
+
+| Type      | Name            | Description                          |
+| --------- | --------------- | ------------------------------------ |
+| `boolean` | `ok`            | Whether the config was updated.      |
+| `string?` | `error_message` | Failure detail when `ok` is `false`. |
+
 ### `EasyBarSubscriptionHandle:dispose`
 
 Removes this subscription. Repeated calls return false.

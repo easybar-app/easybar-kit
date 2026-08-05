@@ -289,6 +289,34 @@ local function widget_log_source(source)
 	return file:gsub("%.lua$", "")
 end
 
+--- Returns one validated widget-storage path segment.
+local function normalize_storage_segment(value, description)
+	assert(type(value) == "string", description .. " must be a string")
+	assert(value ~= "", description .. " must not be empty")
+	assert(#value <= 128, description .. " must be at most 128 bytes")
+	assert(value:match("^[%w_-]+$") ~= nil, description .. " may contain only letters, numbers, underscores, and hyphens")
+	return value
+end
+
+--- Validates a value supported by the host TOML storage bridge.
+local function validate_storage_value(value)
+	local value_type = type(value)
+	if value_type == "string" or value_type == "boolean" then
+		return
+	end
+	if value_type == "number" then
+		assert(value == value and value ~= math.huge and value ~= -math.huge, "storage number must be finite")
+		return
+	end
+	if value_type == "table" and json_module.is_array(value) then
+		for _, item in ipairs(value) do
+			assert(type(item) == "string", "storage arrays may contain only strings")
+		end
+		return
+	end
+	error("storage value must be a string, boolean, finite number, or string array")
+end
+
 --- Builds one widget-scoped EasyBar API instance.
 function M.new(log, hooks)
 	local registry = registry_module.new(hooks)
@@ -687,6 +715,34 @@ function M.new(log, hooks)
 		widget_api.log_dir = api.log_dir
 		widget_api.theme = theme_module.current()
 		widget_api.inbox = {}
+		widget_api.storage = {}
+
+		function widget_api.storage.get(widget, key, default)
+			widget = normalize_storage_segment(widget, "storage widget")
+			key = normalize_storage_segment(key, "storage key")
+			local response = hooks.storage_get(widget, key)
+			if type(response) ~= "table" or response.ok ~= true then
+				error(
+					"easybar.storage.get failed: "
+						.. tostring(type(response) == "table" and response.error or "invalid host response")
+				)
+			end
+			if response.found == true then
+				return response.value
+			end
+			return default
+		end
+
+		function widget_api.storage.set(widget, key, value)
+			widget = normalize_storage_segment(widget, "storage widget")
+			key = normalize_storage_segment(key, "storage key")
+			validate_storage_value(value)
+			local response = hooks.storage_set(widget, key, value)
+			if type(response) ~= "table" or response.ok ~= true then
+				return false, tostring(type(response) == "table" and response.error or "invalid host response")
+			end
+			return true, nil
+		end
 
 		function widget_api.inbox.replace(source, items)
 			source = normalize_inbox_source(source)

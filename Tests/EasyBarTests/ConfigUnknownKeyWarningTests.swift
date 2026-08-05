@@ -169,6 +169,10 @@ final class ConfigUnknownKeyWarningTests: ConfigLoaderTestCase {
 
       [builtins.calendar.composer.alert_labels]
       tomorrow_morning = "Tomorrow morning"
+
+      [widgets.github-inbox]
+      merge_method = "squash"
+      arbitrary_flag = true
       """,
       to: configFileURL
     )

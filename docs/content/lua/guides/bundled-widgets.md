@@ -40,6 +40,15 @@ persistent state; EasyBar does not duplicate the selected node in `config.toml`.
 
 GitHub and GitLab inbox items expose a dedicated **Mark as read** action. GitHub also acknowledges the notification through the GitHub API. GitLab publishes assigned work items rather than notification records, so its action updates EasyBar's persistent local read state.
 
+The GitHub inbox uses squash merging by default. Choose the pull-request merge strategy with widget settings:
+
+```toml
+[widgets.github-inbox]
+merge_method = "squash" # merge, rebase, or squash
+```
+
+Unsupported values fall back to `squash` and produce a widget log warning. See [Widget Settings](storage.md) for the Lua storage API.
+
 GitHub and GitLab publish each item's native `url` and `timestamp`, so EasyBar supplies the **Open**
 button and sorts mixed sources by their service-provided update time. Failed or malformed refreshes
 keep the last valid snapshot visible and add a bounded error item. GitHub coalesces refreshes that

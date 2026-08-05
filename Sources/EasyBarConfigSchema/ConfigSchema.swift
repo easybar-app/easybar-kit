@@ -15,6 +15,10 @@ extension ConfigSchemaRegistry {
     "builtins.calendar.composer.travel_time_labels",
   ]
 
+  private static let freeFormSectionPrefixes: Set<String> = [
+    "widgets"
+  ]
+
   private static let placementKeys: Set<String> = [
     "enabled", "position", "order", "group",
   ]
@@ -81,6 +85,7 @@ extension ConfigSchemaRegistry {
   /// Returns true when a section accepts arbitrary keys.
   public static func isFreeFormSection(_ path: String) -> Bool {
     freeFormSections.contains(path)
+      || freeFormSectionPrefixes.contains(where: { path == $0 || path.hasPrefix("\($0).") })
   }
 
   /// Returns known keys for one TOML section path.
@@ -103,7 +108,7 @@ extension ConfigSchemaRegistry {
   /// Returns true when a TOML section path is known.
   public static func isKnownSection(_ path: String) -> Bool {
     knownKeysBySection[path] != nil
-      || freeFormSections.contains(path)
+      || isFreeFormSection(path)
       || isBuiltinGroup(path)
       || isBuiltinGroupStyle(path)
       || isNamedBuiltinSpacer(path)

@@ -2,6 +2,8 @@
 
 EasyBar starts with built-in defaults even when no custom config file exists. The default bar enables spaces, battery, Wi-Fi, and calendar.
 
+Lua-owned values live in the free-form `[widgets.<name>]` namespace. See [Widget Settings](widget-settings.md) for the config format and storage API.
+
 When present, EasyBar reads runtime config from:
 
 ```text

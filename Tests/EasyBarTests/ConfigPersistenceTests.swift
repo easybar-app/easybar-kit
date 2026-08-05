@@ -79,6 +79,32 @@ final class ConfigPersistenceHardeningTests: XCTestCase {
     XCTAssertTrue(try String(contentsOf: targetURL, encoding: .utf8).contains("develop = true"))
   }
 
+  @MainActor
+  func testWidgetSettingIsPersistedBelowReservedWidgetsNamespace() throws {
+    let directory = try makeTemporaryDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let configURL = directory.appendingPathComponent("config.toml")
+    try "[app]\ndevelop = false\n".write(to: configURL, atomically: false, encoding: .utf8)
+
+    let persistence = ConfigPersistence(configPath: configURL.path, logger: makeLogger())
+    XCTAssertTrue(
+      persistence.apply([
+        TOMLEdit(
+          path: ["widgets", "github-inbox", "merge_method"],
+          value: .string("rebase")
+        )
+      ])
+    )
+
+    let table = try TOMLTable(string: String(contentsOf: configURL, encoding: .utf8))
+    XCTAssertEqual(
+      table["widgets"]?.table?["github-inbox"]?.table?["merge_method"]?.string,
+      "rebase"
+    )
+    XCTAssertEqual(table["app"]?.table?["develop"]?.bool, false)
+  }
+
   private func makeTemporaryDirectory() throws -> URL {
     let directory = FileManager.default.temporaryDirectory
       .appendingPathComponent("easybar-config-persistence-\(UUID().uuidString)", isDirectory: true)

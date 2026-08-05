@@ -34,8 +34,14 @@ Use the full reference when you need exact property tables or event payload type
   Create a widget logger that prepends a stable prefix to host logs.
 - `easybar.log.with_file(file, options?)`
   Create a file-backed widget logger for command/output logs.
+- `easybar.storage.get(widget, key, default?)`
+  Read a widget-owned value below `[widgets.<widget>]` in `config.toml`.
+- `easybar.storage.set(widget, key, value)`
+  Persist a widget-owned string, boolean, finite number, or string array.
 
 See [Functions](reference/functions.md).
+
+See [Widget Settings](guides/storage.md) for the storage namespace and supported TOML values.
 
 Command callbacks receive status `0` for success. Host-side termination uses `65` for output-limit
 termination, `124` for timeout, `127` for a missing executable, and `130` for cancellation. See

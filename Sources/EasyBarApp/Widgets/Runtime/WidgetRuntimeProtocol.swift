@@ -21,6 +21,18 @@ enum WidgetRuntimeMessage {
   case inboxReplace(InboxSourceSnapshot)
   case inboxClear(source: String)
   case inboxConfigure(InboxSourceConfiguration)
+  case storageRequest(
+    token: String,
+    widget: String,
+    key: String,
+    operation: WidgetStorageOperation,
+    value: WidgetStorageValue?
+  )
+}
+
+enum WidgetStorageOperation: String, Sendable {
+  case get
+  case set
 }
 
 /// Decodes and classifies structured messages emitted by the Lua widget runtime.
@@ -143,6 +155,31 @@ struct WidgetRuntimeProtocolDecoder {
         throw WidgetRuntimeProtocolError.invalidPayload("invalid inbox configuration")
       }
       return .inboxConfigure(configuration)
+    case .storageRequest:
+      guard let request = update.storageRequestPayload,
+        let operation = WidgetStorageOperation(rawValue: request.operation)
+      else {
+        throw WidgetRuntimeProtocolError.invalidPayload("invalid lua storage request")
+      }
+      let token = try normalizedToken(request.token, name: "storage request")
+      let widget = try normalizedStorageSegment(request.widget, name: "widget")
+      let key = try normalizedStorageSegment(request.key, name: "key")
+      if operation == .get, request.value != nil {
+        throw WidgetRuntimeProtocolError.invalidPayload("invalid lua storage get request")
+      }
+      if operation == .set, request.value == nil {
+        throw WidgetRuntimeProtocolError.invalidPayload("invalid lua storage set request")
+      }
+      if case .double(let value) = request.value, !value.isFinite {
+        throw WidgetRuntimeProtocolError.invalidPayload("invalid lua storage number")
+      }
+      return .storageRequest(
+        token: token,
+        widget: widget,
+        key: key,
+        operation: operation,
+        value: request.value
+      )
     }
   }
 
@@ -173,6 +210,19 @@ struct WidgetRuntimeProtocolDecoder {
       )
     }
     return normalized
+  }
+
+  /// Validates one storage path segment without accepting TOML path syntax.
+  private func normalizedStorageSegment(_ value: String, name: String) throws -> String {
+    guard !value.isEmpty,
+      value.utf8.count <= 128,
+      value.unicodeScalars.allSatisfy({
+        CharacterSet.alphanumerics.contains($0) || $0 == "_" || $0 == "-"
+      })
+    else {
+      throw WidgetRuntimeProtocolError.invalidPayload("invalid lua storage \(name)")
+    }
+    return value
   }
 
   /// Decodes one structured runtime update line.

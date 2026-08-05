@@ -33,6 +33,7 @@ actor WidgetEngine {
   private let inboxStore: InboxStore
   private let commandService: LuaCommandService
   private let timerService: LuaTimerService
+  private let storageService: LuaStorageService
   private let protocolDecoder = WidgetRuntimeProtocolDecoder()
 
   private var runtimeState = WidgetRuntimeState()
@@ -71,6 +72,11 @@ actor WidgetEngine {
     self.timerService = LuaTimerService(
       logger: logger.child("timers"),
       luaRuntime: luaRuntime
+    )
+    self.storageService = LuaStorageService(
+      logger: logger.child("storage"),
+      luaRuntime: luaRuntime,
+      configManager: configManager
     )
     self.restartScheduler = BackoffScheduler(
       label: "lua runtime restart",
@@ -390,6 +396,14 @@ actor WidgetEngine {
       await MainActor.run {
         inboxStore.configure(source: configuration.source, actions: configuration.actions)
       }
+    case .storageRequest(let token, let widget, let key, let operation, let value):
+      await storageService.handle(
+        token: token,
+        widget: widget,
+        key: key,
+        operation: operation,
+        value: value
+      )
     }
   }
 

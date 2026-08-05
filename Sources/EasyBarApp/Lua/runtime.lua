@@ -62,6 +62,8 @@ local render_dirty = false
 local last_subscription_payload = nil
 local next_command_sequence = 0
 local next_timer_sequence = 0
+local next_storage_sequence = 0
+local pending_storage_responses = {}
 local runtime_command_session = tostring({}):gsub("[^%w]", "_")
 local default_exec_options = {
 	timeout_seconds = default_command_timeout_seconds,
@@ -123,6 +125,12 @@ end
 local function next_timer_token()
 	next_timer_sequence = next_timer_sequence + 1
 	return runtime_command_session .. ":timer:" .. tostring(next_timer_sequence)
+end
+
+--- Returns one unique widget-storage request token.
+local function next_storage_token()
+	next_storage_sequence = next_storage_sequence + 1
+	return runtime_command_session .. ":storage:" .. tostring(next_storage_sequence)
 end
 
 local function log_request_id(token)
@@ -205,6 +213,15 @@ local function handle_command_response(payload)
 	flush_pending_outputs(false, false)
 end
 
+--- Retains one synchronous widget-storage response for its waiting API call.
+local function handle_storage_response(payload)
+	if type(payload.token) ~= "string" or payload.token == "" then
+		log.error("runtime ignored storage response missing token")
+		return
+	end
+	pending_storage_responses[payload.token] = payload
+end
+
 --- Releases one timer callback rejected by the host.
 local function handle_timer_rejected(payload)
 	if type(payload.token) ~= "string" or payload.token == "" then
@@ -246,6 +263,11 @@ local function handle_host_payload(payload, raw_line)
 
 	if payload.type == "command_response" then
 		handle_command_response(payload)
+		return
+	end
+
+	if payload.type == "storage_response" then
+		handle_storage_response(payload)
 		return
 	end
 
@@ -307,6 +329,34 @@ local function request_sync_command(command, options, context)
 	end
 end
 
+--- Performs one synchronous host-owned widget storage request.
+local function request_storage(operation, widget, key, value)
+	local token = next_storage_token()
+	local payload = {
+		protocol_version = PROTOCOL_VERSION,
+		type = "storage_request",
+		token = token,
+		operation = operation,
+		widget = widget,
+		key = key,
+	}
+	if operation == "set" then
+		payload.value = value
+	end
+	send_payload(payload)
+
+	while true do
+		local response = pending_storage_responses[token]
+		if response ~= nil then
+			pending_storage_responses[token] = nil
+			return response
+		end
+		if not process_next_host_message() then
+			return { ok = false, found = false, error = "EasyBar host disconnected" }
+		end
+	end
+end
+
 --- Starts one host-owned asynchronous command and returns its token.
 local function request_async_command(command, options, context)
 	return send_command_request(command, false, options, context)
@@ -357,6 +407,12 @@ registry = api.new(log, {
 	request_cancel_async = request_cancel_async,
 	request_timer = request_timer,
 	request_cancel_timer = request_cancel_timer,
+	storage_get = function(widget, key)
+		return request_storage("get", widget, key)
+	end,
+	storage_set = function(widget, key, value)
+		return request_storage("set", widget, key, value)
+	end,
 	publish_inbox = function(source, items)
 		send_payload({
 			protocol_version = PROTOCOL_VERSION,
