@@ -52,7 +52,7 @@ local refresh
 -- Coalesces bursts of status events while one asynchronous read is in flight.
 local refresh_running = false
 local refresh_pending = false
---
+
 -- Prevents double-clicks from starting overlapping up/down or exit-node commands.
 local action_running = false
 
@@ -126,13 +126,36 @@ local function first_health_message(status)
 	return nil
 end
 
-local function has_exit_node(status)
-	return status.ExitNodeStatus ~= nil
+--- Returns the selected exit-node ID while Tailscale is connected.
+---
+--- Tailscale may retain exit-node status data briefly while transitioning
+--- between backend states. Ignoring that data unless the backend is running
+--- prevents both "Disabled" and an exit node from being checked.
+local function active_exit_node_id(status, connected)
+	if not connected then
+		return nil
+	end
+
+	local exit_node_status = status.ExitNodeStatus
+	if type(exit_node_status) ~= "table" then
+		return nil
+	end
+
+	local id = exit_node_status.ID
+	if type(id) ~= "string" then
+		return nil
+	end
+
+	id = text.trim(id)
+	if id == "" then
+		return nil
+	end
+
+	return id
 end
 
 --- Returns the exit nodes advertised by peers, sorted for a stable native menu.
-local function exit_nodes_from_status(status)
-	local active_id = type(status.ExitNodeStatus) == "table" and status.ExitNodeStatus.ID or nil
+local function exit_nodes_from_status(status, active_id)
 	local nodes = {}
 
 	if type(status.Peer) == "table" then
@@ -140,8 +163,10 @@ local function exit_nodes_from_status(status)
 			if type(peer) == "table" and peer.ExitNodeOption == true then
 				local ips = type(peer.TailscaleIPs) == "table" and peer.TailscaleIPs or {}
 				local target = text.trim(ips[1] or peer.DNSName or peer.HostName or "")
+
 				if target ~= "" then
 					local label = text.trim(peer.HostName or peer.DNSName or target):gsub("%.$", "")
+
 					table.insert(nodes, {
 						label = label,
 						target = target,
@@ -155,6 +180,7 @@ local function exit_nodes_from_status(status)
 	table.sort(nodes, function(left, right)
 		return left.label:lower() < right.label:lower()
 	end)
+
 	return nodes
 end
 
@@ -180,8 +206,10 @@ local function snapshot_from_status(status)
 		status_detail = status_label(connected)
 	end
 
-	local exit_node_enabled = connected and has_exit_node(status)
-	local exit_nodes = exit_nodes_from_status(status)
+	local active_id = active_exit_node_id(status, connected)
+	local exit_node_enabled = active_id ~= nil
+	local exit_nodes = exit_nodes_from_status(status, active_id)
+
 	local active_exit_node_label
 	for _, node in ipairs(exit_nodes) do
 		if node.active then
@@ -281,7 +309,11 @@ end
 
 local function context_menu(snapshot)
 	local exit_nodes = {
-		{ id = "exit_node:disable", title = "Disabled", checked = not snapshot.exit_node_enabled },
+		{
+			id = "exit_node:disable",
+			title = "Disabled",
+			checked = not snapshot.exit_node_enabled,
+		},
 	}
 
 	for index, node in ipairs(snapshot.exit_nodes or {}) do
@@ -293,13 +325,24 @@ local function context_menu(snapshot)
 	end
 
 	if #exit_nodes == 1 then
-		table.insert(exit_nodes, { title = "No exit nodes available", enabled = false })
+		table.insert(exit_nodes, {
+			title = "No exit nodes available",
+			enabled = false,
+		})
 	end
 
 	return {
-		{ title = "Exit Node", submenu = exit_nodes },
-		{ separator = true },
-		{ id = "refresh", title = "Refresh" },
+		{
+			title = "Exit Node",
+			submenu = exit_nodes,
+		},
+		{
+			separator = true,
+		},
+		{
+			id = "refresh",
+			title = "Refresh",
+		},
 	}
 end
 
@@ -506,6 +549,7 @@ tailscale_icon:subscribe(easybar.events.context_menu.clicked, function(event)
 	else
 		local index = tonumber((event.action_id or ""):match("^exit_node:(%d+)$"))
 		local node = index ~= nil and state.exit_nodes[index] or nil
+
 		if node ~= nil then
 			set_exit_node(node.target)
 		end
