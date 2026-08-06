@@ -13,6 +13,7 @@ final class WidgetPopupPanelController: ObservableObject {
   private var hostingController = NSHostingController(rootView: AnyView(EmptyView()))
   private var isPresented = false
   private var transientInteractionCount = 0
+  private var contentLayoutRefreshTask: Task<Void, Never>?
   nonisolated(unsafe) private var parentWindowObservers: [NSObjectProtocol] = []
 
   var hasTransientInteraction: Bool {
@@ -44,6 +45,18 @@ final class WidgetPopupPanelController: ObservableObject {
     refreshPresentation()
   }
 
+  /// Schedules a popup size and position refresh after SwiftUI applies dynamic content changes.
+  func scheduleContentLayoutRefresh() {
+    contentLayoutRefreshTask?.cancel()
+    contentLayoutRefreshTask = Task { @MainActor [weak self] in
+      await Task.yield()
+      guard !Task.isCancelled, let self else { return }
+
+      contentLayoutRefreshTask = nil
+      refreshPresentation()
+    }
+  }
+
   /// Prevents hover-driven dismissal while a child menu or transient control is active.
   func beginTransientInteraction() {
     transientInteractionCount += 1
@@ -56,6 +69,8 @@ final class WidgetPopupPanelController: ObservableObject {
 
   /// Closes the popup when present and clears related window state.
   func close() {
+    contentLayoutRefreshTask?.cancel()
+    contentLayoutRefreshTask = nil
     transientInteractionCount = 0
     guard let panel else {
       detachAndResetParentWindow()
@@ -105,6 +120,8 @@ final class WidgetPopupPanelController: ObservableObject {
     let anchorRect = anchorView.convert(anchorView.bounds, to: nil)
     let screenRect = parentWindow.convertToScreen(anchorRect)
 
+    hostingController.view.invalidateIntrinsicContentSize()
+    hostingController.view.needsLayout = true
     hostingController.view.layoutSubtreeIfNeeded()
     let contentSize = hostingController.view.fittingSize
     guard contentSize.width > 0, contentSize.height > 0 else { return }

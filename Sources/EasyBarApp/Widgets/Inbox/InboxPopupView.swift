@@ -132,6 +132,12 @@ struct InboxPopupView: View {
         )
     }
     .clipShape(RoundedRectangle(cornerRadius: 10))
+    .onChange(of: store.presentedItems, initial: false) { _, _ in
+      popupPanel.scheduleContentLayoutRefresh()
+    }
+    .onChange(of: store.sourceConfigurations, initial: false) { _, _ in
+      popupPanel.scheduleContentLayoutRefresh()
+    }
     .onChange(of: activities.map(\.id), initial: false) { _, activityIDs in
       handleSourceActivityChange(hasActivity: !activityIDs.isEmpty)
     }
