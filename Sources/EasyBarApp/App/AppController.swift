@@ -311,6 +311,7 @@ final class AppController {
         setNativeWidgetEnabled: { [weak self] key, enabled in
           self?.setNativeWidgetEnabled(key, enabled: enabled)
         },
+        setLogLevel: { [weak self] level in self?.setLogLevel(level) },
         quit: { [weak self] in self?.requestAppTermination() }
       ),
       stateProvider: stateProvider,
@@ -406,6 +407,35 @@ final class AppController {
         TOMLEdit(path: ["builtins", key, "enabled"], value: .bool(enabled))
       ])
     else { return }
+    Task { await runtimeCoordinator.reloadConfig() }
+  }
+
+  private func setLogLevel(_ level: ProcessLogLevel) {
+    let persistence = ConfigPersistence(
+      configPath: services.configSnapshotStore.snapshot.app.configPath,
+      logger: logger.child("logging.config_persistence")
+    )
+    guard
+      persistence.apply([
+        TOMLEdit(path: ["logging", "level"], value: .string(level.rawValue))
+      ])
+    else { return }
+
+    let environmentOverride = ProcessLogLevel.normalized(
+      ProcessInfo.processInfo.environment[SharedEnvironmentKeys.loggingLevel]
+    )
+    if let environmentOverride {
+      logger.info(
+        "persisted log level changed to \(level.rawValue)",
+        .field("effective_level", environmentOverride.rawValue),
+        .field("override", SharedEnvironmentKeys.loggingLevel)
+      )
+    } else {
+      services.configSnapshotStore.applyLoggingLevelOverride(level)
+      logger.setMinimumLevel(level)
+      logger.info("runtime log level changed to \(level.rawValue)")
+    }
+
     Task { await runtimeCoordinator.reloadConfig() }
   }
 

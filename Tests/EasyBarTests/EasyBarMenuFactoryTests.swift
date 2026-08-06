@@ -64,8 +64,29 @@ final class EasyBarMenuFactoryTests: XCTestCase {
     XCTAssertNil(menu.item(withTitle: "Quit Completely"))
   }
 
+  func testLogLevelSelectionUsesConfiguredAction() throws {
+    var selectedLevel: ProcessLogLevel?
+    let factory = makeFactory(
+      runtimeState: { .running },
+      setLogLevel: { selectedLevel = $0 }
+    )
+    let menu = factory.makeMenu(groups: [.developer], showDeveloperSection: true)
+    let logLevelItem = try XCTUnwrap(menu.item(withTitle: "Log Level"))
+    let debugItem = try XCTUnwrap(logLevelItem.submenu?.item(withTitle: "Debug"))
+
+    XCTAssertTrue(
+      NSApplication.shared.sendAction(
+        try XCTUnwrap(debugItem.action),
+        to: debugItem.target,
+        from: debugItem
+      )
+    )
+    XCTAssertEqual(selectedLevel, .debug)
+  }
+
   private func makeFactory(
-    runtimeState: @escaping () -> EasyBarRuntimeState
+    runtimeState: @escaping () -> EasyBarRuntimeState,
+    setLogLevel: @escaping (ProcessLogLevel) -> Void = { _ in }
   ) -> EasyBarMenuFactory {
     let logger = ProcessLogger(label: "menu.factory.test", minimumLevel: .error)
     let services = AppServices.bootstrap(logger: logger)
@@ -91,6 +112,7 @@ final class EasyBarMenuFactoryTests: XCTestCase {
         restartNetworkAgent: {},
         selectTheme: { _ in },
         setNativeWidgetEnabled: { _, _ in },
+        setLogLevel: setLogLevel,
         quit: {}
       ),
       stateProvider: stateProvider,

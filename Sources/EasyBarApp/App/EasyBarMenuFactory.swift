@@ -41,6 +41,7 @@ struct EasyBarMenuActions {
   let restartNetworkAgent: () -> Void
   let selectTheme: (String?) -> Void
   let setNativeWidgetEnabled: (String, Bool) -> Void
+  let setLogLevel: (ProcessLogLevel) -> Void
   let quit: () -> Void
 }
 
@@ -310,8 +311,7 @@ final class EasyBarMenuFactory: NSObject {
     guard let value = sender.representedObject as? String,
       let level = ProcessLogLevel(rawValue: value)
     else { return }
-    logger.setMinimumLevel(level)
-    logger.info("runtime log level changed to \(level.rawValue)")
+    actions.setLogLevel(level)
   }
 
   @objc private func openConfig(_ sender: Any?) {

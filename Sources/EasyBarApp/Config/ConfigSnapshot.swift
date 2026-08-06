@@ -88,6 +88,19 @@ struct ConfigSnapshot: @unchecked Sendable {
 
 extension ConfigSnapshot {
 
+  /// Returns a copy with updated logging settings.
+  func replacing(logging: Logging) -> ConfigSnapshot {
+    ConfigSnapshot(
+      app: app,
+      logging: logging,
+      calendarAgent: calendarAgent,
+      networkAgent: networkAgent,
+      theme: theme,
+      bar: bar,
+      builtins: builtins
+    )
+  }
+
   /// Returns a copy with one updated built-in widget snapshot.
   func replacing(builtins: Builtins) -> ConfigSnapshot {
     ConfigSnapshot(

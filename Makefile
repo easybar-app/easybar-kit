@@ -491,5 +491,3 @@ ICON_SIZES := 16x16 32x32 48x48 64x64
 
 favicon: ## Create favicons.
 	@scripts/assets/favicons.sh "$(SVG_CONVERT)" "$(SVG)" "$(ICON_DIR)" $(ICON_SIZES)
-
-

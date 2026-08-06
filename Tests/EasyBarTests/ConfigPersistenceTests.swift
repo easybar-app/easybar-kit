@@ -80,6 +80,53 @@ final class ConfigPersistenceHardeningTests: XCTestCase {
   }
 
   @MainActor
+  func testLoggingLevelOverrideUpdatesSnapshotAndLiveConfig() {
+    let config = Config.makeUnloadedConfig()
+    let store = ConfigSnapshotStore(
+      snapshot: config.snapshot(),
+      snapshotDidChange: { config.apply($0) }
+    )
+
+    store.applyLoggingLevelOverride(.debug)
+
+    XCTAssertEqual(store.snapshot.logging.level, .debug)
+    XCTAssertEqual(config.loggingLevel, .debug)
+  }
+
+  @MainActor
+  func testLoggingLevelEditPreservesCommentsAndUnrelatedSettings() throws {
+    let directory = try makeTemporaryDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let configURL = directory.appendingPathComponent("config.toml")
+    try """
+    # Keep this comment.
+    [app]
+    develop = true
+
+    [logging]
+    enabled = true
+    level = "info" # Keep this inline comment.
+    directory = "~/.local/state/easybar"
+    """.write(to: configURL, atomically: false, encoding: .utf8)
+
+    let persistence = ConfigPersistence(configPath: configURL.path, logger: makeLogger())
+    XCTAssertTrue(
+      persistence.apply([
+        TOMLEdit(path: ["logging", "level"], value: .string("debug"))
+      ])
+    )
+
+    let contents = try String(contentsOf: configURL, encoding: .utf8)
+    let table = try TOMLTable(string: contents)
+    XCTAssertEqual(table["logging"]?.table?["level"]?.string, "debug")
+    XCTAssertEqual(table["logging"]?.table?["enabled"]?.bool, true)
+    XCTAssertEqual(table["app"]?.table?["develop"]?.bool, true)
+    XCTAssertTrue(contents.contains("# Keep this comment."))
+    XCTAssertTrue(contents.contains("# Keep this inline comment."))
+  }
+
+  @MainActor
   func testWidgetSettingIsPersistedBelowReservedWidgetsNamespace() throws {
     let directory = try makeTemporaryDirectory()
     defer { try? FileManager.default.removeItem(at: directory) }

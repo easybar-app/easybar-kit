@@ -58,6 +58,20 @@ directory = "~/.local/state/easybar"
 Only the minimum log level has an environment override. File logging and the log directory remain
 config-only.
 
+## Change the log level from EasyBar
+
+The shared **Log Level** submenu is available from both native menus:
+
+- hold `Shift` while right-clicking empty bar space
+- open the menu bar icon when `[app].develop = true`
+
+Selecting a level writes it to `[logging].level` in the active `config.toml`, preserving comments,
+whitespace, and unrelated settings. EasyBar applies the selected level immediately, reloads the
+bar runtime when it is running, and keeps the selection active after restart.
+
+When `EASYBAR_LOG_LEVEL` is set, that temporary environment override remains the effective level
+for the current process even though the menu selection is persisted for later launches.
+
 ## Supported levels
 
 - `trace`

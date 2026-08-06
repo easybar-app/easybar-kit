@@ -21,8 +21,15 @@ develop = true
 
 ## Developer actions
 
-The developer section currently includes **Log Level**, which changes the active runtime log level.
-**Open Log Folder** remains available in the standard file-actions group.
+The developer section currently includes **Log Level**. Selecting a level from either the
+`Shift`-right-click bar menu or the menu bar icon writes the choice to `[logging].level` in the
+active `config.toml`, preserves comments and unrelated settings, applies it immediately, and
+reloads the bar runtime when it is running. The selection therefore remains active after EasyBar
+restarts.
+
+`EASYBAR_LOG_LEVEL` is still a temporary process-level override and takes precedence over the
+persisted value while it is set. **Open Log Folder** remains available in the standard file-actions
+group.
 
 ## Example
 

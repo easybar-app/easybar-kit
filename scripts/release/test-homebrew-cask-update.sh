@@ -104,4 +104,3 @@ git -C "${tap_dir}" -c user.name=test -c user.email=test@example.com commit -qm 
   --tap-dir "${tap_dir}" \
   --version "9.8.8" \
   --dry-run >/dev/null
-

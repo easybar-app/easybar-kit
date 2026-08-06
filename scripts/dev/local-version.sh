@@ -71,4 +71,3 @@ if [ "$dirty" = true ]; then
 fi
 
 printf '%s\n' "$version"
-

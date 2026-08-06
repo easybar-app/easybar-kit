@@ -1,4 +1,5 @@
 import Combine
+import EasyBarShared
 import Foundation
 
 /// Main-actor observable holder for the active immutable config snapshot.
@@ -25,6 +26,16 @@ final class ConfigSnapshotStore: ObservableObject {
   func apply(_ snapshot: ConfigSnapshot) {
     self.snapshot = snapshot
     snapshotDidChange(snapshot)
+  }
+
+  /// Applies a persistent logging level selected from the shared native menu.
+  func applyLoggingLevelOverride(_ level: ProcessLogLevel) {
+    let logging = ConfigSnapshot.Logging(
+      enabled: snapshot.logging.enabled,
+      level: level,
+      directory: snapshot.logging.directory
+    )
+    apply(snapshot.replacing(logging: logging))
   }
 
   /// Applies a calendar configuration written by its native context menu.

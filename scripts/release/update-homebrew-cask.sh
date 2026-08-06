@@ -142,4 +142,3 @@ write_agent_formula \
   "${network_agent_sha}"
 
 rm -f "${formula_dir}/easybar.rb"
-
