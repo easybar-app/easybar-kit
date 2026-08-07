@@ -27,6 +27,16 @@ Use `make install-widgets` to select widgets. The installer reads `widgets/insta
 
 The service packages contain their own README files with configuration and behavior details.
 
+The Caffeinate widget uses an indefinite session for left-click by default. Set a bounded default from
+1 through 1439 minutes when left-click should start a timed session instead:
+
+```toml
+[widgets.caffeinate]
+duration_minutes = 60
+```
+
+Right-click always exposes the indefinite option and timed presets from 15 minutes through 4 hours.
+
 ## Choose one presentation
 
 Homebrew, GitHub, and GitLab each have a standalone popup presentation and a native-inbox presentation:
