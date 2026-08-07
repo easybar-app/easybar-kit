@@ -356,10 +356,20 @@ def render_lua_api_block(manifest: dict) -> str:
             f'---@field {event["luaField"]}? EasyBarEventToken {event["doc"]}'
         )
 
-    context_menu = widget_groups.get("context_menu")
-    if context_menu:
-        lines.extend(["", f'---{context_menu["doc"]}', "---@class EasyBarContextMenuEvents"])
-        for event in context_menu["events"]:
+    for group in manifest["widgetGroups"]:
+        if group["name"] in {"mouse", "slider"}:
+            continue
+        type_name = (
+            "ContextMenu"
+            if group["name"] == "context_menu"
+            else group["name"].title()
+        )
+        lines.extend([
+            "",
+            f'---{group["doc"]}',
+            f"---@class EasyBar{type_name}Events",
+        ])
+        for event in group["events"]:
             lines.append(
                 f'---@field {event["luaField"]}? EasyBarEventToken {event["doc"]}'
             )
@@ -418,3 +428,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

@@ -193,6 +193,7 @@ end
 
 local function upgradeable_package_names(kind)
 	local source = kind == "formula" and state.formulae or state.casks
+	assert(type(source) == "table", "package state must be a table")
 	local names = {}
 	for _, package in ipairs(source) do
 		if package_is_upgradeable(package) then
@@ -298,8 +299,7 @@ local function publish()
 	for _, package in ipairs(all_packages()) do
 		if #items < MAX_ITEMS then
 			local actions = {}
-			local upgrading_this_package = operation ~= nil and operation.item_id == package.id
-			if upgrading_this_package then
+			if operation ~= nil and operation.item_id == package.id then
 				actions = {
 					{
 						id = "upgrade",

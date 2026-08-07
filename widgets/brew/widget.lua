@@ -148,13 +148,13 @@ local log = easybar.log.with_file(BREW_LOG_FILE_NAME, {
 --- Returns the current time as HH:MM.
 ---@return string
 local function now_label()
-	return os.date("%H:%M")
+	return tostring(os.date("%H:%M"))
 end
 
 --- Returns a timestamp suitable for log section markers.
 ---@return string
 local function log_timestamp()
-	return os.date("%Y-%m-%dT%H:%M:%S%z")
+	return tostring(os.date("%Y-%m-%dT%H:%M:%S%z"))
 end
 
 --- Appends a structured operation marker to the brew widget log.
@@ -347,7 +347,7 @@ local function next_check_label()
 		return "now"
 	end
 
-	return os.date("%H:%M", state.last_attempted_at + CHECK_INTERVAL_SECONDS)
+	return tostring(os.date("%H:%M", state.last_attempted_at + CHECK_INTERVAL_SECONDS))
 end
 
 --- Returns the threshold color for the outdated package count.
@@ -755,17 +755,17 @@ end
 
 --- Adds a popup text row and tracks it for later cleanup.
 ---@param id string
----@param text string
+---@param row_text string
 ---@param opts? BrewPopupRowOptions
 ---@return EasyBarNodeHandle
-add_popup_row = function(id, text, opts)
+add_popup_row = function(id, row_text, opts)
 	opts = opts or {}
 
 	local props = {
 		position = "popup." .. WIDGET_ID,
 		order = opts.order,
 		label = {
-			string = text,
+			string = row_text,
 			color = opts.color or COLORS.text,
 			font = {
 				size = opts.size or 12,

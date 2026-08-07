@@ -8,7 +8,7 @@ end
 
 local function run(command)
 	local ok, reason, status = os.execute(command)
-	assert(ok == true or ok == 0, "fixture command failed reason=" .. tostring(reason) .. " status=" .. tostring(status))
+	assert(ok, "fixture command failed reason=" .. tostring(reason) .. " status=" .. tostring(status))
 end
 
 local function make_directory(path)

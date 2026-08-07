@@ -393,6 +393,11 @@
 ---@class EasyBarContextMenuEvents
 ---@field clicked? EasyBarEventToken Fired when a native widget context menu action is selected.
 
+---Native shared inbox events.
+---@class EasyBarInboxEvents
+---@field action? EasyBarEventToken Fired when a native inbox action is selected. Prefer easybar.inbox.on_action for source routing.
+---@field context_action? EasyBarEventToken Fired when a publisher-provided inbox context-menu action is selected. Prefer easybar.inbox.on_context_action for source routing.
+
 ---Namespace object exposed as `easybar.events`.
 ---Use these tokens when subscribing widgets instead of hard-coding event-name strings.
 ---@class EasyBarEvents
@@ -562,6 +567,7 @@ function EasyBarStorage.set(widget, key, value) end
 ---@field null EasyBarJsonNull Sentinel used for decoded JSON null values.
 ---@field array fun(value?: table): table Marks a table as a JSON array, including an empty table.
 ---@field object fun(value?: table): table Marks a table as a JSON object, including an empty table.
+---@field is_array fun(value: any): boolean Returns whether a value is a dense JSON-array table.
 ---@field encode fun(value: any): string Encodes one Lua value tree into a JSON string.
 ---@field decode fun(text: string): any Decodes one JSON string while preserving null and container shapes.
 
@@ -672,21 +678,26 @@ function EasyBarStorage.set(widget, key, value) end
 
 ---Callable widget logger returned by `easybar.log.with_prefix(...)`.
 ---@class EasyBarPrefixedLogger
----@operator call(EasyBarLevel|string, ...: any)
+---@overload fun(level: EasyBarLevel|string, ...: any)
+---@diagnostic disable-next-line: unused-local
+local EasyBarPrefixedLogger = {}
 
 ---File-backed widget logger returned by `easybar.log.with_file(...)`.
 ---@class EasyBarFileLogger
----@operator call(EasyBarLevel|string, ...: any): boolean, string?
 ---@field append fun(text: any): boolean, string? Appends raw text to the widget log file and adds a trailing newline when missing.
 ---@field line fun(text: any): boolean, string? Appends one line to the widget log file.
 ---@field tail fun(limit: integer): string Returns the newest log lines as one newline-delimited string.
 ---@field trim fun(limit: integer): boolean, string? Keeps only the newest log lines in the widget log file.
+---@overload fun(level: EasyBarLevel|string, ...: any): boolean, string?
+local EasyBarFileLogger = {}
 
 ---Callable widget logger exposed as `easybar.log`.
 ---@class EasyBarLogFunction
----@operator call(EasyBarLevel|string, ...: any)
 ---@field with_prefix fun(prefix: string): EasyBarPrefixedLogger Creates a widget logger that prepends a stable prefix to normal EasyBar host logs.
 ---@field with_file fun(file_name: string, options?: EasyBarLogFileOptions): EasyBarFileLogger Creates a widget logger that writes normal EasyBar logs and appends to a file in `easybar.log_dir`.
+---@overload fun(level: EasyBarLevel|string, ...: any)
+---@diagnostic disable-next-line: unused-local
+local EasyBarLogFunction = {}
 
 ---Widget-scoped EasyBar API injected into every widget file.
 ---Use it to create nodes, run commands, and write widget logs.
@@ -722,9 +733,6 @@ local EasyBar = {}
 ---@param path string Relative asset path. Prefix with `@/` to resolve from the configured widgets directory.
 ---@return string resolved_path Safe filesystem path resolved from the selected asset root.
 function EasyBar.asset(path) end
-
----@class EasyBarFileLogger
-local EasyBarFileLogger = {}
 
 ---@class EasyBarNodeHandle
 local EasyBarNodeHandle = {}
@@ -868,29 +876,13 @@ EasyBar.version = "dev"
 ---@type EasyBarCommandOptions
 EasyBar.DEFAULT_EXEC_OPTIONS = {}
 
----Encodes and decodes JSON values from Lua widgets.
----@type EasyBarJson
-EasyBar.json = {}
-
 ---All supported EasyBar event tokens and mouse constants.
 ---@type EasyBarEvents
 EasyBar.events = {}
 
----All supported EasyBar log levels.
----@type EasyBarLevels
-EasyBar.level = {}
-
----All supported EasyBar kind constants.
----@type EasyBarKinds
-EasyBar.kind = {}
-
 ---Configured EasyBar logging directory from `[logging].directory`.
 ---@type string
 EasyBar.log_dir = ""
-
----Active resolved EasyBar theme.
----@type EasyBarTheme
-EasyBar.theme = {}
 
 ---Shared native inbox publishing API.
 ---@type EasyBarInbox
@@ -905,6 +897,7 @@ EasyBar.storage = {}
 ---Which messages are emitted depends on the persistent host level and active live log subscriptions.
 ---@param level EasyBarLevel|string Minimum severity for this message.
 ---@param ... any Values converted to text and joined into one log message.
+---@diagnostic disable-next-line: assign-type-mismatch
 function EasyBar.log(level, ...) end
 
 ---Creates a widget logger that prepends a stable prefix to normal EasyBar host logs.

@@ -190,6 +190,15 @@ Namespace object exposed as `easybar.events`. Use these tokens when subscribing 
 | `source`    | `string`                 | Publisher source.          |
 | `action_id` | `string`                 | Selected source action id. |
 
+## `EasyBarInboxEvents`
+
+Native shared inbox events.
+
+| Property                      | Type                | Description                                                                                                                       |
+| ----------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `action` _(optional)_         | `EasyBarEventToken` | Fired when a native inbox action is selected. Prefer easybar.inbox.on_action for source routing.                                  |
+| `context_action` _(optional)_ | `EasyBarEventToken` | Fired when a publisher-provided inbox context-menu action is selected. Prefer easybar.inbox.on_context_action for source routing. |
+
 ## `EasyBarMouseEvents`
 
 Mouse-specific interaction tokens and convenience constants nested under `easybar.events.mouse`.

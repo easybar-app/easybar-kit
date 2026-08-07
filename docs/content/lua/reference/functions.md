@@ -223,15 +223,6 @@ Returns a copy of one existing node's current property table.
 
 ### `EasyBar.log`
 
-Writes one widget-scoped log line to the EasyBar host logger. Supported levels are `trace`, `debug`, `info`, `warn`, and `error`. Which messages are emitted depends on the persistent host level and active live log subscriptions.
-
-#### Parameters
-
-| Name    | Type                   | Description                                               |
-| ------- | ---------------------- | --------------------------------------------------------- |
-| `level` | `EasyBarLevel\|string` | Minimum severity for this message.                        |
-| `...`   | `any`                  | Values converted to text and joined into one log message. |
-
 ### `EasyBar.remove`
 
 Removes one existing node and all of its descendants by id.

@@ -629,12 +629,12 @@ function M.new(log, hooks)
 
 	--- Returns one widget-scoped EasyBar API.
 	--- Defaults are isolated to this widget instance.
-	function api.make_widget_api(source, widget_root)
+	function api.make_widget_api(widget_source, widget_root)
 		local widget_api = {}
 		local widget_defaults = {}
-		local source_directory = tostring(source):match("^(.*)/[^/]+$") or "."
+		local source_directory = tostring(widget_source):match("^(.*)/[^/]+$") or "."
 		widget_root = tostring(widget_root or source_directory)
-		local widget_name = widget_log_source(source, widget_root)
+		local widget_name = widget_log_source(widget_source, widget_root)
 
 		--- Resolves one safe path relative to this widget's source directory.
 		function widget_api.asset(path)
@@ -775,7 +775,7 @@ function M.new(log, hooks)
 				error("interval requires on_interval")
 			end
 
-			registry.add(kind, id, item_props, widget_defaults, source)
+			registry.add(kind, id, item_props, widget_defaults, widget_source)
 
 			if interval_handler ~= nil then
 				subscriptions.set_interval_handler(id, interval_handler)

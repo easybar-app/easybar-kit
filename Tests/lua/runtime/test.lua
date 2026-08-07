@@ -2,8 +2,20 @@ local root = assert(arg[1], "usage: Tests/lua/runtime/test.lua <repository-root>
 package.path = root .. "/Sources/EasyBarApp/Lua/?.lua;" .. root .. "/Sources/EasyBarApp/Lua/?/init.lua;" .. package.path
 
 local lua_root = root .. "/Sources/EasyBarApp/Lua/easybar/"
+
+---@class RuntimeFixtures
+---@field cleanup fun(path: string)
+---@field discovery fun(): string
+---@field module_resolution fun(): string
+---@field rollback fun(): string
+---@field existing_state fun(): string
+
+---@type RuntimeFixtures
 local fixtures = assert(loadfile(root .. "/Tests/lua/runtime/fixtures.lua"))()
-local theme_tokens = assert(loadfile(lua_root .. "theme_tokens.lua"))().keys
+
+---@type { keys: string[] }
+local theme_tokens_module = assert(loadfile(lua_root .. "theme_tokens.lua"))()
+local theme_tokens = theme_tokens_module.keys
 local json = assert(loadfile(lua_root .. "json.lua"))()
 local colors = {}
 for _, key in ipairs(theme_tokens) do
@@ -11,7 +23,7 @@ for _, key in ipairs(theme_tokens) do
 end
 local test_theme_json = json.encode({ name = "test", colors = colors })
 local real_getenv = os.getenv
-os.getenv = function(name)
+rawset(os, "getenv", function(name)
 	if name == "EASYBAR_INTERNAL_THEME_JSON" then
 		return test_theme_json
 	end
@@ -19,12 +31,14 @@ os.getenv = function(name)
 		return "/tmp"
 	end
 	return real_getenv(name)
-end
+end)
 
 local api_module = require("easybar.api")
 local loader = require("easybar.loader")
 local tree = require("easybar.render.tree")
 
+---@param value any
+---@param expected string
 local function assert_contains(value, expected)
 	assert(
 		tostring(value):find(expected, 1, true),
@@ -32,22 +46,47 @@ local function assert_contains(value, expected)
 	)
 end
 
+---@param expected string
+---@param body fun()
 local function expect_error(expected, body)
 	local ok, err = pcall(body)
 	assert(not ok, "expected error containing: " .. expected)
 	assert_contains(err, expected)
 end
 
+---@class RuntimeCommandContext
+---@field widget string
+---@field operation? string
+
+---@class RuntimeCommandOptions
+---@field log_operation? string
+
+---@class RuntimeCompletionMetadata
+---@field duration_ms? number
+
+---@class RuntimeLogEntry
+---@field source string
+---@field level string
+---@field message string
+
+---@type string[]
 local cancelled_commands = {}
+---@type string[]
 local cancelled_timers = {}
 local async_sequence = 0
 local timer_sequence = 0
+---@type string[]
 local warnings = {}
 local inbox_publish_count = 0
+---@type RuntimeLogEntry[]
 local source_logs = {}
+---@type RuntimeCommandContext?
 local last_command_context = nil
+---@type RuntimeCommandOptions?
 local last_async_hook_options = nil
+---@type RuntimeCommandOptions?
 local last_completed_hook_options = nil
+---@type table<string, any>
 local storage_values = {}
 
 local log = {
@@ -147,26 +186,26 @@ do
 	local api = new_api()
 	local source = api.make_widget_api("/fixtures/storage.lua", "/fixtures")
 	source.log(source.level.debug, "refresh started")
-	local entry = source_logs[#source_logs]
+	local entry = assert(source_logs[#source_logs])
 	assert(entry.source == "storage")
 	assert(entry.level == "DEBUG")
 	assert(entry.message == "refresh started")
 
 	local packaged = api.make_widget_api("/fixtures/package/status.lua", "/fixtures")
 	packaged.log(packaged.level.debug, "package refresh started")
-	entry = source_logs[#source_logs]
+	entry = assert(source_logs[#source_logs])
 	assert(entry.source == "package/status")
 	assert(entry.message == "package refresh started")
 
 	local nested = api.make_widget_api("/fixtures/nested/main.lua", "/fixtures")
 	nested.log(nested.level.debug, "nested refresh started")
-	entry = source_logs[#source_logs]
+	entry = assert(source_logs[#source_logs])
 	assert(entry.source == "nested/main")
 	assert(entry.message == "nested refresh started")
 
 	local uppercase_extension = api.make_widget_api("/fixtures/tools/STATUS.LUA", "/fixtures")
 	uppercase_extension.log(uppercase_extension.level.debug, "uppercase extension")
-	entry = source_logs[#source_logs]
+	entry = assert(source_logs[#source_logs])
 	assert(entry.source == "tools/STATUS")
 	assert(entry.message == "uppercase extension")
 end
@@ -208,7 +247,7 @@ do
 	assert(first_handle:unsubscribe() == false)
 	api.handle_event({ name = "forced" })
 	assert(first_calls == 2 and late_calls == 2)
-	assert(late_handle:dispose() == true)
+	assert(assert(late_handle):dispose() == true)
 end
 
 -- Numeric command, timer, and interval options reject non-finite and excessive values consistently.
@@ -240,16 +279,19 @@ end
 do
 	local api = new_api()
 	local source = api.make_widget_api("/fixtures/commands.lua")
+	---@type RuntimeCompletionMetadata?
 	local completed = nil
 	local token = source.spawn_async({ "printf", "ok" }, { log_operation = "refresh" }, function(_, _, metadata)
 		completed = metadata
 	end)
-	assert(last_command_context.widget == "commands")
-	assert(last_command_context.operation == "refresh")
-	assert(last_async_hook_options.log_operation == "refresh")
+
+	local command_context = assert(last_command_context)
+	assert(command_context.widget == "commands")
+	assert(command_context.operation == "refresh")
+	assert(assert(last_async_hook_options).log_operation == "refresh")
 	assert(api.handle_command_response(token, "ok", 0, { duration_ms = 42 }) == true)
-	assert(last_completed_hook_options.log_operation == "refresh")
-	assert(completed.duration_ms == 42)
+	assert(assert(last_completed_hook_options).log_operation == "refresh")
+	assert(assert(completed).duration_ms == 42)
 end
 
 -- Unknown response tokens are dropped rather than retained forever.
@@ -276,10 +318,12 @@ do
 	local fixture_root = fixtures.discovery()
 	local files, discovery_error = api_module.discover_widget_files(fixture_root)
 	assert(discovery_error == nil)
+	assert(files ~= nil)
 	assert(table.concat(files, "|") == ".hidden.lua|assets/preview.lua|clock.lua|nested/STATUS.LUA")
 
 	local missing, missing_error = api_module.discover_widget_files(fixture_root .. "/missing")
-	assert(missing_error == nil and #missing == 0)
+	assert(missing_error == nil)
+	assert(missing ~= nil and #missing == 0)
 	fixtures.cleanup(fixture_root)
 end
 
@@ -289,7 +333,8 @@ do
 	local api = new_api()
 	local loaded, failed = loader.load_widgets(fixture_root, { "source.lua" }, api, log)
 	assert(loaded == 1 and failed == 0)
-	assert(api._state.items["module-resolution"].props.label.string == "package:shared:legacy:package")
+	local module_node = assert(api._state.items["module-resolution"])
+	assert(module_node.props.label.string == "package:shared:legacy:package")
 
 	for _, module_name in ipairs({
 		"package.policy",

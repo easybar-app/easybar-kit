@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "runtime": {
+    "version": "Lua 5.5",
+    "path": [
+      "?.lua",
+      "?/init.lua",
+      "Sources/EasyBarApp/Lua/?.lua",
+      "Sources/EasyBarApp/Lua/?/init.lua",
+      "widgets/?.lua",
+      "widgets/?/init.lua",
+      "widgets/shared/?.lua",
+      "widgets/shared/?/init.lua"
+    ]
+  },
+  "workspace": {
+    "checkThirdParty": "Disable",
+    "library": [],
+    "ignoreDir": [
+      "Sources/EasyBarApp/Lua/easybar_api.lua",
+      "Sources/EasyBarApp/Lua/easybar_api.themes.lua"
+    ]
+  },
+  "diagnostics": {
+    "globals": ["easybar"],
+    "ignoredFiles": "Disable"
+  }
+}

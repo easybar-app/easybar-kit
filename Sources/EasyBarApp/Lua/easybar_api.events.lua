@@ -173,6 +173,11 @@
 ---@class EasyBarContextMenuEvents
 ---@field clicked? EasyBarEventToken Fired when a native widget context menu action is selected.
 
+---Native shared inbox events.
+---@class EasyBarInboxEvents
+---@field action? EasyBarEventToken Fired when a native inbox action is selected. Prefer easybar.inbox.on_action for source routing.
+---@field context_action? EasyBarEventToken Fired when a publisher-provided inbox context-menu action is selected. Prefer easybar.inbox.on_context_action for source routing.
+
 ---Namespace object exposed as `easybar.events`.
 ---Use these tokens when subscribing widgets instead of hard-coding event-name strings.
 ---@class EasyBarEvents

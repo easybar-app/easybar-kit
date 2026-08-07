@@ -8,7 +8,9 @@ local command_broker_module = require("easybar.registry.command_broker")
 local timer_broker_module = require("easybar.registry.timer_broker")
 local graph = require("easybar.registry.graph")
 
-local function noop() end
+local function noop(...)
+	return ...
+end
 
 local function invalid_public_value(path, value, expected, report)
 	report(path, value, expected)
