@@ -1,5 +1,6 @@
 # entrypoint;comma-separated dependency paths relative to widgets/
 brew/widget.lua;brew/policy.lua,brew/README.md,shared/text.lua
+caffeinate/widget.lua;caffeinate/README.md
 compositions/group_demo.lua;
 compositions/popup-context-menu.lua;
 compositions/wifi+vpn.lua;
@@ -9,7 +10,6 @@ inbox/brew/widget.lua;inbox/brew/README.md,brew/policy.lua,shared/inbox.lua,shar
 inbox/demo/widget.lua;inbox/demo/README.md,assets/brew.svg,assets/github.svg,assets/gitlab.svg
 inbox/github/widget.lua;inbox/github/README.md,shared/inbox.lua,shared/retry.lua,shared/text.lua,assets/github.svg
 inbox/gitlab/widget.lua;inbox/gitlab/README.md,shared/inbox.lua,shared/retry.lua,shared/text.lua,assets/gitlab.svg
-simple/caffeinate.lua;
 simple/context-menu.lua;
 simple/network.lua;
 simple/simple.lua;

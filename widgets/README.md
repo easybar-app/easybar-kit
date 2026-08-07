@@ -6,6 +6,7 @@ The bundled examples are grouped by complexity and presentation instead of keepi
 widgets/
 ├── assets/                  Shared SVG assets
 ├── simple/                  Small, self-contained examples
+├── caffeinate/              Configurable macOS caffeinate widget
 ├── brew/                    Standalone Homebrew popup widget
 ├── github/                  Standalone GitHub popup widget
 ├── gitlab/                  Standalone GitLab popup widget
@@ -73,3 +74,36 @@ entrypoint.lua;dependency-one,dependency-two,dependency-three
 ```
 
 The dependency field may be empty. Paths are relative to `widgets/`.
+
+## Tests
+
+All Lua tests live below `Tests/lua/`:
+
+```text
+Tests/lua/
+├── helpers/
+│   ├── inbox_host.lua
+│   └── widget_host.lua
+├── runtime/
+│   └── test.lua
+├── bundled/
+│   └── test.lua
+└── widgets/
+    ├── caffeinate/test.lua
+    ├── github/test.lua
+    ├── gitlab/test.lua
+    ├── tailscale/test.lua
+    ├── inbox/
+    │   ├── brew/test.lua
+    │   ├── demo/test.lua
+    │   ├── github/test.lua
+    │   └── gitlab/test.lua
+    └── shared/
+        └── inbox/test.lua
+```
+
+`runtime/test.lua` covers the generic EasyBar Lua runtime contract. `bundled/test.lua` smoke-loads every selectable entrypoint from `install-manifest.csv`. Package-specific behavior belongs below `Tests/lua/widgets/`, while reusable test hosts live in `Tests/lua/helpers/`.
+
+Tests intentionally do not live inside `widgets/`. EasyBar recursively executes every `.lua` file below `widgets_dir`, so colocated test files would become runtime files when that directory is used directly.
+
+`make check-lua` validates the widget layout, syntax-checks Lua sources, then automatically discovers and runs every `Tests/lua/**/test.lua` file. Adding a new test therefore does not require editing a central test list.
