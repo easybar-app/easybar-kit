@@ -51,6 +51,11 @@ do
 	local nodes_by_widget = {}
 	local commands_by_widget = {}
 	local command_callbacks_by_widget = {}
+	local storage_values_by_widget = {
+		caffeinate = {
+			["caffeinate:duration_minutes"] = 90,
+		},
+	}
 
 	local function widget_name(path)
 		path = tostring(path):gsub("\\", "/")
@@ -207,8 +212,10 @@ do
 				on_context_action = function() end,
 			},
 			storage = {
-				get = function(_, _, default)
-					return default
+				get = function(namespace, key, default)
+					local values = storage_values_by_widget[widget_name] or {}
+					local value = values[namespace .. ":" .. key]
+					return value == nil and default or value
 				end,
 				set = function()
 					return true, nil
@@ -310,6 +317,20 @@ do
 		assert(actual_count == #expected, widget_name .. " created an unexpected number of nodes")
 	end
 
+	local function emit_widget_event(widget_name, node_id, event_name, payload)
+		local node = assert(nodes_by_widget[widget_name][node_id], widget_name .. " is missing node " .. node_id)
+		for _, subscription in ipairs(node.subscriptions) do
+			local events = type(subscription.events) == "table" and subscription.events or { subscription.events }
+			for _, candidate in ipairs(events) do
+				if candidate == event_name then
+					subscription.handler(payload or {})
+					return
+				end
+			end
+		end
+		error(widget_name .. " node " .. node_id .. " is not subscribed to " .. event_name)
+	end
+
 	local function expected_rows(root_id, header_id, row_prefix, footer_id)
 		local expected = { root_id, header_id, footer_id }
 		for index = 1, 8 do
@@ -362,6 +383,13 @@ do
 	assert_expected_ids(
 		"gitlab",
 		expected_rows("gitlab_work_items", "gitlab_work_items_header", "gitlab_work_item_", "gitlab_work_items_footer")
+	)
+	assert_expected_ids("caffeinate", { "caffeinate", "caffeinate_popup_label" })
+	emit_widget_event("caffeinate", "caffeinate", "mouse.clicked", { button = "left" })
+	assert_service_identity("caffeinate", "/usr/bin/caffeinate", "/usr/bin/pmset")
+	assert(
+		command_contains(commands_by_widget.caffeinate[1], "5400"),
+		"caffeinate must use the configured 90-minute left-click duration"
 	)
 
 	-- Bursts of replayed state events should not launch redundant concurrent status reads.

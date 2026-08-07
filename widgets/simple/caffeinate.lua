@@ -7,6 +7,7 @@
 local UPDATE_INTERVAL_SECONDS = 30
 local RENEWAL_DURATION_SECONDS = 23 * 60 * 60
 local COMMAND_TIMEOUT_GRACE_SECONDS = 10
+local MAX_DURATION_MINUTES = 1439
 
 local PRESETS = {
 	{ minutes = 15, title = "15 Minutes" },
@@ -255,7 +256,29 @@ local function toggle()
 	if is_active() then
 		stop()
 	else
-		start("indefinite")
+		local configured = easybar.storage.get("caffeinate", "duration_minutes")
+		if configured == nil then
+			start("indefinite")
+			return
+		end
+
+		if
+			type(configured) ~= "number"
+			or configured ~= configured
+			or configured % 1 ~= 0
+			or configured < 1
+			or configured > MAX_DURATION_MINUTES
+		then
+			easybar.log(
+				easybar.level.warn,
+				"invalid caffeinate duration_minutes; using indefinite mode",
+				"value=" .. tostring(configured)
+			)
+			start("indefinite")
+			return
+		end
+
+		start("timed", configured)
 	end
 end
 
