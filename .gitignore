@@ -6,6 +6,9 @@ dist/
 # Generated documentation site
 /docs/.site/
 docs/.venv/
+.site/
+
+__pycache__/
 
 .DS_Store
 todo.txt
