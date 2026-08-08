@@ -94,6 +94,7 @@ distinct:
 
 ```lua
 easybar.inbox.configure("gitlab", {
+    order = 20,
     actions = {
         {
             id = "refresh",
@@ -114,6 +115,21 @@ Calling `configure` again replaces the source's complete action list, which allo
 change their menu while work is running—for example, Homebrew replaces Update and Upgrade with
 Cancel. Passing an empty `actions` array removes the submenu. Clearing a source's messages leaves
 its independently configured actions available.
+
+Use `order` to place source submenus in ascending order. Sources with an explicit order appear
+before unordered sources; equal or unordered context sources fall back to their source name.
+
+When publishing items grouped by source, set `source.order` on each item to control the ascending
+source-group order independently from the context-menu order:
+
+```lua
+source = {
+    name = "GitLab",
+    icon = easybar.asset("assets/gitlab.svg"),
+    color = "#FC6D26",
+    order = 20,
+}
+```
 
 Set `include_in_refresh_all = true` on the source action that **Refresh all** should run. Each source
 can include at most one action. Disabled and busy actions remain visible but are skipped until they

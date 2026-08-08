@@ -132,6 +132,33 @@ final class InboxStoreTests: XCTestCase {
     XCTAssertEqual(store.presentedItems.map(\.source), ["Inbox demo", "Inbox demo", "Inbox demo"])
   }
 
+  func testSourceGroupingUsesExplicitOrderBeforeUnorderedSources() {
+    let store = InboxStore()
+    store.replace(
+      source: "GitHub",
+      items: [
+        item(
+          "github",
+          timestamp: 30,
+          sourcePresentation: InboxSourcePresentation(name: "GitHub", order: 20)
+        )
+      ]
+    )
+    store.replace(
+      source: "GitLab",
+      items: [
+        item(
+          "gitlab",
+          timestamp: 20,
+          sourcePresentation: InboxSourcePresentation(name: "GitLab", order: 10)
+        )
+      ]
+    )
+    store.replace(source: "Other", items: [item("other", timestamp: 40)])
+
+    XCTAssertEqual(store.groups().map(\.title), ["GitLab", "GitHub", "Other"])
+  }
+
   func testClearAllRemovesMessagesAndReadState() {
     let store = InboxStore()
     store.replace(source: "GitHub", items: [item("one")])
@@ -270,6 +297,17 @@ final class InboxStoreTests: XCTestCase {
 
     store.configure(source: "GitLab", actions: [])
     XCTAssertTrue(store.sourceConfigurations.isEmpty)
+  }
+
+  func testSourceActionsUseContextOrderBeforeUnorderedSources() {
+    let store = InboxStore()
+    let refresh = [InboxAction(id: "refresh", title: "Refresh")]
+    store.configure(source: "Other", actions: refresh)
+    store.configure(source: "GitHub", actions: refresh, order: 20)
+    store.configure(source: "GitLab", actions: refresh, order: 10)
+
+    XCTAssertEqual(store.sourceConfigurations.map(\.source), ["GitLab", "GitHub", "Other"])
+    XCTAssertEqual(store.sourceConfigurations.map(\.order), [10, 20, nil])
   }
 
   func testRefreshAllTargetsContainOnlyOptedInSourceActions() {

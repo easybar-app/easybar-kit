@@ -865,8 +865,14 @@ function M.new(log, hooks)
 			assert(type(configuration) == "table", "inbox configuration must be a table")
 			local actions = configuration.actions or {}
 			assert(json_module.is_array(actions), "inbox configuration actions must be a dense array")
+			local order = configuration.order
+			assert(
+				order == nil
+					or (type(order) == "number" and order == math.floor(order) and order >= -2147483648 and order <= 2147483647),
+				"inbox configuration order must be a 32-bit integer"
+			)
 			registry.defer_side_effect(function()
-				hooks.configure_inbox(source, actions)
+				hooks.configure_inbox(source, actions, order)
 			end)
 		end
 

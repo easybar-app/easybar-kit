@@ -221,10 +221,6 @@ struct InboxPopupView: View {
         )
       }
     }
-    .sorted {
-      if $0.source == $1.source { return $0.action.id < $1.action.id }
-      return $0.source.localizedCaseInsensitiveCompare($1.source) == .orderedAscending
-    }
   }
 
   private func sourcePresentation(for source: String) -> InboxSourcePresentation? {

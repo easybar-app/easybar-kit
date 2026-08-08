@@ -18,6 +18,10 @@ final class LuaInboxTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
     assert(not pcall(easybar.inbox.configure, "gitlab", {
       actions = { refresh = { id = "refresh", title = "Refresh" } },
     }))
+    assert(not pcall(easybar.inbox.configure, "gitlab", {
+      order = 1.5,
+      actions = {},
+    }))
 
     easybar.inbox.on_action("  gitlab ", function(event)
       status:set({ label = event.target_widget_id .. ":" .. event.action_id })
@@ -28,6 +32,7 @@ final class LuaInboxTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
     end)
 
     easybar.inbox.configure(" gitlab ", {
+      order = 20,
       actions = { { id = "sync", title = "Refresh", include_in_refresh_all = true } },
     })
 
@@ -44,6 +49,7 @@ final class LuaInboxTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
           name = "GitLab",
           icon = "GL",
           color = "#FC6D26",
+          order = 20,
         },
         actions = { { id = "open", title = "Open" } },
       },
@@ -76,11 +82,13 @@ final class LuaInboxTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
     XCTAssertEqual(replacement.inboxReplacePayload?.items.first?.source?.name, "GitLab")
     XCTAssertEqual(replacement.inboxReplacePayload?.items.first?.source?.icon, "GL")
     XCTAssertEqual(replacement.inboxReplacePayload?.items.first?.source?.color, "#FC6D26")
+    XCTAssertEqual(replacement.inboxReplacePayload?.items.first?.source?.order, 20)
 
     let configuration = try await nextUpdate(from: recorder) {
       $0.inboxConfigurationPayload?.source == "gitlab"
     }
     XCTAssertEqual(configuration.inboxConfigurationPayload?.actions.first?.id, "sync")
+    XCTAssertEqual(configuration.inboxConfigurationPayload?.order, 20)
     XCTAssertTrue(
       configuration.inboxConfigurationPayload?.actions.first?.isIncludedInRefreshAll == true
     )

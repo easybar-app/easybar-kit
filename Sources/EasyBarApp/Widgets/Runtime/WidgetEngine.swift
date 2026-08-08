@@ -394,7 +394,11 @@ actor WidgetEngine {
       }
     case .inboxConfigure(let configuration):
       await MainActor.run {
-        inboxStore.configure(source: configuration.source, actions: configuration.actions)
+        inboxStore.configure(
+          source: configuration.source,
+          actions: configuration.actions,
+          order: configuration.order
+        )
       }
     case .storageRequest(let token, let widget, let key, let operation, let value):
       await storageService.handle(

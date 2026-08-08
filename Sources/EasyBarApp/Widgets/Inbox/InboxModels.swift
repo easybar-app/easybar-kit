@@ -66,6 +66,19 @@ struct InboxSourcePresentation: Codable, Equatable, Sendable {
   let name: String?
   let icon: String?
   let color: String?
+  let order: Int?
+
+  init(
+    name: String? = nil,
+    icon: String? = nil,
+    color: String? = nil,
+    order: Int? = nil
+  ) {
+    self.name = name
+    self.icon = icon
+    self.color = color
+    self.order = order
+  }
 }
 
 struct InboxItem: Codable, Equatable, Identifiable, Sendable {
@@ -124,6 +137,13 @@ struct InboxSourceSnapshot: Codable, Equatable, Sendable {
 struct InboxSourceConfiguration: Codable, Equatable, Sendable {
   let source: String
   let actions: [InboxAction]
+  let order: Int?
+
+  init(source: String, actions: [InboxAction], order: Int? = nil) {
+    self.source = source
+    self.actions = actions
+    self.order = order
+  }
 
   var refreshAllAction: InboxAction? {
     actions.first(where: \.isIncludedInRefreshAll)

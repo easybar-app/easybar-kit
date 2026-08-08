@@ -424,12 +424,13 @@ registry = api.new(log, {
 			source = source,
 		})
 	end,
-	configure_inbox = function(source, actions)
+	configure_inbox = function(source, actions, order)
 		send_payload({
 			protocol_version = PROTOCOL_VERSION,
 			type = "inbox_configure",
 			source = source,
 			actions = actions,
+			order = order,
 		})
 	end,
 	on_async_job_started = function(token, command, context, options)

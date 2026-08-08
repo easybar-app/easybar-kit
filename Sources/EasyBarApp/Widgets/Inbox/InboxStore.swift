@@ -12,6 +12,7 @@ final class InboxStore: ObservableObject {
   private var sources: [String: [InboxItem]] = [:]
   private var controlSources: [String: [InboxItem]] = [:]
   private var sourceActions: [String: [InboxAction]] = [:]
+  private var sourceActionOrders: [String: Int] = [:]
   private var readItemIDs = Set<String>()
   private var unreadItemIDs = Set<String>()
   private var dismissedItemIDs = Set<String>()
@@ -196,6 +197,7 @@ final class InboxStore: ObservableObject {
     sources.removeAll()
     controlSources.removeAll()
     sourceActions.removeAll()
+    sourceActionOrders.removeAll()
     readItemIDs.removeAll()
     unreadItemIDs.removeAll()
     dismissedItemIDs.removeAll()
@@ -207,11 +209,12 @@ final class InboxStore: ObservableObject {
   func clearPublishedItems() {
     sources.removeAll()
     sourceActions.removeAll()
+    sourceActionOrders.removeAll()
     rebuild()
     rebuildSourceConfigurations()
   }
 
-  func configure(source: String, actions: [InboxAction]) {
+  func configure(source: String, actions: [InboxAction], order: Int? = nil) {
     guard let source = normalizedSource(source) else { return }
     var actionIDs = Set<String>()
     var validActions: [InboxAction] = []
@@ -226,8 +229,14 @@ final class InboxStore: ObservableObject {
     }
     if validActions.isEmpty {
       sourceActions.removeValue(forKey: source)
+      sourceActionOrders.removeValue(forKey: source)
     } else {
       sourceActions[source] = validActions
+      if let order {
+        sourceActionOrders[source] = order
+      } else {
+        sourceActionOrders.removeValue(forKey: source)
+      }
     }
     rebuildSourceConfigurations()
   }
@@ -297,11 +306,28 @@ final class InboxStore: ObservableObject {
       if grouped[title] == nil { order.append(title) }
       grouped[title, default: []].append(item)
     }
-    return order.map { title in
+    let groups = order.map { title in
       let items = grouped[title] ?? []
       let presentation = configuration.groupBy == .source ? items.first?.item.source : nil
       return (title, presentation, items)
     }
+    guard configuration.groupBy == .source else { return groups }
+    return groups.enumerated().sorted { left, right in
+      let leftOrder = left.element.1?.order
+      let rightOrder = right.element.1?.order
+      switch (leftOrder, rightOrder) {
+      case (let leftOrder?, let rightOrder?) where leftOrder != rightOrder:
+        return leftOrder < rightOrder
+      case (_?, nil):
+        return true
+      case (nil, _?):
+        return false
+      case (_?, _?):
+        return left.element.0.localizedCaseInsensitiveCompare(right.element.0) == .orderedAscending
+      case (nil, nil):
+        return left.offset < right.offset
+      }
+    }.map { $0.element }
   }
 
   private func rebuild() {
@@ -419,8 +445,23 @@ final class InboxStore: ObservableObject {
   }
 
   private func rebuildSourceConfigurations() {
-    sourceConfigurations = sourceActions.keys.sorted().map {
-      InboxSourceConfiguration(source: $0, actions: sourceActions[$0] ?? [])
+    sourceConfigurations = sourceActions.keys.map {
+      InboxSourceConfiguration(
+        source: $0,
+        actions: sourceActions[$0] ?? [],
+        order: sourceActionOrders[$0]
+      )
+    }.sorted { left, right in
+      switch (left.order, right.order) {
+      case (let leftOrder?, let rightOrder?) where leftOrder != rightOrder:
+        return leftOrder < rightOrder
+      case (_?, nil):
+        return true
+      case (nil, _?):
+        return false
+      default:
+        return left.source.localizedCaseInsensitiveCompare(right.source) == .orderedAscending
+      }
     }
   }
 

@@ -481,6 +481,7 @@
 ---@field name? string Display name. Defaults to the publisher source.
 ---@field icon? string Optional icon text or image path returned by `easybar.asset(...)`.
 ---@field color? string Optional source accent color. Accepts theme tokens or hex colors.
+---@field order? integer Optional ascending order when inbox items are grouped by source. Explicit orders appear before unordered sources.
 
 ---@class (exact) EasyBarInboxItem
 ---@field id string Stable id within the source snapshot.
@@ -504,6 +505,7 @@
 
 ---@class (exact) EasyBarInboxConfiguration
 ---@field actions? EasyBarInboxAction[] Actions shown under this source in the inbox context menu.
+---@field order? integer Optional ascending source order in the inbox context menu. Explicit orders appear before unordered sources.
 
 ---@class EasyBarInboxContextActionEvent
 ---@field name 'inbox.context_action'

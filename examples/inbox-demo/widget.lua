@@ -3,24 +3,28 @@
 local SOURCE = "Inbox demo"
 local NOW = os.time()
 local DEMO_DELAY_SECONDS = 1.25
+local DEMO_ORDER = 10000
 
 ---@type EasyBarInboxSourcePresentation
 local GITHUB = {
 	name = "GitHub",
 	icon = easybar.asset("./assets/github.svg"),
 	color = "#A371F7",
+	order = DEMO_ORDER,
 }
 ---@type EasyBarInboxSourcePresentation
 local GITLAB = {
 	name = "GitLab",
 	icon = easybar.asset("./assets/gitlab.svg"),
 	color = "#FC6D26",
+	order = DEMO_ORDER,
 }
 ---@type EasyBarInboxSourcePresentation
 local HOMEBREW = {
 	name = "Homebrew",
 	icon = easybar.asset("./assets/brew.svg"),
 	color = "#FBB040",
+	order = DEMO_ORDER,
 }
 
 ---@type EasyBarInboxItem[]
@@ -176,7 +180,7 @@ local function configure_source_actions()
 			{ id = "clear", title = "Clear demo" },
 		}
 	end
-	easybar.inbox.configure(SOURCE, { actions = actions })
+	easybar.inbox.configure(SOURCE, { order = DEMO_ORDER, actions = actions })
 end
 
 ---Restores a fresh mutable snapshot from the immutable demo templates.
