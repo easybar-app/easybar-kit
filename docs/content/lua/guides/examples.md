@@ -42,7 +42,7 @@ render()
 
 ## Bundled Homebrew widget
 
-[`widgets/brew/widget.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/brew/widget.lua) is a complete
+[`widgets/brew/widget.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/brew/widget.lua) is a complete
 example of a stateful popup widget. It:
 
 - checks formulae and casks with `brew outdated`
@@ -57,26 +57,26 @@ for command chaining, cancellation, structured state rendering, popup rows, erro
 and bounded file logging.
 
 Use the inbox-only
-[`widgets/inbox/brew/widget.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/inbox/brew/widget.lua)
+[`widgets/inbox/brew/widget.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/inbox/brew/widget.lua)
 variant to publish outdated formulae, casks, Homebrew warnings, and command errors into the native
 inbox. It supports refresh, `brew update`, individual or complete upgrades, and cancellation while
 an update or upgrade is running. Load either `brew/widget.lua` or `inbox/brew/widget.lua`, not both.
 
 ## Bundled GitLab work-items widget
 
-[`widgets/gitlab/widget.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/gitlab/widget.lua) shows the
+[`widgets/gitlab/widget.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/gitlab/widget.lua) shows the
 open issues and merge requests assigned to the authenticated user. It works with GitLab.com and
 private GitLab Self-Managed or Dedicated instances through the official `glab` CLI. Use the
-inbox-only [`widgets/inbox/gitlab/widget.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/inbox/gitlab/widget.lua)
+inbox-only [`widgets/inbox/gitlab/widget.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/inbox/gitlab/widget.lua)
 variant to publish the same work items into EasyBar's shared [native inbox](inbox.md).
 
 The equivalent inbox-only GitHub publisher is
-[`widgets/inbox/github/widget.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/inbox/github/widget.lua).
+[`widgets/inbox/github/widget.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/inbox/github/widget.lua).
 Both publishers use EasyBar's native item URL handling, preserve the last valid snapshot when a
 refresh fails, and publish service update times for the inbox's default timestamp sorting. Their generic validation, bounded-error, and ISO-8601 parsing functions live in
-[`widgets/shared/inbox.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/shared/inbox.lua). The service publishers remain complete package entrypoints, while the shared helper is
+[`widgets/shared/inbox.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/shared/inbox.lua). The service publishers remain complete package entrypoints, while the shared helper is
 documented under [Reusable Modules](modules.md#inbox-data-helper).
-Use [`widgets/inbox/demo/widget.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/inbox/demo/widget.lua)
+Use [`widgets/inbox/demo/widget.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/inbox/demo/widget.lua)
 to preview inbox grouping, severities, Markdown, unread state, and actions without external services.
 
 Install `glab`, authenticate the instance, and make the CLI and host available to GUI-launched
@@ -119,14 +119,14 @@ clock = easybar.add(easybar.kind.item, "clock", {
 
 ## Native context menu widget
 
-[`widgets/simple/context-menu.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/simple/context-menu.lua)
+[`widgets/simple/context-menu.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/simple/context-menu.lua)
 shows a native macOS right-click menu with actions, a separator, checked state, a submenu, and
 dynamic menu replacement. See [Native Context Menus](context-menus.md) for the full
 API and right-click precedence rules.
 
 ## Popup and context menu widget
 
-[`widgets/compositions/popup-context-menu.lua`](https://github.com/gi8lino/easybar/blob/main/widgets/compositions/popup-context-menu.lua)
+[`widgets/compositions/popup-context-menu.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/compositions/popup-context-menu.lua)
 attaches both interaction surfaces to one anchor. Hovering shows status in a popup, while
 right-clicking opens a native menu with an action and checked mode submenu. The example also shows
 how one render function keeps popup content, anchor content, and menu checkmarks synchronized. The

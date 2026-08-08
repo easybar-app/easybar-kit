@@ -9,8 +9,8 @@ EasyBar can start without a custom config. The built-in defaults already show a 
 Add the Homebrew tap and install EasyBar:
 
 ```bash
-brew tap gi8lino/tap
-brew install --cask gi8lino/tap/easybar
+brew tap easybar-app/tap
+brew install --cask easybar-app/tap/easybar
 ```
 
 The cask installs the app and CLI and starts the separately managed calendar and network agent services. [Installation](installation.md) explains the component lifecycle, upgrades, and uninstall behavior.

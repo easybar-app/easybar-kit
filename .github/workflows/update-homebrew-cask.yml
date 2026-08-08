@@ -62,7 +62,7 @@ jobs:
       - name: Checkout Homebrew tap
         uses: actions/checkout@v7
         with:
-          repository: gi8lino/homebrew-tap
+          repository: easybar-app/homebrew-tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           path: homebrew-tap
 

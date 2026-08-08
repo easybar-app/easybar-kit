@@ -22,7 +22,7 @@ git -C "${tap_dir}" -c user.name=test -c user.email=test@example.com commit -qm 
 
 "${repo_root}/scripts/release/update-homebrew-cask.sh" \
   --tap-dir "${tap_dir}" \
-  --repository gi8lino/easybar \
+  --repository easybar-app/easybar \
   --tag "${tag}" \
   --version "${version}" \
   --sha "${sha}" \
@@ -42,7 +42,7 @@ assert_contains() {
 easybar_cask="${tap_dir}/Casks/easybar.rb"
 test -s "${easybar_cask}"
 assert_contains "${easybar_cask}" 'cask "easybar" do'
-assert_contains "${easybar_cask}" "url \"https://github.com/gi8lino/easybar/releases/download/${tag}/EasyBar-${version}.zip\""
+assert_contains "${easybar_cask}" "url \"https://github.com/easybar-app/easybar/releases/download/${tag}/EasyBar-${version}.zip\""
 assert_contains "${easybar_cask}" "sha256 \"${sha}\""
 assert_contains "${easybar_cask}" "version \"${version}\""
 assert_contains "${easybar_cask}" '"easybar-calendar-agent",'
@@ -64,13 +64,13 @@ network_formula="${tap_dir}/Formula/easybar-network-agent.rb"
 test -s "${calendar_formula}"
 test -s "${network_formula}"
 assert_contains "${calendar_formula}" 'class EasybarCalendarAgent < Formula'
-assert_contains "${calendar_formula}" "url \"https://github.com/gi8lino/easybar/releases/download/${tag}/EasyBarCalendarAgent-${version}.zip\""
+assert_contains "${calendar_formula}" "url \"https://github.com/easybar-app/easybar/releases/download/${tag}/EasyBarCalendarAgent-${version}.zip\""
 assert_contains "${calendar_formula}" "sha256 \"${calendar_agent_sha}\""
 assert_contains "${calendar_formula}" 'libexec.install "EasyBarCalendarAgent.app"'
 assert_contains "${calendar_formula}" 'keep_alive successful_exit: false'
 assert_contains "${calendar_formula}" 'process_type :interactive'
 assert_contains "${network_formula}" 'class EasybarNetworkAgent < Formula'
-assert_contains "${network_formula}" "url \"https://github.com/gi8lino/easybar/releases/download/${tag}/EasyBarNetworkAgent-${version}.zip\""
+assert_contains "${network_formula}" "url \"https://github.com/easybar-app/easybar/releases/download/${tag}/EasyBarNetworkAgent-${version}.zip\""
 assert_contains "${network_formula}" "sha256 \"${network_agent_sha}\""
 assert_contains "${network_formula}" 'libexec.install "EasyBarNetworkAgent.app"'
 assert_contains "${network_formula}" 'keep_alive successful_exit: false'
@@ -94,7 +94,7 @@ fi
 git -C "${tap_dir}" -c user.name=test -c user.email=test@example.com commit -qm "migrate to cask"
 "${repo_root}/scripts/release/update-homebrew-cask.sh" \
   --tap-dir "${tap_dir}" \
-  --repository gi8lino/easybar \
+  --repository easybar-app/easybar \
   --tag "v9.8.8" \
   --version "9.8.8" \
   --sha "${sha}" \

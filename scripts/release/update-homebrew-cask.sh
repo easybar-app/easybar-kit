@@ -2,7 +2,7 @@
 set -euo pipefail
 
 tap_dir=""
-repository="${GITHUB_REPOSITORY:-gi8lino/easybar}"
+repository="${GITHUB_REPOSITORY:-easybar-app/easybar}"
 tag=""
 version=""
 sha=""

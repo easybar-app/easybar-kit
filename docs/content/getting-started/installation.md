@@ -1,19 +1,19 @@
 # Installation
 
-EasyBar is distributed through Homebrew in the `gi8lino/tap` tap.
+EasyBar is distributed through Homebrew in the `easybar-app/tap` tap.
 
 ## Install
 
 Add the tap:
 
 ```bash
-brew tap gi8lino/tap
+brew tap easybar-app/tap
 ```
 
 Install EasyBar:
 
 ```bash
-brew install --cask gi8lino/tap/easybar
+brew install --cask easybar-app/tap/easybar
 ```
 
 The cask installs `EasyBar.app` into `/Applications`, links the `easybar` CLI into Homebrew's executable path, and installs the calendar and network agents as formula dependencies. Installation starts both agent services automatically.
@@ -39,7 +39,7 @@ Upgrade EasyBar and its dependencies with Homebrew:
 
 ```bash
 brew update
-brew upgrade --cask gi8lino/tap/easybar
+brew upgrade --cask easybar-app/tap/easybar
 ```
 
 Quit and reopen EasyBar after upgrading if the previous version is still running.
@@ -92,7 +92,7 @@ easybar refresh
 Remove the app and CLI link with:
 
 ```bash
-brew uninstall --cask gi8lino/tap/easybar
+brew uninstall --cask easybar-app/tap/easybar
 ```
 
 Homebrew may retain dependency formulae after the cask is removed. If you no longer need the agents, stop and uninstall them explicitly:

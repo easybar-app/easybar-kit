@@ -1,9 +1,9 @@
 site_name: EasyBar
 site_description: A lightweight, scriptable macOS status bar built with SwiftUI and Lua.
-site_url: https://gi8lino.github.io/easybar/
+site_url: https://easybar-app.github.io/easybar/
 
-repo_url: https://github.com/gi8lino/easybar
-repo_name: gi8lino/easybar
+repo_url: https://github.com/easybar-app/easybar
+repo_name: easybar-app/easybar
 edit_uri: blob/main/docs/content/
 
 docs_dir: content

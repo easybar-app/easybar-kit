@@ -126,7 +126,7 @@ Run the failing Homebrew operation directly in a terminal to distinguish package
 
 ```bash
 brew update
-brew upgrade --cask gi8lino/tap/easybar
+brew upgrade --cask easybar-app/tap/easybar
 ```
 
 Homebrew installations handle quarantine for the app, CLI, and agent applications. Manual release-archive installs do not. If Homebrew reports a cache extraction or quarantine error, preserve the complete error and check [macOS Quarantine](../getting-started/macos-quarantine.md) before changing extended attributes manually.

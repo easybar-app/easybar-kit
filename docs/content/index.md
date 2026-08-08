@@ -91,7 +91,7 @@ such as the SSID, signal strength, and IP addresses.
 
 ### Tailscale
 
-The Lua [Tailscale widget](https://github.com/gi8lino/easybar/blob/main/widgets/tailscale/widget.lua)
+The Lua [Tailscale widget](https://github.com/easybar-app/easybar/blob/main/widgets/tailscale/widget.lua)
 shows whether Tailscale is running and which exit node is active. Left-click the widget to start or
 stop Tailscale. Right-click it to select or disable an exit node, or to refresh the current status.
 

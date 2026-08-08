@@ -412,7 +412,7 @@ private struct AppController {
         titleSuffix: "[Open URL via event URL]",
         expectedAction: "Open URL",
         placement: .eventURL,
-        urlString: "https://github.com/gi8lino/easybar",
+        urlString: "https://github.com/easybar-app/easybar",
         locationPrefix: nil
       ),
       DemoLinkFixture(
