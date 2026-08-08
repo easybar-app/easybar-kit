@@ -10,16 +10,16 @@ Shared Homebrew manual-upgrade policy for EasyBar widgets.
 This is a library package. The package manager installs it when another package
 declares it as a dependency.
 
-| Package metadata | Value                                  |
-| ---------------- | -------------------------------------- |
-| Name             | `brew-policy`                          |
-| Version          | `0.1.0`                                |
-| Kind             | `library`                              |
-| Minimum EasyBar  | `0.41.0`                               |
-| License          | `Apache-2.0`                           |
-| Categories       | `developer-tools`, `library`, `system` |
-| Dependencies     | None                                   |
-| Exported modules | `brew_policy`                          |
+| Package metadata | Value |
+| --- | --- |
+| Name | `brew-policy` |
+| Version | `0.1.0` |
+| Kind | `library` |
+| Minimum EasyBar | `0.41.0` |
+| License | `Apache-2.0` |
+| Categories | `developer-tools`, `library`, `system` |
+| Dependencies | None |
+| Exported modules | `brew_policy` |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/brew-policy)
 
