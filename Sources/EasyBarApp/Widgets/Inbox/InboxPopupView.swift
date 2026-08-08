@@ -217,7 +217,7 @@ struct InboxPopupView: View {
         return InboxSourceActivityRow(
           source: configuration.source,
           action: action,
-          presentation: sourcePresentation(for: configuration.source)
+          presentation: configuration.presentation ?? sourcePresentation(for: configuration.source)
         )
       }
     }
@@ -330,52 +330,64 @@ struct InboxPopupView: View {
 
       let actions = presented.item.actions ?? []
       let itemURL = presented.item.url.flatMap(URL.init(string:))
-      if !actions.isEmpty || itemURL != nil {
-        HStack(spacing: 10) {
-          ForEach(actions) { action in
-            let presentation = InboxItemActionPresentation(
-              action: action,
-              busySourceAction: busySourceActions.first { $0.id == action.id }
-            )
+      HStack(spacing: 10) {
+        Button(presented.isUnread ? "Read" : "Unread") {
+          store.toggleRead(presented)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(color(config.popupActionColorHex))
 
-            switch presentation.style {
-            case .progress:
-              HStack(spacing: 4) {
-                ProgressView()
-                  .controlSize(.small)
-                Text(presentation.title)
-              }
-              .foregroundStyle(color(config.popupMutedColorHex))
-            case .status:
-              Text(presentation.title)
-                .foregroundStyle(color(config.popupMutedColorHex))
-            case .button:
-              Button(presentation.title) {
-                store.markRead(presented)
-                emitAction(
-                  .inboxAction,
-                  actionID: action.id,
-                  source: presented.source,
-                  targetWidgetID: presented.item.id
-                )
-              }
-              .buttonStyle(.plain)
-              .foregroundStyle(color(config.popupActionColorHex))
-              .disabled(!presentation.isEnabled)
-            }
+        if presented.item.isDismissible {
+          Button("Dismiss") {
+            store.dismiss(presented)
           }
+          .buttonStyle(.plain)
+          .foregroundStyle(color(config.popupActionColorHex))
+        }
 
-          if let itemURL {
-            Button("Open") {
+        ForEach(actions) { action in
+          let presentation = InboxItemActionPresentation(
+            action: action,
+            busySourceAction: busySourceActions.first { $0.id == action.id }
+          )
+
+          switch presentation.style {
+          case .progress:
+            HStack(spacing: 4) {
+              ProgressView()
+                .controlSize(.small)
+              Text(presentation.title)
+            }
+            .foregroundStyle(color(config.popupMutedColorHex))
+          case .status:
+            Text(presentation.title)
+              .foregroundStyle(color(config.popupMutedColorHex))
+          case .button:
+            Button(presentation.title) {
               store.markRead(presented)
-              NSWorkspace.shared.open(itemURL)
+              emitAction(
+                .inboxAction,
+                actionID: action.id,
+                source: presented.source,
+                targetWidgetID: presented.item.id
+              )
             }
             .buttonStyle(.plain)
             .foregroundStyle(color(config.popupActionColorHex))
+            .disabled(!presentation.isEnabled)
           }
         }
-        .font(.caption)
+
+        if let itemURL {
+          Button("Open") {
+            store.markRead(presented)
+            NSWorkspace.shared.open(itemURL)
+          }
+          .buttonStyle(.plain)
+          .foregroundStyle(color(config.popupActionColorHex))
+        }
       }
+      .font(.caption)
     }
     .padding(8)
     .frame(maxWidth: .infinity, alignment: .leading)

@@ -13,6 +13,7 @@ final class InboxStore: ObservableObject {
   private var controlSources: [String: [InboxItem]] = [:]
   private var sourceActions: [String: [InboxAction]] = [:]
   private var sourceActionOrders: [String: Int] = [:]
+  private var sourcePresentations: [String: InboxSourcePresentation] = [:]
   private var readItemIDs = Set<String>()
   private var unreadItemIDs = Set<String>()
   private var dismissedItemIDs = Set<String>()
@@ -198,6 +199,7 @@ final class InboxStore: ObservableObject {
     controlSources.removeAll()
     sourceActions.removeAll()
     sourceActionOrders.removeAll()
+    sourcePresentations.removeAll()
     readItemIDs.removeAll()
     unreadItemIDs.removeAll()
     dismissedItemIDs.removeAll()
@@ -210,11 +212,17 @@ final class InboxStore: ObservableObject {
     sources.removeAll()
     sourceActions.removeAll()
     sourceActionOrders.removeAll()
+    sourcePresentations.removeAll()
     rebuild()
     rebuildSourceConfigurations()
   }
 
-  func configure(source: String, actions: [InboxAction], order: Int? = nil) {
+  func configure(
+    source: String,
+    actions: [InboxAction],
+    order: Int? = nil,
+    presentation: InboxSourcePresentation? = nil
+  ) {
     guard let source = normalizedSource(source) else { return }
     var actionIDs = Set<String>()
     var validActions: [InboxAction] = []
@@ -230,12 +238,18 @@ final class InboxStore: ObservableObject {
     if validActions.isEmpty {
       sourceActions.removeValue(forKey: source)
       sourceActionOrders.removeValue(forKey: source)
+      sourcePresentations.removeValue(forKey: source)
     } else {
       sourceActions[source] = validActions
       if let order {
         sourceActionOrders[source] = order
       } else {
         sourceActionOrders.removeValue(forKey: source)
+      }
+      if let presentation {
+        sourcePresentations[source] = presentation
+      } else {
+        sourcePresentations.removeValue(forKey: source)
       }
     }
     rebuildSourceConfigurations()
@@ -449,7 +463,8 @@ final class InboxStore: ObservableObject {
       InboxSourceConfiguration(
         source: $0,
         actions: sourceActions[$0] ?? [],
-        order: sourceActionOrders[$0]
+        order: sourceActionOrders[$0],
+        presentation: sourcePresentations[$0]
       )
     }.sorted { left, right in
       switch (left.order, right.order) {

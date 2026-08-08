@@ -296,6 +296,7 @@
 ---@class (exact) EasyBarInboxConfiguration
 ---@field actions? EasyBarInboxAction[] Actions shown under this source in the inbox context menu.
 ---@field order? integer Optional ascending source order in the inbox context menu. Explicit orders appear before unordered sources.
+---@field presentation? EasyBarInboxSourcePresentation Optional source presentation retained even when the source has no current items.
 
 ---@class EasyBarInboxContextActionEvent
 ---@field name 'inbox.context_action'

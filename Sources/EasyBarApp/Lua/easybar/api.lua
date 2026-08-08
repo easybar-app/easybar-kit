@@ -866,13 +866,15 @@ function M.new(log, hooks)
 			local actions = configuration.actions or {}
 			assert(json_module.is_array(actions), "inbox configuration actions must be a dense array")
 			local order = configuration.order
+			local presentation = configuration.presentation
 			assert(
 				order == nil
 					or (type(order) == "number" and order == math.floor(order) and order >= -2147483648 and order <= 2147483647),
 				"inbox configuration order must be a 32-bit integer"
 			)
+			assert(presentation == nil or type(presentation) == "table", "inbox configuration presentation must be a table")
 			registry.defer_side_effect(function()
-				hooks.configure_inbox(source, actions, order)
+				hooks.configure_inbox(source, actions, order, presentation)
 			end)
 		end
 

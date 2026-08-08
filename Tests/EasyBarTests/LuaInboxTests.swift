@@ -22,6 +22,10 @@ final class LuaInboxTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
       order = 1.5,
       actions = {},
     }))
+    assert(not pcall(easybar.inbox.configure, "gitlab", {
+      presentation = "GitLab",
+      actions = {},
+    }))
 
     easybar.inbox.on_action("  gitlab ", function(event)
       status:set({ label = event.target_widget_id .. ":" .. event.action_id })
@@ -33,6 +37,11 @@ final class LuaInboxTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
 
     easybar.inbox.configure(" gitlab ", {
       order = 20,
+      presentation = {
+        name = "GitLab",
+        icon = "GL",
+        color = "#FC6D26",
+      },
       actions = { { id = "sync", title = "Refresh", include_in_refresh_all = true } },
     })
 
@@ -89,6 +98,9 @@ final class LuaInboxTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
     }
     XCTAssertEqual(configuration.inboxConfigurationPayload?.actions.first?.id, "sync")
     XCTAssertEqual(configuration.inboxConfigurationPayload?.order, 20)
+    XCTAssertEqual(configuration.inboxConfigurationPayload?.presentation?.name, "GitLab")
+    XCTAssertEqual(configuration.inboxConfigurationPayload?.presentation?.icon, "GL")
+    XCTAssertEqual(configuration.inboxConfigurationPayload?.presentation?.color, "#FC6D26")
     XCTAssertTrue(
       configuration.inboxConfigurationPayload?.actions.first?.isIncludedInRefreshAll == true
     )

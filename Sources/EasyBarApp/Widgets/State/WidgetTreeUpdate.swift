@@ -72,6 +72,7 @@ struct WidgetTreeUpdate: Codable, Sendable {
   let items: [InboxItem]?
   let actions: [InboxAction]?
   let order: Int?
+  let presentation: InboxSourcePresentation?
   let key: String?
   let value: WidgetStorageValue?
 
@@ -94,6 +95,7 @@ struct WidgetTreeUpdate: Codable, Sendable {
     case items
     case actions
     case order
+    case presentation
     case key
     case value
   }
@@ -173,7 +175,12 @@ struct WidgetTreeUpdate: Codable, Sendable {
 
   var inboxConfigurationPayload: InboxSourceConfiguration? {
     guard type == .inboxConfigure, let source, let actions else { return nil }
-    return InboxSourceConfiguration(source: source, actions: actions, order: order)
+    return InboxSourceConfiguration(
+      source: source,
+      actions: actions,
+      order: order,
+      presentation: presentation
+    )
   }
 
   var storageRequestPayload:

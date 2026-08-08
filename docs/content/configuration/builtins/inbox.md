@@ -56,6 +56,9 @@ The **Refresh all**, **Mark all read**, and **Dismiss all** header controls can 
 their `show_*` option. Their icons accept configurable SF Symbol names, and their tooltip text is
 shown on hover and used as the accessible button label.
 
+Each message exposes **Read** or **Unread** and, unless the publisher disables dismissal,
+**Dismiss** actions below its content.
+
 While refresh activity and message snapshots change, the popup remeasures its content and adjusts
 its panel height. Temporary progress rows therefore do not leave stale empty space or clip the
 updated message list.

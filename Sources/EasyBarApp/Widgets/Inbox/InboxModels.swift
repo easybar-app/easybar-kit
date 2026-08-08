@@ -138,11 +138,18 @@ struct InboxSourceConfiguration: Codable, Equatable, Sendable {
   let source: String
   let actions: [InboxAction]
   let order: Int?
+  let presentation: InboxSourcePresentation?
 
-  init(source: String, actions: [InboxAction], order: Int? = nil) {
+  init(
+    source: String,
+    actions: [InboxAction],
+    order: Int? = nil,
+    presentation: InboxSourcePresentation? = nil
+  ) {
     self.source = source
     self.actions = actions
     self.order = order
+    self.presentation = presentation
   }
 
   var refreshAllAction: InboxAction? {

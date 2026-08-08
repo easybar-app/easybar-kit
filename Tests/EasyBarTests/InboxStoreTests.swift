@@ -273,11 +273,17 @@ final class InboxStoreTests: XCTestCase {
 
   func testSourceActionsRemainConfiguredWhenMessagesAreCleared() {
     let store = InboxStore()
+    let presentation = InboxSourcePresentation(
+      name: "GitLab",
+      icon: "GL",
+      color: "#FC6D26"
+    )
     store.configure(
       source: "GitLab",
       actions: [
         InboxAction(id: "sync", title: "Refresh", includeInRefreshAll: true)
-      ]
+      ],
+      presentation: presentation
     )
 
     XCTAssertEqual(
@@ -287,13 +293,15 @@ final class InboxStoreTests: XCTestCase {
           source: "GitLab",
           actions: [
             InboxAction(id: "sync", title: "Refresh", includeInRefreshAll: true)
-          ]
+          ],
+          presentation: presentation
         )
       ]
     )
 
     store.clear(source: "GitLab")
     XCTAssertEqual(store.sourceConfigurations.first?.source, "GitLab")
+    XCTAssertEqual(store.sourceConfigurations.first?.presentation, presentation)
 
     store.configure(source: "GitLab", actions: [])
     XCTAssertTrue(store.sourceConfigurations.isEmpty)

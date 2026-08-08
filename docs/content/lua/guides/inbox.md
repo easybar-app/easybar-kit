@@ -55,10 +55,11 @@ unread, and dismissed state in `inbox-state.json` inside `app.runtime_dir`.
 Set `url` to add a native **Open** action. CLI-published URLs are restricted to HTTP(S); Lua
 publishers should use HTTP(S) URLs as well.
 
-Click a message to mark it read. Click its status dot to toggle read/unread, or right-click the
-message to change its state or dismiss it. **Dismiss all** suppresses every currently displayed
-message. Local changes survive restarts and publisher refreshes while the source and item ID remain
-stable. Once a publisher omits an item, EasyBar removes its saved local state as well.
+Each message provides explicit **Read** or **Unread** and, when allowed, **Dismiss** actions. You can
+also click a message to mark it read, use its status dot to toggle state, or right-click it for the
+same local actions. **Dismiss all** suppresses every currently displayed message. Local changes
+survive restarts and publisher refreshes while the source and item ID remain stable. Once a
+publisher omits an item, EasyBar removes its saved local state as well.
 
 Optional per-item `source` metadata makes the origin more prominent without changing the stable
 publisher name used for grouping and action routing. Set `name`, `icon`, and `color` independently;
@@ -95,6 +96,11 @@ distinct:
 ```lua
 easybar.inbox.configure("gitlab", {
     order = 20,
+    presentation = {
+        name = "GitLab",
+        icon = easybar.asset("assets/gitlab.svg"),
+        color = "#FC6D26",
+    },
     actions = {
         {
             id = "refresh",
@@ -115,6 +121,9 @@ Calling `configure` again replaces the source's complete action list, which allo
 change their menu while work is running—for example, Homebrew replaces Update and Upgrade with
 Cancel. Passing an empty `actions` array removes the submenu. Clearing a source's messages leaves
 its independently configured actions available.
+
+Set `presentation` on the source configuration when refresh activity should retain the source
+name, icon, and color even while the source has no published items.
 
 Use `order` to place source submenus in ascending order. Sources with an explicit order appear
 before unordered sources; equal or unordered context sources fall back to their source name.

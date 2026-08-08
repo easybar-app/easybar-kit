@@ -397,7 +397,8 @@ actor WidgetEngine {
         inboxStore.configure(
           source: configuration.source,
           actions: configuration.actions,
-          order: configuration.order
+          order: configuration.order,
+          presentation: configuration.presentation
         )
       }
     case .storageRequest(let token, let widget, let key, let operation, let value):
