@@ -102,7 +102,7 @@ while IFS= read -r file; do
 
   if ! contains_value "${relative_path}" "${entrypoints[@]-}" &&
     ! contains_value "${relative_path}" "${dependencies[@]-}"; then
-    fail "bundled Lua file is not declared by the install manifest: ${relative_path}"
+    fail "example Lua file is not declared by the install manifest: ${relative_path}"
   fi
 done < <(find "${widgets_dir}" -type f -iname '*.lua' -print | LC_ALL=C sort)
 

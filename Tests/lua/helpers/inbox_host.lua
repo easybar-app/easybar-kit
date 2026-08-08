@@ -3,7 +3,6 @@
 local M = {}
 local configured_root
 local json
-local inbox_module
 
 local function configure(root)
 	if configured_root == root then
@@ -14,8 +13,6 @@ local function configure(root)
 		root .. "/Sources/EasyBarApp/Lua/?.lua",
 		root .. "/widgets/?.lua",
 		root .. "/widgets/?/init.lua",
-		root .. "/widgets/shared/?.lua",
-		root .. "/widgets/shared/?/init.lua",
 		root .. "/widgets/lib/?.lua",
 		root .. "/widgets/lib/?/init.lua",
 		root .. "/Sources/EasyBarApp/Lua/?/init.lua",
@@ -23,7 +20,6 @@ local function configure(root)
 	}, ";")
 
 	json = require("easybar.json")
-	inbox_module = require("inbox")
 	configured_root = root
 end
 
@@ -306,11 +302,6 @@ function M.load(root, entrypoint)
 	local ok, runtime_error = pcall(chunk)
 	assert(ok, entrypoint .. " failed during startup: " .. tostring(runtime_error))
 	return state
-end
-
-function M.modules(root)
-	configure(root)
-	return json, inbox_module
 end
 
 return M

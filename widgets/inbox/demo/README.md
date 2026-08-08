@@ -1,6 +1,6 @@
 # Inbox Demo Widget
 
-This bundled widget publishes representative messages to EasyBar's native shared inbox without requiring external services.
+This example publishes representative messages to EasyBar's native shared inbox without requiring external services.
 
 Use the inbox source actions to add or clear the demo snapshot. Items with a Dismiss action briefly show item-scoped activity before they are removed.
 

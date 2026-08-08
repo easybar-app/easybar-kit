@@ -50,7 +50,7 @@ The `clock` variable stores the handle returned by EasyBar, which lets the callb
 
 ## Where this widget goes
 
-EasyBar recursively loads every `.lua` file below the configured widgets directory. The bundled examples use `simple/`, `compositions/`, `inbox/`, and service directories for organization only; no category or filename is required by the loader. Generic helpers can live below `shared/`, while `lib/` remains on the module search path for compatibility.
+EasyBar recursively loads every `.lua` file below the configured widgets directory. The included examples use `simple/`, `compositions/`, and `inbox/demo/` for organization only; no category or filename is required by the loader. Generic helpers can live below `shared/`, while `lib/` remains on the module search path for compatibility.
 
 That directory is configured with `[app].widgets_dir` in `config.toml`.
 

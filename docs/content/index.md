@@ -29,7 +29,7 @@ New users should follow the user path first:
 | Group built-in widgets visually | [Native Groups](configuration/native-groups.md)      |
 | Pick or customize colors        | [Themes](configuration/themes.md)                    |
 | Add a custom widget             | [First Widget](lua/guides/first-widget.md)           |
-| Browse bundled widget examples  | [Bundled Widgets](lua/guides/bundled-widgets.md)     |
+| Browse packages and examples    | [Widget Packages And Examples](lua/guides/bundled-widgets.md) |
 | Debug a stuck bar               | [Troubleshooting](runtime/troubleshooting.md)        |
 | Understand process boundaries   | [Internals](internals/overview.md)                   |
 
@@ -91,7 +91,7 @@ such as the SSID, signal strength, and IP addresses.
 
 ### Tailscale
 
-The Lua [Tailscale widget](https://github.com/easybar-app/easybar/blob/main/widgets/tailscale/widget.lua)
+The Lua [Tailscale widget](https://github.com/easybar-app/widgets/blob/main/packages/tailscale/widget.lua)
 shows whether Tailscale is running and which exit node is active. Left-click the widget to start or
 stop Tailscale. Right-click it to select or disable an exit node, or to refresh the current status.
 

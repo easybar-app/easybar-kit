@@ -83,7 +83,7 @@ After fixing the widget, restart only the Lua runtime:
 easybar runtime restart
 ```
 
-See [Bundled Widgets](../lua/guides/bundled-widgets.md), [Commands](../lua/guides/commands.md), and [Lua Logging](../lua/guides/logging.md).
+See [Widget Packages And Examples](../lua/guides/bundled-widgets.md), [Commands](../lua/guides/commands.md), and [Lua Logging](../lua/guides/logging.md).
 
 ## Widget stops updating or a command is stuck
 

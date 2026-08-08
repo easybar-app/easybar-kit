@@ -1,4 +1,4 @@
--- Smoke-loads every selectable bundled widget from the install manifest.
+-- Smoke-loads every selectable example widget from the install manifest.
 
 local root = assert(arg[1], "repository root argument is required")
 local manifest_path = root .. "/widgets/install-manifest.csv"
@@ -31,4 +31,4 @@ for _, entrypoint in ipairs(entrypoints) do
 	assert(ok, entrypoint .. " failed during startup: " .. tostring(runtime_error))
 end
 
-print("Bundled Lua widget smoke test passed for " .. tostring(#entrypoints) .. " widgets")
+print("Lua example smoke test passed for " .. tostring(#entrypoints) .. " widgets")

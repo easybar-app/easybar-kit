@@ -224,11 +224,11 @@ lint: lint-swift lint-lua ## Check Swift and Lua formatting without modifying fi
 lint-swift: ## Check Swift source formatting without modifying files.
 	@swift format lint --recursive .
 
-lint-lua: ## Check Lua formatting, syntax, and bundled widget startup.
+lint-lua: ## Check Lua formatting, syntax, and example widget startup.
 	@$(STYLUA) --check .
 	@$(MAKE) --no-print-directory check-lua
 
-check-lua: ## Validate Lua sources, runtime behavior, and bundled widgets.
+check-lua: ## Validate Lua sources, runtime behavior, and example widgets.
 	@LUA="$(LUA)" scripts/ci/check-lua.sh
 
 test: generate-swift-env check-lua ## Run the Swift and Lua test suites without regenerating checked-in artifacts.
@@ -344,7 +344,7 @@ install-local: ## Build and install the current checkout with a Git-derived loca
 		--log-dir "$(LOCAL_LOG_DIR)" \
 		--state-dir "$(LOCAL_STATE_DIR)"
 
-install-widgets: ## Interactively copy bundled widgets and declared dependencies.
+install-widgets: ## Interactively copy bundled examples and declared assets.
 	@scripts/dev/install-widgets.sh \
 		"$(CURDIR)/widgets" \
 		"$(WIDGETS_INSTALL_DIR)" \

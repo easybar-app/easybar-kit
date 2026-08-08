@@ -65,5 +65,5 @@ menu.
 Invalid entries are omitted without rejecting the widget tree. Menus support up to eight nested
 levels and 256 total entries per node.
 
-See the complete bundled [`widgets/simple/context-menu.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/simple/context-menu.lua)
+See the included [`widgets/simple/context-menu.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/simple/context-menu.lua)
 example for dynamic checked filters and native actions.

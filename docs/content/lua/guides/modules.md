@@ -96,7 +96,7 @@ resolves to:
 
 ## Shared text helper
 
-The repository's example widgets include a small text module:
+The official [`shared` package](https://github.com/easybar-app/widgets/tree/main/packages/shared) includes a small text module:
 
 ```lua
 local text = require("text")
@@ -115,7 +115,7 @@ This file is an example in the user widget directory, not a built-in part of the
 
 ## Inbox data helper
 
-The bundled inbox publishers share `shared/inbox.lua` for three data-boundary operations:
+The official inbox packages share the `shared` package's `inbox.lua` for three data-boundary operations:
 
 ```lua
 local inbox = require("inbox")
@@ -135,7 +135,7 @@ local timestamp = inbox.timestamp("2026-08-03T09:45:00.123+02:00")
   JSON or an object-shaped response. Pass `easybar.json` explicitly because modules do not receive
   the widget-scoped API automatically.
 - `inbox.error_message(output, fallback)` trims and limits an error body to
-  `inbox.maximum_error_length` characters, using the fallback when output is empty. The bundled
+  `inbox.maximum_error_length` characters, using the fallback when output is empty. The official
   value is 12,000 characters, safely below the native inbox body's byte limit even for UTF-8 text.
 - `inbox.timestamp(value)` converts an ISO-8601 timestamp with `Z` or a numeric timezone offset to
   Unix seconds. Fractional seconds are accepted and discarded. Invalid dates and timestamps
@@ -145,7 +145,7 @@ These helpers deliberately do not own snapshots, refresh scheduling, or actions.
 widget remains responsible for validating service-specific fields and deciding whether a failed
 refresh should retain existing items.
 
-The bundled `retry.lua` module coordinates asynchronous attempts through `easybar.after(...)`. Pass
+The `shared` package's `retry.lua` module coordinates asynchronous attempts through `easybar.after(...)`. Pass
 the widget-scoped API explicitly because modules do not receive `easybar` automatically:
 
 ```lua

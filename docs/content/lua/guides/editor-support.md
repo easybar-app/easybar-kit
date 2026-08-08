@@ -59,6 +59,6 @@ The `runtime.path` entries above let LuaLS resolve the same widget-package, `sha
 `lib/` modules that EasyBar loads. See [Reusable Modules](modules.md) for directory layout,
 `require(...)` behavior, and module lifetime.
 
-Keep reusable-module annotations beside the module implementation. For example, the bundled
-`shared/retry.lua` declares `RetryOptions` and `RetryOperation` locally, so LuaLS can validate retry
+Keep reusable-module annotations beside the module implementation. For example, the official
+`shared` package's `retry.lua` declares `RetryOptions` and `RetryOperation` locally, so LuaLS can validate retry
 callbacks when the module is required without polluting the global EasyBar API.

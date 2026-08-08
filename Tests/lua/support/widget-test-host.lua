@@ -1,4 +1,4 @@
--- Minimal EasyBar host used by bundled-widget smoke and focused regression tests.
+-- Minimal EasyBar host used by example-widget smoke and focused regression tests.
 
 local M = {}
 
@@ -184,7 +184,7 @@ function M.new(root, options)
 
 	function easybar.add(_, id, props)
 		assert(type(id) == "string" and id ~= "", "widget added an invalid node id")
-		assert(shared_ids[id] == nil, "duplicate bundled widget node id: " .. id)
+		assert(shared_ids[id] == nil, "duplicate example widget node id: " .. id)
 		shared_ids[id] = true
 
 		local node = make_node(id, props)

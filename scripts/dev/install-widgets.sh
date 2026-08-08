@@ -90,7 +90,7 @@ while IFS=';' read -r entrypoint _ extra || [ -n "${entrypoint}${extra}" ]; do
 done <"${manifest_path}"
 
 if [ "${#item_names[@]}" -eq 0 ]; then
-  echo "No bundled widget entrypoints found in ${manifest_path}" >&2
+  echo "No example widget entrypoints found in ${manifest_path}" >&2
   exit 1
 fi
 
@@ -202,7 +202,7 @@ copy_relative_path() {
   local destination="${destination_dir}/${relative_path}"
 
   if [ ! -e "${source}" ]; then
-    echo "Bundled widget dependency does not exist: ${relative_path}" >&2
+    echo "Example widget dependency does not exist: ${relative_path}" >&2
     exit 1
   fi
 
@@ -217,7 +217,7 @@ copy_relative_path() {
   fi
 }
 
-printf 'Install bundled EasyBar widgets into:\n  %s\n\n' "${destination_dir}"
+printf 'Install EasyBar widget examples into:\n  %s\n\n' "${destination_dir}"
 printf 'Use Up/Down to move, Space to select or deselect, and Enter to install.\n'
 printf 'Dependencies are copied automatically from the widget manifest.\n'
 printf 'The default widgets are preselected. Press Esc to cancel.\n\n'

@@ -1,6 +1,6 @@
 # Examples
 
-This page explains a few complete Lua widget patterns. For every shipped example, its dependency, and inbox behavior, use the [Bundled Widgets](bundled-widgets.md) catalog.
+This page explains a few complete Lua widget patterns. For official packages, dependencies, and local examples, use [Widget Packages And Examples](bundled-widgets.md).
 
 If you are just starting out, read [First Widget](first-widget.md) before using these as templates.
 
@@ -40,9 +40,9 @@ end)
 render()
 ```
 
-## Bundled Homebrew widget
+## Official Homebrew package
 
-[`widgets/brew/widget.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/brew/widget.lua) is a complete
+[`packages/brew/widget.lua`](https://github.com/easybar-app/widgets/blob/main/packages/brew/widget.lua) is a complete
 example of a stateful popup widget. It:
 
 - checks formulae and casks with `brew outdated`
@@ -57,24 +57,24 @@ for command chaining, cancellation, structured state rendering, popup rows, erro
 and bounded file logging.
 
 Use the inbox-only
-[`widgets/inbox/brew/widget.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/inbox/brew/widget.lua)
+[`packages/inbox-brew/widget.lua`](https://github.com/easybar-app/widgets/blob/main/packages/inbox-brew/widget.lua)
 variant to publish outdated formulae, casks, Homebrew warnings, and command errors into the native
 inbox. It supports refresh, `brew update`, individual or complete upgrades, and cancellation while
 an update or upgrade is running. Load either `brew/widget.lua` or `inbox/brew/widget.lua`, not both.
 
-## Bundled GitLab work-items widget
+## Official GitLab package
 
-[`widgets/gitlab/widget.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/gitlab/widget.lua) shows the
+[`packages/gitlab/widget.lua`](https://github.com/easybar-app/widgets/blob/main/packages/gitlab/widget.lua) shows the
 open issues and merge requests assigned to the authenticated user. It works with GitLab.com and
 private GitLab Self-Managed or Dedicated instances through the official `glab` CLI. Use the
-inbox-only [`widgets/inbox/gitlab/widget.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/inbox/gitlab/widget.lua)
+inbox-only [`packages/inbox-gitlab/widget.lua`](https://github.com/easybar-app/widgets/blob/main/packages/inbox-gitlab/widget.lua)
 variant to publish the same work items into EasyBar's shared [native inbox](inbox.md).
 
 The equivalent inbox-only GitHub publisher is
-[`widgets/inbox/github/widget.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/inbox/github/widget.lua).
+[`packages/inbox-github/widget.lua`](https://github.com/easybar-app/widgets/blob/main/packages/inbox-github/widget.lua).
 Both publishers use EasyBar's native item URL handling, preserve the last valid snapshot when a
 refresh fails, and publish service update times for the inbox's default timestamp sorting. Their generic validation, bounded-error, and ISO-8601 parsing functions live in
-[`widgets/shared/inbox.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/shared/inbox.lua). The service publishers remain complete package entrypoints, while the shared helper is
+[`packages/shared/inbox.lua`](https://github.com/easybar-app/widgets/blob/main/packages/shared/inbox.lua). The service publishers remain complete package entrypoints, while the shared helper is
 documented under [Reusable Modules](modules.md#inbox-data-helper).
 Use [`widgets/inbox/demo/widget.lua`](https://github.com/easybar-app/easybar/blob/main/widgets/inbox/demo/widget.lua)
 to preview inbox grouping, severities, Markdown, unread state, and actions without external services.
@@ -93,7 +93,7 @@ PATH = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 GITLAB_HOST = "https://gitlab.example.com"
 ```
 
-Then run `make install-widgets` or copy `gitlab/widget.lua` together with the dependencies declared in `widgets/install-manifest.csv`.
+The `gitlab` package manifest declares its shared-library dependency and external `glab` requirement.
 The widget refreshes every five minutes, orders assigned work by its most recent update, opens an
 item when its popup row is clicked, and provides Refresh and Open GitLab actions in its native
 right-click menu. `GITLAB_HOST` is optional for GitLab.com.
@@ -153,7 +153,7 @@ local github = easybar.add(easybar.kind.item, "github", {
 easybar.asset("@/assets/github.svg")
 ```
 
-This is the form used by bundled packages that share assets. `easybar.asset(...)` rejects absolute paths; an already absolute path may still be assigned directly to `image.path`.
+This is useful for user-managed widgets that share root assets. Installable packages normally keep assets inside their own package directory and use file-relative paths. `easybar.asset(...)` rejects absolute paths; an already absolute path may still be assigned directly to `image.path`.
 
 ## Inline SVG image
 
@@ -182,7 +182,7 @@ remain trusted local code.
 
 ## Related pages
 
-- [Bundled Widgets](bundled-widgets.md)
+- [Widget Packages And Examples](bundled-widgets.md)
 - [Subscribe To Events](subscribe-to-events.md)
 - [Style Popups And Groups](style-popups-and-groups.md)
 - [Popups](popups.md)

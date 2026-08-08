@@ -125,6 +125,6 @@ because non-network widgets may need to react immediately. A widget that depends
 routes, or DNS should schedule its own short delay and then use bounded retries for transient network
 failures.
 
-The bundled GitHub, GitLab, and Homebrew inbox widgets use a three-second wake delay and retry
+The official GitHub, GitLab, and Homebrew inbox packages use a three-second wake delay and retry
 read-only checks after two and five seconds. Authentication failures and mutating operations are not
 retried.

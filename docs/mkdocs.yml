@@ -79,7 +79,7 @@ nav:
           - Widget Settings: lua/guides/storage.md
           - Logging: lua/guides/logging.md
           - Examples: lua/guides/examples.md
-          - Bundled Widgets: lua/guides/bundled-widgets.md
+          - Widget Packages And Examples: lua/guides/bundled-widgets.md
           - Style Guidelines: lua/guides/style-guidelines.md
       - Reference:
           - Overview: lua/reference/index.md
