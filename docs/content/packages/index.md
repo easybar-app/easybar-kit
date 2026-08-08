@@ -97,15 +97,15 @@ easybar widgets install PACKAGE
 
     [Package details](inbox-gitlab.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-gitlab)
 
--   **[`inbox-widget-updates`](inbox-widget-updates.md)**
+-   **[`inbox-widgets`](inbox-widgets.md)**
 
-    `widget` · `v0.1.0` · `inbox` · `system` · `utilities`
+    `widget` · `v0.2.0` · `inbox` · `system` · `utilities`
 
     ---
 
     EasyBar package updates in the native inbox.
 
-    [Package details](inbox-widget-updates.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-widget-updates)
+    [Package details](inbox-widgets.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-widgets)
 
 -   **[`shared`](shared.md)**
 
