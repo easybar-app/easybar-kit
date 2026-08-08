@@ -78,13 +78,17 @@ func installWidgetPackage(
   options: WidgetPackageInstallOptions,
   context: AppContext
 ) async throws {
+  let spinner = CLIActivitySpinner(message: "Installing \(options.source)…")
+  await spinner.start()
   do {
     let installed = try await WidgetPackageInstaller(logger: context.logger).install(options: options)
+    await spinner.stop()
     for package in installed {
       fputs("Installed \(package.name) \(package.version) (\(package.kind.rawValue))\n", stdout)
     }
     fputs("Reload EasyBar with: easybar config reload\n", stdout)
   } catch {
+    await spinner.stop()
     throw AppError.commandFailed(error.localizedDescription)
   }
 }
