@@ -15,7 +15,7 @@ native widgets with custom Lua widgets and integrates with AeroSpace.
 - AeroSpace integration and separate calendar and network helper agents
 - Menu bar controller and CLI for runtime control and diagnostics
 
-See screenshots in the [documentation](https://easybar-app.github.io/easybar/#screenshots).
+See screenshots in the [documentation](https://easybar.dev/#screenshots).
 
 ## Requirements
 
@@ -31,21 +31,20 @@ brew install --cask easybar-app/tap/easybar
 open -a EasyBar
 ```
 
-See the [installation guide](https://easybar-app.github.io/easybar/getting-started/installation/)
+See the [installation guide](https://easybar.dev/getting-started/installation/)
 for upgrades, verification, and removal.
 
 ## Documentation
 
-The full documentation is available at
-[easybar-app.github.io/easybar](https://easybar-app.github.io/easybar/).
+The full documentation is available at [easybar.dev](https://easybar.dev/).
 
-- [Quick start](https://easybar-app.github.io/easybar/getting-started/quick-start/)
-- [Configuration](https://easybar-app.github.io/easybar/configuration/overview/)
-- [Themes](https://easybar-app.github.io/easybar/configuration/themes/)
-- [Lua widgets](https://easybar-app.github.io/easybar/lua/overview/)
-- [Widget packages](https://easybar-app.github.io/easybar/runtime/widget-packages/)
-- [Runtime and troubleshooting](https://easybar-app.github.io/easybar/runtime/troubleshooting/)
-- [Development](https://easybar-app.github.io/easybar/internals/development/)
+- [Quick start](https://easybar.dev/getting-started/quick-start/)
+- [Configuration](https://easybar.dev/configuration/overview/)
+- [Themes](https://easybar.dev/configuration/themes/)
+- [Lua widgets](https://easybar.dev/lua/overview/)
+- [Widget packages](https://easybar.dev/runtime/widget-packages/)
+- [Runtime and troubleshooting](https://easybar.dev/runtime/troubleshooting/)
+- [Development](https://easybar.dev/internals/development/)
 
 The complete defaults and a small starter configuration are also available in
 [`config.defaults.toml`](./config.defaults.toml) and [`config.minimal.toml`](./config.minimal.toml).
