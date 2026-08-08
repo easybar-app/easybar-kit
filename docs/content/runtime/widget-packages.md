@@ -7,7 +7,7 @@ EasyBar can install a package by its registry name, from a local directory, or f
 Use a bare package name to resolve the latest immutable release from the official registry. Source for the official packages lives in the separate [widgets repository](https://github.com/easybar-app/widgets):
 
 ```bash
-easybar widgets install caffeinate
+easybar widgets install PACKAGE_NAME
 easybar config reload
 ```
 
@@ -20,6 +20,24 @@ easybar widgets install my-widget --registry https://example.com/easybar/index.j
 ```
 
 The registry index may also be a local `index.json` path.
+
+## Search a registry
+
+List every package in the official registry or filter by name, description, kind, or category:
+
+```bash
+easybar widgets search
+easybar widgets search QUERY
+```
+
+Search another remote or local registry with the same source syntax used by installation:
+
+```bash
+easybar widgets search QUERY --registry https://example.com/easybar/index.json
+```
+
+The live search results are the package catalog; the documentation does not maintain a duplicate
+list.
 
 ## Install a self-created package
 
@@ -102,3 +120,16 @@ All packages install into EasyBar's managed data directory, whether they come fr
 `store/` keeps the complete versioned package source. `active/` contains only activated widget files and declared library exports. EasyBar loads this managed activation directory in addition to the manual `[app].widgets_dir`.
 
 The configured `widgets_dir` is reserved for Lua files you manage yourself. Package installation never writes new files there. If EasyBar finds the previous package layout below `<widgets_dir>/.easybar` during an install, it migrates those package-owned files into the managed data directory and leaves unrelated manual widgets untouched.
+
+## Uninstall a package
+
+Remove a package and its managed active files with:
+
+```bash
+easybar widgets uninstall PACKAGE_NAME
+easybar config reload
+```
+
+EasyBar refuses to remove a package while another installed package depends on it. Dependencies
+that become unused are left installed so removal is always explicit. Manually managed files in
+`[app].widgets_dir` are never removed.

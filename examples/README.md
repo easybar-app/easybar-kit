@@ -1,18 +1,9 @@
 # Lua Widget Examples
 
-The app repository keeps small, self-contained Lua examples for learning and runtime regression coverage. Installable integrations are maintained in the [official widgets repository](https://github.com/easybar-app/widgets) and discovered through the [widget registry](https://github.com/easybar-app/widget-registry).
-
-```text
-examples/
-├── context-menu.lua         Native right-click menu
-├── group_demo.lua           Group and popup composition
-├── inbox-demo/              Multi-file native inbox demonstration
-├── network.lua              Native network snapshot
-├── popup-context-menu.lua   Popup and context-menu composition
-├── simple.lua               Minimal stateful widget
-├── wifi+vpn.lua             Read-only tunnel indicator
-└── install-manifest.csv     Local example installer catalog
-```
+The app repository keeps small, self-contained Lua examples for learning and runtime regression
+coverage. Browse this directory for the current examples. Installable integrations are maintained
+in the [official widgets repository](https://github.com/easybar-app/widgets) and discovered through
+the [widget registry](https://github.com/easybar-app/widget-registry).
 
 ## Lua discovery
 

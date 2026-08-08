@@ -15,7 +15,7 @@ commands:
   logs                        Show retained and live process logs
   metrics                     Show runtime metrics
   inbox                       Manage native inbox messages
-  widgets                     Install Lua widget packages
+  widgets                     Find and manage Lua widget packages
   config                      Reload or validate configuration
   runtime                     Manage the Lua widget runtime
   agent                       Manage calendar and network agents
@@ -28,7 +28,9 @@ Run command-specific help when needed:
 easybar refresh --help
 easybar inbox --help
 easybar inbox send --help
+easybar widgets search --help
 easybar widgets install --help
+easybar widgets uninstall --help
 easybar config --help
 easybar logs --help
 ```
@@ -62,7 +64,9 @@ subcommand, option, and persistence rule.
 
 ## `easybar widgets`
 
-Install an official registry package or a self-created package from a directory or archive. See [Widget Packages](widget-packages.md) for sources, integrity checks, dependency behavior, and manifest examples.
+Search a registry, install an official or self-created package, and uninstall managed packages. See
+[Widget Packages](widget-packages.md) for package sources, integrity checks, dependencies, and
+manifest examples.
 
 ## `easybar config`
 
