@@ -95,11 +95,7 @@ if [ "${#item_names[@]}" -eq 0 ]; then
 fi
 
 default_names=(
-  inbox/brew/widget
-  inbox/github/widget
-  inbox/gitlab/widget
-  inbox/demo/widget
-  tailscale/widget
+  simple
 )
 
 is_default() {
@@ -220,7 +216,7 @@ copy_relative_path() {
 printf 'Install EasyBar widget examples into:\n  %s\n\n' "${destination_dir}"
 printf 'Use Up/Down to move, Space to select or deselect, and Enter to install.\n'
 printf 'Dependencies are copied automatically from the widget manifest.\n'
-printf 'The default widgets are preselected. Press Esc to cancel.\n\n'
+printf 'The basic example is preselected. Press Esc to cancel.\n\n'
 
 default_selection_binding="$(build_default_selection_binding)"
 
@@ -241,7 +237,7 @@ if ! selection="$(
     --with-nth=2.. \
     --marker='*' \
     --pointer='>' \
-    --prompt='Widgets> ' \
+    --prompt='Examples> ' \
     --header='Up/Down move | Space toggle | Enter confirm | Esc cancel' \
     --bind "start:${default_selection_binding}" \
     --bind 'space:toggle'

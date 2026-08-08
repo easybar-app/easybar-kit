@@ -11,7 +11,7 @@ fail() {
   exit 1
 }
 
-scripts/ci/check-widget-layout.sh
+scripts/ci/check-example-layout.sh
 
 command -v "${lua_bin}" >/dev/null 2>&1 ||
   fail "Lua 5.5 is required: ${lua_bin}"
@@ -21,7 +21,7 @@ command -v "${lua_bin}" >/dev/null 2>&1 ||
 while IFS= read -r file; do
   LUA_CHECK_FILE="${file}" "${lua_bin}" -e \
     'local path = assert(os.getenv("LUA_CHECK_FILE")); assert(loadfile(path, "t", {}))'
-done < <(find Sources widgets scripts Tests -type f -iname '*.lua' -print | LC_ALL=C sort)
+done < <(find Sources examples scripts Tests -type f -iname '*.lua' -print | LC_ALL=C sort)
 
 test_count=0
 while IFS= read -r test_file; do

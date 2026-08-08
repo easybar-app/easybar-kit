@@ -30,6 +30,9 @@ rawset(os, "getenv", function(name)
 	if name == "EASYBAR_INTERNAL_LOGGING_DIRECTORY" then
 		return "/tmp"
 	end
+	if name == "EASYBAR_INTERNAL_WIDGET_PACKAGES_DIRECTORY" then
+		return nil
+	end
 	return real_getenv(name)
 end)
 

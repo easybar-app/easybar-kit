@@ -5,10 +5,10 @@ local M = {}
 function M.configure(root)
 	package.path = table.concat({
 		root .. "/Sources/EasyBarApp/Lua/?.lua",
-		root .. "/widgets/?.lua",
-		root .. "/widgets/?/init.lua",
-		root .. "/widgets/lib/?.lua",
-		root .. "/widgets/lib/?/init.lua",
+		root .. "/examples/?.lua",
+		root .. "/examples/?/init.lua",
+		root .. "/examples/lib/?.lua",
+		root .. "/examples/lib/?/init.lua",
 		root .. "/Sources/EasyBarApp/Lua/?/init.lua",
 		package.path,
 	}, ";")
@@ -211,7 +211,7 @@ function M.new(root, options)
 		if path:sub(1, 2) == "@/" then
 			path = path:sub(3)
 		end
-		return root .. "/widgets/" .. path
+		return root .. "/examples/" .. path
 	end
 
 	function easybar.after(delay, callback)

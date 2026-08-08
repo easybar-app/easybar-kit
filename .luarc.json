@@ -7,10 +7,8 @@
       "?/init.lua",
       "Sources/EasyBarApp/Lua/?.lua",
       "Sources/EasyBarApp/Lua/?/init.lua",
-      "widgets/?.lua",
-      "widgets/?/init.lua",
-      "widgets/shared/?.lua",
-      "widgets/shared/?/init.lua"
+      "examples/?.lua",
+      "examples/?/init.lua"
     ]
   },
   "workspace": {

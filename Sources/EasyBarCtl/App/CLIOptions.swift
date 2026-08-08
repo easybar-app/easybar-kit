@@ -154,7 +154,6 @@ struct WidgetPackageInstallOptions: Equatable {
   let source: String
   let sha256: String?
   let registry: String?
-  let widgetsDirectory: String?
   let useRegistry: Bool
 }
 
@@ -338,12 +337,6 @@ enum CLI {
     placeholder: "source"
   )
 
-  static let packageWidgetsDirectoryOption = CLIOption(
-    flag: "--widgets-dir",
-    description: "Install into this widget directory",
-    placeholder: "path"
-  )
-
   static let packageNoRegistryOption = CLIOption(
     flag: "--no-registry",
     description: "Do not resolve missing dependencies from a registry"
@@ -401,7 +394,6 @@ enum CLI {
       options: [
         packageSHA256Option,
         packageRegistryOption,
-        packageWidgetsDirectoryOption,
         packageNoRegistryOption,
       ]
     ),

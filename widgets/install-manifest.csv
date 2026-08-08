@@ -1,8 +1,0 @@
-# example entrypoint;comma-separated dependency paths relative to widgets/
-compositions/group_demo.lua;
-compositions/popup-context-menu.lua;
-compositions/wifi+vpn.lua;
-inbox/demo/widget.lua;inbox/demo/README.md,assets/brew.svg,assets/github.svg,assets/gitlab.svg
-simple/context-menu.lua;
-simple/network.lua;
-simple/simple.lua;

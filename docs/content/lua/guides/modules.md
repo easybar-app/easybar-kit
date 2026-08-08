@@ -1,8 +1,8 @@
 # Reusable Modules
 
-EasyBar recursively executes every regular file below `widgets_dir` with a `.lua` extension, except package metadata below `.easybar/` and reusable modules below `shared/` or legacy `lib/`. Extension matching is case-insensitive. Package-managed widgets activate only the entrypoint declared by their manifest.
+EasyBar loads two widget roots. It recursively executes manual `.lua` files below `widgets_dir`, except reusable modules below `shared/` or legacy `lib/`. It also executes activated package entrypoints below `~/.local/share/easybar/packages/active`; package exports below that root's `shared/` directory load only through `require(...)`. Extension matching is case-insensitive.
 
-The widget root, `shared/`, and legacy `lib/` are also added to Lua's module search path before files load, so code can continue to use standard `require(...)` calls without changing `package.path`.
+Both widget roots and their `shared/` directories are added to Lua's module search path before their files load, so code can continue to use standard `require(...)` calls without changing `package.path`. The manual root also supports the legacy `lib/` fallback.
 
 ## Recommended layout
 
@@ -108,8 +108,7 @@ local short = text.truncate(clean, 80)
 - `text.trim(value)`
 - `text.truncate(value, maximum_length, omission?)`
 
-This file is an example in the user widget directory, not a built-in part of the public
-`easybar` API. You own it and can extend or replace it.
+This module is installed and updated with the `shared` package. It is not a built-in part of the public `easybar` API.
 
 ## Inbox data helper
 
@@ -243,7 +242,7 @@ Resolve files beside the current entrypoint with `easybar.asset(...)`. Use `easy
 
 ## Naming and precedence
 
-EasyBar searches widget modules in this order:
+For manually managed widgets, EasyBar searches modules in this order:
 
 ```text
 <widgets_dir>/?.lua
@@ -258,6 +257,14 @@ Dots map to subdirectories. For example, `require("brew.policy")` resolves first
 `<widgets_dir>/brew/policy.lua`. A generic `require("text")` normally resolves to
 `<widgets_dir>/shared/text.lua` when no top-level `text.lua` or `text/init.lua` exists.
 
+Installed packages use the same root and `shared/` patterns below:
+
+```text
+~/.local/share/easybar/packages/active/
+```
+
+Package-managed widgets load before manual widgets, so their declared exports resolve from the managed activation tree. During manual widget startup, manual module paths take precedence and managed exports remain available as a fallback. Successful `require(...)` calls are cached process-wide, so use distinct module names when two packages must not share an implementation.
+
 Use the widget name as the first component for private package modules. Keep generic module names in
 `shared/`, and avoid names likely to collide with third-party Lua packages.
 
@@ -265,4 +272,4 @@ Use the widget name as the first component for private package modules. Keep gen
 
 Every discovered `.lua` file is executed. A syntax error or top-level failure is reported for that file, its transactional changes are rolled back, and the remaining files continue loading.
 
-A missing or failing `require(...)` call fails the consuming file in the same way. Because support modules are also discovered directly, a broken module is reported even when no other file requires it.
+A missing or failing `require(...)` call fails the consuming file in the same way. Files below `shared/` and `lib/` are not executed directly, so a broken support module is reported when a widget requires it.

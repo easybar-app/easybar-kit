@@ -1,7 +1,7 @@
 -- Smoke-loads every selectable example widget from the install manifest.
 
 local root = assert(arg[1], "repository root argument is required")
-local manifest_path = root .. "/widgets/install-manifest.csv"
+local manifest_path = root .. "/examples/install-manifest.csv"
 local manifest = assert(io.open(manifest_path, "r"))
 local entrypoints = {}
 
@@ -21,7 +21,7 @@ host.configure(root)
 local shared_ids = {}
 
 for _, entrypoint in ipairs(entrypoints) do
-	local path = root .. "/widgets/" .. entrypoint
+	local path = root .. "/examples/" .. entrypoint
 	local easybar = host.new(root, { shared_ids = shared_ids })
 	local environment = setmetatable({ easybar = easybar }, { __index = _G })
 	local chunk, load_error = loadfile(path, "t", environment)
@@ -31,4 +31,4 @@ for _, entrypoint in ipairs(entrypoints) do
 	assert(ok, entrypoint .. " failed during startup: " .. tostring(runtime_error))
 end
 
-print("Lua example smoke test passed for " .. tostring(#entrypoints) .. " widgets")
+print("Lua example smoke test passed for " .. tostring(#entrypoints) .. " examples")

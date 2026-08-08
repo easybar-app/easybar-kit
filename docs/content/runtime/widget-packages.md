@@ -86,10 +86,19 @@ The archive must place `package.toml` at its root. Symbolic links, absolute path
 
 ## Install location
 
-Packages install into the configured widget directory, which defaults to `~/.config/easybar/widgets`. Override it for development or testing:
+All packages install into EasyBar's managed data directory, whether they come from the official registry, another registry, a local directory, or an archive:
 
-```bash
-easybar widgets install ./my-widget --widgets-dir /tmp/easybar-widgets
+```text
+~/.local/share/easybar/packages/
+├── installed.json
+├── store/
+│   └── <name>/
+│       └── <version>/
+└── active/
+    ├── <widget-name>/
+    └── shared/
 ```
 
-EasyBar stores package-owned source and installation metadata below `.easybar/`, activates only declared widget entrypoints, and exposes declared library modules below `shared/`. Existing files that are not package-managed are never overwritten.
+`store/` keeps the complete versioned package source. `active/` contains only activated widget files and declared library exports. EasyBar loads this managed activation directory in addition to the manual `[app].widgets_dir`.
+
+The configured `widgets_dir` is reserved for Lua files you manage yourself. Package installation never writes new files there. If EasyBar finds the previous package layout below `<widgets_dir>/.easybar` during an install, it migrates those package-owned files into the managed data directory and leaves unrelated manual widgets untouched.

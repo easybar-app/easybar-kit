@@ -7,6 +7,7 @@ public enum SharedPathDefaults {
   static let defaultRuntimeDirectoryRelativePath = ".local/state/easybar/runtime"
   static let defaultLoggingDirectoryRelativePath = ".local/state/easybar"
   static let defaultWidgetEditorStubRelativePath = ".local/share/easybar/easybar_api.lua"
+  static let defaultWidgetPackagesRelativePath = ".local/share/easybar/packages"
 
   public static let defaultLuaPath = "lua"
   public static let defaultLuaEnvironment: [String: String] = [
@@ -62,6 +63,11 @@ public enum SharedPathDefaults {
   /// Returns the default widget editor stub path in the current user's home directory.
   public static func defaultWidgetEditorStubPath() -> URL {
     homeRelativePath(defaultWidgetEditorStubRelativePath)
+  }
+
+  /// Returns the managed widget package root in the current user's data directory.
+  public static func defaultWidgetPackagesPath() -> URL {
+    homeRelativePath(defaultWidgetPackagesRelativePath)
   }
 
   /// Returns one child path within the provided runtime directory.

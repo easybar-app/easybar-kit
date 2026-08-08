@@ -5,6 +5,73 @@ import XCTest
 @testable import EasyBarApp
 
 final class LuaWidgetLibraryTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
+  func testRuntimeLoadsManagedPackagesSeparatelyFromManualWidgets() async throws {
+    let widgets = try makeWidgetsDirectory()
+    let activePackages = tempDirectoryURL.appendingPathComponent(
+      "managed-packages/active",
+      isDirectory: true
+    )
+    try FileManager.default.createDirectory(
+      at: activePackages.appendingPathComponent("shared", isDirectory: true),
+      withIntermediateDirectories: true
+    )
+    try FileManager.default.createDirectory(
+      at: activePackages.appendingPathComponent("managed-clock", isDirectory: true),
+      withIntermediateDirectories: true
+    )
+    try "return { label = 'managed' }\n".write(
+      to: activePackages.appendingPathComponent("shared/retry.lua"),
+      atomically: true,
+      encoding: .utf8
+    )
+    try """
+    local retry = require("retry")
+    easybar.add(easybar.kind.item, "managed_clock", { label = retry.label })
+    """.write(
+      to: activePackages.appendingPathComponent("managed-clock/widget.lua"),
+      atomically: true,
+      encoding: .utf8
+    )
+    try """
+    easybar.add(easybar.kind.item, "manual_clock", { label = "manual" })
+    """.write(
+      to: widgets.appendingPathComponent("manual.lua"),
+      atomically: true,
+      encoding: .utf8
+    )
+
+    let logger = ProcessLogger(label: "lua.widget-library.test", minimumLevel: .error)
+    let controller = LuaProcessController(logger: logger)
+    let runtimePath = try XCTUnwrap(controller.resolvedRuntimePath())
+    let recorder = RuntimeUpdateRecorder()
+    var environment = try luaRuntimeEnvironment(for: widgets)
+    environment[SharedEnvironmentKeys.luaWidgetPackagesDirectory] = activePackages.path
+    let runtime = try RuntimeProcess(
+      runtimePath: runtimePath,
+      widgetsDirectoryURL: widgets,
+      recorder: recorder,
+      decoder: decoder,
+      environment: environment,
+      autoRespondToCommands: true
+    )
+    defer { runtime.stop() }
+
+    let managedUpdate = try await nextTreeUpdate(from: recorder) { update in
+      update.treePayload?.nodes.contains(where: { $0.id == "managed_clock" }) == true
+    }
+    let manualUpdate = try await nextTreeUpdate(from: recorder) { update in
+      update.treePayload?.nodes.contains(where: { $0.id == "manual_clock" }) == true
+    }
+    XCTAssertEqual(
+      managedUpdate.treePayload?.nodes.first(where: { $0.id == "managed_clock" })?.text,
+      "managed"
+    )
+    XCTAssertEqual(
+      manualUpdate.treePayload?.nodes.first(where: { $0.id == "manual_clock" })?.text,
+      "manual"
+    )
+  }
+
   func testWidgetCanRequireDirectAndPackageModulesFromLibDirectory() async throws {
     let widgets = try makeWidgetsDirectory()
     let library = widgets.appendingPathComponent("lib", isDirectory: true)

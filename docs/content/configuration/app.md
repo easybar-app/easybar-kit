@@ -30,7 +30,7 @@ See [Runtime Control](../runtime/control.md#menu-bar-controller) for the availab
 
 ## `widgets_dir`
 
-The directory where EasyBar loads Lua widget files from.
+The directory where EasyBar loads manually managed Lua widget files from.
 
 ```toml
 [app]
@@ -38,6 +38,8 @@ widgets_dir = "~/.config/easybar/widgets"
 ```
 
 EasyBar recursively loads every regular file below this directory with a `.lua` extension. Extension matching is case-insensitive. Discovery does not depend on a category name or a filename such as `widget.lua`. Lua files used as reusable modules are also executed during startup, so keep module top levels side-effect-free and start runtime behavior only from explicit functions.
+
+Packages installed with `easybar widgets install` are kept separately below `~/.local/share/easybar/packages` and loaded automatically. Changing `widgets_dir` affects only your manual widgets; it does not relocate installed packages.
 
 If you are creating your first custom widget, continue with [First Widget](../lua/guides/first-widget.md). For shared helper code, see [Reusable Modules](../lua/guides/modules.md).
 

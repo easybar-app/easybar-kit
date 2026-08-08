@@ -3,11 +3,14 @@
 The app repository keeps small, self-contained Lua examples for learning and runtime regression coverage. Installable integrations are maintained in the [official widgets repository](https://github.com/easybar-app/widgets) and discovered through the [widget registry](https://github.com/easybar-app/widget-registry).
 
 ```text
-widgets/
-├── assets/                  Assets used by the inbox demonstration
-├── simple/                  Small, self-contained examples
-├── compositions/            Examples combining nodes and interaction surfaces
-├── inbox/demo/              Native inbox demonstration
+examples/
+├── context-menu.lua         Native right-click menu
+├── group_demo.lua           Group and popup composition
+├── inbox-demo/              Multi-file native inbox demonstration
+├── network.lua              Native network snapshot
+├── popup-context-menu.lua   Popup and context-menu composition
+├── simple.lua               Minimal stateful widget
+├── wifi+vpn.lua             Read-only tunnel indicator
 └── install-manifest.csv     Local example installer catalog
 ```
 
@@ -39,7 +42,9 @@ Run:
 make install-widgets
 ```
 
-The selector reads `install-manifest.csv` and copies each selected example together with its declared README or assets. The manifest controls the development installer only; runtime discovery still loads every installed Lua file.
+The selector reads `install-manifest.csv` and copies each selected example together with its
+declared README or assets. The manifest controls the development installer only; runtime discovery
+still loads every installed Lua file.
 
 ## Tests
 

@@ -25,7 +25,8 @@ Runner flow:
   launches the Lua launcher with:
   - configured Lua socket path
   - bundled `runtime.lua`
-  - configured widget directory
+  - configured manual widget directory
+  - managed package activation directory through an internal environment variable
 
 Important detail:
 

@@ -1,3 +1,4 @@
+import EasyBarShared
 import Foundation
 
 struct WidgetPackageMaterializer {
@@ -9,11 +10,15 @@ struct WidgetPackageMaterializer {
 
   func install(
     _ packages: [ResolvedWidgetPackage],
-    into widgetsDirectory: URL,
+    into packagesDirectory: URL,
     database: InstalledWidgetPackages,
     stagingDirectory: URL
   ) throws -> [InstalledWidgetPackage] {
-    try validateConflicts(packages, widgetsDirectory: widgetsDirectory, database: database)
+    try validateConflicts(
+      packages,
+      packagesDirectory: packagesDirectory,
+      database: database
+    )
     try fileManager.createDirectory(at: stagingDirectory, withIntermediateDirectories: true)
 
     var records: [InstalledWidgetPackage] = []
@@ -42,19 +47,20 @@ struct WidgetPackageMaterializer {
         package,
         record: record,
         from: stagingDirectory.appending(path: package.manifest.name),
-        into: widgetsDirectory,
+        into: packagesDirectory,
         database: &updated
       )
     }
-    try write(updated, to: widgetsDirectory.appending(path: ".easybar/installed.json"))
+    try write(updated, to: packagesDirectory.appending(path: "installed.json"))
     return records
   }
 
   private func validateConflicts(
     _ packages: [ResolvedWidgetPackage],
-    widgetsDirectory: URL,
+    packagesDirectory: URL,
     database: InstalledWidgetPackages
   ) throws {
+    let activeDirectory = WidgetPackageStore.activeDirectory(in: packagesDirectory)
     let installed = Dictionary(uniqueKeysWithValues: database.packages.map { ($0.name, $0) })
     let exportOwners = Dictionary(
       uniqueKeysWithValues: database.packages.flatMap { package in
@@ -66,7 +72,7 @@ struct WidgetPackageMaterializer {
     for package in packages {
       let name = package.manifest.name
       if package.manifest.kind == .widget {
-        let destination = widgetsDirectory.appending(path: name, directoryHint: .isDirectory)
+        let destination = activeDirectory.appending(path: name, directoryHint: .isDirectory)
         if fileManager.fileExists(atPath: destination.path), installed[name] == nil {
           throw WidgetPackageError.installConflict(
             "\(destination.path) already exists and is not package-managed"
@@ -81,7 +87,7 @@ struct WidgetPackageMaterializer {
           )
         }
         stagedExports[module] = name
-        let destination = moduleURL(module, in: widgetsDirectory)
+        let destination = moduleURL(module, in: activeDirectory)
         if fileManager.fileExists(atPath: destination.path),
           exportOwners[module] != name
         {
@@ -155,37 +161,46 @@ struct WidgetPackageMaterializer {
     _ package: ResolvedWidgetPackage,
     record: InstalledWidgetPackage,
     from stage: URL,
-    into widgetsDirectory: URL,
+    into packagesDirectory: URL,
     database: inout InstalledWidgetPackages
   ) throws {
-    let metadata = widgetsDirectory.appending(path: ".easybar", directoryHint: .isDirectory)
-    let storeRoot = metadata.appending(path: "packages", directoryHint: .isDirectory)
+    let storeRoot = WidgetPackageStore.storeDirectory(in: packagesDirectory)
+    let activeDirectory = WidgetPackageStore.activeDirectory(in: packagesDirectory)
     try fileManager.createDirectory(at: storeRoot, withIntermediateDirectories: true)
+    try fileManager.createDirectory(at: activeDirectory, withIntermediateDirectories: true)
 
     if let previous = database.packages.first(where: { $0.name == record.name }) {
       if previous.kind == .widget {
-        try removeIfPresent(widgetsDirectory.appending(path: previous.name))
+        try removeIfPresent(activeDirectory.appending(path: previous.name))
       }
       for module in previous.exports.keys {
-        try removeIfPresent(moduleURL(module, in: widgetsDirectory))
+        try removeIfPresent(moduleURL(module, in: activeDirectory))
       }
     }
-    try removeIfPresent(storeRoot.appending(path: record.name))
+    let storedPackage =
+      storeRoot
+      .appending(path: record.name, directoryHint: .isDirectory)
+      .appending(path: record.version, directoryHint: .isDirectory)
+    try removeIfPresent(storedPackage)
+    try fileManager.createDirectory(
+      at: storedPackage.deletingLastPathComponent(),
+      withIntermediateDirectories: true
+    )
     try fileManager.moveItem(
       at: stage.appending(path: "store"),
-      to: storeRoot.appending(path: record.name)
+      to: storedPackage
     )
 
     if package.manifest.kind == .widget {
       try fileManager.moveItem(
         at: stage.appending(path: "widget"),
-        to: widgetsDirectory.appending(path: record.name)
+        to: activeDirectory.appending(path: record.name)
       )
     }
     let modules = stage.appending(path: "modules", directoryHint: .isDirectory)
     for module in package.manifest.exports.keys {
       let source = moduleURL(module, in: modules)
-      let destination = moduleURL(module, in: widgetsDirectory)
+      let destination = moduleURL(module, in: activeDirectory)
       try fileManager.createDirectory(
         at: destination.deletingLastPathComponent(),
         withIntermediateDirectories: true

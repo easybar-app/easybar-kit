@@ -261,7 +261,6 @@ private func parseWidgetPackageInstallOptions(
   var source: String?
   var sha256: String?
   var registry: String?
-  var widgetsDirectory: String?
   var useRegistry = true
   var index = 0
 
@@ -284,16 +283,6 @@ private func parseWidgetPackageInstallOptions(
       index: index
     ) {
       registry = parsed.value
-      index = parsed.nextIndex
-      continue
-    }
-    if let parsed = try parseValueArgument(
-      option: CLI.packageWidgetsDirectoryOption,
-      argument,
-      arguments: arguments,
-      index: index
-    ) {
-      widgetsDirectory = parsed.value
       index = parsed.nextIndex
       continue
     }
@@ -332,7 +321,6 @@ private func parseWidgetPackageInstallOptions(
     source: source,
     sha256: sha256,
     registry: registry,
-    widgetsDirectory: widgetsDirectory,
     useRegistry: useRegistry
   )
 }

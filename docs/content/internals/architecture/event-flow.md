@@ -35,7 +35,7 @@ Lua delivery separately retains at most 512 queued must-deliver payloads plus a 
 The Lua runtime flow is:
 
 1. EasyBar starts the Lua process.
-2. Lua loads widget files from the widget directory.
+2. Lua loads activated packages and manual widget files.
 3. Lua declares which events it needs.
 4. Swift starts only the necessary event sources.
 5. Swift sends normalized events to Lua.

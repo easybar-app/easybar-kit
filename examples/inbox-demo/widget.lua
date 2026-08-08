@@ -7,19 +7,19 @@ local DEMO_DELAY_SECONDS = 1.25
 ---@type EasyBarInboxSourcePresentation
 local GITHUB = {
 	name = "GitHub",
-	icon = easybar.asset("@/assets/github.svg"),
+	icon = easybar.asset("./assets/github.svg"),
 	color = "#A371F7",
 }
 ---@type EasyBarInboxSourcePresentation
 local GITLAB = {
 	name = "GitLab",
-	icon = easybar.asset("@/assets/gitlab.svg"),
+	icon = easybar.asset("./assets/gitlab.svg"),
 	color = "#FC6D26",
 }
 ---@type EasyBarInboxSourcePresentation
 local HOMEBREW = {
 	name = "Homebrew",
-	icon = easybar.asset("@/assets/brew.svg"),
+	icon = easybar.asset("./assets/brew.svg"),
 	color = "#FBB040",
 }
 

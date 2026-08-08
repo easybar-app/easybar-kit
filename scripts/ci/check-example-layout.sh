@@ -2,11 +2,11 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-widgets_dir="${repo_root}/widgets"
-manifest_path="${widgets_dir}/install-manifest.csv"
+examples_dir="${repo_root}/examples"
+manifest_path="${examples_dir}/install-manifest.csv"
 
 fail() {
-  echo "Widget layout check failed: $*" >&2
+  echo "Example layout check failed: $*" >&2
   exit 1
 }
 
@@ -43,11 +43,11 @@ validate_relative_path() {
     ;;
   esac
 
-  [ -e "${widgets_dir}/${path}" ] ||
+  [ -e "${examples_dir}/${path}" ] ||
     fail "manifest ${description} does not exist: ${path}"
 }
 
-[ -d "${widgets_dir}" ] || fail "missing widgets directory: ${widgets_dir}"
+[ -d "${examples_dir}" ] || fail "missing examples directory: ${examples_dir}"
 [ -f "${manifest_path}" ] || fail "missing install manifest: ${manifest_path}"
 
 entrypoints=()
@@ -97,23 +97,23 @@ done <"${manifest_path}"
 
 lua_file_count=0
 while IFS= read -r file; do
-  relative_path="${file#"${widgets_dir}/"}"
+  relative_path="${file#"${examples_dir}/"}"
   lua_file_count=$((lua_file_count + 1))
 
   if ! contains_value "${relative_path}" "${entrypoints[@]-}" &&
     ! contains_value "${relative_path}" "${dependencies[@]-}"; then
     fail "example Lua file is not declared by the install manifest: ${relative_path}"
   fi
-done < <(find "${widgets_dir}" -type f -iname '*.lua' -print | LC_ALL=C sort)
+done < <(find "${examples_dir}" -type f -iname '*.lua' -print | LC_ALL=C sort)
 
-[ "${lua_file_count}" -gt 0 ] || fail "widgets directory contains no Lua files"
+[ "${lua_file_count}" -gt 0 ] || fail "examples directory contains no Lua files"
 
 for entrypoint in "${entrypoints[@]}"; do
-  if grep -Eq '^[[:space:]]*require\("[^"]+"\)\(easybar\)[[:space:]]*$' "${widgets_dir}/${entrypoint}"; then
+  if grep -Eq '^[[:space:]]*require\("[^"]+"\)\(easybar\)[[:space:]]*$' "${examples_dir}/${entrypoint}"; then
     fail "thin implementation wrapper remains: ${entrypoint}"
   fi
 done
 
-printf 'Widget layout validated (%d selectable widgets, %d Lua files).\n' \
+printf 'Example layout validated (%d selectable widgets, %d Lua files).\n' \
   "${#entrypoints[@]}" \
   "${lua_file_count}"

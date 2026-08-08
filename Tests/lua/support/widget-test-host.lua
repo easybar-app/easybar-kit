@@ -199,7 +199,7 @@ function M.new(root, options)
 		if path:sub(1, 2) == "@/" then
 			path = path:sub(3)
 		end
-		return root .. "/widgets/" .. path
+		return root .. "/examples/" .. path
 	end
 
 	function easybar.after(delay, callback)

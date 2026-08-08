@@ -11,10 +11,10 @@ local function configure(root)
 
 	package.path = table.concat({
 		root .. "/Sources/EasyBarApp/Lua/?.lua",
-		root .. "/widgets/?.lua",
-		root .. "/widgets/?/init.lua",
-		root .. "/widgets/lib/?.lua",
-		root .. "/widgets/lib/?/init.lua",
+		root .. "/examples/?.lua",
+		root .. "/examples/?/init.lua",
+		root .. "/examples/lib/?.lua",
+		root .. "/examples/lib/?/init.lua",
 		root .. "/Sources/EasyBarApp/Lua/?/init.lua",
 		package.path,
 	}, ";")
@@ -185,7 +185,7 @@ local function make_host(root)
 		if path:sub(1, 2) == "@/" then
 			path = path:sub(3)
 		end
-		return root .. "/widgets/" .. path
+		return root .. "/examples/" .. path
 	end
 
 	function easybar.add()
@@ -295,7 +295,7 @@ end
 function M.load(root, entrypoint)
 	configure(root)
 	local easybar, state = make_host(root)
-	local path = root .. "/widgets/" .. entrypoint
+	local path = root .. "/examples/" .. entrypoint
 	local environment = setmetatable({ easybar = easybar }, { __index = _G })
 	local chunk, load_error = loadfile(path, "t", environment)
 	assert(chunk, entrypoint .. " failed to load: " .. tostring(load_error))

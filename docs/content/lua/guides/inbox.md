@@ -4,9 +4,9 @@ EasyBar provides one shared native inbox for messages published by Lua widgets. 
 the total unread count, and the popup can group messages from GitHub, GitLab, Homebrew, agents, or
 any other widget source.
 
-Use `make install-widgets` and select `inbox/demo/widget.lua` to populate every severity with test data, or
-select `inbox/brew/`, `inbox/github/`, or `inbox/gitlab/` to install a publisher with its
-declared shared modules and assets.
+Use `make install-widgets` and select `inbox-demo/widget.lua` to populate every severity with test
+data. Install `inbox-brew`, `inbox-github`, or `inbox-gitlab` from the widget registry for a
+publisher with service-specific actions.
 
 The Homebrew publisher reports outdated formulae and casks. Its source action panel provides
 refresh, update, upgrade-all, and cancellation actions without adding control messages to the

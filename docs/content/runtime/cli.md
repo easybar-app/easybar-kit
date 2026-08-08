@@ -1,6 +1,6 @@
 # CLI Reference
 
-The `easybar` command controls the running app, installs widget packages, validates configuration, restarts helper agents, manages native inbox messages, and exposes diagnostics. Commands that operate on the app use its Unix control socket. Agent commands contact the selected helper-agent socket directly. Package installation operates on the widget directory and does not require the app to be running.
+The `easybar` command controls the running app, installs widget packages, validates configuration, restarts helper agents, manages native inbox messages, and exposes diagnostics. Commands that operate on the app use its Unix control socket. Agent commands contact the selected helper-agent socket directly. Package installation operates on EasyBar's managed data directory and does not require the app to be running.
 
 ## Command structure
 

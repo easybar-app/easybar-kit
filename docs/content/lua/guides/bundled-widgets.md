@@ -38,13 +38,13 @@ The registry is optional. See [Widget Packages](../../runtime/widget-packages.md
 
 The app repository ships these selectable examples:
 
-- `simple/simple.lua` — minimal stateful widget
-- `simple/context-menu.lua` — native right-click menu API
-- `simple/network.lua` — native network snapshot
-- `compositions/group_demo.lua` — groups, shared styling, and popups
-- `compositions/popup-context-menu.lua` — popup and context menu on one item
-- `compositions/wifi+vpn.lua` — read-only tunnel indicator
-- `inbox/demo/widget.lua` — representative native inbox messages and actions
+- `simple.lua` — minimal stateful widget
+- `context-menu.lua` — native right-click menu API
+- `network.lua` — native network snapshot
+- `group_demo.lua` — groups, shared styling, and popups
+- `popup-context-menu.lua` — popup and context menu on one item
+- `wifi+vpn.lua` — read-only tunnel indicator
+- `inbox-demo/widget.lua` — representative native inbox messages and actions
 
 Install examples from a source checkout with:
 
@@ -52,6 +52,7 @@ Install examples from a source checkout with:
 make install-widgets
 ```
 
-`widgets/install-manifest.csv` declares the examples and assets copied by that development installer. It is not the package registry.
+`examples/install-manifest.csv` declares the examples and assets copied by that development
+installer. It is not the package registry.
 
 For process environment behavior, see [Environment](../../configuration/environment.md). For Lua-owned configuration under `[widgets.*]`, see [Widget Settings](storage.md).

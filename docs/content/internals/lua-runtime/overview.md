@@ -41,7 +41,7 @@ flowchart TD
 ```
 
 1. Swift starts the Lua runtime process.
-2. Lua loads every widget file from the widget directory.
+2. Lua loads activated package widgets and every manual widget file from the configured widget directory.
 3. Lua reports which driver events it needs.
 4. Swift starts only those event sources.
 5. Swift sends normalized events to Lua as JSON lines over the Lua socket.

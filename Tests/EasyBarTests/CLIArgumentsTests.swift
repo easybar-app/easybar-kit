@@ -67,7 +67,6 @@ final class CLIArgumentsTests: XCTestCase {
           source: "caffeinate",
           sha256: nil,
           registry: nil,
-          widgetsDirectory: nil,
           useRegistry: true
         )
       )
@@ -76,7 +75,6 @@ final class CLIArgumentsTests: XCTestCase {
     let local = try parseArguments([
       "easybar", "widgets", "install", "./my-widget",
       "--sha256", "abc",
-      "--widgets-dir", "/tmp/widgets",
       "--no-registry",
     ])
     XCTAssertEqual(
@@ -86,7 +84,6 @@ final class CLIArgumentsTests: XCTestCase {
           source: "./my-widget",
           sha256: "abc",
           registry: nil,
-          widgetsDirectory: "/tmp/widgets",
           useRegistry: false
         )
       )
@@ -109,6 +106,11 @@ final class CLIArgumentsTests: XCTestCase {
     XCTAssertThrowsError(
       try parseArguments([
         "easybar", "widgets", "install", "./widget", "--socket", "/tmp/app.sock",
+      ])
+    )
+    XCTAssertThrowsError(
+      try parseArguments([
+        "easybar", "widgets", "install", "./widget", "--widgets-dir", "/tmp/widgets",
       ])
     )
   }

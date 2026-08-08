@@ -43,6 +43,7 @@ local render = load_module("render")
 
 --- Widget directory and command defaults passed by the Swift host.
 local widget_dir = arg[1]
+local managed_widget_dir = os.getenv("EASYBAR_INTERNAL_WIDGET_PACKAGES_DIRECTORY")
 local default_command_timeout_seconds = tonumber(arg[2]) or 5
 local default_command_max_output_bytes = tonumber(arg[3]) or 65536
 
@@ -484,7 +485,12 @@ registry = api.new(log, {
 io.stdout:setvbuf("line")
 io.stderr:setvbuf("line")
 
--- Load every user widget before announcing subscriptions to the host.
+-- Load package-managed widgets first so their declared modules resolve from the managed store.
+if type(managed_widget_dir) == "string" and managed_widget_dir ~= "" then
+	api.load_widgets(managed_widget_dir, loader, registry, log)
+end
+
+-- Load every manually managed user widget before announcing subscriptions to the host.
 api.load_widgets(widget_dir, loader, registry, log)
 
 emit_subscriptions(true)

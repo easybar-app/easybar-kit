@@ -24,4 +24,7 @@ public enum SharedEnvironmentKeys {
 
   /// Internal key used to expose the resolved logging directory to Lua widgets.
   public static let luaLoggingDirectory = "EASYBAR_INTERNAL_LOGGING_DIRECTORY"
+
+  /// Internal key used to expose activated package entrypoints and modules to the Lua runtime.
+  public static let luaWidgetPackagesDirectory = "EASYBAR_INTERNAL_WIDGET_PACKAGES_DIRECTORY"
 }

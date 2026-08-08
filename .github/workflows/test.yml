@@ -73,7 +73,7 @@ jobs:
         shell: bash
         run: scripts/ci/install-dependencies.sh "${{ inputs.dependency_mode }}"
 
-      - name: Check Lua syntax and bundled widgets
+      - name: Check Lua syntax and bundled examples
         shell: bash
         run: make check-lua
 

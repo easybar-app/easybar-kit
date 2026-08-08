@@ -65,8 +65,8 @@ Use [Recovery](recovery.md) for source-specific checks and [Agent Debugging](../
 
 Loader errors identify the widget filename and failing API call in `easybar.out`. Check:
 
-- the widget is inside the configured `widgets_dir`
-- private package modules exist beside `<name>/widget.lua`, while generic modules such as `text` exist under `widgets/shared` or the legacy `widgets/lib` fallback
+- a manual widget is inside the configured `widgets_dir`, or an installed package is active below `~/.local/share/easybar/packages/active`
+- private modules exist beside the consuming widget, while generic manual modules exist under `<widgets_dir>/shared` or the legacy `<widgets_dir>/lib` fallback; installed package exports live under `~/.local/share/easybar/packages/active/shared`
 - file-backed assets were copied with the widget
 - properties that schedule work, such as `interval`, include their required callback
 - required commands are present in `[app.env].PATH`

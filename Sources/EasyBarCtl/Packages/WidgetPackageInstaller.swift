@@ -4,17 +4,30 @@ import Foundation
 final class WidgetPackageInstaller {
   private let logger: ProcessLogger
   private let fileManager: FileManager
+  private let packagesDirectory: URL
+  private let legacyWidgetsDirectory: URL?
 
-  init(logger: ProcessLogger, fileManager: FileManager = .default) {
+  init(
+    logger: ProcessLogger,
+    fileManager: FileManager = .default,
+    packagesDirectory: URL = SharedPathDefaults.defaultWidgetPackagesPath(),
+    legacyWidgetsDirectory: URL? = nil
+  ) {
     self.logger = logger
     self.fileManager = fileManager
+    self.packagesDirectory = packagesDirectory
+    self.legacyWidgetsDirectory = legacyWidgetsDirectory
   }
 
   func install(options: WidgetPackageInstallOptions) async throws -> [InstalledWidgetPackage] {
-    let widgetsDirectory = try resolvedWidgetsDirectory(options.widgetsDirectory)
-    try fileManager.createDirectory(at: widgetsDirectory, withIntermediateDirectories: true)
-    let metadataDirectory = widgetsDirectory.appending(path: ".easybar", directoryHint: .isDirectory)
-    let databaseURL = metadataDirectory.appending(path: "installed.json")
+    let legacyWidgetsDirectory = try resolvedLegacyWidgetsDirectory()
+    try WidgetPackageStore.migrateLegacyInstallation(
+      from: legacyWidgetsDirectory,
+      to: packagesDirectory,
+      fileManager: fileManager
+    )
+    try fileManager.createDirectory(at: packagesDirectory, withIntermediateDirectories: true)
+    let databaseURL = packagesDirectory.appending(path: "installed.json")
     let database = try loadDatabase(at: databaseURL)
 
     let temporaryDirectory = fileManager.temporaryDirectory.appending(
@@ -39,27 +52,23 @@ final class WidgetPackageInstaller {
     let materializer = WidgetPackageMaterializer(fileManager: fileManager)
     return try materializer.install(
       packages,
-      into: widgetsDirectory,
+      into: packagesDirectory,
       database: database,
       stagingDirectory: temporaryDirectory.appending(path: "install", directoryHint: .isDirectory)
     )
   }
 
-  private func resolvedWidgetsDirectory(_ configured: String?) throws -> URL {
-    guard let configured else {
-      do {
-        return URL(fileURLWithPath: try SharedRuntimeConfig.load().app.widgetsPath, isDirectory: true)
-      } catch {
-        throw WidgetPackageError.invalidSource(
-          "could not resolve widgets_dir from config: \(error.localizedDescription)"
-        )
-      }
+  private func resolvedLegacyWidgetsDirectory() throws -> URL {
+    if let legacyWidgetsDirectory {
+      return legacyWidgetsDirectory
     }
-    let path = NSString(string: configured).expandingTildeInPath
-    guard !path.isEmpty else {
-      throw WidgetPackageError.invalidSource("--widgets-dir cannot be empty")
+    do {
+      return URL(fileURLWithPath: try SharedRuntimeConfig.load().app.widgetsPath, isDirectory: true)
+    } catch {
+      throw WidgetPackageError.invalidSource(
+        "could not resolve widgets_dir for package migration: \(error.localizedDescription)"
+      )
     }
-    return URL(fileURLWithPath: path, isDirectory: true)
   }
 
   private func loadDatabase(at url: URL) throws -> InstalledWidgetPackages {
@@ -75,7 +84,7 @@ final class WidgetPackageInstaller {
         "could not read package database at \(url.path): \(error.localizedDescription)"
       )
     }
-    guard decoded.layoutVersion == 1 else {
+    guard decoded.layoutVersion == WidgetPackageStore.layoutVersion else {
       throw WidgetPackageError.installConflict("unsupported installed package layout")
     }
     guard Set(decoded.packages.map(\.name)).count == decoded.packages.count else {

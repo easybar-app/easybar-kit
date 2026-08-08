@@ -7,7 +7,8 @@ import XCTest
 
 final class WidgetPackageInstallerTests: XCTestCase {
   private var directory: URL!
-  private var widgetsDirectory: URL!
+  private var packagesDirectory: URL!
+  private var legacyWidgetsDirectory: URL!
   private var installer: WidgetPackageInstaller!
 
   override func setUpWithError() throws {
@@ -15,17 +16,21 @@ final class WidgetPackageInstallerTests: XCTestCase {
       path: "easybar-package-tests-\(UUID().uuidString)",
       directoryHint: .isDirectory
     )
-    widgetsDirectory = directory.appending(path: "widgets", directoryHint: .isDirectory)
+    packagesDirectory = directory.appending(path: "data/packages", directoryHint: .isDirectory)
+    legacyWidgetsDirectory = directory.appending(path: "widgets", directoryHint: .isDirectory)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     installer = WidgetPackageInstaller(
-      logger: ProcessLogger(label: "package-tests", minimumLevel: .error)
+      logger: ProcessLogger(label: "package-tests", minimumLevel: .error),
+      packagesDirectory: packagesDirectory,
+      legacyWidgetsDirectory: legacyWidgetsDirectory
     )
   }
 
   override func tearDownWithError() throws {
     try? FileManager.default.removeItem(at: directory)
     directory = nil
-    widgetsDirectory = nil
+    packagesDirectory = nil
+    legacyWidgetsDirectory = nil
     installer = nil
   }
 
@@ -72,13 +77,15 @@ final class WidgetPackageInstallerTests: XCTestCase {
     let installed = try await install(widget.path, useRegistry: false)
 
     XCTAssertEqual(installed.map(\.name), ["personal-clock"])
-    XCTAssertTrue(fileExists("shared/retry.lua"))
-    XCTAssertTrue(fileExists("shared/retry/policy.lua"))
-    XCTAssertTrue(fileExists("personal-clock/widget.lua"))
-    XCTAssertTrue(fileExists("personal-clock/assets/icon.svg"))
-    XCTAssertFalse(fileExists("personal-clock/helper.lua"))
-    XCTAssertTrue(fileExists(".easybar/packages/retry-kit/retry.lua"))
-    XCTAssertTrue(fileExists(".easybar/packages/personal-clock/helper.lua"))
+    XCTAssertTrue(fileExists("active/shared/retry.lua"))
+    XCTAssertTrue(fileExists("active/shared/retry/policy.lua"))
+    XCTAssertTrue(fileExists("active/personal-clock/widget.lua"))
+    XCTAssertTrue(fileExists("active/personal-clock/assets/icon.svg"))
+    XCTAssertFalse(fileExists("active/personal-clock/helper.lua"))
+    XCTAssertTrue(fileExists("store/retry-kit/1.2.0/retry.lua"))
+    XCTAssertTrue(fileExists("store/personal-clock/0.1.0/helper.lua"))
+    XCTAssertFalse(manualFileExists("personal-clock/widget.lua"))
+    XCTAssertFalse(manualFileExists("shared/retry.lua"))
 
     let database = try installedDatabase()
     XCTAssertEqual(database.packages.map(\.name), ["personal-clock", "retry-kit"])
@@ -121,14 +128,134 @@ final class WidgetPackageInstallerTests: XCTestCase {
         source: "caffeinate",
         sha256: nil,
         registry: index.path,
-        widgetsDirectory: widgetsDirectory.path,
         useRegistry: true
       )
     )
 
     XCTAssertEqual(installed.map(\.name), ["caffeinate"])
-    XCTAssertTrue(fileExists("caffeinate/widget.lua"))
+    XCTAssertTrue(fileExists("active/caffeinate/widget.lua"))
     XCTAssertEqual(try installedDatabase().packages.first?.version, "1.0.0")
+  }
+
+  func testMigratesLegacyPackagesWithoutRemovingManualWidgets() async throws {
+    let legacyPackage = legacyWidgetsDirectory.appending(
+      path: ".easybar/packages/legacy-clock",
+      directoryHint: .isDirectory
+    )
+    try writePackage(
+      at: legacyPackage,
+      manifest: """
+        manifest_version = 1
+        name = "legacy-clock"
+        version = "1.0.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+
+        [exports]
+        retry = "retry.lua"
+        """,
+      files: [
+        "widget.lua": "return require(\"retry\")\n",
+        "retry.lua": "return { attempts = 3 }\n",
+      ]
+    )
+    try writeFile(
+      "return require(\"retry\")\n",
+      at: legacyWidgetsDirectory.appending(path: "legacy-clock/widget.lua")
+    )
+    try writeFile(
+      "return { attempts = 3 }\n",
+      at: legacyWidgetsDirectory.appending(path: "shared/retry.lua")
+    )
+    try writeFile(
+      "return 'manual'\n",
+      at: legacyWidgetsDirectory.appending(path: "manual.lua")
+    )
+
+    let legacyDatabase = InstalledWidgetPackages(
+      layoutVersion: 1,
+      packages: [
+        InstalledWidgetPackage(
+          name: "legacy-clock",
+          version: "1.0.0",
+          kind: .widget,
+          entrypoint: "widget.lua",
+          dependencies: [:],
+          exports: ["retry": "retry.lua"],
+          source: "legacy"
+        )
+      ]
+    )
+    try writeDatabase(
+      legacyDatabase,
+      to: legacyWidgetsDirectory.appending(path: ".easybar/installed.json")
+    )
+
+    let package = directory.appending(path: "new-clock", directoryHint: .isDirectory)
+    try writePackage(
+      at: package,
+      manifest: """
+        manifest_version = 1
+        name = "new-clock"
+        version = "0.1.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """,
+      files: ["widget.lua": "return nil\n"]
+    )
+
+    _ = try await install(package.path, useRegistry: false)
+
+    XCTAssertTrue(fileExists("store/legacy-clock/1.0.0/widget.lua"))
+    XCTAssertTrue(fileExists("active/legacy-clock/widget.lua"))
+    XCTAssertTrue(fileExists("active/shared/retry.lua"))
+    XCTAssertTrue(fileExists("active/new-clock/widget.lua"))
+    XCTAssertFalse(manualFileExists(".easybar"))
+    XCTAssertFalse(manualFileExists("legacy-clock"))
+    XCTAssertFalse(manualFileExists("shared/retry.lua"))
+    XCTAssertTrue(manualFileExists("manual.lua"))
+    XCTAssertEqual(try installedDatabase().layoutVersion, WidgetPackageStore.layoutVersion)
+    XCTAssertEqual(
+      try installedDatabase().packages.map(\.name),
+      ["legacy-clock", "new-clock"]
+    )
+  }
+
+  func testMigrationKeepsLegacyFilesWhenManagedStoreDoesNotContainThem() throws {
+    let legacy = InstalledWidgetPackage(
+      name: "legacy-clock",
+      version: "1.0.0",
+      kind: .widget,
+      entrypoint: "widget.lua",
+      dependencies: [:],
+      exports: [:],
+      source: "legacy"
+    )
+    let current = InstalledWidgetPackage(
+      name: "new-clock",
+      version: "0.1.0",
+      kind: .widget,
+      entrypoint: "widget.lua",
+      dependencies: [:],
+      exports: [:],
+      source: "local"
+    )
+    try writeDatabase(
+      InstalledWidgetPackages(layoutVersion: 1, packages: [legacy]),
+      to: legacyWidgetsDirectory.appending(path: ".easybar/installed.json")
+    )
+    try writeDatabase(
+      InstalledWidgetPackages(layoutVersion: WidgetPackageStore.layoutVersion, packages: [current]),
+      to: packagesDirectory.appending(path: "installed.json")
+    )
+
+    XCTAssertThrowsError(
+      try WidgetPackageStore.migrateLegacyInstallation(
+        from: legacyWidgetsDirectory,
+        to: packagesDirectory
+      )
+    )
+    XCTAssertTrue(manualFileExists(".easybar/installed.json"))
   }
 
   func testDirectArchiveURLRequiresAHash() async throws {
@@ -172,7 +299,6 @@ final class WidgetPackageInstallerTests: XCTestCase {
         source: source,
         sha256: nil,
         registry: nil,
-        widgetsDirectory: widgetsDirectory.path,
         useRegistry: useRegistry
       )
     )
@@ -212,13 +338,39 @@ final class WidgetPackageInstallerTests: XCTestCase {
   }
 
   private func fileExists(_ relativePath: String) -> Bool {
-    FileManager.default.fileExists(atPath: widgetsDirectory.appending(path: relativePath).path)
+    FileManager.default.fileExists(atPath: packagesDirectory.appending(path: relativePath).path)
+  }
+
+  private func manualFileExists(_ relativePath: String) -> Bool {
+    FileManager.default.fileExists(
+      atPath: legacyWidgetsDirectory.appending(path: relativePath).path
+    )
   }
 
   private func installedDatabase() throws -> InstalledWidgetPackages {
     try JSONDecoder().decode(
       InstalledWidgetPackages.self,
-      from: Data(contentsOf: widgetsDirectory.appending(path: ".easybar/installed.json"))
+      from: Data(contentsOf: packagesDirectory.appending(path: "installed.json"))
     )
+  }
+
+  private func writeFile(_ contents: String, at url: URL) throws {
+    try FileManager.default.createDirectory(
+      at: url.deletingLastPathComponent(),
+      withIntermediateDirectories: true
+    )
+    try contents.write(to: url, atomically: true, encoding: .utf8)
+  }
+
+  private func writeDatabase(_ database: InstalledWidgetPackages, to url: URL) throws {
+    try FileManager.default.createDirectory(
+      at: url.deletingLastPathComponent(),
+      withIntermediateDirectories: true
+    )
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+    var data = try encoder.encode(database)
+    data.append(0x0A)
+    try data.write(to: url)
   }
 }

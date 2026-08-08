@@ -95,7 +95,7 @@ LOCAL_LAUNCH_AGENT_DIR ?= $(HOME)/Library/LaunchAgents
 LOCAL_LOG_DIR ?= $(HOME)/Library/Logs/EasyBar
 LOCAL_STATE_DIR ?= $(HOME)/Library/Application Support/EasyBar/LocalInstall
 WIDGETS_INSTALL_DIR ?= $(HOME)/.config/easybar/widgets
-WIDGETS_INSTALL_MANIFEST ?= $(CURDIR)/widgets/install-manifest.csv
+WIDGETS_INSTALL_MANIFEST ?= $(CURDIR)/examples/install-manifest.csv
 IMAGE_CONVERT ?= magick
 SVG_CONVERT ?= rsvg-convert
 CLICLICK ?= cliclick
@@ -346,7 +346,7 @@ install-local: ## Build and install the current checkout with a Git-derived loca
 
 install-widgets: ## Interactively copy bundled examples and declared assets.
 	@scripts/dev/install-widgets.sh \
-		"$(CURDIR)/widgets" \
+		"$(CURDIR)/examples" \
 		"$(WIDGETS_INSTALL_DIR)" \
 		"$(WIDGETS_INSTALL_MANIFEST)"
 

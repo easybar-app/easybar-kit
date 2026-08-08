@@ -1,6 +1,6 @@
 local root = assert(arg[1], "repository root argument is required")
 local host = assert(loadfile(root .. "/Tests/lua/helpers/inbox_host.lua"))()
-local state = host.load(root, "inbox/demo/widget.lua")
+local state = host.load(root, "inbox-demo/widget.lua")
 
 assert(#state.items == 0, "Inbox demo must start without publishing messages")
 assert(state:source_action("refresh") ~= nil, "Inbox demo must expose its add action")
