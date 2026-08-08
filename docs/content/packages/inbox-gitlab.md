@@ -11,18 +11,18 @@ GitLab work items and merge-request actions in EasyBar's native inbox.
 easybar widgets install inbox-gitlab
 ```
 
-| Package metadata     | Value                                       |
-| -------------------- | ------------------------------------------- |
-| Name                 | `inbox-gitlab`                              |
-| Version              | `0.3.1`                                     |
-| Kind                 | `widget`                                    |
-| Minimum EasyBar      | `0.45.0`                                    |
-| License              | `Apache-2.0`                                |
-| Categories           | `developer-tools`, `inbox`, `notifications` |
-| Dependencies         | [`shared`](shared.md) `^0.1.0`              |
-| Required commands    | `glab`                                      |
-| Optional environment | `GITLAB_HOST`                               |
-| Native inbox         | Required                                    |
+| Package metadata | Value |
+| --- | --- |
+| Name | `inbox-gitlab` |
+| Version | `0.3.2` |
+| Kind | `widget` |
+| Minimum EasyBar | `0.45.0` |
+| License | `Apache-2.0` |
+| Categories | `developer-tools`, `inbox`, `notifications` |
+| Dependencies | [`shared`](shared.md) `^0.1.0` |
+| Required commands | `glab` |
+| Optional environment | `GITLAB_HOST` |
+| Native inbox | Required |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-gitlab)
 

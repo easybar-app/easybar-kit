@@ -11,16 +11,16 @@ Homebrew updates and upgrades in a standalone popup.
 easybar widgets install brew
 ```
 
-| Package metadata  | Value                                                                    |
-| ----------------- | ------------------------------------------------------------------------ |
-| Name              | `brew`                                                                   |
-| Version           | `0.2.0`                                                                  |
-| Kind              | `widget`                                                                 |
-| Minimum EasyBar   | `0.41.0`                                                                 |
-| License           | `Apache-2.0`                                                             |
-| Categories        | `developer-tools`, `system`                                              |
-| Dependencies      | [`brew-policy`](brew-policy.md) `^0.1.0`, [`shared`](shared.md) `^0.1.0` |
-| Required commands | `brew`                                                                   |
+| Package metadata | Value |
+| --- | --- |
+| Name | `brew` |
+| Version | `0.2.0` |
+| Kind | `widget` |
+| Minimum EasyBar | `0.41.0` |
+| License | `Apache-2.0` |
+| Categories | `developer-tools`, `system` |
+| Dependencies | [`brew-policy`](brew-policy.md) `^0.1.0`, [`shared`](shared.md) `^0.1.0` |
+| Required commands | `brew` |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/brew)
 
