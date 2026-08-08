@@ -69,7 +69,7 @@ easybar widgets install PACKAGE
 
 -   **[`inbox-brew`](inbox-brew.md)**
 
-    `widget` · `v0.1.1` · `developer-tools` · `inbox` · `system`
+    `widget` · `v0.2.0` · `developer-tools` · `inbox` · `system`
 
     ---
 
@@ -79,7 +79,7 @@ easybar widgets install PACKAGE
 
 -   **[`inbox-github`](inbox-github.md)**
 
-    `widget` · `v0.1.0` · `developer-tools` · `inbox` · `notifications`
+    `widget` · `v0.2.0` · `developer-tools` · `inbox` · `notifications`
 
     ---
 
@@ -89,7 +89,7 @@ easybar widgets install PACKAGE
 
 -   **[`inbox-gitlab`](inbox-gitlab.md)**
 
-    `widget` · `v0.1.0` · `developer-tools` · `inbox` · `notifications`
+    `widget` · `v0.2.0` · `developer-tools` · `inbox` · `notifications`
 
     ---
 
@@ -99,7 +99,7 @@ easybar widgets install PACKAGE
 
 -   **[`inbox-widgets`](inbox-widgets.md)**
 
-    `widget` · `v0.3.0` · `inbox` · `system` · `utilities`
+    `widget` · `v0.4.0` · `inbox` · `system` · `utilities`
 
     ---
 

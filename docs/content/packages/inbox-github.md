@@ -14,7 +14,7 @@ easybar widgets install inbox-github
 | Package metadata | Value |
 | --- | --- |
 | Name | `inbox-github` |
-| Version | `0.1.0` |
+| Version | `0.2.0` |
 | Kind | `widget` |
 | Minimum EasyBar | `0.41.0` |
 | License | `Apache-2.0` |
@@ -41,10 +41,13 @@ gh auth login
 
 ```toml
 [widgets.github-inbox]
+refresh_interval_minutes = 5
 merge_method = "squash"
 confirm_merge = false
 ```
 
-Supported methods are `merge`, `squash`, and `rebase`. `confirm_merge = false` performs the merge after the readiness check; set it to `true` to require a second action. Both settings can also be changed from the inbox source menu.
+Automatic checks run every 5 minutes by default; `refresh_interval_minutes` accepts values from 5 minutes to 7 days. Supported merge methods are `merge`, `squash`, and `rebase`. `confirm_merge = false` performs the merge after the readiness check; set it to `true` to require a second action. The merge settings can also be changed from the inbox source menu.
+
+The source context menu shows the active refresh interval.
 
 The standalone popup presentation is the `github` package.

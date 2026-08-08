@@ -14,7 +14,7 @@ easybar widgets install inbox-widgets
 | Package metadata | Value |
 | --- | --- |
 | Name | `inbox-widgets` |
-| Version | `0.3.0` |
+| Version | `0.4.0` |
 | Kind | `widget` |
 | Minimum EasyBar | `0.41.0` |
 | License | `Apache-2.0` |
@@ -45,6 +45,8 @@ Reload EasyBar after changing it:
 ```sh
 easybar config reload
 ```
+
+The source context menu shows the active refresh interval.
 
 Only packages whose recorded installation source matches a release in the official registry are checked. Packages installed from a local directory, custom archive, or another registry are left untouched.
 
