@@ -14,9 +14,9 @@ easybar widgets install inbox-github
 | Package metadata | Value |
 | --- | --- |
 | Name | `inbox-github` |
-| Version | `0.2.0` |
+| Version | `0.3.0` |
 | Kind | `widget` |
-| Minimum EasyBar | `0.41.0` |
+| Minimum EasyBar | `0.45.0` |
 | License | `Apache-2.0` |
 | Categories | `developer-tools`, `inbox`, `notifications` |
 | Dependencies | [`shared`](shared.md) `^0.1.0` |
@@ -42,12 +42,16 @@ gh auth login
 ```toml
 [widgets.github-inbox]
 refresh_interval_minutes = 5
+source_order = 10
+context_order = 10
 merge_method = "squash"
 confirm_merge = false
 ```
 
 Automatic checks run every 5 minutes by default; `refresh_interval_minutes` accepts values from 5 minutes to 7 days. Supported merge methods are `merge`, `squash`, and `rebase`. `confirm_merge = false` performs the merge after the readiness check; set it to `true` to require a second action. The merge settings can also be changed from the inbox source menu.
 
-The source context menu shows the active refresh interval.
+`source_order` controls the GitHub group when the inbox is grouped by source. `context_order`
+independently controls its position in the inbox source menu. Lower values appear first. The source
+context menu also shows the active refresh interval.
 
 The standalone popup presentation is the `github` package.

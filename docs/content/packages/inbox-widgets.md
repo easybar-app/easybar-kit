@@ -14,9 +14,9 @@ easybar widgets install inbox-widgets
 | Package metadata | Value |
 | --- | --- |
 | Name | `inbox-widgets` |
-| Version | `0.5.0` |
+| Version | `0.6.0` |
 | Kind | `widget` |
-| Minimum EasyBar | `0.44.0` |
+| Minimum EasyBar | `0.45.0` |
 | License | `Apache-2.0` |
 | Categories | `inbox`, `system`, `utilities` |
 | Dependencies | [`shared`](shared.md) `^0.1.0` |
@@ -38,6 +38,8 @@ The automatic check interval defaults to six hours and can be set from 5 minutes
 ```toml
 [widgets.inbox-widgets]
 refresh_interval_minutes = 360
+source_order = 40
+context_order = 40
 ```
 
 Reload EasyBar after changing it:
@@ -46,7 +48,9 @@ Reload EasyBar after changing it:
 easybar config reload
 ```
 
-The source context menu shows the active refresh interval.
+`source_order` controls the Widgets group when the inbox is grouped by source. `context_order`
+independently controls its position in the inbox source menu. Lower values appear first. The source
+context menu also shows the active refresh interval.
 
 Only packages whose recorded installation source matches a release in the official registry are checked. Packages installed from a local directory, custom archive, or another registry are left untouched.
 
@@ -58,4 +62,4 @@ easybar widgets uninstall inbox-widget-updates
 
 ## Requirements
 
-The widget requires EasyBar 0.44.0 or newer, plus `curl` and the `easybar` CLI in `[app.env].PATH`.
+The widget requires EasyBar 0.45.0 or newer, plus `curl` and the `easybar` CLI in `[app.env].PATH`.
