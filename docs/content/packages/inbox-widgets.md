@@ -14,9 +14,9 @@ easybar widgets install inbox-widgets
 | Package metadata | Value |
 | --- | --- |
 | Name | `inbox-widgets` |
-| Version | `0.4.0` |
+| Version | `0.5.0` |
 | Kind | `widget` |
-| Minimum EasyBar | `0.41.0` |
+| Minimum EasyBar | `0.44.0` |
 | License | `Apache-2.0` |
 | Categories | `inbox`, `system`, `utilities` |
 | Dependencies | [`shared`](shared.md) `^0.1.0` |
@@ -29,7 +29,7 @@ easybar widgets install inbox-widgets
 
 `widget.lua` checks the official EasyBar widget registry and publishes available package updates to EasyBar's native inbox.
 
-Use **Update** on an inbox item to install that package's latest registry release. The source menu also provides a manual **Refresh** action; checks otherwise run every six hours and after wake or session activation.
+Use **Update** on an inbox item to install that package's latest registry release. The source menu provides **Update all** and a manual **Refresh** action; checks otherwise run every six hours and after wake or session activation. These actions use `easybar widgets update`, so the same update behavior is available from the terminal.
 
 ## Configuration
 
@@ -58,4 +58,4 @@ easybar widgets uninstall inbox-widget-updates
 
 ## Requirements
 
-The widget requires `curl` and the `easybar` CLI in `[app.env].PATH`.
+The widget requires EasyBar 0.44.0 or newer, plus `curl` and the `easybar` CLI in `[app.env].PATH`.
