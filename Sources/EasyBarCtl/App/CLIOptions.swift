@@ -85,11 +85,12 @@ enum CLICommandKind: Equatable {
   case versionAgent(AgentTarget)
   case emitEvent
   case inbox(InboxCLIVerb)
+  case installWidgetPackage
 
   /// Whether this command can target one explicit Unix socket.
   var acceptsSocketOverride: Bool {
     switch self {
-    case .logs, .restartAgent(.all), .versionAgent(.all):
+    case .logs, .restartAgent(.all), .versionAgent(.all), .installWidgetPackage:
       return false
     default:
       return true
@@ -148,6 +149,15 @@ enum InboxCLICommand: Equatable {
   case clear(source: String?)
 }
 
+/// Inputs accepted by `easybar widgets install`.
+struct WidgetPackageInstallOptions: Equatable {
+  let source: String
+  let sha256: String?
+  let registry: String?
+  let widgetsDirectory: String?
+  let useRegistry: Bool
+}
+
 /// Supported top-level CLI actions after command-specific options are parsed.
 enum CLIAction: Equatable {
   case control(IPC.Command)
@@ -157,6 +167,7 @@ enum CLIAction: Equatable {
   case versionAgent(AgentTarget, json: Bool)
   case logs(LogCommandOptions)
   case inbox(InboxCLICommand)
+  case installWidgetPackage(WidgetPackageInstallOptions)
 }
 
 /// Parsed command-line configuration.
@@ -315,6 +326,29 @@ enum CLI {
     description: "Clear every inbox source"
   )
 
+  static let packageSHA256Option = CLIOption(
+    flag: "--sha256",
+    description: "Expected SHA-256 for a direct archive",
+    placeholder: "digest"
+  )
+
+  static let packageRegistryOption = CLIOption(
+    flag: "--registry",
+    description: "Registry index URL or local index.json path",
+    placeholder: "source"
+  )
+
+  static let packageWidgetsDirectoryOption = CLIOption(
+    flag: "--widgets-dir",
+    description: "Install into this widget directory",
+    placeholder: "path"
+  )
+
+  static let packageNoRegistryOption = CLIOption(
+    flag: "--no-registry",
+    description: "Do not resolve missing dependencies from a registry"
+  )
+
   static let globalOptions = [socketOption, debugOption, versionOption, helpOption]
 
   static let logOptions = [
@@ -334,6 +368,7 @@ enum CLI {
     .init(name: "logs", description: "Show retained and live process logs"),
     .init(name: "metrics", description: "Show runtime metrics"),
     .init(name: "inbox", description: "Manage native inbox messages"),
+    .init(name: "widgets", description: "Install Lua widget packages"),
     .init(name: "config", description: "Reload or validate configuration"),
     .init(name: "runtime", description: "Manage the Lua widget runtime"),
     .init(name: "agent", description: "Manage calendar and network agents"),
@@ -357,6 +392,18 @@ enum CLI {
       description: "Print a metrics snapshot or stream live metrics",
       kind: .metrics,
       options: [watchOption]
+    ),
+    .init(
+      path: ["widgets", "install"],
+      description: "Install a registry package, local package, or direct archive",
+      kind: .installWidgetPackage,
+      usageArguments: ["<name|path|url>"],
+      options: [
+        packageSHA256Option,
+        packageRegistryOption,
+        packageWidgetsDirectoryOption,
+        packageNoRegistryOption,
+      ]
     ),
     .init(
       path: ["inbox", "send"],

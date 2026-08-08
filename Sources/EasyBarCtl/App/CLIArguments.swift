@@ -241,7 +241,100 @@ private func parseCommand(
         global: &global
       )
     )
+
+  case .installWidgetPackage:
+    return .installWidgetPackage(
+      try parseWidgetPackageInstallOptions(
+        arguments,
+        command: descriptor,
+        global: &global
+      )
+    )
   }
+}
+
+private func parseWidgetPackageInstallOptions(
+  _ arguments: [String],
+  command: CLICommandDescriptor,
+  global: inout GlobalOptionState
+) throws -> WidgetPackageInstallOptions {
+  var source: String?
+  var sha256: String?
+  var registry: String?
+  var widgetsDirectory: String?
+  var useRegistry = true
+  var index = 0
+
+  while index < arguments.count {
+    let argument = arguments[index]
+    if let parsed = try parseValueArgument(
+      option: CLI.packageSHA256Option,
+      argument,
+      arguments: arguments,
+      index: index
+    ) {
+      sha256 = parsed.value
+      index = parsed.nextIndex
+      continue
+    }
+    if let parsed = try parseValueArgument(
+      option: CLI.packageRegistryOption,
+      argument,
+      arguments: arguments,
+      index: index
+    ) {
+      registry = parsed.value
+      index = parsed.nextIndex
+      continue
+    }
+    if let parsed = try parseValueArgument(
+      option: CLI.packageWidgetsDirectoryOption,
+      argument,
+      arguments: arguments,
+      index: index
+    ) {
+      widgetsDirectory = parsed.value
+      index = parsed.nextIndex
+      continue
+    }
+    if CLI.packageNoRegistryOption.matches(argument) {
+      useRegistry = false
+      index += 1
+      continue
+    }
+    if let nextIndex = try parseGlobalArgument(
+      argument,
+      arguments: arguments,
+      index: index,
+      state: &global,
+      helpTopic: command.path
+    ) {
+      index = nextIndex
+      continue
+    }
+    guard !argument.hasPrefix("-") else {
+      throw AppError.message("unknown widgets install option '\(argument)'")
+    }
+    guard source == nil else {
+      throw AppError.message("widgets install requires exactly one package source")
+    }
+    source = argument
+    index += 1
+  }
+
+  guard let source, !source.isEmpty else {
+    throw AppError.message("widgets install requires a package name, path, or URL")
+  }
+  if !useRegistry, registry != nil {
+    throw AppError.message("--registry and --no-registry cannot be used together")
+  }
+  return WidgetPackageInstallOptions(
+    source: source,
+    sha256: sha256,
+    registry: registry,
+    widgetsDirectory: widgetsDirectory,
+    useRegistry: useRegistry
+  )
 }
 
 private func parseGlobalOnlyArguments(

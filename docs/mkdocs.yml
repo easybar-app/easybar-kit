@@ -90,6 +90,7 @@ nav:
 
   - Runtime:
       - CLI Reference: runtime/cli.md
+      - Widget Packages: runtime/widget-packages.md
       - Control: runtime/control.md
       - Metrics: runtime/metrics.md
       - Logs: runtime/logs.md

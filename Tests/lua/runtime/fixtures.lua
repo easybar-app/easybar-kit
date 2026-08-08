@@ -35,6 +35,9 @@ end
 function M.discovery()
 	local root = make_temp_directory("-easybar-discovery")
 	make_directory(root .. "/assets")
+	make_directory(root .. "/.easybar/packages/example")
+	make_directory(root .. "/shared")
+	make_directory(root .. "/lib")
 	make_directory(root .. "/nested")
 
 	for _, relative_path in ipairs({
@@ -46,6 +49,9 @@ function M.discovery()
 		write_file(root .. "/" .. relative_path, "return nil\n")
 	end
 	write_file(root .. "/ignored.txt", "not lua\n")
+	write_file(root .. "/.easybar/packages/example/widget.lua", "error('must not load')\n")
+	write_file(root .. "/shared/retry.lua", "return {}\n")
+	write_file(root .. "/lib/legacy.lua", "return {}\n")
 	return root
 end
 

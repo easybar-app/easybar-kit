@@ -5,14 +5,14 @@ import Foundation
 /// CLI entry point.
 @main
 enum EasyBarCtlApp {
-  static func main() {
-    exit(AppController().run())
+  static func main() async {
+    exit(await AppController().run())
   }
 }
 
 /// Runs the CLI flow.
 private struct AppController {
-  func run() -> Int32 {
+  func run() async -> Int32 {
     do {
       let parsed = try parseArguments(CommandLine.arguments)
       let context = AppContext(debugEnabled: parsed.debugEnabled)
@@ -75,6 +75,9 @@ private struct AppController {
           context: context
         )
         try runInboxCommand(command, socketPath: socketPath, context: context)
+
+      case .installWidgetPackage(let options):
+        try await installWidgetPackage(options: options, context: context)
       }
 
       return 0

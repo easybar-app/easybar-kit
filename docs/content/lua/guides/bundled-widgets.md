@@ -25,6 +25,15 @@ Homebrew, GitHub, and GitLab each have a standalone and native-inbox presentatio
 
 Package-specific requirements and settings are documented beside each package. Common requirements include authenticated `gh` or `glab`, Homebrew availability in `[app.env].PATH`, the Tailscale executable, WireGuard's VPN service name, and the Caffeinate duration setting.
 
+Install one by registry name, then reload the app:
+
+```sh
+easybar widgets install caffeinate
+easybar config reload
+```
+
+The registry is optional. See [Widget Packages](../../runtime/widget-packages.md) to install a self-created package directly from a local directory or archive.
+
 ## Local examples
 
 The app repository ships these selectable examples:

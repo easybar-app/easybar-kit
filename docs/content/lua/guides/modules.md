@@ -1,6 +1,6 @@
 # Reusable Modules
 
-EasyBar recursively executes every regular file below `widgets_dir` with a `.lua` extension. Extension matching is case-insensitive. Directory names such as `simple`, `shared`, or `lib`, and filenames such as `widget.lua`, are organizational conventions only.
+EasyBar recursively executes every regular file below `widgets_dir` with a `.lua` extension, except package metadata below `.easybar/` and reusable modules below `shared/` or legacy `lib/`. Extension matching is case-insensitive. Package-managed widgets activate only the entrypoint declared by their manifest.
 
 The widget root, `shared/`, and legacy `lib/` are also added to Lua's module search path before files load, so code can continue to use standard `require(...)` calls without changing `package.path`.
 
@@ -29,9 +29,7 @@ The widget root, `shared/`, and legacy `lib/` are also added to Lua's module sea
     └── github.svg
 ```
 
-All `.lua` files in this tree run during startup. A reusable module should therefore do only declarative work at top level: create local functions or tables and return its public value. Do not start timers, commands, subscriptions, or inbox publishing until an explicit function is called by the consuming widget.
-
-The same module may later execute through `require(...)`. Direct startup execution does not populate `package.loaded`, while `require(...)` does, so top-level module code must be safe to evaluate more than once.
+Lua files below `shared/` and `lib/` load only through `require(...)`. Keep their top level declarative: create local functions or tables and return the public value. Do not start timers, commands, subscriptions, or inbox publishing until an explicit function is called by the consuming widget.
 
 Keep small examples in the matching category. Use a service directory when an integration gains configuration, helper modules, documentation, tests, or assets. The filename inside that directory is your choice.
 

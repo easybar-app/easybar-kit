@@ -1,6 +1,6 @@
 # CLI Reference
 
-The `easybar` command controls the running app, validates configuration, restarts helper agents, manages native inbox messages, and exposes diagnostics. Commands that operate on the app use its Unix control socket. Agent commands contact the selected helper-agent socket directly. `easybar logs` reads retained history and can subscribe to live records from the selected running processes.
+The `easybar` command controls the running app, installs widget packages, validates configuration, restarts helper agents, manages native inbox messages, and exposes diagnostics. Commands that operate on the app use its Unix control socket. Agent commands contact the selected helper-agent socket directly. Package installation operates on the widget directory and does not require the app to be running.
 
 ## Command structure
 
@@ -15,6 +15,7 @@ commands:
   logs                        Show retained and live process logs
   metrics                     Show runtime metrics
   inbox                       Manage native inbox messages
+  widgets                     Install Lua widget packages
   config                      Reload or validate configuration
   runtime                     Manage the Lua widget runtime
   agent                       Manage calendar and network agents
@@ -27,6 +28,7 @@ Run command-specific help when needed:
 easybar refresh --help
 easybar inbox --help
 easybar inbox send --help
+easybar widgets install --help
 easybar config --help
 easybar logs --help
 ```
@@ -57,6 +59,10 @@ included fields, rate behavior, and watch-mode display details.
 
 Publish and manage native inbox messages from local scripts. See [Inbox](inbox.md) for every inbox
 subcommand, option, and persistence rule.
+
+## `easybar widgets`
+
+Install an official registry package or a self-created package from a directory or archive. See [Widget Packages](widget-packages.md) for sources, integrity checks, dependency behavior, and manifest examples.
 
 ## `easybar config`
 

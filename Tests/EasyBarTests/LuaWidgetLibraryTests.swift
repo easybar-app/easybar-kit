@@ -65,16 +65,19 @@ final class LuaWidgetLibraryTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     XCTAssertEqual(node.text, "true")
   }
 
-  func testLuaRuntimeDiscoversEveryLuaFileRecursively() async throws {
+  func testLuaRuntimeDiscoversUserWidgetsButNotModuleOrPackageRoots() async throws {
     let widgets = try makeWidgetsDirectory()
     let discoveredFiles = [
       ("clock.lua", "discovery_root"),
       (".hidden.lua", "discovery_hidden"),
       ("assets/preview.lua", "discovery_assets"),
       ("inbox/github/status.lua", "discovery_inbox"),
-      ("lib/compat.LUA", "discovery_uppercase"),
-      ("shared/helper.lua", "discovery_shared"),
       ("simple/toggle.lua", "discovery_simple"),
+    ]
+    let excludedFiles = [
+      "lib/compat.LUA",
+      "shared/helper.lua",
+      ".easybar/packages/example/widget.lua",
     ]
 
     for (relativePath, rootID) in discoveredFiles {
@@ -84,6 +87,19 @@ final class LuaWidgetLibraryTests: LuaRenderRuntimeTestCase, @unchecked Sendable
         withIntermediateDirectories: true
       )
       try "easybar.add(easybar.kind.item, \"\(rootID)\", { label = \"\(rootID)\" })\n".write(
+        to: fileURL,
+        atomically: true,
+        encoding: .utf8
+      )
+    }
+
+    for relativePath in excludedFiles {
+      let fileURL = widgets.appendingPathComponent(relativePath)
+      try FileManager.default.createDirectory(
+        at: fileURL.deletingLastPathComponent(),
+        withIntermediateDirectories: true
+      )
+      try "error(\"module or package metadata executed\")\n".write(
         to: fileURL,
         atomically: true,
         encoding: .utf8

@@ -4,7 +4,7 @@ import EasyBarShared
 /// Shared runtime context for CLI operations.
 struct AppContext {
   /// Logger used for optional debug output.
-  private let logger: ProcessLogger
+  let logger: ProcessLogger
 
   /// Creates a context and enables debug logging when requested.
   init(debugEnabled: Bool) {

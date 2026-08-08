@@ -13,9 +13,9 @@ widgets/
 
 ## Lua discovery
 
-EasyBar recursively loads every regular `.lua` file below the configured widgets directory. No directory or filename is a special entrypoint convention in the current runtime.
+EasyBar recursively loads regular `.lua` files below the configured widgets directory, excluding package metadata below `.easybar/` and reusable modules below `shared/` and `lib/`. Package-managed widgets use their declared entrypoint.
 
-Reusable modules loaded with `require(...)` must keep their top level side-effect-free because files below the widgets directory are also discovered directly. Installable packages use explicit metadata so the package manager can distinguish widget entrypoints from library exports.
+Reusable modules loaded with `require(...)` should keep their top level side-effect-free. Installable packages use explicit metadata so the package manager can distinguish widget entrypoints from library exports.
 
 ## Assets
 

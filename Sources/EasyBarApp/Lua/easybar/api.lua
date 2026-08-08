@@ -141,6 +141,13 @@ function M.discover_widget_files(widget_dir)
 		.. quoted_root
 		.. " ]; then /usr/bin/find "
 		.. quoted_root
+		.. " \\( -path "
+		.. shell_quote(root .. "/.easybar")
+		.. " -o -path "
+		.. shell_quote(root .. "/shared")
+		.. " -o -path "
+		.. shell_quote(root .. "/lib")
+		.. " \\) -prune -o"
 		.. " -type f -iname "
 		.. shell_quote("*.lua")
 		.. " -print0; fi"

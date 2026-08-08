@@ -56,6 +56,63 @@ final class CLIArgumentsTests: XCTestCase {
     )
   }
 
+  func testWidgetPackageInstallParsesRegistryAndDirectSourceOptions() throws {
+    let registry = try parseArguments([
+      "easybar", "widgets", "install", "caffeinate",
+    ])
+    XCTAssertEqual(
+      registry.action,
+      .installWidgetPackage(
+        WidgetPackageInstallOptions(
+          source: "caffeinate",
+          sha256: nil,
+          registry: nil,
+          widgetsDirectory: nil,
+          useRegistry: true
+        )
+      )
+    )
+
+    let local = try parseArguments([
+      "easybar", "widgets", "install", "./my-widget",
+      "--sha256", "abc",
+      "--widgets-dir", "/tmp/widgets",
+      "--no-registry",
+    ])
+    XCTAssertEqual(
+      local.action,
+      .installWidgetPackage(
+        WidgetPackageInstallOptions(
+          source: "./my-widget",
+          sha256: "abc",
+          registry: nil,
+          widgetsDirectory: "/tmp/widgets",
+          useRegistry: false
+        )
+      )
+    )
+  }
+
+  func testWidgetPackageInstallRejectsAmbiguousOptions() {
+    XCTAssertThrowsError(try parseArguments(["easybar", "widgets", "install"]))
+    XCTAssertThrowsError(
+      try parseArguments([
+        "easybar", "widgets", "install", "caffeinate", "github",
+      ])
+    )
+    XCTAssertThrowsError(
+      try parseArguments([
+        "easybar", "widgets", "install", "./widget",
+        "--registry", "index.json", "--no-registry",
+      ])
+    )
+    XCTAssertThrowsError(
+      try parseArguments([
+        "easybar", "widgets", "install", "./widget", "--socket", "/tmp/app.sock",
+      ])
+    )
+  }
+
   func testAgentRestartTargetsParse() throws {
     XCTAssertEqual(
       try parseArguments(["easybar", "agent", "restart", "calendar"]).action,

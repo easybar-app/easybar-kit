@@ -148,7 +148,8 @@ let package = Package(
     .executableTarget(
       name: "EasyBarCtl",
       dependencies: [
-        "EasyBarShared"
+        "EasyBarShared",
+        .product(name: "SwiftTOMLEdit", package: "swifttomledit"),
       ],
       path: "Sources/EasyBarCtl",
       swiftSettings: strictConcurrencySettings

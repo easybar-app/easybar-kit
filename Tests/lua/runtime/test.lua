@@ -313,7 +313,7 @@ do
 	assert(handle:cancel() == false)
 end
 
--- Runtime source discovery includes every regular Lua file recursively.
+-- Runtime source discovery includes user widgets but excludes package metadata and module roots.
 do
 	local fixture_root = fixtures.discovery()
 	local files, discovery_error = api_module.discover_widget_files(fixture_root)
