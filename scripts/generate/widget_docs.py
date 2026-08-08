@@ -187,7 +187,10 @@ def render_index(packages: list[Package]) -> str:
         "easybar widgets install PACKAGE",
         "```",
         "",
-        '<div class="grid cards" markdown>',
+        "Building your own widget? Start with the",
+        "[EasyBar widget template](https://github.com/easybar-app/widget-template).",
+        "",
+        '<div class="easybar-package-grid" markdown>',
         "",
     ]
 
@@ -197,15 +200,17 @@ def render_index(packages: list[Package]) -> str:
         )
         lines.extend(
             [
-                f"-   **[`{package.name}`]({package.name}.md)**",
+                '<article class="easybar-package-card" markdown>',
                 "",
-                f"    {labels}",
+                f"**[`{package.name}`]({package.name}.md)**",
                 "",
-                "    ---",
+                labels,
                 "",
-                f"    {package.description}",
+                package.description,
                 "",
-                f"    [Package details]({package.name}.md) · [Source]({package.source_url})",
+                f"[Package details]({package.name}.md) · [Source]({package.source_url})",
+                "",
+                "</article>",
                 "",
             ]
         )

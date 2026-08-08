@@ -62,7 +62,9 @@ created packages and packages installed from unrelated archives are never replac
 
 ## Install a self-created package
 
-A local package only needs a `package.toml`; it does not need a Git repository or registry entry:
+Use the [EasyBar widget template](https://github.com/easybar-app/widget-template) for a standalone,
+release-ready widget repository. A local package only needs a `package.toml`; it does not need a Git
+repository or registry entry:
 
 ```bash
 easybar widgets install ./my-widget --no-registry

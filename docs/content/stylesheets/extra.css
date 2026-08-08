@@ -109,8 +109,50 @@
   margin-top: 0;
 }
 
+/* ----------------------------- */
+/* Widget package catalog        */
+/* ----------------------------- */
+
+.md-typeset .easybar-package-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+
+.md-typeset .easybar-package-card {
+  display: flex;
+  min-width: 0;
+  padding: 1rem;
+  flex-direction: column;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.2rem;
+  background: var(--md-default-bg-color);
+  box-shadow: var(--md-shadow-z1);
+}
+
+.md-typeset .easybar-package-card > p {
+  margin: 0.35rem 0;
+}
+
+.md-typeset .easybar-package-card > p:first-of-type {
+  margin: 0 0 0.45rem;
+  font-size: 0.8rem;
+}
+
+.md-typeset .easybar-package-card > p:nth-of-type(2) {
+  color: var(--md-default-fg-color--light);
+  font-size: 0.68rem;
+}
+
+.md-typeset .easybar-package-card > p:last-child {
+  margin-top: auto;
+  padding-top: 0.55rem;
+}
+
 @media screen and (max-width: 44.9375em) {
-  .md-typeset .easybar-showcase {
+  .md-typeset .easybar-showcase,
+  .md-typeset .easybar-package-grid {
     grid-template-columns: 1fr;
   }
 

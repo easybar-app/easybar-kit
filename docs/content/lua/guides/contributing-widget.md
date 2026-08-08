@@ -1,5 +1,10 @@
 # Contributing an EasyBar Widget
 
+For a new widget in its own repository, create it from the
+[EasyBar widget template](https://github.com/easybar-app/widget-template). It includes a manifest,
+LuaLS configuration, package tests, release targets, and GitHub workflows for publishing a
+versioned archive.
+
 Contributions to the [official widgets repository](https://github.com/easybar-app/widgets) may add
 a widget, a reusable Lua library, or improve an existing package. Keep each package self-contained
 below `packages/<name>/` and use lowercase, hyphen-separated names.
