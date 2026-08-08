@@ -120,7 +120,7 @@ GitLab work items and merge-request actions in EasyBar's native inbox.
 
 **[`inbox-widgets`](inbox-widgets.md)**
 
-`widget` · `v0.6.1` · `inbox` · `system` · `utilities`
+`widget` · `v0.6.2` · `inbox` · `system` · `utilities`
 
 EasyBar package updates in the native inbox.
 
