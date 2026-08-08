@@ -9,6 +9,7 @@ EasyBar keeps installable integrations separate from the app:
 ## Official packages
 
 Browse the current packages and their requirements in the
+[package catalog](../../packages/index.md), inspect their source in the
 [official widgets repository](https://github.com/easybar-app/widgets/tree/main/packages), or search
 the registry from the command line:
 

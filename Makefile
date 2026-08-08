@@ -441,6 +441,9 @@ DOCS_REQUIREMENTS := $(DOCS_DIR)/requirements.txt
 DOCS_VENV := $(DOCS_DIR)/.venv
 DOCS_PYTHON := $(DOCS_VENV)/bin/python
 DOCS_STAMP := $(DOCS_VENV)/.requirements-installed
+WIDGETS_ROOT ?= ../widgets
+WIDGET_PACKAGE_DOCS := $(DOCS_DIR)/content/packages
+WIDGET_DOCS_PYTHON ?= python3
 GENERATED_MARKDOWN_DOCS := \
 	$(DOCS_DIR)/content/configuration/reference.md \
 	$(DOCS_DIR)/content/lua/reference
@@ -454,6 +457,11 @@ $(DOCS_STAMP): $(DOCS_REQUIREMENTS) | $(DOCS_PYTHON)
 	@touch $(DOCS_STAMP)
 
 generate-docs: fmt-generated-docs ## Generate and format all checked-in docs from source stubs.
+
+generate-widget-docs: ## Generate package docs from an easybar-app/widgets checkout.
+	@$(WIDGET_DOCS_PYTHON) scripts/generate/widget_docs.py \
+		--widgets-root "$(WIDGETS_ROOT)" \
+		--output "$(WIDGET_PACKAGE_DOCS)"
 
 generate-lua-docs: ## Generate Lua reference docs from source stubs.
 	@python3 scripts/generate/lua_docs.py
