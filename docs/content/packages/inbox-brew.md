@@ -14,12 +14,12 @@ easybar widgets install inbox-brew
 | Package metadata | Value |
 | --- | --- |
 | Name | `inbox-brew` |
-| Version | `0.1.0` |
+| Version | `0.1.1` |
 | Kind | `widget` |
 | Minimum EasyBar | `0.41.0` |
 | License | `Apache-2.0` |
 | Categories | `developer-tools`, `inbox`, `system` |
-| Dependencies | [`brew`](brew.md) `^0.1.0`, [`shared`](shared.md) `^0.1.0` |
+| Dependencies | [`brew-policy`](brew-policy.md) `^0.1.0`, [`shared`](shared.md) `^0.1.0` |
 | Required commands | `brew` |
 | Native inbox | Required |
 
@@ -33,6 +33,8 @@ easybar widgets install inbox-brew
 
 Homebrew must be available through `[app.env].PATH`, and the native inbox must be enabled.
 
-The widget depends on the `brew` package's exported `brew.policy` module so packages requiring manual handling remain visible but are not upgraded automatically.
+The widget depends on the small `brew-policy` library so packages requiring manual handling remain
+visible but are not upgraded automatically. It does not depend on or activate the standalone `brew`
+widget.
 
 The standalone popup presentation is the `brew` package. Install only one Homebrew presentation unless duplicate polling is intentional.

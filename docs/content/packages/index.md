@@ -19,13 +19,23 @@ easybar widgets install PACKAGE
 
 -   **[`brew`](brew.md)**
 
-    `widget` · `v0.1.0` · `developer-tools` · `system`
+    `widget` · `v0.2.0` · `developer-tools` · `system`
 
     ---
 
     Homebrew updates and upgrades in a standalone popup.
 
     [Package details](brew.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/brew)
+
+-   **[`brew-policy`](brew-policy.md)**
+
+    `library` · `v0.1.0` · `developer-tools` · `library` · `system`
+
+    ---
+
+    Shared Homebrew manual-upgrade policy for EasyBar widgets.
+
+    [Package details](brew-policy.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/brew-policy)
 
 -   **[`caffeinate`](caffeinate.md)**
 
@@ -59,7 +69,7 @@ easybar widgets install PACKAGE
 
 -   **[`inbox-brew`](inbox-brew.md)**
 
-    `widget` · `v0.1.0` · `developer-tools` · `inbox` · `system`
+    `widget` · `v0.1.1` · `developer-tools` · `inbox` · `system`
 
     ---
 

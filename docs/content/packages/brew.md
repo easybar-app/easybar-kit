@@ -14,14 +14,13 @@ easybar widgets install brew
 | Package metadata | Value |
 | --- | --- |
 | Name | `brew` |
-| Version | `0.1.0` |
+| Version | `0.2.0` |
 | Kind | `widget` |
 | Minimum EasyBar | `0.41.0` |
 | License | `Apache-2.0` |
 | Categories | `developer-tools`, `system` |
-| Dependencies | [`shared`](shared.md) `^0.1.0` |
+| Dependencies | [`brew-policy`](brew-policy.md) `^0.1.0`, [`shared`](shared.md) `^0.1.0` |
 | Required commands | `brew` |
-| Exported modules | `brew.policy` |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/brew)
 
@@ -36,6 +35,7 @@ Homebrew must be available through `[app.env].PATH`.
 ## Files
 
 - `widget.lua`: standalone bar and popup implementation
-- `policy.lua`: manual-upgrade policy shared with the inbox publisher
+
+The shared manual-upgrade rules come from the `brew-policy` library dependency.
 
 The alternative native-inbox presentation is the `inbox-brew` package. Install only one Homebrew presentation unless duplicate polling is intentional.
