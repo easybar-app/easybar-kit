@@ -14,7 +14,7 @@ easybar widgets install inbox-widgets
 | Package metadata | Value |
 | --- | --- |
 | Name | `inbox-widgets` |
-| Version | `0.2.0` |
+| Version | `0.3.0` |
 | Kind | `widget` |
 | Minimum EasyBar | `0.41.0` |
 | License | `Apache-2.0` |
@@ -30,6 +30,21 @@ easybar widgets install inbox-widgets
 `widget.lua` checks the official EasyBar widget registry and publishes available package updates to EasyBar's native inbox.
 
 Use **Update** on an inbox item to install that package's latest registry release. The source menu also provides a manual **Refresh** action; checks otherwise run every six hours and after wake or session activation.
+
+## Configuration
+
+The automatic check interval defaults to six hours and can be set from 5 minutes to 7 days:
+
+```toml
+[widgets.inbox-widgets]
+refresh_interval_minutes = 360
+```
+
+Reload EasyBar after changing it:
+
+```sh
+easybar config reload
+```
 
 Only packages whose recorded installation source matches a release in the official registry are checked. Packages installed from a local directory, custom archive, or another registry are left untouched.
 

@@ -99,7 +99,7 @@ easybar widgets install PACKAGE
 
 -   **[`inbox-widgets`](inbox-widgets.md)**
 
-    `widget` · `v0.2.0` · `inbox` · `system` · `utilities`
+    `widget` · `v0.3.0` · `inbox` · `system` · `utilities`
 
     ---
 
