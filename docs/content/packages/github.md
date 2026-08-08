@@ -11,16 +11,16 @@ GitHub notifications in a standalone popup.
 easybar widgets install github
 ```
 
-| Package metadata  | Value                              |
-| ----------------- | ---------------------------------- |
-| Name              | `github`                           |
-| Version           | `0.1.0`                            |
-| Kind              | `widget`                           |
-| Minimum EasyBar   | `0.41.0`                           |
-| License           | `Apache-2.0`                       |
-| Categories        | `developer-tools`, `notifications` |
-| Dependencies      | [`shared`](shared.md) `^0.1.0`     |
-| Required commands | `gh`                               |
+| Package metadata | Value |
+| --- | --- |
+| Name | `github` |
+| Version | `0.1.0` |
+| Kind | `widget` |
+| Minimum EasyBar | `0.41.0` |
+| License | `Apache-2.0` |
+| Categories | `developer-tools`, `notifications` |
+| Dependencies | [`shared`](shared.md) `^0.1.0` |
+| Required commands | `gh` |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/github)
 

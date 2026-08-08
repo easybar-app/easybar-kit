@@ -11,17 +11,17 @@ EasyBar package updates in the native inbox.
 easybar widgets install inbox-widgets
 ```
 
-| Package metadata  | Value                          |
-| ----------------- | ------------------------------ |
-| Name              | `inbox-widgets`                |
-| Version           | `0.6.0`                        |
-| Kind              | `widget`                       |
-| Minimum EasyBar   | `0.45.0`                       |
-| License           | `Apache-2.0`                   |
-| Categories        | `inbox`, `system`, `utilities` |
-| Dependencies      | [`shared`](shared.md) `^0.1.0` |
-| Required commands | `curl`, `easybar`              |
-| Native inbox      | Required                       |
+| Package metadata | Value |
+| --- | --- |
+| Name | `inbox-widgets` |
+| Version | `0.6.1` |
+| Kind | `widget` |
+| Minimum EasyBar | `0.45.0` |
+| License | `Apache-2.0` |
+| Categories | `inbox`, `system`, `utilities` |
+| Dependencies | [`shared`](shared.md) `^0.1.0` |
+| Required commands | `curl`, `easybar` |
+| Native inbox | Required |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-widgets)
 
