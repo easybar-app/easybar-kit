@@ -30,6 +30,7 @@ easybar inbox --help
 easybar inbox send --help
 easybar widgets search --help
 easybar widgets install --help
+easybar widgets installed --help
 easybar widgets outdated --help
 easybar widgets update --help
 easybar widgets uninstall --help
@@ -66,8 +67,8 @@ subcommand, option, and persistence rule.
 
 ## `easybar widgets`
 
-Search a registry, install or update packages, list outdated releases, and uninstall managed
-packages. See [Widget Packages](widget-packages.md) for package sources, integrity checks,
+Search a registry, install or update packages, list installed or outdated releases, and uninstall
+managed packages. See [Widget Packages](widget-packages.md) for package sources, integrity checks,
 dependencies, and manifest examples.
 
 ## `easybar config`

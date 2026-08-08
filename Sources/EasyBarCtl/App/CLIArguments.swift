@@ -260,6 +260,15 @@ private func parseCommand(
       )
     )
 
+  case .installedWidgetPackages:
+    return .installedWidgetPackages(
+      try parseInstalledWidgetPackageOptions(
+        arguments,
+        command: descriptor,
+        global: &global
+      )
+    )
+
   case .outdatedWidgetPackages:
     return .outdatedWidgetPackages(
       registry: try parseWidgetPackageRegistryOnlyOptions(
@@ -287,6 +296,54 @@ private func parseCommand(
       )
     )
   }
+}
+
+private func parseInstalledWidgetPackageOptions(
+  _ arguments: [String],
+  command: CLICommandDescriptor,
+  global: inout GlobalOptionState
+) throws -> InstalledWidgetPackageOptions {
+  var filter = InstalledWidgetPackageFilter.all
+  var json = false
+  var index = 0
+
+  while index < arguments.count {
+    let argument = arguments[index]
+    if CLI.packageWidgetsOnlyOption.matches(argument) {
+      guard filter != .libraries else {
+        throw AppError.message("--widgets-only and --libraries-only cannot be used together")
+      }
+      filter = .widgets
+      index += 1
+      continue
+    }
+    if CLI.packageLibrariesOnlyOption.matches(argument) {
+      guard filter != .widgets else {
+        throw AppError.message("--widgets-only and --libraries-only cannot be used together")
+      }
+      filter = .libraries
+      index += 1
+      continue
+    }
+    if CLI.jsonOption.matches(argument) {
+      json = true
+      index += 1
+      continue
+    }
+    if let nextIndex = try parseGlobalArgument(
+      argument,
+      arguments: arguments,
+      index: index,
+      state: &global,
+      helpTopic: command.path
+    ) {
+      index = nextIndex
+      continue
+    }
+    throw AppError.message("unknown widgets installed option '\(argument)'")
+  }
+
+  return InstalledWidgetPackageOptions(filter: filter, json: json)
 }
 
 private func parseWidgetPackageRegistryOnlyOptions(

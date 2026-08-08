@@ -39,6 +39,25 @@ easybar widgets search QUERY --registry https://example.com/easybar/index.json
 The live search results are the package catalog; the documentation does not maintain a duplicate
 list.
 
+## List installed packages
+
+Read the local package database and show every installed widget and library with its version:
+
+```bash
+easybar widgets installed
+```
+
+Filter by package kind or request machine-readable output:
+
+```bash
+easybar widgets installed --widgets-only
+easybar widgets installed --libraries-only
+easybar widgets installed --json
+```
+
+This command is offline and reports the versions recorded in
+`~/.local/share/easybar/packages/installed.json`.
+
 ## Check for and install updates
 
 List newer registry releases for installed packages without changing anything:

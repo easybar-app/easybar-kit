@@ -88,6 +88,7 @@ enum CLICommandKind: Equatable {
   case installWidgetPackage
   case uninstallWidgetPackage
   case searchWidgetPackages
+  case installedWidgetPackages
   case outdatedWidgetPackages
   case updateWidgetPackages
 
@@ -95,7 +96,8 @@ enum CLICommandKind: Equatable {
   var acceptsSocketOverride: Bool {
     switch self {
     case .logs, .restartAgent(.all), .versionAgent(.all), .installWidgetPackage,
-      .uninstallWidgetPackage, .searchWidgetPackages, .outdatedWidgetPackages,
+      .uninstallWidgetPackage, .searchWidgetPackages, .installedWidgetPackages,
+      .outdatedWidgetPackages,
       .updateWidgetPackages:
       return false
     default:
@@ -169,6 +171,19 @@ struct WidgetPackageSearchOptions: Equatable {
   let registry: String?
 }
 
+/// Package kinds selected by `easybar widgets installed`.
+enum InstalledWidgetPackageFilter: Equatable {
+  case all
+  case widgets
+  case libraries
+}
+
+/// Inputs accepted by `easybar widgets installed`.
+struct InstalledWidgetPackageOptions: Equatable {
+  let filter: InstalledWidgetPackageFilter
+  let json: Bool
+}
+
 /// Package selection accepted by `easybar widgets update`.
 enum WidgetPackageUpdateSelection: Equatable {
   case package(String)
@@ -193,6 +208,7 @@ enum CLIAction: Equatable {
   case installWidgetPackage(WidgetPackageInstallOptions)
   case uninstallWidgetPackage(String)
   case searchWidgetPackages(WidgetPackageSearchOptions)
+  case installedWidgetPackages(InstalledWidgetPackageOptions)
   case outdatedWidgetPackages(registry: String?)
   case updateWidgetPackages(WidgetPackageUpdateOptions)
 }
@@ -375,6 +391,16 @@ enum CLI {
     description: "Update every outdated registry-managed package"
   )
 
+  static let packageWidgetsOnlyOption = CLIOption(
+    flag: "--widgets-only",
+    description: "Show only installed widget packages"
+  )
+
+  static let packageLibrariesOnlyOption = CLIOption(
+    flag: "--libraries-only",
+    description: "Show only installed library packages"
+  )
+
   static let globalOptions = [socketOption, debugOption, versionOption, helpOption]
 
   static let logOptions = [
@@ -436,6 +462,12 @@ enum CLI {
       kind: .searchWidgetPackages,
       usageArguments: ["[query]"],
       options: [packageRegistryOption]
+    ),
+    .init(
+      path: ["widgets", "installed"],
+      description: "List installed widget and library packages",
+      kind: .installedWidgetPackages,
+      options: [packageWidgetsOnlyOption, packageLibrariesOnlyOption, jsonOption]
     ),
     .init(
       path: ["widgets", "outdated"],

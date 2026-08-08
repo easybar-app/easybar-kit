@@ -141,6 +141,39 @@ final class CLIArgumentsTests: XCTestCase {
     )
   }
 
+  func testWidgetPackageInstalledParsesFiltersAndJSON() throws {
+    XCTAssertEqual(
+      try parseArguments(["easybar", "widgets", "installed"]).action,
+      .installedWidgetPackages(InstalledWidgetPackageOptions(filter: .all, json: false))
+    )
+    XCTAssertEqual(
+      try parseArguments(["easybar", "widgets", "installed", "--widgets-only"]).action,
+      .installedWidgetPackages(InstalledWidgetPackageOptions(filter: .widgets, json: false))
+    )
+    XCTAssertEqual(
+      try parseArguments([
+        "easybar", "widgets", "installed", "--libraries-only", "--json",
+      ]).action,
+      .installedWidgetPackages(InstalledWidgetPackageOptions(filter: .libraries, json: true))
+    )
+  }
+
+  func testWidgetPackageInstalledRejectsAmbiguousArguments() {
+    XCTAssertThrowsError(
+      try parseArguments([
+        "easybar", "widgets", "installed", "--widgets-only", "--libraries-only",
+      ])
+    )
+    XCTAssertThrowsError(
+      try parseArguments(["easybar", "widgets", "installed", "unexpected"])
+    )
+    XCTAssertThrowsError(
+      try parseArguments([
+        "easybar", "widgets", "installed", "--socket", "/tmp/app.sock",
+      ])
+    )
+  }
+
   func testWidgetPackageOutdatedParsesOptionalRegistry() throws {
     XCTAssertEqual(
       try parseArguments(["easybar", "widgets", "outdated"]).action,

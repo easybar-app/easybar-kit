@@ -194,6 +194,44 @@ enum CLIOutput {
     }
   }
 
+  static func printInstalledWidgetPackages(
+    _ packages: [InstalledWidgetPackage],
+    json: Bool
+  ) throws {
+    if json {
+      let encoder = JSONEncoder()
+      encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+      let data = try encoder.encode(packages)
+      guard let output = String(data: data, encoding: .utf8) else {
+        throw AppError.commandFailed("failed to encode installed package output")
+      }
+      fputs(output + "\n", stdout)
+      return
+    }
+
+    fputs(installedWidgetPackagesText(packages) + "\n", stdout)
+  }
+
+  static func installedWidgetPackagesText(_ packages: [InstalledWidgetPackage]) -> String {
+    guard !packages.isEmpty else { return "No packages installed." }
+
+    let nameWidth = max("NAME".count, packages.map(\.name.count).max() ?? 0)
+    let versionWidth = max("VERSION".count, packages.map(\.version.count).max() ?? 0)
+
+    func row(name: String, version: String, kind: String) -> String {
+      let paddedName = name.padding(toLength: nameWidth, withPad: " ", startingAt: 0)
+      let paddedVersion = version.padding(toLength: versionWidth, withPad: " ", startingAt: 0)
+      return "\(paddedName)  \(paddedVersion)  \(kind)"
+    }
+
+    return
+      ([row(name: "NAME", version: "VERSION", kind: "KIND")]
+      + packages.map { package in
+        row(name: package.name, version: package.version, kind: package.kind.rawValue)
+      })
+      .joined(separator: "\n")
+  }
+
   static func printOutdatedWidgetPackages(_ packages: [OutdatedWidgetPackage]) {
     guard !packages.isEmpty else {
       fputs("All widget packages are up to date.\n", stdout)

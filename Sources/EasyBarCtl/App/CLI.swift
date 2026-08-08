@@ -82,6 +82,9 @@ private struct AppController {
       case .searchWidgetPackages(let options):
         try await searchWidgetPackages(options: options, context: context)
 
+      case .installedWidgetPackages(let options):
+        try listInstalledWidgetPackages(options: options, context: context)
+
       case .uninstallWidgetPackage(let name):
         try uninstallWidgetPackage(name: name, context: context)
 
