@@ -32,52 +32,52 @@ The default bar includes spaces, battery, Wi-Fi, and calendar widgets. Follow th
 
 <div class="grid cards" markdown>
 
--   :material-apple:{ .lg .middle } **Native macOS experience**
+- :material-apple:{ .lg .middle } **Native macOS experience**
 
-    ---
+  ***
 
-    SwiftUI rendering, native context menus, calendar and network integrations, and a menu bar
-    controller feel at home on macOS.
+  SwiftUI rendering, native context menus, calendar and network integrations, and a menu bar
+  controller feel at home on macOS.
 
-    [Explore built-ins](configuration/builtins.md)
+  [Explore built-ins](configuration/builtins.md)
 
--   :material-code-braces:{ .lg .middle } **Lua when you need it**
+- :material-code-braces:{ .lg .middle } **Lua when you need it**
 
-    ---
+  ***
 
-    Build custom widgets with events, timers, asynchronous commands, popups, groups, and persistent
-    settings—without rebuilding the app.
+  Build custom widgets with events, timers, asynchronous commands, popups, groups, and persistent
+  settings—without rebuilding the app.
 
-    [Create your first widget](lua/guides/first-widget.md)
+  [Create your first widget](lua/guides/first-widget.md)
 
--   :material-package-variant-closed:{ .lg .middle } **Installable packages**
+- :material-package-variant-closed:{ .lg .middle } **Installable packages**
 
-    ---
+  ***
 
-    Discover and install independently versioned widgets and reusable Lua libraries from the
-    optional package registry.
+  Discover and install independently versioned widgets and reusable Lua libraries from the
+  optional package registry.
 
-    [Browse packages](packages/index.md)
+  [Browse packages](packages/index.md)
 
--   :material-tune-variant:{ .lg .middle } **Designed to be yours**
+- :material-tune-variant:{ .lg .middle } **Designed to be yours**
 
-    ---
+  ***
 
-    Configure placement, groups, themes, built-ins, and behavior in TOML, then apply changes from
-    the CLI without restarting your workflow.
+  Configure placement, groups, themes, built-ins, and behavior in TOML, then apply changes from
+  the CLI without restarting your workflow.
 
-    [Configure EasyBar](configuration/overview.md)
+  [Configure EasyBar](configuration/overview.md)
 
 </div>
 
 ## Choose the right extension point
 
-| Use | Best for | Start here |
-| --- | --- | --- |
-| Native built-ins | Spaces, battery, Wi-Fi, calendar, time, date, volume, and front-app state | [Built-ins](configuration/builtins.md) |
-| Lua widgets | Custom display logic, commands, interactions, popups, and project-specific status | [Lua Widgets](lua/overview.md) |
-| Widget packages | Ready-made integrations and reusable Lua libraries | [Package Catalog](packages/index.md) |
-| CLI | Reloads, diagnostics, inbox publishing, package management, and automation | [CLI Reference](runtime/cli.md) |
+| Use              | Best for                                                                          | Start here                             |
+| ---------------- | --------------------------------------------------------------------------------- | -------------------------------------- |
+| Native built-ins | Spaces, battery, Wi-Fi, calendar, time, date, volume, and front-app state         | [Built-ins](configuration/builtins.md) |
+| Lua widgets      | Custom display logic, commands, interactions, popups, and project-specific status | [Lua Widgets](lua/overview.md)         |
+| Widget packages  | Ready-made integrations and reusable Lua libraries                                | [Package Catalog](packages/index.md)   |
+| CLI              | Reloads, diagnostics, inbox publishing, package management, and automation        | [CLI Reference](runtime/cli.md)        |
 
 ## See EasyBar in action
 

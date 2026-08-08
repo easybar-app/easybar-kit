@@ -17,125 +17,125 @@ easybar widgets install PACKAGE
 
 <div class="grid cards" markdown>
 
--   **[`brew`](brew.md)**
+- **[`brew`](brew.md)**
 
-    `widget` · `v0.2.0` · `developer-tools` · `system`
+  `widget` · `v0.2.0` · `developer-tools` · `system`
 
-    ---
+  ***
 
-    Homebrew updates and upgrades in a standalone popup.
+  Homebrew updates and upgrades in a standalone popup.
 
-    [Package details](brew.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/brew)
+  [Package details](brew.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/brew)
 
--   **[`brew-policy`](brew-policy.md)**
+- **[`brew-policy`](brew-policy.md)**
 
-    `library` · `v0.1.0` · `developer-tools` · `library` · `system`
+  `library` · `v0.1.0` · `developer-tools` · `library` · `system`
 
-    ---
+  ***
 
-    Shared Homebrew manual-upgrade policy for EasyBar widgets.
+  Shared Homebrew manual-upgrade policy for EasyBar widgets.
 
-    [Package details](brew-policy.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/brew-policy)
+  [Package details](brew-policy.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/brew-policy)
 
--   **[`caffeinate`](caffeinate.md)**
+- **[`caffeinate`](caffeinate.md)**
 
-    `widget` · `v0.1.0` · `system` · `utilities`
+  `widget` · `v0.1.0` · `system` · `utilities`
 
-    ---
+  ***
 
-    Keep macOS awake indefinitely or for a selected duration.
+  Keep macOS awake indefinitely or for a selected duration.
 
-    [Package details](caffeinate.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/caffeinate)
+  [Package details](caffeinate.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/caffeinate)
 
--   **[`github`](github.md)**
+- **[`github`](github.md)**
 
-    `widget` · `v0.1.0` · `developer-tools` · `notifications`
+  `widget` · `v0.1.0` · `developer-tools` · `notifications`
 
-    ---
+  ***
 
-    GitHub notifications in a standalone popup.
+  GitHub notifications in a standalone popup.
 
-    [Package details](github.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/github)
+  [Package details](github.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/github)
 
--   **[`gitlab`](gitlab.md)**
+- **[`gitlab`](gitlab.md)**
 
-    `widget` · `v0.1.0` · `developer-tools` · `notifications`
+  `widget` · `v0.1.0` · `developer-tools` · `notifications`
 
-    ---
+  ***
 
-    Assigned GitLab issues and merge requests in a standalone popup.
+  Assigned GitLab issues and merge requests in a standalone popup.
 
-    [Package details](gitlab.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/gitlab)
+  [Package details](gitlab.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/gitlab)
 
--   **[`inbox-brew`](inbox-brew.md)**
+- **[`inbox-brew`](inbox-brew.md)**
 
-    `widget` · `v0.3.0` · `developer-tools` · `inbox` · `system`
+  `widget` · `v0.3.0` · `developer-tools` · `inbox` · `system`
 
-    ---
+  ***
 
-    Homebrew updates and actions in EasyBar's native inbox.
+  Homebrew updates and actions in EasyBar's native inbox.
 
-    [Package details](inbox-brew.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-brew)
+  [Package details](inbox-brew.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-brew)
 
--   **[`inbox-github`](inbox-github.md)**
+- **[`inbox-github`](inbox-github.md)**
 
-    `widget` · `v0.3.0` · `developer-tools` · `inbox` · `notifications`
+  `widget` · `v0.3.0` · `developer-tools` · `inbox` · `notifications`
 
-    ---
+  ***
 
-    GitHub notifications and pull-request actions in EasyBar's native inbox.
+  GitHub notifications and pull-request actions in EasyBar's native inbox.
 
-    [Package details](inbox-github.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-github)
+  [Package details](inbox-github.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-github)
 
--   **[`inbox-gitlab`](inbox-gitlab.md)**
+- **[`inbox-gitlab`](inbox-gitlab.md)**
 
-    `widget` · `v0.3.0` · `developer-tools` · `inbox` · `notifications`
+  `widget` · `v0.3.0` · `developer-tools` · `inbox` · `notifications`
 
-    ---
+  ***
 
-    GitLab work items and merge-request actions in EasyBar's native inbox.
+  GitLab work items and merge-request actions in EasyBar's native inbox.
 
-    [Package details](inbox-gitlab.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-gitlab)
+  [Package details](inbox-gitlab.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-gitlab)
 
--   **[`inbox-widgets`](inbox-widgets.md)**
+- **[`inbox-widgets`](inbox-widgets.md)**
 
-    `widget` · `v0.6.0` · `inbox` · `system` · `utilities`
+  `widget` · `v0.6.0` · `inbox` · `system` · `utilities`
 
-    ---
+  ***
 
-    EasyBar package updates in the native inbox.
+  EasyBar package updates in the native inbox.
 
-    [Package details](inbox-widgets.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-widgets)
+  [Package details](inbox-widgets.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-widgets)
 
--   **[`shared`](shared.md)**
+- **[`shared`](shared.md)**
 
-    `library` · `v0.1.0` · `library`
+  `library` · `v0.1.0` · `library`
 
-    ---
+  ***
 
-    Shared text, retry, and native-inbox helpers for official EasyBar widgets.
+  Shared text, retry, and native-inbox helpers for official EasyBar widgets.
 
-    [Package details](shared.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/shared)
+  [Package details](shared.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/shared)
 
--   **[`tailscale`](tailscale.md)**
+- **[`tailscale`](tailscale.md)**
 
-    `widget` · `v0.1.0` · `network` · `system`
+  `widget` · `v0.1.0` · `network` · `system`
 
-    ---
+  ***
 
-    Tailscale status, connection controls, and exit-node selection.
+  Tailscale status, connection controls, and exit-node selection.
 
-    [Package details](tailscale.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/tailscale)
+  [Package details](tailscale.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/tailscale)
 
--   **[`wireguard`](wireguard.md)**
+- **[`wireguard`](wireguard.md)**
 
-    `widget` · `v0.1.0` · `network` · `system`
+  `widget` · `v0.1.0` · `network` · `system`
 
-    ---
+  ***
 
-    Control a macOS Network Extension VPN service with scutil.
+  Control a macOS Network Extension VPN service with scutil.
 
-    [Package details](wireguard.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/wireguard)
+  [Package details](wireguard.md) · [Source](https://github.com/easybar-app/widgets/tree/main/packages/wireguard)
 
 </div>
 

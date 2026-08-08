@@ -11,17 +11,17 @@ Homebrew updates and actions in EasyBar's native inbox.
 easybar widgets install inbox-brew
 ```
 
-| Package metadata | Value |
-| --- | --- |
-| Name | `inbox-brew` |
-| Version | `0.3.0` |
-| Kind | `widget` |
-| Minimum EasyBar | `0.45.0` |
-| License | `Apache-2.0` |
-| Categories | `developer-tools`, `inbox`, `system` |
-| Dependencies | [`brew-policy`](brew-policy.md) `^0.1.0`, [`shared`](shared.md) `^0.1.0` |
-| Required commands | `brew` |
-| Native inbox | Required |
+| Package metadata  | Value                                                                    |
+| ----------------- | ------------------------------------------------------------------------ |
+| Name              | `inbox-brew`                                                             |
+| Version           | `0.3.0`                                                                  |
+| Kind              | `widget`                                                                 |
+| Minimum EasyBar   | `0.45.0`                                                                 |
+| License           | `Apache-2.0`                                                             |
+| Categories        | `developer-tools`, `inbox`, `system`                                     |
+| Dependencies      | [`brew-policy`](brew-policy.md) `^0.1.0`, [`shared`](shared.md) `^0.1.0` |
+| Required commands | `brew`                                                                   |
+| Native inbox      | Required                                                                 |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-brew)
 
