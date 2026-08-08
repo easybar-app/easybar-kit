@@ -42,6 +42,6 @@ make install-widgets
 installer. It is not the package registry.
 
 To contribute an installable integration, follow the
-[widgets contribution guide](https://github.com/easybar-app/widgets#contributing-a-widget).
+[widgets contribution guide](contributing-widget.md).
 
 For process environment behavior, see [Environment](../../configuration/environment.md). For Lua-owned configuration under `[widgets.*]`, see [Widget Settings](storage.md).

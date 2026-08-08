@@ -80,6 +80,7 @@ nav:
           - Logging: lua/guides/logging.md
           - Examples: lua/guides/examples.md
           - Widget Packages And Examples: lua/guides/bundled-widgets.md
+          - Contributing A Widget: lua/guides/contributing-widget.md
           - Style Guidelines: lua/guides/style-guidelines.md
       - Reference:
           - Overview: lua/reference/index.md
