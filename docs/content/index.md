@@ -1,146 +1,124 @@
-# EasyBar
+<div class="easybar-hero" markdown>
 
-[![EasyBar screenshot](assets/bar.png)](assets/bar.png)
+<p class="easybar-hero__eyebrow">Native where it matters. Scriptable where you want it.</p>
 
-EasyBar is a lightweight, scriptable macOS status bar built with SwiftUI and Lua.
+# A macOS status bar that fits your workflow
 
-Use native built-ins for common system data such as spaces, battery, Wi-Fi, calendar, time, date, and volume. Add Lua widgets only when you need custom display logic, shell-command integration, or personal workflow behavior.
+EasyBar combines polished SwiftUI widgets with a Lua runtime, installable packages, and a practical
+CLI. Start with useful defaults, then shape every part of the bar around how you work.
 
-EasyBar is designed for a clean macOS workflow and integrates especially well with AeroSpace. EasyBar requires AeroSpace 0.21.0 or newer for AeroSpace-backed widgets.
+[Get started](getting-started/quick-start.md){ .md-button .md-button--primary }
+[Browse widget packages](lua/guides/bundled-widgets.md){ .md-button }
+[View on GitHub](https://github.com/easybar-app/easybar){ .md-button }
 
-## Start here
+[![EasyBar running across the macOS menu bar](assets/bar.png)](assets/bar.png)
 
-New users should follow the user path first:
+</div>
 
-1. [Quick Start](getting-started/quick-start.md): install EasyBar, start the services, verify that the bar responds, and optionally create a custom config.
-2. [Built-ins Vs Lua](getting-started/builtins-vs-lua.md): choose whether a widget belongs in `config.toml` or in a Lua file.
-3. [Configuration Overview](configuration/overview.md): learn where config lives and which pages explain each config area.
-4. [Lua Widgets](lua/overview.md): add custom widgets after the built-ins cover the basics.
-5. [Troubleshooting](runtime/troubleshooting.md): fix startup, service, config, permission, and runtime issues.
+## Running in a minute
 
-## Common tasks
+EasyBar works without a custom configuration. Install it with Homebrew and open the app:
 
-| Goal                            | Start with                                                    |
-| ------------------------------- | ------------------------------------------------------------- |
-| Install and see the bar         | [Quick Start](getting-started/quick-start.md)                 |
-| Find the runtime config path    | [Config Path](getting-started/configuration-path.md)          |
-| Enable native widgets           | [Built-ins](configuration/builtins.md)                        |
-| See all command-line controls   | [CLI Reference](runtime/cli.md)                               |
-| Group built-in widgets visually | [Native Groups](configuration/native-groups.md)               |
-| Pick or customize colors        | [Themes](configuration/themes.md)                             |
-| Add a custom widget             | [First Widget](lua/guides/first-widget.md)                    |
-| Browse packages and examples    | [Widget Packages And Examples](lua/guides/bundled-widgets.md) |
-| Debug a stuck bar               | [Troubleshooting](runtime/troubleshooting.md)                 |
-| Understand process boundaries   | [Internals](internals/overview.md)                            |
-
-## Features
-
-- Native macOS bar window built with SwiftUI
-- Configurable native widgets for spaces, applications, system status, calendar, and more
-- Object-style Lua widgets with events, timers, asynchronous commands, popups, and groups
-- Native right-click context menus for Lua widgets
-- Shared native inbox with unread state, grouping, persistence, Markdown, and publisher actions
-- File-based themes with bundled and custom TOML palettes
-- AeroSpace integration for spaces, focused app state, and layout mode state
-- Calendar and network helper agents for permission-sensitive data
-- Persistent menu bar controller and CLI commands for reloads, restarts, and diagnostics
-- Homebrew cask installation into `/Applications` with separate permission-agent services
-- Config-driven logging, troubleshooting diagnostics, and lightweight runtime metrics
-
-## How EasyBar is meant to be used
-
-Start with the native built-ins because they keep platform-sensitive behavior in Swift and require less maintenance. Use `config.toml` for placement, grouping, themes, and built-in behavior. Reach for Lua when a widget needs custom formatting, shell commands, custom interactions, or project-specific status.
-
-## Screenshots
-
-### Calendar
-
-The native [Calendar widget](configuration/builtins/calendar.md) can open a full month view from its
-time and date anchor. Days with events are marked for quick scanning.
-
-[![Calendar screenshot](assets/month.png){ .screenshot-compact .screenshot-month }](assets/month.png)
-
-### Upcoming
-
-The Calendar widget can also show upcoming events in a compact agenda, including their calendar,
-time, and location.
-
-[![Upcoming screenshot](assets/upcoming.png){ .screenshot-compact .screenshot-upcoming }](assets/upcoming.png)
-
-### Inbox
-
-The native [Inbox](configuration/builtins/inbox.md) collects notifications from Lua sources and the
-`easybar inbox` CLI. It can group them by source or category, and items may expose actions such as
-opening, dismissing, or marking them as read.
-
-[![Inbox screenshot](assets/inbox.png){ .screenshot-compact .screenshot-inbox }](assets/inbox.png)
-
-### CPU
-
-The CPU popup shows current processor activity and a short usage history. Its context menu provides
-controls for the refresh interval and history.
-
-[![CPU screenshot](assets/cpu.png){ .screenshot-compact .screenshot-cpu }](assets/cpu.png)
-
-### Wi-Fi
-
-The native [Wi-Fi widget](configuration/builtins/wifi.md) can display connection and network details
-such as the SSID, signal strength, and IP addresses.
-
-[![Wi-Fi screenshot](assets/wifi.png){ .screenshot-compact .screenshot-wifi }](assets/wifi.png)
-
-### Tailscale
-
-The Lua [Tailscale widget](https://github.com/easybar-app/widgets/blob/main/packages/tailscale/widget.lua)
-shows whether Tailscale is running and which exit node is active. Left-click the widget to start or
-stop Tailscale. Right-click it to select or disable an exit node, or to refresh the current status.
-
-#### Enabled with an exit node
-
-[![Tailscale enabled with an exit node](assets/tailscale_enabled.png){ .screenshot-compact .screenshot-tailscale }](assets/tailscale_enabled.png)
-
-#### Disabled
-
-[![Tailscale disabled](assets/tailscale_disabled.png){ .screenshot-compact .screenshot-tailscale }](assets/tailscale_disabled.png)
-
-### Spaces
-
-The native [Spaces widget](configuration/builtins/spaces.md) displays AeroSpace workspaces and
-highlights the currently focused workspace. This example shows the widget without Front App.
-
-[![Spaces screenshot](assets/spaces.png){ .screenshot-compact .screenshot-spaces }](assets/spaces.png)
-
-### Spaces with Front App
-
-When front-app display is enabled, the Spaces widget adds the focused application's icon and name
-beside the workspace buttons. The screenshot uses these layout settings:
-
-```toml
-[builtins.spaces.layout]
-hide_empty = false # Hides spaces that have no apps.
-show_label = true  # Shows the workspace label.
-show_icons = false # Shows app icons inside each space pill.
+```bash
+brew tap easybar-app/tap
+brew install --cask easybar-app/tap/easybar
+open -a EasyBar
 ```
 
-[![Spaces with Front app screenshot](assets/spaces_front_app.png){ .screenshot-compact .screenshot-spaces-front-app }](assets/spaces_front_app.png)
+The default bar includes spaces, battery, Wi-Fi, and calendar widgets. Follow the
+[Quick Start](getting-started/quick-start.md) when you are ready to customize it.
 
-### Native widget controls
+## Built for the space between native and scriptable
 
-Right-click empty space in the bar to open EasyBar's context menu. The **Native Widgets** submenu
-lets you enable or disable built-in widgets without editing the configuration file manually.
+<div class="grid cards" markdown>
 
-[![Native widget controls](assets/native_widgets.png){ .screenshot-compact .screenshot-native-widgets }](assets/native_widgets.png)
+-   :material-apple:{ .lg .middle } **Native macOS experience**
 
-### Custom context menu
+    ---
 
-Lua widgets can build custom context menus with nested actions, toggles, disabled entries, and
-keyboard shortcuts.
+    SwiftUI rendering, native context menus, calendar and network integrations, and a menu bar
+    controller feel at home on macOS.
 
-[![Context menu screenshot](assets/custom_context.png){ .screenshot-compact .screenshot-context }](assets/custom_context.png)
+    [Explore built-ins](configuration/builtins.md)
 
-### Top bar app context menu
+-   :material-code-braces:{ .lg .middle } **Lua when you need it**
 
-Right-clicking an application in the top bar opens controls for focusing, hiding, or quitting that
-application without leaving the current workspace.
+    ---
 
-[![Topbar App](assets/topbar_app.png){ .screenshot-compact .screenshot-topbar }](assets/topbar_app.png)
+    Build custom widgets with events, timers, asynchronous commands, popups, groups, and persistent
+    settings—without rebuilding the app.
+
+    [Create your first widget](lua/guides/first-widget.md)
+
+-   :material-package-variant-closed:{ .lg .middle } **Installable packages**
+
+    ---
+
+    Discover and install independently versioned widgets and reusable Lua libraries from the
+    optional package registry.
+
+    [Use widget packages](runtime/widget-packages.md)
+
+-   :material-tune-variant:{ .lg .middle } **Designed to be yours**
+
+    ---
+
+    Configure placement, groups, themes, built-ins, and behavior in TOML, then apply changes from
+    the CLI without restarting your workflow.
+
+    [Configure EasyBar](configuration/overview.md)
+
+</div>
+
+## Choose the right extension point
+
+| Use | Best for | Start here |
+| --- | --- | --- |
+| Native built-ins | Spaces, battery, Wi-Fi, calendar, time, date, volume, and front-app state | [Built-ins](configuration/builtins.md) |
+| Lua widgets | Custom display logic, commands, interactions, popups, and project-specific status | [Lua Widgets](lua/overview.md) |
+| Widget packages | Ready-made integrations and reusable Lua libraries | [Widget Packages](runtime/widget-packages.md) |
+| CLI | Reloads, diagnostics, inbox publishing, package management, and automation | [CLI Reference](runtime/cli.md) |
+
+## See EasyBar in action
+
+<div class="easybar-showcase" markdown>
+
+<figure markdown>
+[![Calendar month popup](assets/month.png){ .screenshot-compact .screenshot-month }](assets/month.png)
+<figcaption>Calendar month view with event indicators</figcaption>
+</figure>
+
+<figure markdown>
+[![Upcoming calendar events](assets/upcoming.png){ .screenshot-compact .screenshot-upcoming }](assets/upcoming.png)
+<figcaption>A compact agenda for upcoming events</figcaption>
+</figure>
+
+<figure markdown>
+[![EasyBar native inbox](assets/inbox.png){ .screenshot-compact .screenshot-inbox }](assets/inbox.png)
+<figcaption>One actionable inbox for multiple sources</figcaption>
+</figure>
+
+<figure markdown>
+[![EasyBar Wi-Fi details](assets/wifi.png){ .screenshot-compact .screenshot-wifi }](assets/wifi.png)
+<figcaption>Native network details at a glance</figcaption>
+</figure>
+
+</div>
+
+## Go further
+
+- Integrate AeroSpace workspaces and focused-app state with [Spaces](configuration/builtins/spaces.md).
+- Create a cohesive layout with [Native Groups](configuration/native-groups.md) and [Themes](configuration/themes.md).
+- Publish actionable notifications through the shared [Inbox](configuration/builtins/inbox.md).
+- Diagnose startup, permissions, and runtime issues with [Troubleshooting](runtime/troubleshooting.md).
+- Understand the process model and extension boundaries in [Internals](internals/overview.md).
+
+<div class="easybar-home-cta" markdown>
+
+### Make the bar work the way you do
+
+Install EasyBar, keep the useful defaults, and customize only what makes your workflow better.
+
+[Start with EasyBar](getting-started/quick-start.md){ .md-button .md-button--primary }
+
+</div>
