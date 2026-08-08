@@ -20,18 +20,18 @@ New users should follow the user path first:
 
 ## Common tasks
 
-| Goal                            | Start with                                           |
-| ------------------------------- | ---------------------------------------------------- |
-| Install and see the bar         | [Quick Start](getting-started/quick-start.md)        |
-| Find the runtime config path    | [Config Path](getting-started/configuration-path.md) |
-| Enable native widgets           | [Built-ins](configuration/builtins.md)               |
-| See all command-line controls   | [CLI Reference](runtime/cli.md)                      |
-| Group built-in widgets visually | [Native Groups](configuration/native-groups.md)      |
-| Pick or customize colors        | [Themes](configuration/themes.md)                    |
-| Add a custom widget             | [First Widget](lua/guides/first-widget.md)           |
+| Goal                            | Start with                                                    |
+| ------------------------------- | ------------------------------------------------------------- |
+| Install and see the bar         | [Quick Start](getting-started/quick-start.md)                 |
+| Find the runtime config path    | [Config Path](getting-started/configuration-path.md)          |
+| Enable native widgets           | [Built-ins](configuration/builtins.md)                        |
+| See all command-line controls   | [CLI Reference](runtime/cli.md)                               |
+| Group built-in widgets visually | [Native Groups](configuration/native-groups.md)               |
+| Pick or customize colors        | [Themes](configuration/themes.md)                             |
+| Add a custom widget             | [First Widget](lua/guides/first-widget.md)                    |
 | Browse packages and examples    | [Widget Packages And Examples](lua/guides/bundled-widgets.md) |
-| Debug a stuck bar               | [Troubleshooting](runtime/troubleshooting.md)        |
-| Understand process boundaries   | [Internals](internals/overview.md)                   |
+| Debug a stuck bar               | [Troubleshooting](runtime/troubleshooting.md)                 |
+| Understand process boundaries   | [Internals](internals/overview.md)                            |
 
 ## Features
 
