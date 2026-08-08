@@ -1,10 +1,10 @@
 # Widget Packages
 
-EasyBar can install a package by its registry name, from a local directory, or from a direct archive. The registry is a convenience for discovery and dependency resolution; a package does not need to be published there.
+EasyBar can install a package by its registry name, from a local directory, or from a direct archive. The [official registry](https://github.com/easybar-app/widget-registry) is a metadata-only catalog for discovery and dependency resolution; package source and release archives remain in their owning repositories. A package does not need to be published in a registry.
 
 ## Install an official package
 
-Use a bare package name to resolve the latest immutable release from the official registry:
+Use a bare package name to resolve the latest immutable release from the official registry. Source for the official packages lives in the separate [widgets repository](https://github.com/easybar-app/widgets):
 
 ```bash
 easybar widgets install caffeinate

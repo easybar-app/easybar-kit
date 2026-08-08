@@ -9,6 +9,7 @@ native widgets with custom Lua widgets and integrates with AeroSpace.
 
 - Native widgets for spaces, apps, system status, calendar, and more
 - Scriptable Lua widgets with events, popups, groups, and context menus
+- Installable Lua widgets and libraries from the official package registry
 - Shared inbox with unread state, grouping, Markdown, and widget actions
 - File-based TOML themes and comment-preserving configuration updates
 - AeroSpace integration and separate calendar and network helper agents
@@ -42,6 +43,7 @@ The full documentation is available at
 - [Configuration](https://easybar-app.github.io/easybar/configuration/overview/)
 - [Themes](https://easybar-app.github.io/easybar/configuration/themes/)
 - [Lua widgets](https://easybar-app.github.io/easybar/lua/overview/)
+- [Widget packages](https://easybar-app.github.io/easybar/runtime/widget-packages/)
 - [Runtime and troubleshooting](https://easybar-app.github.io/easybar/runtime/troubleshooting/)
 - [Development](https://easybar-app.github.io/easybar/internals/development/)
 
