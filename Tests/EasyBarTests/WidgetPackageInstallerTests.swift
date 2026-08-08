@@ -113,7 +113,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
       "registry_version": 1,
       "packages": [{
         "name": "caffeinate",
+        "kind": "widget",
         "latest": "1.0.0",
+        "description": "Keep macOS awake.",
+        "categories": ["system"],
         "versions": [{
           "version": "1.0.0",
           "archive": "\(archive.absoluteString)",

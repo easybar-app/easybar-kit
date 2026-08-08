@@ -78,6 +78,9 @@ private struct AppController {
 
       case .installWidgetPackage(let options):
         try await installWidgetPackage(options: options, context: context)
+
+      case .searchWidgetPackages(let options):
+        try await searchWidgetPackages(options: options, context: context)
       }
 
       return 0

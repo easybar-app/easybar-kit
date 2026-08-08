@@ -86,11 +86,13 @@ enum CLICommandKind: Equatable {
   case emitEvent
   case inbox(InboxCLIVerb)
   case installWidgetPackage
+  case searchWidgetPackages
 
   /// Whether this command can target one explicit Unix socket.
   var acceptsSocketOverride: Bool {
     switch self {
-    case .logs, .restartAgent(.all), .versionAgent(.all), .installWidgetPackage:
+    case .logs, .restartAgent(.all), .versionAgent(.all), .installWidgetPackage,
+      .searchWidgetPackages:
       return false
     default:
       return true
@@ -157,6 +159,12 @@ struct WidgetPackageInstallOptions: Equatable {
   let useRegistry: Bool
 }
 
+/// Inputs accepted by `easybar widgets search`.
+struct WidgetPackageSearchOptions: Equatable {
+  let query: String?
+  let registry: String?
+}
+
 /// Supported top-level CLI actions after command-specific options are parsed.
 enum CLIAction: Equatable {
   case control(IPC.Command)
@@ -167,6 +175,7 @@ enum CLIAction: Equatable {
   case logs(LogCommandOptions)
   case inbox(InboxCLICommand)
   case installWidgetPackage(WidgetPackageInstallOptions)
+  case searchWidgetPackages(WidgetPackageSearchOptions)
 }
 
 /// Parsed command-line configuration.
@@ -361,7 +370,7 @@ enum CLI {
     .init(name: "logs", description: "Show retained and live process logs"),
     .init(name: "metrics", description: "Show runtime metrics"),
     .init(name: "inbox", description: "Manage native inbox messages"),
-    .init(name: "widgets", description: "Install Lua widget packages"),
+    .init(name: "widgets", description: "Find and manage Lua widget packages"),
     .init(name: "config", description: "Reload or validate configuration"),
     .init(name: "runtime", description: "Manage the Lua widget runtime"),
     .init(name: "agent", description: "Manage calendar and network agents"),
@@ -396,6 +405,13 @@ enum CLI {
         packageRegistryOption,
         packageNoRegistryOption,
       ]
+    ),
+    .init(
+      path: ["widgets", "search"],
+      description: "Search packages in a widget registry",
+      kind: .searchWidgetPackages,
+      usageArguments: ["[query]"],
+      options: [packageRegistryOption]
     ),
     .init(
       path: ["inbox", "send"],

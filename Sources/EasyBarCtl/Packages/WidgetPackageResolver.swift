@@ -9,10 +9,8 @@ private enum WidgetPackageRequest {
 }
 
 final class WidgetPackageResolver {
-  static let defaultRegistry =
-    "https://raw.githubusercontent.com/easybar-app/widget-registry/main/index.json"
+  static let defaultRegistry = WidgetPackageRegistryLoader.defaultSource
   private static let maximumArchiveBytes = 20 * 1_024 * 1_024
-  private static let maximumRegistryBytes = 5 * 1_024 * 1_024
 
   private let registrySource: String?
   private let useRegistry: Bool
@@ -196,18 +194,7 @@ final class WidgetPackageResolver {
 
   private func registryIndex() async throws -> PackageRegistryIndex {
     if let registry { return registry }
-    let source = registrySource ?? Self.defaultRegistry
-    let url = try sourceURL(source)
-    let data = try await loadData(from: url, maximumBytes: Self.maximumRegistryBytes)
-    let decoded: PackageRegistryIndex
-    do {
-      decoded = try JSONDecoder().decode(PackageRegistryIndex.self, from: data)
-    } catch {
-      throw WidgetPackageError.invalidRegistry(error.localizedDescription)
-    }
-    guard decoded.registryVersion == 1 else {
-      throw WidgetPackageError.invalidRegistry("registry_version must be 1")
-    }
+    let decoded = try await WidgetPackageRegistryLoader().load(source: registrySource)
     registry = decoded
     return decoded
   }
@@ -308,15 +295,6 @@ final class WidgetPackageResolver {
       throw WidgetPackageError.archiveTooLarge(maximumBytes)
     }
     return data
-  }
-
-  private func sourceURL(_ source: String) throws -> URL {
-    if let remote = remoteURL(source) { return remote }
-    let path = NSString(string: source).expandingTildeInPath
-    guard FileManager.default.fileExists(atPath: path) else {
-      throw WidgetPackageError.invalidRegistry("source does not exist: \(source)")
-    }
-    return URL(fileURLWithPath: path)
   }
 
   private func remoteURL(_ source: String) -> URL? {

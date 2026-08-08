@@ -178,4 +178,19 @@ enum CLIOutput {
       if let url = item.url, !url.isEmpty { fputs("  url: \(url)\n", stdout) }
     }
   }
+
+  static func printWidgetPackageSearchResults(_ packages: [PackageRegistryEntry]) {
+    guard !packages.isEmpty else {
+      fputs("No widget packages found.\n", stdout)
+      return
+    }
+
+    for package in packages {
+      fputs("\(package.name) \(package.latest) (\(package.kind.rawValue))\n", stdout)
+      fputs("  \(package.description)\n", stdout)
+      if !package.categories.isEmpty {
+        fputs("  categories: \(package.categories.joined(separator: ", "))\n", stdout)
+      }
+    }
+  }
 }

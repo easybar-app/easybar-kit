@@ -115,6 +115,32 @@ final class CLIArgumentsTests: XCTestCase {
     )
   }
 
+  func testWidgetPackageSearchParsesOptionalQueryAndRegistry() throws {
+    XCTAssertEqual(
+      try parseArguments(["easybar", "widgets", "search"]).action,
+      .searchWidgetPackages(WidgetPackageSearchOptions(query: nil, registry: nil))
+    )
+    XCTAssertEqual(
+      try parseArguments([
+        "easybar", "widgets", "search", "network", "--registry", "index.json",
+      ]).action,
+      .searchWidgetPackages(
+        WidgetPackageSearchOptions(query: "network", registry: "index.json")
+      )
+    )
+  }
+
+  func testWidgetPackageSearchRejectsAmbiguousArguments() {
+    XCTAssertThrowsError(
+      try parseArguments(["easybar", "widgets", "search", "network", "system"])
+    )
+    XCTAssertThrowsError(
+      try parseArguments([
+        "easybar", "widgets", "search", "--socket", "/tmp/app.sock",
+      ])
+    )
+  }
+
   func testAgentRestartTargetsParse() throws {
     XCTAssertEqual(
       try parseArguments(["easybar", "agent", "restart", "calendar"]).action,

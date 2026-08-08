@@ -250,7 +250,60 @@ private func parseCommand(
         global: &global
       )
     )
+
+  case .searchWidgetPackages:
+    return .searchWidgetPackages(
+      try parseWidgetPackageSearchOptions(
+        arguments,
+        command: descriptor,
+        global: &global
+      )
+    )
   }
+}
+
+private func parseWidgetPackageSearchOptions(
+  _ arguments: [String],
+  command: CLICommandDescriptor,
+  global: inout GlobalOptionState
+) throws -> WidgetPackageSearchOptions {
+  var query: String?
+  var registry: String?
+  var index = 0
+
+  while index < arguments.count {
+    let argument = arguments[index]
+    if let parsed = try parseValueArgument(
+      option: CLI.packageRegistryOption,
+      argument,
+      arguments: arguments,
+      index: index
+    ) {
+      registry = parsed.value
+      index = parsed.nextIndex
+      continue
+    }
+    if let nextIndex = try parseGlobalArgument(
+      argument,
+      arguments: arguments,
+      index: index,
+      state: &global,
+      helpTopic: command.path
+    ) {
+      index = nextIndex
+      continue
+    }
+    guard !argument.hasPrefix("-") else {
+      throw AppError.message("unknown widgets search option '\(argument)'")
+    }
+    guard query == nil else {
+      throw AppError.message("widgets search accepts at most one query")
+    }
+    query = argument
+    index += 1
+  }
+
+  return WidgetPackageSearchOptions(query: query, registry: registry)
 }
 
 private func parseWidgetPackageInstallOptions(
