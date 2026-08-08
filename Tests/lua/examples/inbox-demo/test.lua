@@ -12,11 +12,11 @@ state:run_next_timer()
 assert(not state:has_busy_source_action(), "Inbox demo refresh must clear source activity")
 assert(#state.items == 10, "Inbox demo refresh must publish the complete snapshot")
 assert(state:item("github-review") ~= nil, "Inbox demo must publish the review item")
-
-state.action_handler({ action_id = "dismiss", target_widget_id = "github-review" })
-assert(state:item_action_is_busy("github-review", "dismiss"), "Inbox demo dismiss must show item activity")
-state:run_next_timer()
-assert(state:item("github-review") == nil, "Inbox demo dismiss must remove the selected item")
+for _, item in ipairs(state.items) do
+	assert(not state:item_has_action(item.id, "open"), "Inbox demo must not duplicate the native Open action")
+	assert(not state:item_has_action(item.id, "mark_read"), "Inbox demo must not duplicate the native read action")
+	assert(not state:item_has_action(item.id, "dismiss"), "Inbox demo must not duplicate the native Dismiss action")
+end
 
 state.context_action_handler({ action_id = "clear" })
 assert(#state.items == 0, "Inbox demo clear must remove the snapshot")

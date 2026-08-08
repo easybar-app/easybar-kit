@@ -11,17 +11,17 @@ GitHub notifications and pull-request actions in EasyBar's native inbox.
 easybar widgets install inbox-github
 ```
 
-| Package metadata | Value |
-| --- | --- |
-| Name | `inbox-github` |
-| Version | `0.3.1` |
-| Kind | `widget` |
-| Minimum EasyBar | `0.45.0` |
-| License | `Apache-2.0` |
-| Categories | `developer-tools`, `inbox`, `notifications` |
-| Dependencies | [`shared`](shared.md) `^0.1.0` |
-| Required commands | `gh` |
-| Native inbox | Required |
+| Package metadata  | Value                                       |
+| ----------------- | ------------------------------------------- |
+| Name              | `inbox-github`                              |
+| Version           | `0.3.1`                                     |
+| Kind              | `widget`                                    |
+| Minimum EasyBar   | `0.45.0`                                    |
+| License           | `Apache-2.0`                                |
+| Categories        | `developer-tools`, `inbox`, `notifications` |
+| Dependencies      | [`shared`](shared.md) `^0.1.0`              |
+| Required commands | `gh`                                        |
+| Native inbox      | Required                                    |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-github)
 

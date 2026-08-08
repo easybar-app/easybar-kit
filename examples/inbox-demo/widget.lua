@@ -38,7 +38,6 @@ local DEMO_ITEMS = {
 		severity = "success",
 		unread = true,
 		source = GITHUB,
-		actions = { { id = "dismiss", title = "Dismiss" } },
 	},
 	{
 		id = "github-security",
@@ -80,7 +79,6 @@ local DEMO_ITEMS = {
 		severity = "success",
 		unread = true,
 		source = GITLAB,
-		actions = { { id = "dismiss", title = "Dismiss" } },
 	},
 	{
 		id = "gitlab-issue",
@@ -101,7 +99,6 @@ local DEMO_ITEMS = {
 		severity = "info",
 		unread = false,
 		source = HOMEBREW,
-		actions = { { id = "dismiss", title = "Dismiss" } },
 	},
 	{
 		id = "brew-manual-cask",
@@ -138,18 +135,6 @@ local DEMO_ITEMS = {
 ---@type EasyBarInboxItem[]
 local items = {}
 local source_busy = false
-local busy_item_id = nil
-
-local function copy_actions(actions)
-	local copy = {}
-	for _, action in ipairs(actions or {}) do
-		copy[#copy + 1] = {
-			id = action.id,
-			title = action.title,
-		}
-	end
-	return copy
-end
 
 local function copy_item(item)
 	return {
@@ -164,7 +149,6 @@ local function copy_item(item)
 		dismissible = item.dismissible,
 		source = item.source,
 		url = item.url,
-		actions = copy_actions(item.actions),
 	}
 end
 
@@ -195,40 +179,10 @@ end
 local function publish()
 	local snapshot = {}
 	for _, item in ipairs(items) do
-		local published = copy_item(item)
-		if published.id == busy_item_id then
-			published.actions = {
-				{ id = "dismiss", title = "Dismissing…", enabled = false, busy = true },
-			}
-		end
-		snapshot[#snapshot + 1] = published
+		snapshot[#snapshot + 1] = copy_item(item)
 	end
 	easybar.inbox.replace(SOURCE, snapshot)
 end
-
----Removes one demo item after showing an item-scoped activity spinner.
----@param event EasyBarInboxActionEvent
-local function handle_action(event)
-	if event.action_id ~= "dismiss" or busy_item_id ~= nil then
-		return
-	end
-
-	busy_item_id = event.target_widget_id
-	publish()
-
-	easybar.after(DEMO_DELAY_SECONDS, function()
-		for index = #items, 1, -1 do
-			if items[index].id == busy_item_id then
-				table.remove(items, index)
-				break
-			end
-		end
-		busy_item_id = nil
-		publish()
-	end)
-end
-
-easybar.inbox.on_action(SOURCE, handle_action)
 configure_source_actions()
 
 easybar.inbox.on_context_action(SOURCE, function(event)
@@ -243,7 +197,6 @@ easybar.inbox.on_context_action(SOURCE, function(event)
 		end)
 	elseif event.action_id == "clear" then
 		items = {}
-		busy_item_id = nil
 		publish()
 	end
 end)
