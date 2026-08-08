@@ -141,6 +141,54 @@ final class CLIArgumentsTests: XCTestCase {
     )
   }
 
+  func testWidgetPackageOutdatedParsesOptionalRegistry() throws {
+    XCTAssertEqual(
+      try parseArguments(["easybar", "widgets", "outdated"]).action,
+      .outdatedWidgetPackages(registry: nil)
+    )
+    XCTAssertEqual(
+      try parseArguments([
+        "easybar", "widgets", "outdated", "--registry", "index.json",
+      ]).action,
+      .outdatedWidgetPackages(registry: "index.json")
+    )
+    XCTAssertThrowsError(
+      try parseArguments(["easybar", "widgets", "outdated", "unexpected"])
+    )
+  }
+
+  func testWidgetPackageUpdateParsesOnePackageOrAll() throws {
+    XCTAssertEqual(
+      try parseArguments(["easybar", "widgets", "update", "inbox-widgets"]).action,
+      .updateWidgetPackages(
+        WidgetPackageUpdateOptions(selection: .package("inbox-widgets"), registry: nil)
+      )
+    )
+    XCTAssertEqual(
+      try parseArguments([
+        "easybar", "widgets", "update", "--all", "--registry", "index.json",
+      ]).action,
+      .updateWidgetPackages(
+        WidgetPackageUpdateOptions(selection: .all, registry: "index.json")
+      )
+    )
+  }
+
+  func testWidgetPackageUpdateRejectsAmbiguousSelection() {
+    XCTAssertThrowsError(try parseArguments(["easybar", "widgets", "update"]))
+    XCTAssertThrowsError(
+      try parseArguments(["easybar", "widgets", "update", "--all", "inbox-widgets"])
+    )
+    XCTAssertThrowsError(
+      try parseArguments(["easybar", "widgets", "update", "inbox-widgets", "shared"])
+    )
+    XCTAssertThrowsError(
+      try parseArguments([
+        "easybar", "widgets", "update", "--all", "--socket", "/tmp/app.sock",
+      ])
+    )
+  }
+
   func testWidgetPackageUninstallParsesOnePackageName() throws {
     XCTAssertEqual(
       try parseArguments(["easybar", "widgets", "uninstall", "caffeinate"]).action,

@@ -260,6 +260,24 @@ private func parseCommand(
       )
     )
 
+  case .outdatedWidgetPackages:
+    return .outdatedWidgetPackages(
+      registry: try parseWidgetPackageRegistryOnlyOptions(
+        arguments,
+        command: descriptor,
+        global: &global
+      )
+    )
+
+  case .updateWidgetPackages:
+    return .updateWidgetPackages(
+      try parseWidgetPackageUpdateOptions(
+        arguments,
+        command: descriptor,
+        global: &global
+      )
+    )
+
   case .uninstallWidgetPackage:
     return .uninstallWidgetPackage(
       try parseWidgetPackageUninstallName(
@@ -269,6 +287,100 @@ private func parseCommand(
       )
     )
   }
+}
+
+private func parseWidgetPackageRegistryOnlyOptions(
+  _ arguments: [String],
+  command: CLICommandDescriptor,
+  global: inout GlobalOptionState
+) throws -> String? {
+  var registry: String?
+  var index = 0
+
+  while index < arguments.count {
+    let argument = arguments[index]
+    if let parsed = try parseValueArgument(
+      option: CLI.packageRegistryOption,
+      argument,
+      arguments: arguments,
+      index: index
+    ) {
+      registry = parsed.value
+      index = parsed.nextIndex
+      continue
+    }
+    if let nextIndex = try parseGlobalArgument(
+      argument,
+      arguments: arguments,
+      index: index,
+      state: &global,
+      helpTopic: command.path
+    ) {
+      index = nextIndex
+      continue
+    }
+    throw AppError.message("unknown \(command.commandText) option '\(argument)'")
+  }
+
+  return registry
+}
+
+private func parseWidgetPackageUpdateOptions(
+  _ arguments: [String],
+  command: CLICommandDescriptor,
+  global: inout GlobalOptionState
+) throws -> WidgetPackageUpdateOptions {
+  var name: String?
+  var updateAll = false
+  var registry: String?
+  var index = 0
+
+  while index < arguments.count {
+    let argument = arguments[index]
+    if CLI.packageUpdateAllOption.matches(argument) {
+      updateAll = true
+      index += 1
+      continue
+    }
+    if let parsed = try parseValueArgument(
+      option: CLI.packageRegistryOption,
+      argument,
+      arguments: arguments,
+      index: index
+    ) {
+      registry = parsed.value
+      index = parsed.nextIndex
+      continue
+    }
+    if let nextIndex = try parseGlobalArgument(
+      argument,
+      arguments: arguments,
+      index: index,
+      state: &global,
+      helpTopic: command.path
+    ) {
+      index = nextIndex
+      continue
+    }
+    guard !argument.hasPrefix("-") else {
+      throw AppError.message("unknown widgets update option '\(argument)'")
+    }
+    guard name == nil else {
+      throw AppError.message("widgets update accepts exactly one package name or --all")
+    }
+    name = argument
+    index += 1
+  }
+
+  let selection: WidgetPackageUpdateSelection
+  if updateAll, name == nil {
+    selection = .all
+  } else if !updateAll, let name {
+    selection = .package(name)
+  } else {
+    throw AppError.message("widgets update requires exactly one package name or --all")
+  }
+  return WidgetPackageUpdateOptions(selection: selection, registry: registry)
 }
 
 private func parseWidgetPackageUninstallName(

@@ -88,12 +88,15 @@ enum CLICommandKind: Equatable {
   case installWidgetPackage
   case uninstallWidgetPackage
   case searchWidgetPackages
+  case outdatedWidgetPackages
+  case updateWidgetPackages
 
   /// Whether this command can target one explicit Unix socket.
   var acceptsSocketOverride: Bool {
     switch self {
     case .logs, .restartAgent(.all), .versionAgent(.all), .installWidgetPackage,
-      .uninstallWidgetPackage, .searchWidgetPackages:
+      .uninstallWidgetPackage, .searchWidgetPackages, .outdatedWidgetPackages,
+      .updateWidgetPackages:
       return false
     default:
       return true
@@ -166,6 +169,18 @@ struct WidgetPackageSearchOptions: Equatable {
   let registry: String?
 }
 
+/// Package selection accepted by `easybar widgets update`.
+enum WidgetPackageUpdateSelection: Equatable {
+  case package(String)
+  case all
+}
+
+/// Inputs accepted by `easybar widgets update`.
+struct WidgetPackageUpdateOptions: Equatable {
+  let selection: WidgetPackageUpdateSelection
+  let registry: String?
+}
+
 /// Supported top-level CLI actions after command-specific options are parsed.
 enum CLIAction: Equatable {
   case control(IPC.Command)
@@ -178,6 +193,8 @@ enum CLIAction: Equatable {
   case installWidgetPackage(WidgetPackageInstallOptions)
   case uninstallWidgetPackage(String)
   case searchWidgetPackages(WidgetPackageSearchOptions)
+  case outdatedWidgetPackages(registry: String?)
+  case updateWidgetPackages(WidgetPackageUpdateOptions)
 }
 
 /// Parsed command-line configuration.
@@ -353,6 +370,11 @@ enum CLI {
     description: "Do not resolve missing dependencies from a registry"
   )
 
+  static let packageUpdateAllOption = CLIOption(
+    flag: "--all",
+    description: "Update every outdated registry-managed package"
+  )
+
   static let globalOptions = [socketOption, debugOption, versionOption, helpOption]
 
   static let logOptions = [
@@ -414,6 +436,19 @@ enum CLI {
       kind: .searchWidgetPackages,
       usageArguments: ["[query]"],
       options: [packageRegistryOption]
+    ),
+    .init(
+      path: ["widgets", "outdated"],
+      description: "List installed packages with available registry updates",
+      kind: .outdatedWidgetPackages,
+      options: [packageRegistryOption]
+    ),
+    .init(
+      path: ["widgets", "update"],
+      description: "Update one or all outdated registry-managed packages",
+      kind: .updateWidgetPackages,
+      usageArguments: ["<name>|--all"],
+      options: [packageUpdateAllOption, packageRegistryOption]
     ),
     .init(
       path: ["widgets", "uninstall"],

@@ -193,4 +193,43 @@ enum CLIOutput {
       }
     }
   }
+
+  static func printOutdatedWidgetPackages(_ packages: [OutdatedWidgetPackage]) {
+    guard !packages.isEmpty else {
+      fputs("All widget packages are up to date.\n", stdout)
+      return
+    }
+
+    for package in packages {
+      fputs(
+        "\(package.name) \(package.installedVersion) -> \(package.availableVersion) "
+          + "(\(package.kind.rawValue))\n",
+        stdout
+      )
+    }
+  }
+
+  static func printWidgetPackageChanges(_ changes: [WidgetPackageChange]) {
+    guard !changes.isEmpty else {
+      fputs("All selected widget packages are up to date.\n", stdout)
+      return
+    }
+
+    for change in changes {
+      if let previousVersion = change.previousVersion {
+        fputs(
+          "Updated \(change.package.name) \(previousVersion) -> \(change.package.version) "
+            + "(\(change.package.kind.rawValue))\n",
+          stdout
+        )
+      } else {
+        fputs(
+          "Installed \(change.package.name) \(change.package.version) "
+            + "(\(change.package.kind.rawValue))\n",
+          stdout
+        )
+      }
+    }
+    fputs("Reload EasyBar with: easybar config reload\n", stdout)
+  }
 }

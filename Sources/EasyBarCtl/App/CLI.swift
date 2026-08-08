@@ -84,6 +84,12 @@ private struct AppController {
 
       case .uninstallWidgetPackage(let name):
         try uninstallWidgetPackage(name: name, context: context)
+
+      case .outdatedWidgetPackages(let registry):
+        try await listOutdatedWidgetPackages(registrySource: registry, context: context)
+
+      case .updateWidgetPackages(let options):
+        try await updateWidgetPackages(options: options, context: context)
       }
 
       return 0

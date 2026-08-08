@@ -39,6 +39,27 @@ easybar widgets search QUERY --registry https://example.com/easybar/index.json
 The live search results are the package catalog; the documentation does not maintain a duplicate
 list.
 
+## Check for and install updates
+
+List newer registry releases for installed packages without changing anything:
+
+```bash
+easybar widgets outdated
+```
+
+Update one package or every outdated package, then reload EasyBar:
+
+```bash
+easybar widgets update PACKAGE_NAME
+easybar widgets update --all
+easybar config reload
+```
+
+Pass `--registry` to any of these commands to use another remote or local registry. Updates only
+apply to packages whose recorded installation source matches a release in that registry. Locally
+created packages and packages installed from unrelated archives are never replaced by `update
+--all`.
+
 ## Install a self-created package
 
 A local package only needs a `package.toml`; it does not need a Git repository or registry entry:
