@@ -259,7 +259,52 @@ private func parseCommand(
         global: &global
       )
     )
+
+  case .uninstallWidgetPackage:
+    return .uninstallWidgetPackage(
+      try parseWidgetPackageUninstallName(
+        arguments,
+        command: descriptor,
+        global: &global
+      )
+    )
   }
+}
+
+private func parseWidgetPackageUninstallName(
+  _ arguments: [String],
+  command: CLICommandDescriptor,
+  global: inout GlobalOptionState
+) throws -> String {
+  var name: String?
+  var index = 0
+
+  while index < arguments.count {
+    let argument = arguments[index]
+    if let nextIndex = try parseGlobalArgument(
+      argument,
+      arguments: arguments,
+      index: index,
+      state: &global,
+      helpTopic: command.path
+    ) {
+      index = nextIndex
+      continue
+    }
+    guard !argument.hasPrefix("-") else {
+      throw AppError.message("unknown widgets uninstall option '\(argument)'")
+    }
+    guard name == nil else {
+      throw AppError.message("widgets uninstall requires exactly one package name")
+    }
+    name = argument
+    index += 1
+  }
+
+  guard let name, !name.isEmpty else {
+    throw AppError.message("widgets uninstall requires a package name")
+  }
+  return name
 }
 
 private func parseWidgetPackageSearchOptions(

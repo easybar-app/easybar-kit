@@ -5,6 +5,8 @@ enum WidgetPackageError: LocalizedError, Equatable {
   case invalidManifest(String)
   case invalidRegistry(String)
   case unavailablePackage(String)
+  case packageNotInstalled(String)
+  case packageRequired(name: String, dependents: [String])
   case unavailableDependency(package: String, dependency: String, constraint: String)
   case incompatibleDependency(package: String, dependency: String, constraint: String)
   case checksumRequired(String)
@@ -24,6 +26,10 @@ enum WidgetPackageError: LocalizedError, Equatable {
       "invalid package registry: \(message)"
     case .unavailablePackage(let name):
       "package '\(name)' was not found in the registry"
+    case .packageNotInstalled(let name):
+      "package '\(name)' is not installed"
+    case .packageRequired(let name, let dependents):
+      "package '\(name)' is required by: \(dependents.joined(separator: ", "))"
     case .unavailableDependency(let package, let dependency, let constraint):
       "package '\(package)' requires \(dependency) \(constraint); install that dependency directly or enable a registry"
     case .incompatibleDependency(let package, let dependency, let constraint):

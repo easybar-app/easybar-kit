@@ -141,6 +141,27 @@ final class CLIArgumentsTests: XCTestCase {
     )
   }
 
+  func testWidgetPackageUninstallParsesOnePackageName() throws {
+    XCTAssertEqual(
+      try parseArguments(["easybar", "widgets", "uninstall", "caffeinate"]).action,
+      .uninstallWidgetPackage("caffeinate")
+    )
+  }
+
+  func testWidgetPackageUninstallRejectsAmbiguousArguments() {
+    XCTAssertThrowsError(try parseArguments(["easybar", "widgets", "uninstall"]))
+    XCTAssertThrowsError(
+      try parseArguments([
+        "easybar", "widgets", "uninstall", "caffeinate", "shared",
+      ])
+    )
+    XCTAssertThrowsError(
+      try parseArguments([
+        "easybar", "widgets", "uninstall", "caffeinate", "--socket", "/tmp/app.sock",
+      ])
+    )
+  }
+
   func testAgentRestartTargetsParse() throws {
     XCTAssertEqual(
       try parseArguments(["easybar", "agent", "restart", "calendar"]).action,

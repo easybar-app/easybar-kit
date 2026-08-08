@@ -27,8 +27,9 @@ final class WidgetPackageInstaller {
       fileManager: fileManager
     )
     try fileManager.createDirectory(at: packagesDirectory, withIntermediateDirectories: true)
-    let databaseURL = packagesDirectory.appending(path: "installed.json")
-    let database = try loadDatabase(at: databaseURL)
+    let database = try WidgetPackageDatabaseStore(fileManager: fileManager).load(
+      from: packagesDirectory
+    )
 
     let temporaryDirectory = fileManager.temporaryDirectory.appending(
       path: "easybar-package-\(UUID().uuidString)",
@@ -71,37 +72,6 @@ final class WidgetPackageInstaller {
     }
   }
 
-  private func loadDatabase(at url: URL) throws -> InstalledWidgetPackages {
-    guard fileManager.fileExists(atPath: url.path) else { return .empty }
-    let decoded: InstalledWidgetPackages
-    do {
-      decoded = try JSONDecoder().decode(
-        InstalledWidgetPackages.self,
-        from: Data(contentsOf: url)
-      )
-    } catch {
-      throw WidgetPackageError.installConflict(
-        "could not read package database at \(url.path): \(error.localizedDescription)"
-      )
-    }
-    guard decoded.layoutVersion == WidgetPackageStore.layoutVersion else {
-      throw WidgetPackageError.installConflict("unsupported installed package layout")
-    }
-    guard Set(decoded.packages.map(\.name)).count == decoded.packages.count else {
-      throw WidgetPackageError.installConflict("installed package database contains duplicate names")
-    }
-    var exportedModules: Set<String> = []
-    for package in decoded.packages {
-      for module in package.exports.keys {
-        guard exportedModules.insert(module).inserted else {
-          throw WidgetPackageError.installConflict(
-            "installed package database contains duplicate export '\(module)'"
-          )
-        }
-      }
-    }
-    return decoded
-  }
 }
 
 func installWidgetPackage(

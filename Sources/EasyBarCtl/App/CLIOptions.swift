@@ -86,13 +86,14 @@ enum CLICommandKind: Equatable {
   case emitEvent
   case inbox(InboxCLIVerb)
   case installWidgetPackage
+  case uninstallWidgetPackage
   case searchWidgetPackages
 
   /// Whether this command can target one explicit Unix socket.
   var acceptsSocketOverride: Bool {
     switch self {
     case .logs, .restartAgent(.all), .versionAgent(.all), .installWidgetPackage,
-      .searchWidgetPackages:
+      .uninstallWidgetPackage, .searchWidgetPackages:
       return false
     default:
       return true
@@ -175,6 +176,7 @@ enum CLIAction: Equatable {
   case logs(LogCommandOptions)
   case inbox(InboxCLICommand)
   case installWidgetPackage(WidgetPackageInstallOptions)
+  case uninstallWidgetPackage(String)
   case searchWidgetPackages(WidgetPackageSearchOptions)
 }
 
@@ -412,6 +414,12 @@ enum CLI {
       kind: .searchWidgetPackages,
       usageArguments: ["[query]"],
       options: [packageRegistryOption]
+    ),
+    .init(
+      path: ["widgets", "uninstall"],
+      description: "Uninstall one widget or library package",
+      kind: .uninstallWidgetPackage,
+      usageArguments: ["<name>"]
     ),
     .init(
       path: ["inbox", "send"],
