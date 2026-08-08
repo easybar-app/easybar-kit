@@ -63,9 +63,9 @@ nav:
   - Lua Widgets:
       - Overview: lua/overview.md
       - Packages:
-          - Catalog: packages/index.md
-      - Conventions: lua/conventions.md
-      - API Summary: lua/api-summary.md
+          - Catalog: packages/catalog.md
+          - Conventions: lua/conventions.md
+          - API Summary: lua/api-summary.md
       - Guides:
           - First Widget: lua/guides/first-widget.md
           - Reusable Modules: lua/guides/modules.md

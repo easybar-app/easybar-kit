@@ -11,16 +11,16 @@ Control a macOS Network Extension VPN service with scutil.
 easybar widgets install wireguard
 ```
 
-| Package metadata | Value |
-| --- | --- |
-| Name | `wireguard` |
-| Version | `0.1.0` |
-| Kind | `widget` |
-| Minimum EasyBar | `0.41.0` |
-| License | `Apache-2.0` |
-| Categories | `network`, `system` |
-| Dependencies | [`shared`](shared.md) `^0.1.0` |
-| Required commands | `scutil` |
+| Package metadata  | Value                          |
+| ----------------- | ------------------------------ |
+| Name              | `wireguard`                    |
+| Version           | `0.1.0`                        |
+| Kind              | `widget`                       |
+| Minimum EasyBar   | `0.41.0`                       |
+| License           | `Apache-2.0`                   |
+| Categories        | `network`, `system`            |
+| Dependencies      | [`shared`](shared.md) `^0.1.0` |
+| Required commands | `scutil`                       |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/wireguard)
 

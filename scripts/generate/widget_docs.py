@@ -335,13 +335,13 @@ def generate(widgets_root: Path, output: Path) -> list[Path]:
         raise ValueError("package names must be unique")
 
     output.mkdir(parents=True, exist_ok=True)
-    expected_names = {"index.md", *[f"{package.name}.md" for package in packages]}
+    expected_names = {"catalog.md", *[f"{package.name}.md" for package in packages]}
     for existing in output.glob("*.md"):
         if existing.name not in expected_names:
             existing.unlink()
 
     written = []
-    index_path = output / "index.md"
+    index_path = output / "catalog.md"
     index_path.write_text(render_index(packages), encoding="utf-8")
     written.append(index_path)
 

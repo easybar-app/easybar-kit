@@ -8,7 +8,7 @@ EasyBar combines polished SwiftUI widgets with a Lua runtime, installable packag
 CLI. Start with useful defaults, then shape every part of the bar around how you work.
 
 [Get started](getting-started/quick-start.md){ .md-button .md-button--primary }
-[Browse widget packages](packages/index.md){ .md-button }
+[Browse widget packages](packages/catalog.md){ .md-button }
 [View on GitHub](https://github.com/easybar-app/easybar){ .md-button }
 
 [![EasyBar running across the macOS menu bar](assets/bar.png)](assets/bar.png)
@@ -57,7 +57,7 @@ The default bar includes spaces, battery, Wi-Fi, and calendar widgets. Follow th
   Discover and install independently versioned widgets and reusable Lua libraries from the
   optional package registry.
 
-  [Browse packages](packages/index.md)
+  [Browse packages](packages/catalog.md)
 
 - :material-tune-variant:{ .lg .middle } **Designed to be yours**
 
@@ -76,7 +76,7 @@ The default bar includes spaces, battery, Wi-Fi, and calendar widgets. Follow th
 | ---------------- | --------------------------------------------------------------------------------- | -------------------------------------- |
 | Native built-ins | Spaces, battery, Wi-Fi, calendar, time, date, volume, and front-app state         | [Built-ins](configuration/builtins.md) |
 | Lua widgets      | Custom display logic, commands, interactions, popups, and project-specific status | [Lua Widgets](lua/overview.md)         |
-| Widget packages  | Ready-made integrations and reusable Lua libraries                                | [Package Catalog](packages/index.md)   |
+| Widget packages  | Ready-made integrations and reusable Lua libraries                                | [Package Catalog](packages/catalog.md) |
 | CLI              | Reloads, diagnostics, inbox publishing, package management, and automation        | [CLI Reference](runtime/cli.md)        |
 
 ## See EasyBar in action
