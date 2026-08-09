@@ -38,6 +38,9 @@ jobs:
       - name: Generate package catalog
         run: make generate-widget-docs WIDGETS_ROOT=widget-source
 
+      - name: Format package catalog
+        run: make fmt-markdown
+
       - name: Install documentation dependencies
         run: python -m pip install -r docs/requirements.txt
 
