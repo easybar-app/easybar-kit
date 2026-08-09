@@ -2,7 +2,7 @@ import Foundation
 
 struct WidgetPackageRegistryLoader {
   static let defaultSource =
-    "https://raw.githubusercontent.com/easybar-app/widget-registry/main/index.json"
+    "https://raw.githubusercontent.com/easybar-app/registry/main/index.json"
   private static let maximumBytes = 5 * 1_024 * 1_024
 
   func load(source: String?) async throws -> PackageRegistryIndex {

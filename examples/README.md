@@ -3,7 +3,7 @@
 The app repository keeps small, self-contained Lua examples for learning and runtime regression
 coverage. Browse this directory for the current examples. Installable integrations are maintained
 in the [official widgets repository](https://github.com/easybar-app/widgets) and discovered through
-the [widget registry](https://github.com/easybar-app/widget-registry).
+the [widget registry](https://github.com/easybar-app/registry).
 
 ## Lua discovery
 

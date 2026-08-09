@@ -4,6 +4,13 @@ import XCTest
 @testable import EasyBarCtl
 
 final class WidgetPackageSearcherTests: XCTestCase {
+  func testDefaultRegistrySourceUsesOfficialRepository() {
+    XCTAssertEqual(
+      WidgetPackageRegistryLoader.defaultSource,
+      "https://raw.githubusercontent.com/easybar-app/registry/main/index.json"
+    )
+  }
+
   func testSearchMatchesMetadataAndSortsResults() async throws {
     let index = FileManager.default.temporaryDirectory.appending(
       path: "easybar-registry-search-\(UUID().uuidString).json"
