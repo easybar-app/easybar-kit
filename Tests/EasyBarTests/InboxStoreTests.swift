@@ -364,6 +364,59 @@ final class InboxStoreTests: XCTestCase {
     XCTAssertEqual(store.refreshAllTargets.map(\.action.id), ["sync"])
   }
 
+  func testNestedSourceActionsArePreservedAndCannotJoinRefreshAll() {
+    let store = InboxStore()
+    store.configure(
+      source: "GitHub",
+      actions: [
+        InboxAction(id: "refresh", title: "Refresh", includeInRefreshAll: true),
+        InboxAction(
+          id: "settings",
+          title: "Settings",
+          children: [
+            InboxAction(id: "interval", title: "Refresh every 5 minutes", enabled: false),
+            InboxAction(
+              id: "merge-method",
+              title: "Merge method",
+              children: [
+                InboxAction(id: "squash", title: "Squash"),
+                InboxAction(id: "rebase", title: "Rebase", includeInRefreshAll: true),
+              ]
+            ),
+          ]
+        ),
+      ]
+    )
+
+    let actions = store.sourceConfigurations.first?.actions
+    XCTAssertEqual(actions?.map(\.id), ["refresh", "settings"])
+    XCTAssertEqual(actions?.last?.children?.map(\.id), ["interval", "merge-method"])
+    XCTAssertEqual(actions?.last?.children?.last?.children?.map(\.id), ["squash"])
+    XCTAssertEqual(store.refreshAllTargets.map(\.action.id), ["refresh"])
+  }
+
+  func testItemActionsRejectSubmenus() {
+    let store = InboxStore()
+    store.replace(
+      source: "GitHub",
+      items: [
+        InboxItem(
+          id: "one",
+          title: "One",
+          actions: [
+            InboxAction(
+              id: "settings",
+              title: "Settings",
+              children: [InboxAction(id: "nested", title: "Nested")]
+            )
+          ]
+        )
+      ]
+    )
+
+    XCTAssertTrue(store.presentedItems.isEmpty)
+  }
+
   func testItemActionsCannotJoinRefreshAll() {
     let store = InboxStore()
     let invalidItem = InboxItem(

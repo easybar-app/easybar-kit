@@ -163,7 +163,7 @@ final class WidgetTreeUpdateTests: XCTestCase {
   func testInboxConfigurationPayloadIsDecoded() throws {
     let message = try WidgetRuntimeProtocolDecoder().decodeMessage(
       from:
-        ##"{"protocol_version":1,"type":"inbox_configure","source":"GitLab","order":20,"presentation":{"name":"GitLab","icon":"GL","color":"#FC6D26"},"actions":[{"id":"sync","title":"Refresh","include_in_refresh_all":true}]}"##
+        ##"{"protocol_version":1,"type":"inbox_configure","source":"GitLab","order":20,"presentation":{"name":"GitLab","icon":"GL","color":"#FC6D26"},"actions":[{"id":"sync","title":"Refresh","include_in_refresh_all":true},{"id":"settings","title":"Settings","children":[{"id":"interval","title":"Refresh every 5 minutes","enabled":false}]}]}"##
     )
 
     guard case .inboxConfigure(let configuration) = message else {
@@ -177,7 +177,16 @@ final class WidgetTreeUpdateTests: XCTestCase {
     )
     XCTAssertEqual(
       configuration.actions,
-      [InboxAction(id: "sync", title: "Refresh", includeInRefreshAll: true)]
+      [
+        InboxAction(id: "sync", title: "Refresh", includeInRefreshAll: true),
+        InboxAction(
+          id: "settings",
+          title: "Settings",
+          children: [
+            InboxAction(id: "interval", title: "Refresh every 5 minutes", enabled: false)
+          ]
+        ),
+      ]
     )
   }
 

@@ -864,7 +864,21 @@ function M.new(log, hooks)
 			source = normalize_inbox_source(source)
 			assert(type(configuration) == "table", "inbox configuration must be a table")
 			local actions = configuration.actions or {}
-			assert(json_module.is_array(actions), "inbox configuration actions must be a dense array")
+			local action_count = 0
+			local function validate_actions(values, depth)
+				assert(json_module.is_array(values), "inbox configuration actions must be dense arrays")
+				assert(depth <= 3, "inbox configuration actions support at most three levels")
+				for _, action in ipairs(values) do
+					assert(type(action) == "table", "inbox configuration actions must be tables")
+					action_count = action_count + 1
+					assert(action_count <= 32, "inbox configuration supports at most 32 actions")
+					if action.children ~= nil then
+						assert(#action.children > 0, "inbox action children must not be empty")
+						validate_actions(action.children, depth + 1)
+					end
+				end
+			end
+			validate_actions(actions, 1)
 			local order = configuration.order
 			local presentation = configuration.presentation
 			assert(

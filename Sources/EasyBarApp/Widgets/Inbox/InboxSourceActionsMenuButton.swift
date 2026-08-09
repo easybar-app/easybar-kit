@@ -81,18 +81,7 @@ struct InboxSourceActionsMenuButton: NSViewRepresentable {
         submenu.autoenablesItems = false
 
         for action in configuration.actions {
-          let actionItem = NSMenuItem(
-            title: action.title,
-            action: #selector(performAction(_:)),
-            keyEquivalent: ""
-          )
-          actionItem.target = self
-          actionItem.representedObject = InboxSourceActionSelection(
-            source: configuration.source,
-            actionID: action.id
-          )
-          actionItem.isEnabled = action.isEnabled && !action.isBusy
-          submenu.addItem(actionItem)
+          submenu.addItem(makeMenuItem(for: action, source: configuration.source))
         }
 
         sourceItem.submenu = submenu
@@ -100,6 +89,32 @@ struct InboxSourceActionsMenuButton: NSViewRepresentable {
       }
 
       return menu
+    }
+
+    private func makeMenuItem(for action: InboxAction, source: String) -> NSMenuItem {
+      let item = NSMenuItem(
+        title: action.title,
+        action: action.hasChildren ? nil : #selector(performAction(_:)),
+        keyEquivalent: ""
+      )
+      item.isEnabled = action.isEnabled && !action.isBusy
+
+      if let children = action.children, !children.isEmpty {
+        let submenu = NSMenu(title: action.title)
+        submenu.autoenablesItems = false
+        for child in children {
+          submenu.addItem(makeMenuItem(for: child, source: source))
+        }
+        item.submenu = submenu
+      } else {
+        item.target = self
+        item.representedObject = InboxSourceActionSelection(
+          source: source,
+          actionID: action.id
+        )
+      }
+
+      return item
     }
   }
 }

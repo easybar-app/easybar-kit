@@ -476,6 +476,7 @@
 ---@field enabled? boolean Whether the action can be selected. Defaults to true.
 ---@field busy? boolean Whether the action is currently running. Defaults to false.
 ---@field include_in_refresh_all? boolean For source actions, includes this action in the native Refresh All command. Defaults to false.
+---@field children? EasyBarInboxAction[] Nested source actions shown as a submenu. Source actions support up to three levels; item actions cannot have children.
 
 ---@class (exact) EasyBarInboxSourcePresentation
 ---@field name? string Display name. Defaults to the publisher source.
@@ -504,7 +505,7 @@
 ---@field action_id string Selected action id.
 
 ---@class (exact) EasyBarInboxConfiguration
----@field actions? EasyBarInboxAction[] Actions shown under this source in the inbox context menu.
+---@field actions? EasyBarInboxAction[] Actions shown under this source in the inbox context menu. Actions with children become submenus.
 ---@field order? integer Optional ascending source order in the inbox context menu. Explicit orders appear before unordered sources.
 ---@field presentation? EasyBarInboxSourcePresentation Optional source presentation retained even when the source has no current items.
 

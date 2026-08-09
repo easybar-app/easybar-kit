@@ -225,16 +225,15 @@ final class InboxStore: ObservableObject {
   ) {
     guard let source = normalizedSource(source) else { return }
     var actionIDs = Set<String>()
-    var validActions: [InboxAction] = []
     var hasRefreshAllAction = false
-    for action in actions where isValidAction(action) && actionIDs.insert(action.id).inserted {
-      if action.isIncludedInRefreshAll {
-        guard !hasRefreshAllAction else { continue }
-        hasRefreshAllAction = true
-      }
-      validActions.append(action)
-      if validActions.count == 16 { break }
-    }
+    var remainingActionCapacity = 32
+    let validActions = validSourceActions(
+      actions,
+      depth: 1,
+      actionIDs: &actionIDs,
+      hasRefreshAllAction: &hasRefreshAllAction,
+      remainingCapacity: &remainingActionCapacity
+    )
     if validActions.isEmpty {
       sourceActions.removeValue(forKey: source)
       sourceActionOrders.removeValue(forKey: source)
@@ -485,6 +484,72 @@ final class InboxStore: ObservableObject {
       && !action.title.isEmpty && action.title.utf8.count <= 1_024
   }
 
+  private func validSourceActions(
+    _ actions: [InboxAction],
+    depth: Int,
+    actionIDs: inout Set<String>,
+    hasRefreshAllAction: inout Bool,
+    remainingCapacity: inout Int
+  ) -> [InboxAction] {
+    guard depth <= 3, remainingCapacity > 0 else { return [] }
+    var validActions: [InboxAction] = []
+
+    for action in actions {
+      let previousActionIDs = actionIDs
+      let previousRefreshAllState = hasRefreshAllAction
+      let previousCapacity = remainingCapacity
+      guard remainingCapacity > 0, isValidAction(action), actionIDs.insert(action.id).inserted else {
+        continue
+      }
+
+      let children = action.children ?? []
+      if !children.isEmpty {
+        guard depth < 3, !action.isBusy, !action.isIncludedInRefreshAll else {
+          actionIDs = previousActionIDs
+          continue
+        }
+        remainingCapacity -= 1
+        let validChildren = validSourceActions(
+          children,
+          depth: depth + 1,
+          actionIDs: &actionIDs,
+          hasRefreshAllAction: &hasRefreshAllAction,
+          remainingCapacity: &remainingCapacity
+        )
+        guard !validChildren.isEmpty else {
+          actionIDs = previousActionIDs
+          hasRefreshAllAction = previousRefreshAllState
+          remainingCapacity = previousCapacity
+          continue
+        }
+        validActions.append(
+          InboxAction(
+            id: action.id,
+            title: action.title,
+            enabled: action.enabled,
+            children: validChildren
+          )
+        )
+      } else {
+        if action.children != nil {
+          actionIDs = previousActionIDs
+          continue
+        }
+        if action.isIncludedInRefreshAll {
+          guard depth == 1, !hasRefreshAllAction else {
+            actionIDs = previousActionIDs
+            continue
+          }
+          hasRefreshAllAction = true
+        }
+        remainingCapacity -= 1
+        validActions.append(action)
+      }
+    }
+
+    return validActions
+  }
+
   private func isValid(_ item: InboxItem) -> Bool {
     let id = item.id.trimmingCharacters(in: .whitespacesAndNewlines)
     let title = item.title.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -498,6 +563,7 @@ final class InboxStore: ObservableObject {
     let actions = item.actions ?? []
     return actions.count <= 16
       && actions.allSatisfy(isValidAction)
+      && actions.allSatisfy { !$0.hasChildren && $0.children == nil }
       && actions.allSatisfy { !$0.isIncludedInRefreshAll }
       && Set(actions.map(\.id)).count == actions.count
   }

@@ -42,7 +42,16 @@ final class LuaInboxTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
         icon = "GL",
         color = "#FC6D26",
       },
-      actions = { { id = "sync", title = "Refresh", include_in_refresh_all = true } },
+      actions = {
+        { id = "sync", title = "Refresh", include_in_refresh_all = true },
+        {
+          id = "settings",
+          title = "Settings",
+          children = {
+            { id = "interval", title = "Refresh every 5 minutes", enabled = false },
+          },
+        },
+      },
     })
 
     easybar.inbox.replace("  gitlab  ", {
@@ -104,6 +113,8 @@ final class LuaInboxTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
     XCTAssertTrue(
       configuration.inboxConfigurationPayload?.actions.first?.isIncludedInRefreshAll == true
     )
+    XCTAssertEqual(configuration.inboxConfigurationPayload?.actions.last?.id, "settings")
+    XCTAssertEqual(configuration.inboxConfigurationPayload?.actions.last?.children?.first?.id, "interval")
 
     try runtime.sendHostEvent(
       #"{"name":"inbox.action","widget_id":"builtin_inbox","target_widget_id":"mr-42","source":"gitlab","action_id":"open"}"#

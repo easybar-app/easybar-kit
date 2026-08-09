@@ -128,6 +128,42 @@ name, icon, and color even while the source has no published items.
 Use `order` to place source submenus in ascending order. Sources with an explicit order appear
 before unordered sources; equal or unordered context sources fall back to their source name.
 
+Use `children` to group source settings without mixing them with operational actions. A source menu
+supports up to three action levels and 32 actions in total. Submenus are available only for source
+actions; item actions must remain selectable leaves:
+
+```lua
+actions = {
+    {
+        id = "refresh",
+        title = "Refresh",
+        include_in_refresh_all = true,
+    },
+    {
+        id = "settings",
+        title = "Settings",
+        children = {
+            {
+                id = "refresh_interval",
+                title = "Refresh every 5 minutes",
+                enabled = false,
+            },
+            {
+                id = "merge_method",
+                title = "Merge method",
+                children = {
+                    { id = "merge_method:squash", title = "✓ Squash" },
+                    { id = "merge_method:rebase", title = "Rebase" },
+                },
+            },
+        },
+    },
+}
+```
+
+Only leaf actions emit `inbox.context_action`. Keep `include_in_refresh_all` on a top-level leaf;
+nested actions cannot participate in **Refresh all**.
+
 When publishing items grouped by source, set `source.order` on each item to control the ascending
 source-group order independently from the context-menu order:
 
