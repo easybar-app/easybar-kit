@@ -11,17 +11,17 @@ Tailscale status, connection controls, and exit-node selection.
 easybar widgets install tailscale
 ```
 
-| Package metadata     | Value                          |
-| -------------------- | ------------------------------ |
-| Name                 | `tailscale`                    |
-| Version              | `0.1.0`                        |
-| Kind                 | `widget`                       |
-| Minimum EasyBar      | `0.41.0`                       |
-| License              | `Apache-2.0`                   |
-| Categories           | `network`, `system`            |
-| Dependencies         | [`shared`](shared.md) `^0.1.0` |
-| Required commands    | `tailscale`                    |
-| Optional environment | `TAILSCALE`                    |
+| Package metadata | Value |
+| --- | --- |
+| Name | `tailscale` |
+| Version | `0.1.0` |
+| Kind | `widget` |
+| Minimum EasyBar | `0.41.0` |
+| License | `Apache-2.0` |
+| Categories | `network`, `system` |
+| Dependencies | [`shared`](shared.md) `^0.1.0` |
+| Required commands | `tailscale` |
+| Optional environment | `TAILSCALE` |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/tailscale)
 

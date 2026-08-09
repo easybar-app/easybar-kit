@@ -84,7 +84,7 @@ Assigned GitLab issues and merge requests in a standalone popup.
 
 **[`inbox-brew`](inbox-brew.md)**
 
-`widget` · `v0.3.2` · `developer-tools` · `inbox` · `system`
+`widget` · `v0.4.0` · `developer-tools` · `inbox` · `system`
 
 Homebrew updates and actions in EasyBar's native inbox.
 
@@ -96,7 +96,7 @@ Homebrew updates and actions in EasyBar's native inbox.
 
 **[`inbox-github`](inbox-github.md)**
 
-`widget` · `v0.3.3` · `developer-tools` · `inbox` · `notifications`
+`widget` · `v0.4.0` · `developer-tools` · `inbox` · `notifications`
 
 GitHub notifications and pull-request actions in EasyBar's native inbox.
 
@@ -108,7 +108,7 @@ GitHub notifications and pull-request actions in EasyBar's native inbox.
 
 **[`inbox-gitlab`](inbox-gitlab.md)**
 
-`widget` · `v0.3.3` · `developer-tools` · `inbox` · `notifications`
+`widget` · `v0.4.0` · `developer-tools` · `inbox` · `notifications`
 
 GitLab work items and merge-request actions in EasyBar's native inbox.
 
@@ -120,7 +120,7 @@ GitLab work items and merge-request actions in EasyBar's native inbox.
 
 **[`inbox-widgets`](inbox-widgets.md)**
 
-`widget` · `v0.6.3` · `inbox` · `system` · `utilities`
+`widget` · `v0.7.0` · `inbox` · `system` · `utilities`
 
 EasyBar package updates in the native inbox.
 

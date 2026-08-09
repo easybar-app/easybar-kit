@@ -11,17 +11,17 @@ EasyBar package updates in the native inbox.
 easybar widgets install inbox-widgets
 ```
 
-| Package metadata  | Value                          |
-| ----------------- | ------------------------------ |
-| Name              | `inbox-widgets`                |
-| Version           | `0.6.3`                        |
-| Kind              | `widget`                       |
-| Minimum EasyBar   | `0.49.0`                       |
-| License           | `Apache-2.0`                   |
-| Categories        | `inbox`, `system`, `utilities` |
-| Dependencies      | [`shared`](shared.md) `^0.1.0` |
-| Required commands | `curl`, `easybar`              |
-| Native inbox      | Required                       |
+| Package metadata | Value |
+| --- | --- |
+| Name | `inbox-widgets` |
+| Version | `0.7.0` |
+| Kind | `widget` |
+| Minimum EasyBar | `0.49.0` |
+| License | `Apache-2.0` |
+| Categories | `inbox`, `system`, `utilities` |
+| Dependencies | [`shared`](shared.md) `^0.1.0` |
+| Required commands | `curl`, `easybar` |
+| Native inbox | Required |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/inbox-widgets)
 
@@ -29,7 +29,7 @@ easybar widgets install inbox-widgets
 
 `widget.lua` checks the official EasyBar widget registry and publishes available package updates to EasyBar's native inbox.
 
-Use **Update** on an inbox item to install that package's latest registry release. The source menu provides **Update all** and a manual **Refresh** action; checks otherwise run every six hours and after wake or session activation. These actions use `easybar widgets update`, so the same update behavior is available from the terminal.
+Use **Update** on an inbox item to install that package's latest registry release. The source menu provides **Update all** when updates are available; checks run every six hours and after wake or session activation. These actions use `easybar widgets update`, so the same update behavior is available from the terminal.
 
 ## Configuration
 
@@ -50,7 +50,7 @@ easybar config reload
 
 `source_order` controls the Widgets group when the inbox is grouped by source. `context_order`
 independently controls its position in the inbox source menu. Lower values appear first. The source
-context menu shows the active refresh interval under **Settings**.
+context menu shows update availability followed by the active refresh interval, without an extra settings submenu.
 
 Only packages whose recorded installation source matches a release in the official registry are checked. Packages installed from a local directory, custom archive, or another registry are left untouched.
 

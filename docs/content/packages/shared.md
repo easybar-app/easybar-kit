@@ -10,15 +10,15 @@ Shared text, retry, and native-inbox helpers for official EasyBar widgets.
 This is a library package. The package manager installs it when another package
 declares it as a dependency.
 
-| Package metadata | Value                    |
-| ---------------- | ------------------------ |
-| Name             | `shared`                 |
-| Version          | `0.1.0`                  |
-| Kind             | `library`                |
-| Minimum EasyBar  | `0.41.0`                 |
-| License          | `Apache-2.0`             |
-| Categories       | `library`                |
-| Dependencies     | None                     |
+| Package metadata | Value |
+| --- | --- |
+| Name | `shared` |
+| Version | `0.1.0` |
+| Kind | `library` |
+| Minimum EasyBar | `0.41.0` |
+| License | `Apache-2.0` |
+| Categories | `library` |
+| Dependencies | None |
 | Exported modules | `inbox`, `retry`, `text` |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/shared)
