@@ -11,15 +11,15 @@ Keep macOS awake indefinitely or for a selected duration.
 easybar widgets install caffeinate
 ```
 
-| Package metadata | Value |
-| --- | --- |
-| Name | `caffeinate` |
-| Version | `0.1.0` |
-| Kind | `widget` |
-| Minimum EasyBar | `0.41.0` |
-| License | `Apache-2.0` |
-| Categories | `system`, `utilities` |
-| Dependencies | None |
+| Package metadata  | Value                 |
+| ----------------- | --------------------- |
+| Name              | `caffeinate`          |
+| Version           | `0.1.0`               |
+| Kind              | `widget`              |
+| Minimum EasyBar   | `0.41.0`              |
+| License           | `Apache-2.0`          |
+| Categories        | `system`, `utilities` |
+| Dependencies      | None                  |
 | Required commands | `/usr/bin/caffeinate` |
 
 [View package source](https://github.com/easybar-app/widgets/tree/main/packages/caffeinate)
