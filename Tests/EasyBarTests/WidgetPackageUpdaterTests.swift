@@ -109,7 +109,8 @@ final class WidgetPackageUpdaterTests: XCTestCase {
         source: source,
         sha256: nil,
         registry: nil,
-        useRegistry: useRegistry
+        useRegistry: useRegistry,
+        force: false
       )
     )
   }

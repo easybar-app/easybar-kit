@@ -131,13 +131,29 @@ final class WidgetPackageInstallerTests: XCTestCase {
         source: "caffeinate",
         sha256: nil,
         registry: index.path,
-        useRegistry: true
+        useRegistry: true,
+        force: false
       )
     )
 
     XCTAssertEqual(installed.map(\.name), ["caffeinate"])
     XCTAssertTrue(fileExists("active/caffeinate/widget.lua"))
     XCTAssertEqual(try installedDatabase().packages.first?.version, "1.0.0")
+
+    do {
+      _ = try await installer.install(
+        options: WidgetPackageInstallOptions(
+          source: "caffeinate",
+          sha256: nil,
+          registry: index.path,
+          useRegistry: true,
+          force: false
+        )
+      )
+      XCTFail("Expected the duplicate registry install to be rejected")
+    } catch let error as WidgetPackageError {
+      XCTAssertEqual(error, .packageAlreadyInstalled("caffeinate"))
+    }
   }
 
   func testMigratesLegacyPackagesWithoutRemovingManualWidgets() async throws {
@@ -285,6 +301,110 @@ final class WidgetPackageInstallerTests: XCTestCase {
     }
   }
 
+  func testRejectsInstallingAnAlreadyInstalledPackage() async throws {
+    let package = directory.appending(path: "clock", directoryHint: .isDirectory)
+    try writePackage(
+      at: package,
+      manifest: """
+        manifest_version = 1
+        name = "clock"
+        version = "1.0.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """,
+      files: ["widget.lua": "return 'original'\n"]
+    )
+    _ = try await install(package.path, useRegistry: false)
+
+    do {
+      _ = try await install(package.path, useRegistry: false)
+      XCTFail("Expected the duplicate install to be rejected")
+    } catch let error as WidgetPackageError {
+      XCTAssertEqual(error, .packageAlreadyInstalled("clock"))
+    }
+
+    XCTAssertEqual(try installedDatabase().packages.first?.version, "1.0.0")
+    XCTAssertEqual(try managedFileContents("active/clock/widget.lua"), "return 'original'\n")
+  }
+
+  func testForceReplacesAnInstalledPackageAndRemovesItsPreviousStore() async throws {
+    let original = directory.appending(path: "clock-1.0.0", directoryHint: .isDirectory)
+    try writePackage(
+      at: original,
+      manifest: """
+        manifest_version = 1
+        name = "clock"
+        version = "1.0.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """,
+      files: ["widget.lua": "return 'original'\n"]
+    )
+    let replacement = directory.appending(path: "clock-2.0.0", directoryHint: .isDirectory)
+    try writePackage(
+      at: replacement,
+      manifest: """
+        manifest_version = 1
+        name = "clock"
+        version = "2.0.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """,
+      files: ["widget.lua": "return 'replacement'\n"]
+    )
+    _ = try await install(original.path, useRegistry: false)
+
+    let installed = try await install(replacement.path, useRegistry: false, force: true)
+
+    XCTAssertEqual(installed.map(\.version), ["2.0.0"])
+    XCTAssertEqual(try installedDatabase().packages.first?.version, "2.0.0")
+    XCTAssertEqual(
+      try managedFileContents("active/clock/widget.lua"),
+      "return 'replacement'\n"
+    )
+    XCTAssertFalse(fileExists("store/clock/1.0.0"))
+    XCTAssertTrue(fileExists("store/clock/2.0.0"))
+    XCTAssertEqual(try replacementArtifacts(), [])
+  }
+
+  func testForceRestoresTheInstalledPackageWhenResolutionFails() async throws {
+    let original = directory.appending(path: "clock", directoryHint: .isDirectory)
+    try writePackage(
+      at: original,
+      manifest: """
+        manifest_version = 1
+        name = "clock"
+        version = "1.0.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """,
+      files: ["widget.lua": "return 'original'\n"]
+    )
+    _ = try await install(original.path, useRegistry: false)
+
+    var resolutionFailed = false
+    do {
+      _ = try await installer.install(
+        options: WidgetPackageInstallOptions(
+          source: "clock",
+          sha256: nil,
+          registry: directory.appending(path: "missing-index.json").path,
+          useRegistry: true,
+          force: true
+        )
+      )
+      XCTFail("Expected registry resolution to fail")
+    } catch {
+      resolutionFailed = true
+    }
+
+    XCTAssertTrue(resolutionFailed)
+    XCTAssertEqual(try installedDatabase().packages.first?.version, "1.0.0")
+    XCTAssertEqual(try managedFileContents("active/clock/widget.lua"), "return 'original'\n")
+    XCTAssertTrue(fileExists("store/clock/1.0.0/widget.lua"))
+    XCTAssertEqual(try replacementArtifacts(), [])
+  }
+
   func testCaretConstraintsFollowSemverZeroMajorRules() throws {
     let stable = try XCTUnwrap(VersionConstraint("^1.2.3"))
     let zeroMajor = try XCTUnwrap(VersionConstraint("^0.2.3"))
@@ -294,7 +414,7 @@ final class WidgetPackageInstallerTests: XCTestCase {
     XCTAssertFalse(zeroMajor.contains(try XCTUnwrap(SemanticVersion("0.3.0"))))
   }
 
-  private func install(_ source: String, useRegistry: Bool) async throws
+  private func install(_ source: String, useRegistry: Bool, force: Bool = false) async throws
     -> [InstalledWidgetPackage]
   {
     try await installer.install(
@@ -302,7 +422,8 @@ final class WidgetPackageInstallerTests: XCTestCase {
         source: source,
         sha256: nil,
         registry: nil,
-        useRegistry: useRegistry
+        useRegistry: useRegistry,
+        force: force
       )
     )
   }
@@ -348,6 +469,22 @@ final class WidgetPackageInstallerTests: XCTestCase {
     FileManager.default.fileExists(
       atPath: legacyWidgetsDirectory.appending(path: relativePath).path
     )
+  }
+
+  private func managedFileContents(_ relativePath: String) throws -> String {
+    try String(
+      contentsOf: packagesDirectory.appending(path: relativePath),
+      encoding: .utf8
+    )
+  }
+
+  private func replacementArtifacts() throws -> [String] {
+    try FileManager.default.contentsOfDirectory(
+      atPath: packagesDirectory.deletingLastPathComponent().path
+    ).filter {
+      $0.hasPrefix(".easybar-packages-replacement-")
+        || $0.hasPrefix(".easybar-packages-failed-")
+    }
   }
 
   private func installedDatabase() throws -> InstalledWidgetPackages {

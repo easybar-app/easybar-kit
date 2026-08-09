@@ -163,6 +163,7 @@ struct WidgetPackageInstallOptions: Equatable {
   let sha256: String?
   let registry: String?
   let useRegistry: Bool
+  let force: Bool
 }
 
 /// Inputs accepted by `easybar widgets search`.
@@ -386,6 +387,11 @@ enum CLI {
     description: "Do not resolve missing dependencies from a registry"
   )
 
+  static let packageForceOption = CLIOption(
+    flag: "--force",
+    description: "Replace an already installed package"
+  )
+
   static let packageUpdateAllOption = CLIOption(
     flag: "--all",
     description: "Update every outdated registry-managed package"
@@ -454,6 +460,7 @@ enum CLI {
         packageSHA256Option,
         packageRegistryOption,
         packageNoRegistryOption,
+        packageForceOption,
       ]
     ),
     .init(

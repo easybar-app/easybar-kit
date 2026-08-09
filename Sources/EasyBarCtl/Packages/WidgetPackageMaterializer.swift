@@ -12,7 +12,8 @@ struct WidgetPackageMaterializer {
     _ packages: [ResolvedWidgetPackage],
     into packagesDirectory: URL,
     database: InstalledWidgetPackages,
-    stagingDirectory: URL
+    stagingDirectory: URL,
+    replacingExistingPackages: Set<String> = []
   ) throws -> [InstalledWidgetPackage] {
     try validateConflicts(
       packages,
@@ -48,7 +49,8 @@ struct WidgetPackageMaterializer {
         record: record,
         from: stagingDirectory.appending(path: package.manifest.name),
         into: packagesDirectory,
-        database: &updated
+        database: &updated,
+        replacingExistingPackages: replacingExistingPackages
       )
     }
     try write(updated, to: packagesDirectory.appending(path: "installed.json"))
@@ -193,7 +195,8 @@ struct WidgetPackageMaterializer {
     record: InstalledWidgetPackage,
     from stage: URL,
     into packagesDirectory: URL,
-    database: inout InstalledWidgetPackages
+    database: inout InstalledWidgetPackages,
+    replacingExistingPackages: Set<String>
   ) throws {
     let storeRoot = WidgetPackageStore.storeDirectory(in: packagesDirectory)
     let activeDirectory = WidgetPackageStore.activeDirectory(in: packagesDirectory)
@@ -208,9 +211,12 @@ struct WidgetPackageMaterializer {
         try removeIfPresent(moduleURL(module, in: activeDirectory))
       }
     }
+    let packageStore = storeRoot.appending(path: record.name, directoryHint: .isDirectory)
+    if replacingExistingPackages.contains(record.name) {
+      try removeIfPresent(packageStore)
+    }
     let storedPackage =
-      storeRoot
-      .appending(path: record.name, directoryHint: .isDirectory)
+      packageStore
       .appending(path: record.version, directoryHint: .isDirectory)
     try removeIfPresent(storedPackage)
     try fileManager.createDirectory(

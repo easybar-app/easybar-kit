@@ -542,6 +542,7 @@ private func parseWidgetPackageInstallOptions(
   var sha256: String?
   var registry: String?
   var useRegistry = true
+  var force = false
   var index = 0
 
   while index < arguments.count {
@@ -568,6 +569,11 @@ private func parseWidgetPackageInstallOptions(
     }
     if CLI.packageNoRegistryOption.matches(argument) {
       useRegistry = false
+      index += 1
+      continue
+    }
+    if CLI.packageForceOption.matches(argument) {
+      force = true
       index += 1
       continue
     }
@@ -601,7 +607,8 @@ private func parseWidgetPackageInstallOptions(
     source: source,
     sha256: sha256,
     registry: registry,
-    useRegistry: useRegistry
+    useRegistry: useRegistry,
+    force: force
   )
 }
 

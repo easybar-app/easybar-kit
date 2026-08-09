@@ -85,7 +85,8 @@ final class WidgetPackageUpdater {
           source: name,
           sha256: nil,
           registry: options.registry,
-          useRegistry: true
+          useRegistry: true,
+          force: true
         )
       )
       touchedNames.formUnion(installed.map(\.name))

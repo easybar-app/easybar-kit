@@ -67,7 +67,8 @@ final class CLIArgumentsTests: XCTestCase {
           source: "caffeinate",
           sha256: nil,
           registry: nil,
-          useRegistry: true
+          useRegistry: true,
+          force: false
         )
       )
     )
@@ -76,6 +77,7 @@ final class CLIArgumentsTests: XCTestCase {
       "easybar", "widgets", "install", "./my-widget",
       "--sha256", "abc",
       "--no-registry",
+      "--force",
     ])
     XCTAssertEqual(
       local.action,
@@ -84,7 +86,8 @@ final class CLIArgumentsTests: XCTestCase {
           source: "./my-widget",
           sha256: "abc",
           registry: nil,
-          useRegistry: false
+          useRegistry: false,
+          force: true
         )
       )
     )

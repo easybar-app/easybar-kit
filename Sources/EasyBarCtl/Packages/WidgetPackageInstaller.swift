@@ -30,6 +30,13 @@ final class WidgetPackageInstaller {
     let database = try WidgetPackageDatabaseStore(fileManager: fileManager).load(
       from: packagesDirectory
     )
+    let namedInstalledPackage = installedPackageNamedBySource(
+      options.source,
+      database: database
+    )
+    if let namedInstalledPackage, !options.force {
+      throw WidgetPackageError.packageAlreadyInstalled(namedInstalledPackage.name)
+    }
 
     let temporaryDirectory = fileManager.temporaryDirectory.appending(
       path: "easybar-package-\(UUID().uuidString)",
@@ -49,14 +56,59 @@ final class WidgetPackageInstaller {
       at: temporaryDirectory.appending(path: "downloads", directoryHint: .isDirectory),
       withIntermediateDirectories: true
     )
-    let packages = try await resolver.resolve(source: options.source, sha256: options.sha256)
-    let materializer = WidgetPackageMaterializer(fileManager: fileManager)
-    return try materializer.install(
-      packages,
-      into: packagesDirectory,
-      database: database,
-      stagingDirectory: temporaryDirectory.appending(path: "install", directoryHint: .isDirectory)
-    )
+    var replacementTransaction: WidgetPackageReplacementTransaction?
+    if namedInstalledPackage != nil {
+      replacementTransaction = try WidgetPackageReplacementTransaction.begin(
+        packagesDirectory: packagesDirectory,
+        fileManager: fileManager
+      )
+    }
+    let installed: [InstalledWidgetPackage]
+    do {
+      let packages = try await resolver.resolve(source: options.source, sha256: options.sha256)
+      guard let rootPackage = packages.last else {
+        throw WidgetPackageError.invalidSource("package resolution returned no packages")
+      }
+      let existingRoot = database.packages.first { $0.name == rootPackage.manifest.name }
+      if let existingRoot, !options.force {
+        throw WidgetPackageError.packageAlreadyInstalled(existingRoot.name)
+      }
+      if existingRoot != nil, replacementTransaction == nil {
+        replacementTransaction = try WidgetPackageReplacementTransaction.begin(
+          packagesDirectory: packagesDirectory,
+          fileManager: fileManager
+        )
+      }
+
+      let replacingExistingPackages: Set<String> =
+        existingRoot == nil ? [] : [rootPackage.manifest.name]
+      let materializer = WidgetPackageMaterializer(fileManager: fileManager)
+      installed = try materializer.install(
+        packages,
+        into: packagesDirectory,
+        database: database,
+        stagingDirectory: temporaryDirectory.appending(
+          path: "install",
+          directoryHint: .isDirectory
+        ),
+        replacingExistingPackages: replacingExistingPackages
+      )
+    } catch {
+      if let replacementTransaction {
+        do {
+          try replacementTransaction.rollback()
+        } catch let rollbackError {
+          throw WidgetPackageError.installConflict(
+            "forced install failed (\(error.localizedDescription)); recovery also failed: "
+              + rollbackError.localizedDescription
+          )
+        }
+      }
+      throw error
+    }
+
+    try replacementTransaction?.commit()
+    return installed
   }
 
   private func resolvedLegacyWidgetsDirectory() throws -> URL {
@@ -70,6 +122,17 @@ final class WidgetPackageInstaller {
         "could not resolve widgets_dir for package migration: \(error.localizedDescription)"
       )
     }
+  }
+
+  private func installedPackageNamedBySource(
+    _ source: String,
+    database: InstalledWidgetPackages
+  ) -> InstalledWidgetPackage? {
+    let expanded = NSString(string: source).expandingTildeInPath
+    guard !fileManager.fileExists(atPath: expanded),
+      WidgetPackageManifestParser.isPackageName(source)
+    else { return nil }
+    return database.packages.first { $0.name == source }
   }
 
 }

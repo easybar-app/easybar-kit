@@ -13,6 +13,17 @@ easybar config reload
 
 Registry releases contain a versioned archive URL and SHA-256. EasyBar verifies the digest before extracting the archive. Dependencies such as the official `shared` library are installed automatically from the registry when they are not already present at a compatible version.
 
+Installing an already installed package is an error. Use `widgets update` for a normal registry
+upgrade, or explicitly replace a package from any supported source with:
+
+```bash
+easybar widgets install PACKAGE_NAME --force
+```
+
+A forced install moves the current managed package state aside before replacing it. EasyBar removes
+that backup only after the new package is installed successfully; if downloading, resolving, or
+installing fails, it restores the previous state.
+
 Use another registry index when needed:
 
 ```bash
