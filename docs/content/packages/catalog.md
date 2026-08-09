@@ -96,7 +96,7 @@ Homebrew updates and actions in EasyBar's native inbox.
 
 **[`inbox-github`](inbox-github.md)**
 
-`widget` · `v0.4.0` · `developer-tools` · `inbox` · `notifications`
+`widget` · `v0.5.0` · `developer-tools` · `inbox` · `notifications`
 
 GitHub notifications and pull-request actions in EasyBar's native inbox.
 

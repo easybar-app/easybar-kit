@@ -14,9 +14,9 @@ easybar widgets install inbox-github
 | Package metadata  | Value                                       |
 | ----------------- | ------------------------------------------- |
 | Name              | `inbox-github`                              |
-| Version           | `0.4.0`                                     |
+| Version           | `0.5.0`                                     |
 | Kind              | `widget`                                    |
-| Minimum EasyBar   | `0.49.0`                                    |
+| Minimum EasyBar   | `0.50.0`                                    |
 | License           | `Apache-2.0`                                |
 | Categories        | `developer-tools`, `inbox`, `notifications` |
 | Dependencies      | [`shared`](shared.md) `^0.1.0`              |
@@ -27,7 +27,7 @@ easybar widgets install inbox-github
 
 ## Package documentation
 
-`widget.lua` publishes GitHub notifications to the native inbox and supports marking notifications read, refreshing, and guarded pull-request merging.
+`widget.lua` publishes GitHub notifications to the native inbox and supports refreshing and guarded pull-request merging. EasyBar's native **Read** and **Mark all read** controls also mark the corresponding notification threads read on GitHub, without adding a duplicate widget action.
 
 ## Requirements
 
@@ -55,3 +55,6 @@ independently controls its position in the inbox source menu. Lower values appea
 context menu keeps the active refresh interval and merge settings at the top level.
 
 The standalone popup presentation is the `github` package.
+
+Remote read synchronization requires EasyBar 0.50.0 or newer and an authenticated GitHub CLI token
+with notification access.
