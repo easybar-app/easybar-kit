@@ -168,6 +168,7 @@ final class MouseTrackingNSView: NSView {
   func updateHoverIdentity(widgetID: String, targetWidgetID: String, tracksHover: Bool) {
     let identityChanged = self.targetWidgetID != targetWidgetID
     let shouldRestartHover = isMouseInside && (identityChanged || !tracksHover)
+    let shouldResumeHover = identityChanged && tracksHover && isMouseCurrentlyInside
 
     if shouldRestartHover {
       endHover(immediately: true)
@@ -177,7 +178,7 @@ final class MouseTrackingNSView: NSView {
     self.targetWidgetID = targetWidgetID
     self.tracksHover = tracksHover
 
-    if identityChanged, tracksHover, isMouseCurrentlyInside {
+    if shouldResumeHover {
       beginHoverIfNeeded()
     }
   }

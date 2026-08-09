@@ -397,13 +397,17 @@ extension WidgetNodeView {
 
   @ViewBuilder
   var iconText: some View {
-    if hasIcon && !hasSymbol {
+    if shouldRenderIconText {
       OverflowSafeIconText(node.icon, trailingAllowance: iconTrailingAllowance)
         .font(iconResolvedFont)
         .foregroundStyle(iconResolvedColor)
         .fixedSize()
         .offset(iconOffset)
     }
+  }
+
+  private var shouldRenderIconText: Bool {
+    hasIcon && !hasSymbol
   }
 
   /// Reserves room for Nerd Font and private-use glyphs whose visual bounds

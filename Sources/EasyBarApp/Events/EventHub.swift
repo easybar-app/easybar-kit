@@ -316,7 +316,8 @@ actor EventHub {
         break
       }
 
-      if terminated || mustDeliverOverflow {
+      let replayEnded = terminated || mustDeliverOverflow
+      if replayEnded {
         break
       }
     }
@@ -324,7 +325,8 @@ actor EventHub {
     if mustDeliverOverflow {
       continuation.finish()
     }
-    if terminated || mustDeliverOverflow {
+    let replayEnded = terminated || mustDeliverOverflow
+    if replayEnded {
       subscribers.removeValue(forKey: id)
     }
 

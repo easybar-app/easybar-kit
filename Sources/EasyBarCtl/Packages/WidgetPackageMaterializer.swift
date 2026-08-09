@@ -73,7 +73,7 @@ struct WidgetPackageMaterializer {
       let name = package.manifest.name
       if package.manifest.kind == .widget {
         let destination = activeDirectory.appending(path: name, directoryHint: .isDirectory)
-        if fileManager.fileExists(atPath: destination.path), installed[name] == nil {
+        if isUnmanagedWidgetCollision(name: name, destination: destination, installed: installed) {
           throw WidgetPackageError.installConflict(
             "\(destination.path) already exists and is not package-managed"
           )
@@ -88,9 +88,12 @@ struct WidgetPackageMaterializer {
         }
         stagedExports[module] = name
         let destination = moduleURL(module, in: activeDirectory)
-        if fileManager.fileExists(atPath: destination.path),
-          exportOwners[module] != name
-        {
+        if isModuleOwnershipConflict(
+          module: module,
+          packageName: name,
+          destination: destination,
+          exportOwners: exportOwners
+        ) {
           throw WidgetPackageError.installConflict(
             "module '\(module)' already exists and is not owned by \(name)"
           )
@@ -140,13 +143,14 @@ struct WidgetPackageMaterializer {
       let file = source.appending(path: relative)
       let values = try file.resourceValues(forKeys: [.isRegularFileKey])
       guard values.isRegularFile == true else { continue }
-      if file.pathExtension.lowercased() == "lua",
-        relative != entrypoint,
-        !exports.contains(relative)
-      {
+      if shouldExcludeFromWidgetProjection(
+        file: file,
+        relativePath: relative,
+        entrypoint: entrypoint,
+        exports: exports
+      ) {
         continue
       }
-      if exports.contains(relative), relative != entrypoint { continue }
 
       let output = destination.appending(path: relative)
       try fileManager.createDirectory(
@@ -155,6 +159,33 @@ struct WidgetPackageMaterializer {
       )
       try fileManager.copyItem(at: file, to: output)
     }
+  }
+
+  private func isUnmanagedWidgetCollision(
+    name: String,
+    destination: URL,
+    installed: [String: InstalledWidgetPackage]
+  ) -> Bool {
+    fileManager.fileExists(atPath: destination.path) && installed[name] == nil
+  }
+
+  private func isModuleOwnershipConflict(
+    module: String,
+    packageName: String,
+    destination: URL,
+    exportOwners: [String: String]
+  ) -> Bool {
+    fileManager.fileExists(atPath: destination.path) && exportOwners[module] != packageName
+  }
+
+  private func shouldExcludeFromWidgetProjection(
+    file: URL,
+    relativePath: String,
+    entrypoint: String,
+    exports: Set<String>
+  ) -> Bool {
+    guard relativePath != entrypoint else { return false }
+    return file.pathExtension.lowercased() == "lua" || exports.contains(relativePath)
   }
 
   private func commit(

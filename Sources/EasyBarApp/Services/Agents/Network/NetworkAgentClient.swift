@@ -191,7 +191,7 @@ final class NetworkAgentClient: @unchecked Sendable {
 
   /// Handles one decoded network agent message.
   private func handle(_ message: NetworkAgentMessage, connectionID: UInt64) {
-    guard isStarted, client.isCurrentConnectionGeneration(connectionID) else { return }
+    guard isCurrentConnection(connectionID) else { return }
 
     switch message.kind {
     case .version:
@@ -236,7 +236,7 @@ final class NetworkAgentClient: @unchecked Sendable {
 
   /// Handles one network-agent error message.
   private func handleError(code: NetworkAgentErrorCode?, connectionID: UInt64) {
-    guard isStarted, client.isCurrentConnectionGeneration(connectionID) else { return }
+    guard isCurrentConnection(connectionID) else { return }
 
     logAgentErrorIfNeeded(code: code)
 
@@ -279,10 +279,15 @@ final class NetworkAgentClient: @unchecked Sendable {
 
   /// Handles a socket disconnect by clearing published state.
   private func handleDisconnectedStateReset(connectionID: UInt64) {
-    guard isStarted, client.isCurrentConnectionGeneration(connectionID) else { return }
+    guard isCurrentConnection(connectionID) else { return }
     resetErrorLogState()
     let publicationID = issuePublicationID()
     snapshotPublisher.clear(notify: true, publicationID: publicationID)
+  }
+
+  /// Returns whether a callback belongs to the active client connection.
+  private func isCurrentConnection(_ connectionID: UInt64) -> Bool {
+    isStarted && client.isCurrentConnectionGeneration(connectionID)
   }
 
   /// Logs the first instance of an agent error, then suppresses identical repeats.

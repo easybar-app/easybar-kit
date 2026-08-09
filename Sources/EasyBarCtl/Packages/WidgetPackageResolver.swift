@@ -162,7 +162,7 @@ final class WidgetPackageResolver {
       )
 
     case .archive(let archive, let digest, let remote):
-      if remote, digest == nil {
+      if remoteArchiveRequiresChecksum(remote: remote, digest: digest) {
         throw WidgetPackageError.checksumRequired(archive.absoluteString)
       }
       return try await loadArchive(url: archive, expectedSHA256: digest)
@@ -242,8 +242,7 @@ final class WidgetPackageResolver {
       throw WidgetPackageError.unsafeArchive("package.toml must be at the archive root")
     }
     for entry in entries {
-      let path = URL(fileURLWithPath: entry)
-      if entry.hasPrefix("/") || path.pathComponents.contains("..") {
+      if archiveEntryEscapesPackageRoot(entry) {
         throw WidgetPackageError.unsafeArchive("entry escapes the package root: \(entry)")
       }
     }
@@ -254,6 +253,14 @@ final class WidgetPackageResolver {
         throw WidgetPackageError.unsafeArchive("links and special files are not allowed")
       }
     }
+  }
+
+  private func archiveEntryEscapesPackageRoot(_ entry: String) -> Bool {
+    entry.hasPrefix("/") || URL(fileURLWithPath: entry).pathComponents.contains("..")
+  }
+
+  private func remoteArchiveRequiresChecksum(remote: Bool, digest: String?) -> Bool {
+    remote && digest == nil
   }
 
   private func runTar(_ arguments: [String]) async throws -> String {

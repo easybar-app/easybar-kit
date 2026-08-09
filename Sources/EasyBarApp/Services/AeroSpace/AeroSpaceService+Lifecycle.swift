@@ -8,7 +8,7 @@ extension AeroSpaceService {
   @discardableResult
   func activateIfNeeded(source: String) -> Bool {
     let shouldActivate = withLock { coordination -> Bool in
-      guard coordination.running, !coordination.active, !coordination.consumers.isEmpty else {
+      guard coordination.canActivate else {
         return false
       }
 

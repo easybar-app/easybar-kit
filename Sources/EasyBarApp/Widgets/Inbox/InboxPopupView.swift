@@ -25,7 +25,7 @@ struct InboxPopupView: View {
       HStack {
         Text("Inbox").font(.headline).foregroundStyle(color(config.popupTitleColorHex))
         Spacer()
-        if config.showRefreshAll, !store.refreshAllTargets.isEmpty {
+        if shouldShowRefreshAll(config) {
           InboxHeaderActionButton(
             tooltip: config.refreshAllTooltip,
             systemImage: config.refreshAllIcon,
@@ -37,7 +37,7 @@ struct InboxPopupView: View {
             action: refreshAllSources
           )
         }
-        if config.showMarkAllRead, store.unreadCount > 0 {
+        if shouldShowMarkAllRead(config) {
           InboxHeaderActionButton(
             tooltip: config.markAllReadTooltip,
             systemImage: config.markAllReadIcon,
@@ -49,7 +49,7 @@ struct InboxPopupView: View {
             action: markAllRead
           )
         }
-        if config.showDismissAll, !store.presentedItems.isEmpty {
+        if shouldShowDismissAll(config) {
           InboxHeaderActionButton(
             tooltip: config.dismissAllTooltip,
             systemImage: config.dismissAllIcon,
@@ -61,7 +61,7 @@ struct InboxPopupView: View {
             action: store.dismissAll
           )
         }
-        if config.showSourceActions, !store.sourceConfigurations.isEmpty {
+        if shouldShowSourceActions(config) {
           InboxSourceActionsMenuButton(
             configurations: store.sourceConfigurations,
             tintColor: NSColor(color(config.popupMutedColorHex)),
@@ -214,7 +214,7 @@ struct InboxPopupView: View {
         return
       }
       sourceActionHoldTask = nil
-      guard holdsSourceActionOpen, !observedSourceActivity else { return }
+      guard shouldReleaseInactiveSourceActionHold else { return }
       releaseSourceActionHold()
     }
   }
@@ -244,6 +244,26 @@ struct InboxPopupView: View {
     holdsSourceActionOpen = false
     observedSourceActivity = false
     popupPanel.endTransientInteraction()
+  }
+
+  private var shouldReleaseInactiveSourceActionHold: Bool {
+    holdsSourceActionOpen && !observedSourceActivity
+  }
+
+  private func shouldShowRefreshAll(_ config: Config.InboxBuiltinConfig) -> Bool {
+    config.showRefreshAll && !store.refreshAllTargets.isEmpty
+  }
+
+  private func shouldShowMarkAllRead(_ config: Config.InboxBuiltinConfig) -> Bool {
+    config.showMarkAllRead && store.unreadCount > 0
+  }
+
+  private func shouldShowDismissAll(_ config: Config.InboxBuiltinConfig) -> Bool {
+    config.showDismissAll && !store.presentedItems.isEmpty
+  }
+
+  private func shouldShowSourceActions(_ config: Config.InboxBuiltinConfig) -> Bool {
+    config.showSourceActions && !store.sourceConfigurations.isEmpty
   }
 
   private var sourceActivityRows: [InboxSourceActivityRow] {

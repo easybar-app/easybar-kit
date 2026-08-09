@@ -48,6 +48,14 @@ local MAX_CONTEXT_MENU_DEPTH = 8
 local MAX_CONTEXT_MENU_ITEMS = 256
 local MAX_CONTEXT_MENU_TEXT_BYTES = 1024
 
+local function is_valid_context_menu_text(value)
+	return type(value) == "string" and value ~= "" and #value <= MAX_CONTEXT_MENU_TEXT_BYTES
+end
+
+local function has_conflicting_image_sources(image)
+	return image.path ~= nil and image.svg ~= nil
+end
+
 local function normalize_menu_bool(value, default, path, report)
 	if value == nil then
 		return default
@@ -90,7 +98,7 @@ local function normalize_context_menu(menu, path, report)
 				local submenu = entry.submenu
 				local has_submenu = type(submenu) == "table"
 				local id = entry.id
-				if type(title) ~= "string" or title == "" or #title > MAX_CONTEXT_MENU_TEXT_BYTES then
+				if not is_valid_context_menu_text(title) then
 					report(current_path .. ".title", title, "non-empty string at most 1024 UTF-8 bytes")
 				elseif has_submenu then
 					local children = normalize_entries(submenu, current_path .. ".submenu", depth + 1)
@@ -101,7 +109,7 @@ local function normalize_context_menu(menu, path, report)
 					else
 						normalized[#normalized + 1] = { title = title, submenu = children }
 					end
-				elseif type(id) ~= "string" or id == "" or #id > MAX_CONTEXT_MENU_TEXT_BYTES then
+				elseif not is_valid_context_menu_text(id) then
 					report(current_path .. ".id", id, "non-empty string at most 1024 UTF-8 bytes")
 				else
 					if action_ids[id] then
@@ -127,7 +135,7 @@ local function normalize_image_prop(image, path, report)
 	if type(image) ~= "table" then
 		return image
 	end
-	if image.path ~= nil and image.svg ~= nil then
+	if has_conflicting_image_sources(image) then
 		report(path, image, "path or svg, but not both")
 		image.path = nil
 		image.svg = nil

@@ -121,7 +121,7 @@ public final class NetworkSnapshotProvider {
       .field("interval_seconds", refreshIntervalSeconds)
     )
 
-    if refreshIntervalSeconds.isFinite, refreshIntervalSeconds > 0 {
+    if usesPeriodicRefresh {
       refreshTask = Task { @MainActor [weak self] in
         while let self, self.isRunning, !Task.isCancelled {
           do {
@@ -138,6 +138,10 @@ public final class NetworkSnapshotProvider {
     }
 
     onChange()
+  }
+
+  private var usesPeriodicRefresh: Bool {
+    refreshIntervalSeconds.isFinite && refreshIntervalSeconds > 0
   }
 
   /// Stops delayed refreshes and all active monitoring.

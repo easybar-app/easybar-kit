@@ -44,7 +44,7 @@ final class CalendarRenderer {
     ]
 
     for (index, kind) in anchor.fields.enumerated() {
-      if anchor.layout == .row, index > 0, !anchor.separator.isEmpty {
+      if shouldInsertSeparator(before: index, anchor: anchor) {
         nodes.append(
           BuiltinNativeNodeFactory.makeChildItemNode(
             rootID: rootID,
@@ -75,6 +75,13 @@ final class CalendarRenderer {
     }
 
     return nodes
+  }
+
+  private func shouldInsertSeparator(
+    before index: Int,
+    anchor: Config.CalendarBuiltinConfig.Anchor
+  ) -> Bool {
+    anchor.layout == .row && index > 0 && !anchor.separator.isEmpty
   }
 
   private func makeContentContainer(

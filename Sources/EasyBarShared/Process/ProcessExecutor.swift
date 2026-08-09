@@ -414,7 +414,7 @@ public final class ProcessExecutor: @unchecked Sendable {
 
   /// Validates executor-specific limits in addition to the spawn payload.
   private func validate(_ request: ProcessExecutionRequest) throws {
-    if let timeout = request.timeout, !timeout.isFinite || timeout <= 0 {
+    if hasInvalidTimeout(request) {
       throw ProcessExecutionError.invalidTimeout
     }
     guard request.standardOutputLimit > 0, request.standardErrorLimit > 0 else {
@@ -426,6 +426,11 @@ public final class ProcessExecutor: @unchecked Sendable {
       arguments: request.arguments,
       environment: request.environment
     )
+  }
+
+  private func hasInvalidTimeout(_ request: ProcessExecutionRequest) -> Bool {
+    guard let timeout = request.timeout else { return false }
+    return !timeout.isFinite || timeout <= 0
   }
 
   /// Configures one pipe reader as nonblocking.

@@ -24,9 +24,17 @@ struct LogCommandOptionState {
       throw AppError.message("--lines cannot be combined with --all")
     }
 
-    if allHistory || ((options.requestID != nil || options.since != nil) && !linesSpecified) {
+    if shouldReadAllHistory {
       options.historyLimit = nil
     }
     return options
+  }
+
+  private var shouldReadAllHistory: Bool {
+    allHistory || (hasHistoryFilter && !linesSpecified)
+  }
+
+  private var hasHistoryFilter: Bool {
+    options.requestID != nil || options.since != nil
   }
 }

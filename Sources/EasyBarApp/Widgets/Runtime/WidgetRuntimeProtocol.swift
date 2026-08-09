@@ -164,11 +164,11 @@ struct WidgetRuntimeProtocolDecoder {
       let token = try normalizedToken(request.token, name: "storage request")
       let widget = try normalizedStorageSegment(request.widget, name: "widget")
       let key = try normalizedStorageSegment(request.key, name: "key")
-      if operation == .get, request.value != nil {
-        throw WidgetRuntimeProtocolError.invalidPayload("invalid lua storage get request")
-      }
-      if operation == .set, request.value == nil {
-        throw WidgetRuntimeProtocolError.invalidPayload("invalid lua storage set request")
+      if let validationError = storageValueValidationError(
+        operation: operation,
+        value: request.value
+      ) {
+        throw WidgetRuntimeProtocolError.invalidPayload(validationError)
       }
       if case .double(let value) = request.value, !value.isFinite {
         throw WidgetRuntimeProtocolError.invalidPayload("invalid lua storage number")
@@ -180,6 +180,17 @@ struct WidgetRuntimeProtocolDecoder {
         operation: operation,
         value: request.value
       )
+    }
+  }
+
+  private func storageValueValidationError(
+    operation: WidgetStorageOperation,
+    value: WidgetStorageValue?
+  ) -> String? {
+    switch (operation, value) {
+    case (.get, .some(_)): "invalid lua storage get request"
+    case (.set, .none): "invalid lua storage set request"
+    case (.get, .none), (.set, .some(_)): nil
     }
   }
 

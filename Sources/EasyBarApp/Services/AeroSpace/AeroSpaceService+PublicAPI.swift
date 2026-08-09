@@ -12,7 +12,7 @@ extension AeroSpaceService {
 
   /// Returns whether AeroSpace observation is currently active.
   var isActive: Bool {
-    withLock { $0.running && $0.active && !$0.consumers.isEmpty }
+    withLock { $0.acceptsWork }
   }
 
   /// Returns the current registered consumer count.

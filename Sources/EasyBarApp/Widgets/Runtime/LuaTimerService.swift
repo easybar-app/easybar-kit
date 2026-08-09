@@ -85,7 +85,7 @@ actor LuaTimerService {
       activeRuntimeSessionID = runtimeSessionID
     }
 
-    if activeTimers[token] == nil, activeTimers.count >= maximumActiveTimers {
+    if isAtCapacity(forNewToken: token) {
       logger.warn(
         "lua timer rejected because limit was reached",
         .field("token", token),
@@ -120,6 +120,10 @@ actor LuaTimerService {
       .field("token", token),
       .field("delay_seconds", delaySeconds)
     )
+  }
+
+  private func isAtCapacity(forNewToken token: String) -> Bool {
+    activeTimers[token] == nil && activeTimers.count >= maximumActiveTimers
   }
 
   /// Cancels one pending timer owned by the active runtime session.

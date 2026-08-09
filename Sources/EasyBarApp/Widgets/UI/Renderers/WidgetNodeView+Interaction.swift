@@ -171,16 +171,24 @@ extension WidgetNodeView {
 
   @ViewBuilder
   var scrollOverlay: some View {
-    if node.isMouseScrollInteractive || node.hasContextMenu {
+    if needsScrollEventSurface {
       nodeEventSurface(tracksHover: false)
     }
   }
 
   @ViewBuilder
   var nodeMouseOverlay: some View {
-    if node.hasMouseInteractionHandlers || node.hasContextMenu {
+    if needsMouseEventSurface {
       nodeEventSurface(tracksHover: node.isMouseHoverInteractive)
     }
+  }
+
+  private var needsScrollEventSurface: Bool {
+    node.isMouseScrollInteractive || node.hasContextMenu
+  }
+
+  private var needsMouseEventSurface: Bool {
+    node.hasMouseInteractionHandlers || node.hasContextMenu
   }
 
   /// Applies styling and mouse handling to popup anchor content.

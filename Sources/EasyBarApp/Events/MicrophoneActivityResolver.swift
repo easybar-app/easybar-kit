@@ -10,16 +10,24 @@ struct MicrophoneActivityResolver {
   }
 
   mutating func resolve(processActive: Bool, deviceActive: Bool) -> Bool {
-    if !cameraActive, !processActive, !deviceActive {
+    if allCaptureSignalsAreInactive(processActive: processActive, deviceActive: deviceActive) {
       deviceFallbackEnabled = true
     }
 
     if processActive {
       return true
     }
-    if cameraActive || !deviceFallbackEnabled {
+    if shouldSuppressDeviceFallback {
       return false
     }
     return deviceActive
+  }
+
+  private func allCaptureSignalsAreInactive(processActive: Bool, deviceActive: Bool) -> Bool {
+    !cameraActive && !processActive && !deviceActive
+  }
+
+  private var shouldSuppressDeviceFallback: Bool {
+    cameraActive || !deviceFallbackEnabled
   }
 }

@@ -192,7 +192,7 @@ extension CalendarMonthPopupView {
   func dayIndicatorBar(for date: Date) -> some View {
     let segments = dayIndicatorSegments(for: date)
 
-    if config.showEventIndicators, !segments.isEmpty {
+    if shouldShowDayIndicators(segments) {
       HStack(spacing: 1) {
         ForEach(segments) { segment in
           RoundedRectangle(cornerRadius: 1.5, style: .continuous)
@@ -212,6 +212,11 @@ extension CalendarMonthPopupView {
         .frame(width: 18, height: 3)
         .opacity(0)
     }
+  }
+
+  /// Returns whether a day has configured indicator content to render.
+  private func shouldShowDayIndicators(_ segments: [DayIndicatorSegment]) -> Bool {
+    config.showEventIndicators && !segments.isEmpty
   }
 
   /// Returns the per-calendar indicator segments for one day.

@@ -10,7 +10,7 @@ extension AeroSpaceService {
     replacedTask: Task<Void, Never>?
   )? {
     withLock { state in
-      guard state.running, state.active, !state.consumers.isEmpty else { return nil }
+      guard state.acceptsWork else { return nil }
 
       state.workspaceFocusRequestID &+= 1
       let token = AeroSpaceWorkspaceFocusToken(
@@ -53,9 +53,7 @@ extension AeroSpaceService {
   /// Returns whether one workspace-focus command still owns the optimistic state.
   func shouldExecute(workspaceFocusToken token: AeroSpaceWorkspaceFocusToken) -> Bool {
     withLock { state in
-      state.running
-        && state.active
-        && !state.consumers.isEmpty
+      state.acceptsWork
         && state.generation == token.generation
         && state.pendingWorkspaceFocusToken == token
     }

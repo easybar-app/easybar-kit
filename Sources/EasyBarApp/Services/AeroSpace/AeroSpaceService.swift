@@ -51,6 +51,16 @@ final class AeroSpaceService: ObservableObject, @unchecked Sendable {
     var pendingWorkspaceFocusToken: AeroSpaceWorkspaceFocusToken?
     /// Cancellable workspace-focus command task.
     var workspaceFocusTask: Task<Void, Never>?
+
+    /// Whether the running service has active observation work to perform.
+    var acceptsWork: Bool {
+      running && active && !consumers.isEmpty
+    }
+
+    /// Whether the first consumer can activate observation.
+    var canActivate: Bool {
+      running && !active && !consumers.isEmpty
+    }
   }
 
   /// Logger used for AeroSpace diagnostics.

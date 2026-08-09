@@ -82,7 +82,7 @@ extension AeroSpaceService {
   private func queueFocusedStateRefresh(source: String) {
     let reservation = withLock {
       state -> (token: AeroSpaceFocusedStateToken, replacedTask: Task<Void, Never>?)? in
-      guard state.running, state.active, !state.consumers.isEmpty else { return nil }
+      guard state.acceptsWork else { return nil }
 
       state.focusedStateRevision &+= 1
       let token = AeroSpaceFocusedStateToken(

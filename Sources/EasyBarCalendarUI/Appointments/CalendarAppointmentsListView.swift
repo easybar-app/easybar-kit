@@ -134,16 +134,13 @@ public struct CalendarAppointmentsListView: View {
         appointmentTitleView(for: event)
         appointmentEndTimeView(for: event)
 
-        if style.showCalendarName || differentiateWithoutColor,
-          let calendarName = event.calendarName,
-          !calendarName.isEmpty
-        {
+        if let calendarName = visibleCalendarName(for: event) {
           Text(calendarName)
             .font(.system(size: 11, weight: .regular))
             .foregroundStyle(color(style.secondaryTextColorHex))
         }
 
-        if style.showLocation, let locationText = event.location, !locationText.isEmpty {
+        if let locationText = visibleLocation(for: event) {
           HStack(alignment: .firstTextBaseline, spacing: 4) {
             if !style.locationIcon.isEmpty {
               Text(style.locationIcon)
@@ -266,23 +263,13 @@ public struct CalendarAppointmentsListView: View {
   @ViewBuilder
   private func appointmentEndTimeView(for event: CalendarAgentEvent) -> some View {
     if !event.isAllDay {
-      if style.showEndTime,
-        let endTime = CalendarEventFormatter.endTimeText(
-          startDate: event.startDate,
-          endDate: event.endDate,
-          isAllDay: event.isAllDay,
-          calendar: calendar
-        )
-      {
+      if let endTime = visibleEndTime(for: event) {
         Text("until \(endTime)")
           .font(.system(size: 11, weight: .regular))
           .foregroundStyle(color(style.secondaryTextColorHex))
       }
 
-      if style.showTravelTime,
-        let travelTimeSeconds = event.travelTimeSeconds,
-        let travelText = CalendarEventFormatter.travelTimeText(travelTimeSeconds: travelTimeSeconds)
-      {
+      if let travelText = visibleTravelTime(for: event) {
         HStack(alignment: .firstTextBaseline, spacing: 4) {
           Text(style.travelIcon)
             .font(CalendarUIPrimitives.iconFont(size: 11))
@@ -293,6 +280,32 @@ public struct CalendarAppointmentsListView: View {
         }
       }
     }
+  }
+
+  private func visibleCalendarName(for event: CalendarAgentEvent) -> String? {
+    guard style.showCalendarName || differentiateWithoutColor else { return nil }
+    guard let calendarName = event.calendarName, !calendarName.isEmpty else { return nil }
+    return calendarName
+  }
+
+  private func visibleLocation(for event: CalendarAgentEvent) -> String? {
+    guard style.showLocation, let location = event.location, !location.isEmpty else { return nil }
+    return location
+  }
+
+  private func visibleEndTime(for event: CalendarAgentEvent) -> String? {
+    guard style.showEndTime else { return nil }
+    return CalendarEventFormatter.endTimeText(
+      startDate: event.startDate,
+      endDate: event.endDate,
+      isAllDay: event.isAllDay,
+      calendar: calendar
+    )
+  }
+
+  private func visibleTravelTime(for event: CalendarAgentEvent) -> String? {
+    guard style.showTravelTime, let travelTimeSeconds = event.travelTimeSeconds else { return nil }
+    return CalendarEventFormatter.travelTimeText(travelTimeSeconds: travelTimeSeconds)
   }
 
   private func appointmentPrefix(for event: CalendarAgentEvent) -> String {

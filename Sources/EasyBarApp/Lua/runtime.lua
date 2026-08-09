@@ -66,6 +66,16 @@ local default_exec_options = {
 	max_output_bytes = default_command_max_output_bytes,
 }
 
+--- Returns whether the pending tree is already synchronized with the host.
+local function should_skip_render(force)
+	return not force and not render_dirty
+end
+
+--- Returns whether the host already has the current subscription payload.
+local function subscriptions_are_current(force, payload)
+	return not force and payload == last_subscription_payload
+end
+
 --- Marks the current runtime state as needing one render flush.
 local function mark_render_dirty()
 	render_dirty = true
@@ -73,7 +83,7 @@ end
 
 --- Emits the current tree snapshot when a Lua turn mutated widget state.
 local function flush_pending_render(force)
-	if not force and not render_dirty then
+	if should_skip_render(force) then
 		return
 	end
 
@@ -90,7 +100,7 @@ local function emit_subscriptions(force)
 		events = registry.required_events(),
 	})
 
-	if not force and payload == last_subscription_payload then
+	if subscriptions_are_current(force, payload) then
 		return
 	end
 

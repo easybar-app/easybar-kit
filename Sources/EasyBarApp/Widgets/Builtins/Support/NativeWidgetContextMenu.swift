@@ -12,7 +12,7 @@ enum NativeWidgetContextMenu {
     to items: [WidgetContextMenuItem]?
   ) -> [WidgetContextMenuItem] {
     var result = items ?? []
-    if !result.isEmpty, result.last?.separator != true {
+    if needsCommonActionSeparator(result) {
       result.append(WidgetContextMenuItem(separator: true))
     }
     result.append(
@@ -28,5 +28,9 @@ enum NativeWidgetContextMenu {
       )
     )
     return result
+  }
+
+  private static func needsCommonActionSeparator(_ items: [WidgetContextMenuItem]) -> Bool {
+    !items.isEmpty && items.last?.separator != true
   }
 }

@@ -206,7 +206,7 @@ final class CalendarAgentStreamController: @unchecked Sendable {
 
   /// Handles one decoded calendar-agent response.
   private func handle(_ response: CalendarAgentMessage, connectionID: UInt64) {
-    guard isStarted, client.isCurrentConnectionGeneration(connectionID) else { return }
+    guard isCurrentConnection(connectionID) else { return }
 
     switch response.kind {
     case .snapshot:
@@ -233,7 +233,7 @@ final class CalendarAgentStreamController: @unchecked Sendable {
 
       Task { @MainActor [weak self] in
         guard let self else { return }
-        guard self.isStarted, self.client.isCurrentConnectionGeneration(connectionID) else {
+        guard self.isCurrentConnection(connectionID) else {
           return
         }
 
@@ -280,7 +280,7 @@ final class CalendarAgentStreamController: @unchecked Sendable {
       )
       Task { @MainActor [weak self] in
         guard let self else { return }
-        guard self.isStarted, self.client.isCurrentConnectionGeneration(connectionID) else {
+        guard self.isCurrentConnection(connectionID) else {
           return
         }
         self.clearState()
@@ -297,7 +297,7 @@ final class CalendarAgentStreamController: @unchecked Sendable {
 
   /// Clears published state only for disconnects that occur while the stream is active.
   private func handleDisconnectedStateReset(connectionID: UInt64) {
-    guard isStarted, client.isCurrentConnectionGeneration(connectionID) else { return }
+    guard isCurrentConnection(connectionID) else { return }
     let retainsLastSnapshot = lifecycleState.withLock { state in
       state.pendingRequests.removeAll()
       state.pendingRequestIDs.removeAll()
@@ -307,11 +307,16 @@ final class CalendarAgentStreamController: @unchecked Sendable {
 
     Task { @MainActor [weak self] in
       guard let self else { return }
-      guard self.isStarted, self.client.isCurrentConnectionGeneration(connectionID) else {
+      guard self.isCurrentConnection(connectionID) else {
         return
       }
       self.clearState()
     }
+  }
+
+  /// Returns whether a callback belongs to the active stream connection.
+  private func isCurrentConnection(_ connectionID: UInt64) -> Bool {
+    isStarted && client.isCurrentConnectionGeneration(connectionID)
   }
 
   /// Refreshes the cached request and socket path used by background socket work.
@@ -325,8 +330,9 @@ final class CalendarAgentStreamController: @unchecked Sendable {
     return lifecycleState.withLock { state in
       let requestChanged = state.socketPath != socketPath || state.request != request
       let wasPermanentlyRejected = state.permanentlyRejectedRequest != nil
+      let shouldResetPermanentError = resetPermanentError || requestChanged
 
-      if resetPermanentError || requestChanged {
+      if shouldResetPermanentError {
         state.permanentlyRejectedRequest = nil
       }
       if resetPermanentError {

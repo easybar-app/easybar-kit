@@ -12,30 +12,46 @@ enum ConfigSemanticWarningBuilder {
   static func warnings(for snapshot: ConfigSnapshot) -> [String] {
     var warnings: [String] = []
 
-    if snapshot.builtins.calendar.enabled && !snapshot.calendarAgent.enabled {
+    if calendarDependsOnDisabledAgent(snapshot) {
       warnings.append(
         "builtins.calendar is enabled, but agents.calendar.enabled is false; the calendar widget will not receive calendar data."
       )
     }
 
-    if snapshot.builtins.wifi.enabled && !snapshot.networkAgent.enabled {
+    if wifiDependsOnDisabledAgent(snapshot) {
       warnings.append(
         "builtins.wifi is enabled, but agents.network.enabled is false; the Wi-Fi widget will not receive network data."
       )
     }
 
     let wifi = snapshot.builtins.wifi
-    if wifi.enabled && wifi.mode != .icon && !wifi.fields.hasEnabledField {
+    if wifiHasNoConfiguredContent(wifi) {
       warnings.append(
         "builtins.wifi.content.mode is \"\(wifi.mode.rawValue)\", but no builtins.wifi.fields entries are enabled."
       )
     }
 
     let spaces = snapshot.builtins.spaces
-    if spaces.enabled && !spaces.layout.showLabel && !spaces.layout.showIcons {
+    if spacesHasNoVisibleContent(spaces) {
       warnings.append(spacesWithoutVisibleContent)
     }
 
     return warnings
+  }
+
+  private static func calendarDependsOnDisabledAgent(_ snapshot: ConfigSnapshot) -> Bool {
+    snapshot.builtins.calendar.enabled && !snapshot.calendarAgent.enabled
+  }
+
+  private static func wifiDependsOnDisabledAgent(_ snapshot: ConfigSnapshot) -> Bool {
+    snapshot.builtins.wifi.enabled && !snapshot.networkAgent.enabled
+  }
+
+  private static func wifiHasNoConfiguredContent(_ wifi: Config.WiFiBuiltinConfig) -> Bool {
+    wifi.enabled && wifi.mode != .icon && !wifi.fields.hasEnabledField
+  }
+
+  private static func spacesHasNoVisibleContent(_ spaces: Config.SpacesBuiltinConfig) -> Bool {
+    spaces.enabled && !spaces.layout.showLabel && !spaces.layout.showIcons
   }
 }

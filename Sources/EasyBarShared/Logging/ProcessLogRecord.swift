@@ -14,6 +14,13 @@ public enum ProcessLogRuntime: String, Codable, CaseIterable, Sendable {
 
 /// One parsed EasyBar process log line.
 public struct ProcessLogRecord: Sendable {
+  private static let agentSources: Set<String> = [
+    "calendar-agent",
+    "network-agent",
+    "easybar-calendar-agent",
+    "easybar-network-agent",
+  ]
+
   private static let timestampFormatter = LockedState<ISO8601DateFormatter>(
     {
       let formatter = ISO8601DateFormatter()
@@ -67,9 +74,7 @@ public struct ProcessLogRecord: Sendable {
       return runtime
     }
 
-    if source == "calendar-agent" || source == "network-agent"
-      || source == "easybar-calendar-agent" || source == "easybar-network-agent"
-    {
+    if isAgentProcess {
       return .agent
     }
 
@@ -83,13 +88,11 @@ public struct ProcessLogRecord: Sendable {
 
     let subsystem = fields["subsystem"]?.lowercased() ?? ""
     let lowercasedMessage = message.lowercased()
-    if subsystem.contains(".lua") || lowercasedMessage.hasPrefix("lua ") {
+    if looksLikeLuaRuntimeLog(subsystem: subsystem, message: lowercasedMessage) {
       return .lua
     }
 
-    if subsystem.contains(".widgets") || subsystem.contains("wifi_store")
-      || lowercasedMessage.contains("native widget") || lowercasedMessage.hasPrefix("wifi widget")
-    {
+    if looksLikeNativeWidgetLog(subsystem: subsystem, message: lowercasedMessage) {
       return .native
     }
 
@@ -98,6 +101,21 @@ public struct ProcessLogRecord: Sendable {
     }
 
     return nil
+  }
+
+  private var isAgentProcess: Bool {
+    Self.agentSources.contains(source)
+  }
+
+  private func looksLikeLuaRuntimeLog(subsystem: String, message: String) -> Bool {
+    subsystem.contains(".lua") || message.hasPrefix("lua ")
+  }
+
+  private func looksLikeNativeWidgetLog(subsystem: String, message: String) -> Bool {
+    subsystem.contains(".widgets")
+      || subsystem.contains("wifi_store")
+      || message.contains("native widget")
+      || message.hasPrefix("wifi widget")
   }
 
   /// Parses one shared logger line and preserves unstructured lines as raw records.

@@ -23,6 +23,14 @@ local function snapshot_array(values)
 	return copy
 end
 
+local function should_dispatch_to_target(target, id)
+	return target == nil or target == id
+end
+
+local function should_dispatch_to_owner(owner, target, id, dispatched)
+	return owner ~= nil and owner ~= target and owner == id and not dispatched[id]
+end
+
 function M.new(state, ensure_item_exists, log, event_tokens)
 	local subscriptions = {}
 
@@ -54,11 +62,11 @@ function M.new(state, ensure_item_exists, log, event_tokens)
 		local dispatched = {}
 		for _, id in ipairs(snapshot_array(state.item_order)) do
 			if state.items[id] ~= nil then
-				if target == nil or target == id then
+				if should_dispatch_to_target(target, id) then
 					dispatch_handlers_for(id, event)
 					dispatched[id] = true
 				end
-				if owner ~= nil and owner ~= target and owner == id and not dispatched[id] then
+				if should_dispatch_to_owner(owner, target, id, dispatched) then
 					dispatch_handlers_for(id, event)
 				end
 			end

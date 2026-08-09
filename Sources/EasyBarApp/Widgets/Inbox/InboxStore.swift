@@ -76,9 +76,9 @@ final class InboxStore: ObservableObject {
     var uniqueItems: [String: InboxItem] = [:]
     var occupiedIDs = Set((controlSources[source] ?? []).map(\.id))
     for item in items where isValid(item) {
-      if uniqueItems[item.id] != nil || occupiedIDs.contains(item.id)
-        || occupiedIDs.count < configuration.maxItems
-      {
+      let replacesExistingItem = uniqueItems[item.id] != nil || occupiedIDs.contains(item.id)
+      let hasCapacity = occupiedIDs.count < configuration.maxItems
+      if replacesExistingItem || hasCapacity {
         uniqueItems[item.id] = item
         occupiedIDs.insert(item.id)
       }

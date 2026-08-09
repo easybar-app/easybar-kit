@@ -6,11 +6,11 @@ import Foundation
 extension AeroSpaceService {
   /// Runs the AeroSpace CLI while the service lifecycle remains active.
   func runAeroSpace(arguments: [String]) async -> String? {
-    guard isActive, !Task.isCancelled else { return nil }
+    guard shouldContinueActiveWork else { return nil }
 
     let output = await commandRunner.run(arguments: arguments)
 
-    guard isActive, !Task.isCancelled else { return nil }
+    guard shouldContinueActiveWork else { return nil }
     return output
   }
 
@@ -26,19 +26,27 @@ extension AeroSpaceService {
   /// Returns whether the service is still allowed to execute queued work.
   func shouldExecute(generation: UInt64) -> Bool {
     withLock { state in
-      state.running && state.active && !state.consumers.isEmpty && state.generation == generation
+      state.acceptsWork && state.generation == generation
     }
   }
 
   /// Returns whether this token is still the newest refresh in the active lifecycle.
   func shouldExecute(refreshToken: AeroSpaceRefreshToken) -> Bool {
     withLock { state in
-      state.running
-        && state.active
-        && !state.consumers.isEmpty
+      state.acceptsWork
         && state.pendingRefreshToken == refreshToken
         && state.refreshSequence.isCurrent(refreshToken, generation: state.generation)
     }
+  }
+
+  /// Returns whether active work has not been cancelled.
+  private var shouldContinueActiveWork: Bool {
+    isActive && !Task.isCancelled
+  }
+
+  /// Returns whether the newest refresh still owns publication and has not been cancelled.
+  func shouldContinue(refreshToken: AeroSpaceRefreshToken) -> Bool {
+    !Task.isCancelled && shouldExecute(refreshToken: refreshToken)
   }
 
   /// Returns the current refresh generation.

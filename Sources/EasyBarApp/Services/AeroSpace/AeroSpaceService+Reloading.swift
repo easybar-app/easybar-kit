@@ -8,7 +8,7 @@ extension AeroSpaceService {
   func queueRefresh(source: String, expectedGeneration: UInt64? = nil) {
     let reservation = withLock {
       state -> (token: AeroSpaceRefreshToken, replacedTask: Task<Void, Never>?)? in
-      guard state.running, state.active, !state.consumers.isEmpty else { return nil }
+      guard state.acceptsWork else { return nil }
       if let expectedGeneration, state.generation != expectedGeneration {
         return nil
       }
@@ -51,7 +51,7 @@ extension AeroSpaceService {
   /// Reads current AeroSpace state and publishes it, retaining last-known-good state on failure.
   private func reloadState(refreshToken: AeroSpaceRefreshToken) async {
     defer { finishRefresh(refreshToken) }
-    guard shouldExecute(refreshToken: refreshToken), !Task.isCancelled else { return }
+    guard shouldContinue(refreshToken: refreshToken) else { return }
 
     logger.debug(
       "aerospace reloadState begin",
@@ -59,7 +59,7 @@ extension AeroSpaceService {
     )
 
     guard await versionValidationCache.validate(generation: refreshToken.generation) else {
-      guard shouldExecute(refreshToken: refreshToken), !Task.isCancelled else { return }
+      guard shouldContinue(refreshToken: refreshToken) else { return }
       await publishRefreshFailure(
         message: "AeroSpace version validation failed",
         refreshToken: refreshToken
@@ -68,7 +68,7 @@ extension AeroSpaceService {
       return
     }
 
-    guard shouldExecute(refreshToken: refreshToken), !Task.isCancelled else { return }
+    guard shouldContinue(refreshToken: refreshToken) else { return }
 
     do {
       let snapshot = try await AeroSpaceSnapshotLoader.load(
@@ -81,13 +81,13 @@ extension AeroSpaceService {
         }
       )
 
-      guard shouldExecute(refreshToken: refreshToken), !Task.isCancelled else { return }
+      guard shouldContinue(refreshToken: refreshToken) else { return }
       refreshRetryScheduler.cancel()
       await publish(snapshot: snapshot, refreshToken: refreshToken)
     } catch is CancellationError {
       return
     } catch {
-      guard shouldExecute(refreshToken: refreshToken), !Task.isCancelled else { return }
+      guard shouldContinue(refreshToken: refreshToken) else { return }
       logger.error(
         "aerospace JSON snapshot unavailable",
         .field("error", error),

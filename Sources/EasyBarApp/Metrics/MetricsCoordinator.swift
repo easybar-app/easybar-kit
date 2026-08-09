@@ -63,12 +63,16 @@ actor MetricsCoordinator {
 
     /// Records a new active connection and counts reconnects after the first connection.
     mutating func recordConnection() {
-      if activeConnections == 0 && everConnected {
+      if isReconnect {
         reconnectsTotal += 1
       }
 
       activeConnections += 1
       everConnected = true
+    }
+
+    private var isReconnect: Bool {
+      activeConnections == 0 && everConnected
     }
 
     /// Records one closed connection without allowing the active count to go negative.

@@ -42,7 +42,7 @@ func parseArguments(_ arguments: [String]) throws -> ParsedArguments {
     global: &global
   )
 
-  if global.socketPath != nil, !descriptor.kind.acceptsSocketOverride {
+  if hasUnsupportedSocketOverride(global: global, command: descriptor) {
     throw AppError.message("--socket cannot be used with \(descriptor.commandText)")
   }
 
@@ -51,6 +51,13 @@ func parseArguments(_ arguments: [String]) throws -> ParsedArguments {
     socketPath: global.socketPath,
     debugEnabled: global.debugEnabled
   )
+}
+
+private func hasUnsupportedSocketOverride(
+  global: GlobalOptionState,
+  command: CLICommandDescriptor
+) -> Bool {
+  global.socketPath != nil && !command.kind.acceptsSocketOverride
 }
 
 private struct GlobalOptionState {
@@ -429,15 +436,21 @@ private func parseWidgetPackageUpdateOptions(
     index += 1
   }
 
-  let selection: WidgetPackageUpdateSelection
-  if updateAll, name == nil {
-    selection = .all
-  } else if !updateAll, let name {
-    selection = .package(name)
-  } else {
-    throw AppError.message("widgets update requires exactly one package name or --all")
-  }
+  let selection = try widgetPackageUpdateSelection(updateAll: updateAll, name: name)
   return WidgetPackageUpdateOptions(selection: selection, registry: registry)
+}
+
+private func widgetPackageUpdateSelection(
+  updateAll: Bool,
+  name: String?
+) throws -> WidgetPackageUpdateSelection {
+  if updateAll, name == nil {
+    return .all
+  }
+  if !updateAll, let name {
+    return .package(name)
+  }
+  throw AppError.message("widgets update requires exactly one package name or --all")
 }
 
 private func parseWidgetPackageUninstallName(
@@ -581,7 +594,7 @@ private func parseWidgetPackageInstallOptions(
   guard let source, !source.isEmpty else {
     throw AppError.message("widgets install requires a package name, path, or URL")
   }
-  if !useRegistry, registry != nil {
+  if hasConflictingRegistryOptions(useRegistry: useRegistry, registry: registry) {
     throw AppError.message("--registry and --no-registry cannot be used together")
   }
   return WidgetPackageInstallOptions(
@@ -590,6 +603,10 @@ private func parseWidgetPackageInstallOptions(
     registry: registry,
     useRegistry: useRegistry
   )
+}
+
+private func hasConflictingRegistryOptions(useRegistry: Bool, registry: String?) -> Bool {
+  !useRegistry && registry != nil
 }
 
 private func parseGlobalOnlyArguments(

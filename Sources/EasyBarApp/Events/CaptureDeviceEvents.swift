@@ -90,7 +90,8 @@ final class CaptureDeviceEvents {
     if microphoneActivityChanged {
       events.append(.microphoneActivityChanged)
     }
-    if cameraActivityChanged || microphoneActivityChanged {
+    let captureActivityChanged = cameraActivityChanged || microphoneActivityChanged
+    if captureActivityChanged {
       events.append(.captureActivityChanged)
     }
 

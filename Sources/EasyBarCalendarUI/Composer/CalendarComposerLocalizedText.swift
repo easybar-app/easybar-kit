@@ -51,16 +51,24 @@ enum CalendarComposerLocalizedText {
   private static func fallbackDuration(seconds: TimeInterval) -> String {
     let minutes = max(1, Int((seconds / 60).rounded()))
 
-    if minutes >= 24 * 60, minutes.isMultiple(of: 24 * 60) {
+    if representsWholeDays(minutes) {
       let days = minutes / (24 * 60)
       return days == 1 ? "1 day" : "\(days) days"
     }
 
-    if minutes >= 60, minutes.isMultiple(of: 60) {
+    if representsWholeHours(minutes) {
       let hours = minutes / 60
       return hours == 1 ? "1 hour" : "\(hours) hours"
     }
 
     return minutes == 1 ? "1 minute" : "\(minutes) minutes"
+  }
+
+  private static func representsWholeDays(_ minutes: Int) -> Bool {
+    minutes >= 24 * 60 && minutes.isMultiple(of: 24 * 60)
+  }
+
+  private static func representsWholeHours(_ minutes: Int) -> Bool {
+    minutes >= 60 && minutes.isMultiple(of: 60)
   }
 }

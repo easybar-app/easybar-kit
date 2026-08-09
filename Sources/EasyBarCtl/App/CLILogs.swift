@@ -91,7 +91,7 @@ private func liveLogEndpoints(
   runtimeConfig: SharedRuntimeConfig,
   context: AppContext
 ) throws -> [LogStreamEndpoint] {
-  if explicitSocketPath != nil, runtime == nil || runtime == .agent {
+  if socketOverrideTargetsUnsupportedRuntime(runtime, explicitSocketPath: explicitSocketPath) {
     throw AppError.message(
       "--socket can only override live logs for --runtime lua or --runtime native"
     )
@@ -118,6 +118,13 @@ private func liveLogEndpoints(
     context.debug("subscribing to \(endpoint.label) logs at \(endpoint.path)")
   }
   return endpoints
+}
+
+private func socketOverrideTargetsUnsupportedRuntime(
+  _ runtime: ProcessLogRuntime?,
+  explicitSocketPath: String?
+) -> Bool {
+  explicitSocketPath != nil && (runtime == nil || runtime == .agent)
 }
 
 /// Returns live-log endpoints for the enabled helper agents.
