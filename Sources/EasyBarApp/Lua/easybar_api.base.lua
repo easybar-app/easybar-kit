@@ -323,7 +323,7 @@ function EasyBarInbox.configure(source, configuration) end
 
 ---Registers an action handler for one source.
 ---@param source string Publisher name whose item actions should be delivered.
----@param handler fun(event:EasyBarInboxActionEvent) Callback invoked for matching item actions.
+---@param handler fun(event:EasyBarInboxActionEvent) Callback invoked for matching item actions and native `mark_read` transitions.
 ---@return EasyBarSubscriptionHandle subscription Disposable registration handle.
 function EasyBarInbox.on_action(source, handler) end
 

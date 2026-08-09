@@ -467,10 +467,10 @@ Registers an action handler for one source.
 
 #### Parameters
 
-| Name      | Type                                 | Description                                            |
-| --------- | ------------------------------------ | ------------------------------------------------------ |
-| `source`  | `string`                             | Publisher name whose item actions should be delivered. |
-| `handler` | `fun(event:EasyBarInboxActionEvent)` | Callback invoked for matching item actions.            |
+| Name      | Type                                 | Description                                                                    |
+| --------- | ------------------------------------ | ------------------------------------------------------------------------------ |
+| `source`  | `string`                             | Publisher name whose item actions should be delivered.                         |
+| `handler` | `fun(event:EasyBarInboxActionEvent)` | Callback invoked for matching item actions and native `mark_read` transitions. |
 
 #### Returns
 

@@ -46,7 +46,7 @@ struct InboxPopupView: View {
             tooltipTextColor: tooltipTextColor,
             tooltipBackgroundColor: tooltipBackgroundColor,
             tooltipBorderColor: tooltipBorderColor,
-            action: store.markAllRead
+            action: markAllRead
           )
         }
         if config.showDismissAll, !store.presentedItems.isEmpty {
@@ -162,6 +162,42 @@ struct InboxPopupView: View {
     }
   }
 
+  /// Marks one item read locally and notifies its source widget.
+  private func markRead(_ item: InboxPresentedItem) {
+    guard item.isUnread else { return }
+    store.markRead(item)
+    emitAction(
+      .inboxAction,
+      actionID: "mark_read",
+      source: item.source,
+      targetWidgetID: item.item.id
+    )
+  }
+
+  /// Toggles local read state while forwarding only the server-actionable read transition.
+  private func toggleRead(_ item: InboxPresentedItem) {
+    if item.isUnread {
+      markRead(item)
+    } else {
+      store.markUnread(item)
+    }
+  }
+
+  /// Marks every unread item locally and forwards one read action per source item.
+  private func markAllRead() {
+    let unreadItems = store.presentedItems.filter(\.isUnread)
+    guard !unreadItems.isEmpty else { return }
+    store.markAllRead()
+    for item in unreadItems {
+      emitAction(
+        .inboxAction,
+        actionID: "mark_read",
+        source: item.source,
+        targetWidgetID: item.item.id
+      )
+    }
+  }
+
   private func beginSourceActionHold(hasActivity: Bool) {
     guard !holdsSourceActionOpen else { return }
 
@@ -265,7 +301,7 @@ struct InboxPopupView: View {
       if config.groupBy != .source {
         let source = presented.item.source
         Button {
-          store.markRead(presented)
+          markRead(presented)
         } label: {
           HStack(spacing: 4) {
             if let icon = source?.icon, !icon.isEmpty {
@@ -285,7 +321,7 @@ struct InboxPopupView: View {
 
       HStack(alignment: .firstTextBaseline, spacing: 6) {
         Button {
-          store.toggleRead(presented)
+          toggleRead(presented)
         } label: {
           Label {
             Text(presented.isUnread ? "Mark as read" : "Mark as unread")
@@ -305,7 +341,7 @@ struct InboxPopupView: View {
         .buttonStyle(.plain)
         .help(presented.isUnread ? "Mark as read" : "Mark as unread")
         Button(presented.item.title) {
-          store.markRead(presented)
+          markRead(presented)
         }
         .buttonStyle(.plain)
         .font(.system(size: 13, weight: presented.isUnread ? .semibold : .regular))
@@ -316,7 +352,7 @@ struct InboxPopupView: View {
 
       if let body = presented.item.body, !body.isEmpty {
         Button {
-          store.markRead(presented)
+          markRead(presented)
         } label: {
           bodyText(body, format: presented.item.resolvedFormat)
         }
@@ -332,7 +368,7 @@ struct InboxPopupView: View {
       let itemURL = presented.item.url.flatMap(URL.init(string:))
       HStack(spacing: 10) {
         Button(presented.isUnread ? "Read" : "Unread") {
-          store.toggleRead(presented)
+          toggleRead(presented)
         }
         .buttonStyle(.plain)
         .foregroundStyle(color(config.popupActionColorHex))
@@ -380,7 +416,7 @@ struct InboxPopupView: View {
 
         if let itemURL {
           Button("Open") {
-            store.markRead(presented)
+            markRead(presented)
             NSWorkspace.shared.open(itemURL)
           }
           .buttonStyle(.plain)
@@ -396,7 +432,7 @@ struct InboxPopupView: View {
     .contentShape(Rectangle())
     .contextMenu {
       Button(presented.isUnread ? "Mark as read" : "Mark as unread") {
-        store.toggleRead(presented)
+        toggleRead(presented)
       }
       if presented.item.isDismissible {
         Divider()
