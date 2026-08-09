@@ -3,11 +3,6 @@ dist/
 .swiftpm/
 .cache/
 .home/
-# Generated documentation site
-/docs/.site/
-docs/.venv/
-.site/
-
 __pycache__/
 
 .DS_Store

@@ -38,20 +38,6 @@ jobs:
       check_generated: true
       test_timeout_minutes: 12
 
-  docs:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.x"
-
-      - name: Build docs
-        run: make build-docs
-
   release-scripts:
     runs-on: ubuntu-latest
 

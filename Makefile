@@ -96,10 +96,6 @@ LOCAL_LOG_DIR ?= $(HOME)/Library/Logs/EasyBar
 LOCAL_STATE_DIR ?= $(HOME)/Library/Application Support/EasyBar/LocalInstall
 WIDGETS_INSTALL_DIR ?= $(HOME)/.config/easybar/widgets
 WIDGETS_INSTALL_MANIFEST ?= $(CURDIR)/examples/install-manifest.csv
-IMAGE_CONVERT ?= magick
-SVG_CONVERT ?= rsvg-convert
-CLICLICK ?= cliclick
-SCREENSHOT_CONTEXT_MENU_POINT ?= 1344,16
 PRETTIER ?= npx --yes prettier@3.9.6
 STYLUA ?= stylua
 LUA ?= lua
@@ -131,27 +127,24 @@ endif
         build bundle package release app cli validate-config \
         fmt fmt-swift fmt-lua fmt-markdown \
         lint lint-swift lint-lua check-lua test test-hardening \
-        clean clean-dist run run-debug run-trace install-local install-widgets uninstall-local stop restart-app icons screenshot-context-menu screenshots check-screenshots \
+        clean clean-dist run run-debug run-trace install-local install-widgets uninstall-local stop restart-app icons \
         build-app build-lua-runtime build-calendar-agent build-network-agent build-cli \
         copy-resources copy-debug-resources prepare-debug-app-bundle verify verify-release \
         sign notarize \
         print-arch print-run-arch print-version print-local-version print-latest-tag print-package-sha256 \
         tag-patch tag-minor tag-major push-tags tag \
         run-build-app run-build-lua-runtime run-build-calendar-agent run-build-network-agent run-build-cli \
-        demo \
-        generate-docs generate-lua-docs generate-config-docs fmt-generated-docs normalize-generated-docs check-docs serve-docs build-docs clean-docs \
-        favicon
+        demo
 
 help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-24s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 ##@ Generated
 
-generate: generate-theme-tokens generate-event-catalog generate-config generate-docs ## Generate all checked-in generated artifacts.
+generate: generate-theme-tokens generate-event-catalog generate-config ## Generate all checked-in generated artifacts.
 
 check-generated: generate ## Verify all checked-in generated artifacts are committed.
-	@python3 scripts/generate/check.py check-diff \
-		--normalized-markdown $(GENERATED_MARKDOWN_DOCS)
+	@python3 scripts/generate/check.py check-diff
 
 generate-theme-tokens: ## Regenerate shared theme token artifacts for Swift and Lua.
 	@python3 scripts/generate/theme_tokens.py
@@ -159,26 +152,11 @@ generate-theme-tokens: ## Regenerate shared theme token artifacts for Swift and 
 generate-event-catalog: ## Regenerate Lua event catalog files from the shared manifest.
 	@python3 scripts/generate/event_catalog.py
 
-generate-config: ## Regenerate default config and config docs from the app config schema.
+generate-config: ## Regenerate the default config from the app config schema.
 	@swift run EasyBarGenerateConfig all
 
 generate-default-config: ## Regenerate the visible default config reference from the app config schema.
 	@swift run EasyBarGenerateConfig defaults
-
-screenshot-context-menu: ## Open the EasyBar context menu at its documentation screenshot position.
-	@if ! command -v "$(CLICLICK)" >/dev/null 2>&1; then \
-		echo 'Missing cliclick. Install it with: brew install cliclick' >&2; \
-		exit 1; \
-	fi
-	@$(CLICLICK) "rc:$(SCREENSHOT_CONTEXT_MENU_POINT)"
-
-screenshots: ## Regenerate consistently cropped documentation screenshots.
-	@scripts/assets/screenshots.sh "$(IMAGE_CONVERT)" docs/screenshots/screenshots.manifest \
-		docs/screenshots/raw docs/content/assets
-
-check-screenshots: ## Verify documentation screenshots match their raw captures and manifest.
-	@scripts/assets/screenshots.sh "$(IMAGE_CONVERT)" docs/screenshots/screenshots.manifest \
-		docs/screenshots/raw docs/content/assets --check
 
 ##@ Build
 
@@ -432,70 +410,3 @@ tag: ## Show latest tag.
 
 demo: ## Populate the demo calendar with random events.
 	@swift scripts/tools/populate-demo-calendar.swift demo
-
-##@ Docs
-
-DOCS_DIR := docs
-DOCS_CONFIG := $(DOCS_DIR)/mkdocs.yml
-DOCS_REQUIREMENTS := $(DOCS_DIR)/requirements.txt
-DOCS_VENV := $(DOCS_DIR)/.venv
-DOCS_PYTHON := $(DOCS_VENV)/bin/python
-DOCS_STAMP := $(DOCS_VENV)/.requirements-installed
-WIDGETS_ROOT ?= ../widgets
-WIDGET_PACKAGE_DOCS := $(DOCS_DIR)/content/packages
-WIDGET_DOCS_PYTHON ?= python3
-GENERATED_MARKDOWN_DOCS := \
-	$(DOCS_DIR)/content/configuration/reference.md \
-	$(DOCS_DIR)/content/lua/reference
-
-$(DOCS_PYTHON):
-	@python3 -m venv $(DOCS_VENV)
-
-$(DOCS_STAMP): $(DOCS_REQUIREMENTS) | $(DOCS_PYTHON)
-	@$(DOCS_PYTHON) -m pip install --upgrade pip
-	@$(DOCS_PYTHON) -m pip install -r $(DOCS_REQUIREMENTS)
-	@touch $(DOCS_STAMP)
-
-generate-docs: fmt-generated-docs ## Generate and format all checked-in docs from source stubs.
-
-generate-widget-docs: ## Generate package docs from an easybar-app/widgets checkout.
-	@$(WIDGET_DOCS_PYTHON) scripts/generate/widget_docs.py \
-		--widgets-root "$(WIDGETS_ROOT)" \
-		--output "$(WIDGET_PACKAGE_DOCS)"
-
-generate-lua-docs: ## Generate Lua reference docs from source stubs.
-	@python3 scripts/generate/lua_docs.py
-
-generate-config-docs: ## Generate the config reference from the app config schema.
-	@swift run EasyBarGenerateConfig config-docs
-
-fmt-generated-docs: generate-lua-docs generate-config-docs ## Format generated Markdown docs with Prettier.
-	@$(PRETTIER) --write "$(DOCS_DIR)/content/configuration/reference.md" "$(DOCS_DIR)/content/lua/reference/**/*.md"
-	@$(MAKE) --no-print-directory normalize-generated-docs
-
-normalize-generated-docs: ## Normalize generated Markdown docs for stable diffs.
-	@python3 scripts/generate/check.py normalize-markdown $(GENERATED_MARKDOWN_DOCS)
-
-check-docs: generate-docs ## Verify generated docs are formatted and committed.
-	@python3 scripts/generate/check.py check-diff \
-		--normalized-markdown $(GENERATED_MARKDOWN_DOCS) \
-		--scope docs/content/lua/reference \
-		--scope docs/content/configuration/reference.md
-
-serve-docs: $(DOCS_STAMP) generate-docs ## Generate and serve the docs locally.
-	@$(DOCS_PYTHON) -m mkdocs serve -f $(DOCS_CONFIG)
-
-build-docs: $(DOCS_STAMP) generate-docs ## Generate and build the docs locally.
-	@$(DOCS_PYTHON) -m mkdocs build --strict -f $(DOCS_CONFIG)
-
-clean-docs: ## Remove generated docs output and docs virtualenv.
-	@rm -rf docs/.site $(DOCS_VENV) docs/content/lua/reference docs/content/configuration/reference.md
-
-##@ Icons
-
-SVG := packaging/easybar-icon.svg
-ICON_DIR := docs/content/assets/icons
-ICON_SIZES := 16x16 32x32 48x48 64x64
-
-favicon: ## Create favicons.
-	@scripts/assets/favicons.sh "$(SVG_CONVERT)" "$(SVG)" "$(ICON_DIR)" $(ICON_SIZES)

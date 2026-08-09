@@ -1,12 +1,13 @@
-name: Build docs
+name: Trigger documentation build
 
 on:
   push:
     branches:
       - main
     paths:
-      - "docs/**"
-      - "config.defaults.toml"
+      - "config.schema.json"
+      - "Sources/EasyBarConfigSchema/**"
+      - "Sources/EasyBarGenerateConfig/**"
       - "Sources/EasyBarApp/Events/event_catalog.json"
       - "Sources/EasyBarApp/Theme/theme_tokens.json"
       - "Sources/EasyBarApp/Lua/easybar_api.base.lua"
@@ -15,23 +16,7 @@ on:
       - "Sources/EasyBarApp/Lua/easybar_api.lua"
       - "Sources/EasyBarApp/Lua/easybar/event_tokens.lua"
       - "Sources/EasyBarApp/Lua/easybar/theme_tokens.lua"
-      - "scripts/generate/**"
-      - "Makefile"
-      - ".github/workflows/docs.yml"
-  pull_request:
-    paths:
-      - "docs/**"
-      - "config.defaults.toml"
-      - "Sources/EasyBarApp/Events/event_catalog.json"
-      - "Sources/EasyBarApp/Theme/theme_tokens.json"
-      - "Sources/EasyBarApp/Lua/easybar_api.base.lua"
-      - "Sources/EasyBarApp/Lua/easybar_api.events.lua"
-      - "Sources/EasyBarApp/Lua/easybar_api.themes.lua"
-      - "Sources/EasyBarApp/Lua/easybar_api.lua"
-      - "Sources/EasyBarApp/Lua/easybar/event_tokens.lua"
-      - "Sources/EasyBarApp/Lua/easybar/theme_tokens.lua"
-      - "scripts/generate/**"
-      - "Makefile"
+      - "scripts/generate/lua_docs.py"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
@@ -39,21 +24,24 @@ permissions:
   contents: read
 
 concurrency:
-  group: docs-${{ github.ref }}
+  group: trigger-documentation-build
   cancel-in-progress: true
 
 jobs:
-  build:
+  trigger:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
+      - name: Require Cloudflare deploy hook
+        env:
+          DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DOCS_DEPLOY_HOOK }}
+        run: |
+          if [[ -z "${DEPLOY_HOOK}" ]]; then
+            echo "::error::Add the CLOUDFLARE_DOCS_DEPLOY_HOOK repository secret."
+            exit 1
+          fi
 
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.x"
-
-      - name: Validate docs
-        run: make build-docs
+      - name: Trigger easybar.dev rebuild
+        env:
+          DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DOCS_DEPLOY_HOOK }}
+        run: curl --fail-with-body --request POST "${DEPLOY_HOOK}"

@@ -1,0 +1,3463 @@
+{
+  "schemaVersion" : 1,
+  "sections" : [
+    {
+      "entries" : [
+        {
+          "description" : "Shows the persistent EasyBar controller icon in the macOS menu bar.",
+          "key" : "show_menu_bar_icon",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Directory that contains your custom Lua widget files.",
+          "key" : "widgets_dir",
+          "kind" : "default",
+          "value" : "\"~/.config/easybar/widgets\""
+        },
+        {
+          "description" : "Path to the Lua executable EasyBar uses for scripted widgets.",
+          "key" : "lua_path",
+          "kind" : "default",
+          "value" : "\"lua\""
+        },
+        {
+          "description" : "Base directory used for EasyBar sockets and lock files.",
+          "key" : "runtime_dir",
+          "kind" : "default",
+          "value" : "\"~/.local/state/easybar/runtime\""
+        },
+        {
+          "description" : "Optional Lua transport socket override. Defaults to lua-runtime.sock inside runtime_dir.",
+          "key" : "lua_socket_path",
+          "kind" : "example",
+          "value" : "\"~/.local/state/easybar/runtime/lua-runtime.sock\""
+        },
+        {
+          "description" : "Reloads EasyBar automatically when config.toml changes.",
+          "key" : "watch_config",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Optional lock-directory override. Defaults to runtime_dir.",
+          "key" : "lock_dir",
+          "kind" : "example",
+          "value" : "\"~/.local/state/easybar/runtime\""
+        },
+        {
+          "description" : "LuaLS/editor stub path EasyBar keeps in sync for widget authoring.",
+          "key" : "widget_editor_stub_path",
+          "kind" : "default",
+          "value" : "\"~/.local/share/easybar/easybar_api.lua\""
+        },
+        {
+          "description" : "Shows the developer menu section without holding Shift when right-clicking the bar.",
+          "key" : "develop",
+          "kind" : "default",
+          "value" : "false"
+        }
+      ],
+      "name" : "app"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "PATH for the Lua runtime and widget commands. Set to an empty string to keep the inherited PATH.",
+          "key" : "PATH",
+          "kind" : "default",
+          "value" : "\"/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin\""
+        }
+      ],
+      "name" : "app.env"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Default hard timeout for easybar.exec and easybar.exec_async commands.",
+          "key" : "timeout_seconds",
+          "kind" : "default",
+          "value" : "5"
+        },
+        {
+          "description" : "Default combined stdout and stderr capture limit for one command.",
+          "key" : "max_output_bytes",
+          "kind" : "default",
+          "value" : "65536"
+        },
+        {
+          "description" : "Maximum concurrent easybar.exec_async jobs before new jobs are rejected.",
+          "key" : "max_async_jobs",
+          "kind" : "default",
+          "value" : "8"
+        }
+      ],
+      "name" : "app.lua_commands"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Name of the default theme. Must match a theme file name without the .toml extension.",
+          "key" : "name",
+          "kind" : "default",
+          "value" : "\"default\""
+        },
+        {
+          "description" : "Directory that contains your custom theme files.",
+          "key" : "themes_dir",
+          "kind" : "default",
+          "value" : "\"~/.config/easybar/themes\""
+        }
+      ],
+      "name" : "theme"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Mirrors stdout and stderr into per-process log files when true.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Minimum log level: trace | debug | info | warn | error.",
+          "key" : "level",
+          "kind" : "default",
+          "value" : "\"info\""
+        },
+        {
+          "description" : "Directory where EasyBar writes easybar.out, calendar-agent.out, and network-agent.out.",
+          "key" : "directory",
+          "kind" : "default",
+          "value" : "\"~/.local/state/easybar\""
+        }
+      ],
+      "name" : "logging"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Enables calendar data and actions through the calendar agent.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Optional calendar-agent socket override. Defaults to calendar-agent.sock inside app.runtime_dir.",
+          "key" : "socket_path",
+          "kind" : "example",
+          "value" : "\"~/.local/state/easybar/runtime/calendar-agent.sock\""
+        }
+      ],
+      "name" : "agents.calendar"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Enables Wi-Fi and network data through the network agent.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Optional network-agent socket override. Defaults to network-agent.sock inside app.runtime_dir.",
+          "key" : "socket_path",
+          "kind" : "example",
+          "value" : "\"~/.local/state/easybar/runtime/network-agent.sock\""
+        },
+        {
+          "description" : "Fallback polling interval for Wi-Fi state. Set to 0 to disable polling.",
+          "key" : "refresh_interval_seconds",
+          "kind" : "default",
+          "value" : "60"
+        },
+        {
+          "description" : "When false, Wi-Fi field requests fail while location permission is denied. When true, only non-sensitive non-Wi-Fi fields may still be returned.",
+          "key" : "allow_unauthorized_non_sensitive_fields",
+          "kind" : "default",
+          "value" : "false"
+        }
+      ],
+      "name" : "agents.network"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Total height of the bar.",
+          "key" : "height",
+          "kind" : "default",
+          "value" : "32"
+        },
+        {
+          "description" : "Horizontal left and right padding inside the bar.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "10"
+        },
+        {
+          "description" : "Makes the bar span the full top edge, including the area behind the notch.",
+          "key" : "extend_behind_notch",
+          "kind" : "default",
+          "value" : "true"
+        }
+      ],
+      "name" : "bar"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Background color of the bar.",
+          "key" : "background",
+          "kind" : "default",
+          "value" : "\"theme.background\""
+        },
+        {
+          "description" : "Bottom border color of the bar. Use a visible color to opt in.",
+          "key" : "border",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        }
+      ],
+      "name" : "bar.colors"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides the built-in spaces widget.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Places the widget on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "default",
+          "value" : "\"left\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "default",
+          "value" : "10"
+        },
+        {
+          "description" : "Background color behind the whole spaces block.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border color around the whole spaces block.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border width around the whole spaces block.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Corner radius around the whole spaces block.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal outer margin around the spaces root container.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the spaces root container.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal inner padding of the spaces root container.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical inner padding of the spaces root container.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Root-level spacing of the spaces widget container.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Overall opacity of the spaces widget container.",
+          "key" : "opacity",
+          "kind" : "default",
+          "value" : "1"
+        }
+      ],
+      "name" : "builtins.spaces"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Gap between space pills.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Hides spaces that have no apps.",
+          "key" : "hide_empty",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Horizontal inner padding inside each space pill.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "12"
+        },
+        {
+          "description" : "Vertical inner padding inside each space pill.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "2"
+        },
+        {
+          "description" : "Horizontal outer margin around the whole spaces row.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Vertical outer margin around the whole spaces row.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Corner radius of inactive space pills.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Corner radius of the focused space pill.",
+          "key" : "focused_corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Scale multiplier applied to the focused space pill.",
+          "key" : "focused_scale",
+          "kind" : "default",
+          "value" : "1.0"
+        },
+        {
+          "description" : "Opacity applied to inactive space pills.",
+          "key" : "inactive_opacity",
+          "kind" : "default",
+          "value" : "0.85"
+        },
+        {
+          "description" : "Maximum number of app icons shown per space.",
+          "key" : "max_icons",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Shows the workspace label.",
+          "key" : "show_label",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Shows app icons inside each space pill.",
+          "key" : "show_icons",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Shows the label only on the focused space when true.",
+          "key" : "show_only_focused_label",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Makes inactive spaces more compact when true.",
+          "key" : "collapse_inactive",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Horizontal inner padding of collapsed inactive space pills.",
+          "key" : "collapsed_padding_x",
+          "kind" : "default",
+          "value" : "6"
+        },
+        {
+          "description" : "Vertical inner padding of collapsed inactive space pills.",
+          "key" : "collapsed_padding_y",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Switches to a workspace when its pill is clicked.",
+          "key" : "click_to_focus_space",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Activates an app when its icon is clicked.",
+          "key" : "click_to_focus_app",
+          "kind" : "default",
+          "value" : "true"
+        }
+      ],
+      "name" : "builtins.spaces.layout"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Font size of the space label.",
+          "key" : "size",
+          "kind" : "default",
+          "value" : "12"
+        },
+        {
+          "description" : "Font weight of the space label.",
+          "key" : "weight",
+          "kind" : "default",
+          "value" : "\"semibold\""
+        },
+        {
+          "description" : "Text color of the focused space label.",
+          "key" : "focused_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Text color of inactive space labels.",
+          "key" : "inactive_color",
+          "kind" : "default",
+          "value" : "\"theme.text_secondary\""
+        }
+      ],
+      "name" : "builtins.spaces.text"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Default app icon size in a space.",
+          "key" : "size",
+          "kind" : "default",
+          "value" : "20"
+        },
+        {
+          "description" : "Gap between app icons.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Corner radius of app icons.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "3"
+        },
+        {
+          "description" : "Size of the currently focused app icon.",
+          "key" : "focused_app_size",
+          "kind" : "default",
+          "value" : "28"
+        },
+        {
+          "description" : "Border width of normal app icons.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "1"
+        },
+        {
+          "description" : "Border width of the focused app icon.",
+          "key" : "focused_app_border_width",
+          "kind" : "default",
+          "value" : "1"
+        }
+      ],
+      "name" : "builtins.spaces.icons"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Background color of the focused space pill.",
+          "key" : "active_background",
+          "kind" : "default",
+          "value" : "\"theme.surface_elevated\""
+        },
+        {
+          "description" : "Background color of inactive space pills.",
+          "key" : "inactive_background",
+          "kind" : "default",
+          "value" : "\"theme.surface\""
+        },
+        {
+          "description" : "Border color of the focused space pill.",
+          "key" : "active_border",
+          "kind" : "default",
+          "value" : "\"theme.border_strong\""
+        },
+        {
+          "description" : "Border color of inactive space pills.",
+          "key" : "inactive_border",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border color of the focused app icon.",
+          "key" : "focused_app_border",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        }
+      ],
+      "name" : "builtins.spaces.colors"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides the front-app widget.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Places the widget on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "default",
+          "value" : "\"left\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "default",
+          "value" : "20"
+        }
+      ],
+      "name" : "builtins.front_app"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Fallback icon when no app icon is available.",
+          "key" : "icon",
+          "kind" : "default",
+          "value" : "\"􀈔\""
+        },
+        {
+          "description" : "Text color of the widget.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Background color of the widget.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.surface\""
+        },
+        {
+          "description" : "Border color of the widget.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.border\""
+        },
+        {
+          "description" : "Border width of the widget.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "1"
+        },
+        {
+          "description" : "Corner radius of the widget background.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal outer margin around the widget.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the widget.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal inner padding of the widget.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical inner padding of the widget.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Gap between the icon and label.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "6"
+        },
+        {
+          "description" : "Overall opacity of the widget.",
+          "key" : "opacity",
+          "kind" : "default",
+          "value" : "1.0"
+        }
+      ],
+      "name" : "builtins.front_app.style"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows the focused app icon.",
+          "key" : "show_icon",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Shows the focused app name.",
+          "key" : "show_name",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Fallback text shown when no app name is available.",
+          "key" : "fallback_text",
+          "kind" : "default",
+          "value" : "\"No App\""
+        },
+        {
+          "description" : "Display size of the app icon.",
+          "key" : "icon_size",
+          "kind" : "default",
+          "value" : "14"
+        },
+        {
+          "description" : "Corner radius of the displayed app icon.",
+          "key" : "icon_corner_radius",
+          "kind" : "default",
+          "value" : "4"
+        }
+      ],
+      "name" : "builtins.front_app.content"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides the AeroSpace mode widget.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Places the widget on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "default",
+          "value" : "\"left\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "default",
+          "value" : "30"
+        }
+      ],
+      "name" : "builtins.aerospace_mode"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Text color of the widget.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Background color of the widget.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.surface\""
+        },
+        {
+          "description" : "Border color of the widget.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.border\""
+        },
+        {
+          "description" : "Border width of the widget.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "1"
+        },
+        {
+          "description" : "Corner radius of the widget background.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal outer margin around the widget.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the widget.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal inner padding of the widget.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical inner padding of the widget.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Gap between the icon and text.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "6"
+        },
+        {
+          "description" : "Overall opacity of the widget.",
+          "key" : "opacity",
+          "kind" : "default",
+          "value" : "1"
+        }
+      ],
+      "name" : "builtins.aerospace_mode.style"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows the icon for the current AeroSpace layout mode.",
+          "key" : "show_icon",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Shows the text label for the current AeroSpace layout mode.",
+          "key" : "show_text",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Icon used for horizontal tiling.",
+          "key" : "h_tiles_icon",
+          "kind" : "default",
+          "value" : "\"󰕴\""
+        },
+        {
+          "description" : "Icon used for vertical tiling.",
+          "key" : "v_tiles_icon",
+          "kind" : "default",
+          "value" : "\"󰕳\""
+        },
+        {
+          "description" : "Icon used for horizontal accordion.",
+          "key" : "h_accordion_icon",
+          "kind" : "default",
+          "value" : "\"󰖲\""
+        },
+        {
+          "description" : "Icon used for vertical accordion.",
+          "key" : "v_accordion_icon",
+          "kind" : "default",
+          "value" : "\"󰖳\""
+        },
+        {
+          "description" : "Icon used for floating windows or containers.",
+          "key" : "floating_icon",
+          "kind" : "default",
+          "value" : "\"󰹙\""
+        },
+        {
+          "description" : "Fallback icon used when the layout cannot be detected.",
+          "key" : "unknown_icon",
+          "kind" : "default",
+          "value" : "\"󰘎\""
+        },
+        {
+          "description" : "Text label used for horizontal tiling.",
+          "key" : "h_tiles_text",
+          "kind" : "default",
+          "value" : "\"h_tiles\""
+        },
+        {
+          "description" : "Text label used for vertical tiling.",
+          "key" : "v_tiles_text",
+          "kind" : "default",
+          "value" : "\"v_tiles\""
+        },
+        {
+          "description" : "Text label used for horizontal accordion.",
+          "key" : "h_accordion_text",
+          "kind" : "default",
+          "value" : "\"h_accordion\""
+        },
+        {
+          "description" : "Text label used for vertical accordion.",
+          "key" : "v_accordion_text",
+          "kind" : "default",
+          "value" : "\"v_accordion\""
+        },
+        {
+          "description" : "Text label used for floating windows or containers.",
+          "key" : "floating_text",
+          "kind" : "default",
+          "value" : "\"floating\""
+        },
+        {
+          "description" : "Fallback text label used when the layout cannot be detected.",
+          "key" : "unknown_text",
+          "kind" : "default",
+          "value" : "\"unknown\""
+        }
+      ],
+      "name" : "builtins.aerospace_mode.content"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides the native shared inbox.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Places the inbox on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "default",
+          "value" : "\"right\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "default",
+          "value" : "5"
+        }
+      ],
+      "name" : "builtins.inbox"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Icon shown when unread inbox messages exist.",
+          "key" : "unread_icon",
+          "kind" : "default",
+          "value" : "\"􀛬\""
+        },
+        {
+          "description" : "Icon shown when no unread inbox messages exist.",
+          "key" : "read_icon",
+          "kind" : "default",
+          "value" : "\"􀍕\""
+        },
+        {
+          "description" : "Color of the inbox icon when unread messages exist.",
+          "key" : "unread_icon_color",
+          "kind" : "default",
+          "value" : "\"theme.text_secondary\""
+        },
+        {
+          "description" : "Color of the inbox icon when no unread messages exist.",
+          "key" : "read_icon_color",
+          "kind" : "default",
+          "value" : "\"theme.muted\""
+        },
+        {
+          "description" : "Color of the unread count.",
+          "key" : "unread_count_color",
+          "kind" : "default",
+          "value" : "\"theme.accent\""
+        },
+        {
+          "description" : "Background color of the inbox anchor.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border color of the inbox anchor.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border width of the inbox anchor.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Corner radius of the inbox anchor.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal outer margin around the inbox anchor.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the inbox anchor.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal inner padding of the inbox anchor.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "7"
+        },
+        {
+          "description" : "Vertical inner padding of the inbox anchor.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "3"
+        },
+        {
+          "description" : "Gap between the inbox icon and unread count.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Overall opacity of the inbox anchor.",
+          "key" : "opacity",
+          "kind" : "default",
+          "value" : "1"
+        }
+      ],
+      "name" : "builtins.inbox.style"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Background color of the inbox popup.",
+          "key" : "background",
+          "kind" : "default",
+          "value" : "\"theme.background\""
+        },
+        {
+          "description" : "Border color of the inbox popup.",
+          "key" : "border",
+          "kind" : "default",
+          "value" : "\"theme.border_strong\""
+        },
+        {
+          "description" : "Color of titles in the inbox popup.",
+          "key" : "title",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Color of message body text.",
+          "key" : "text",
+          "kind" : "default",
+          "value" : "\"theme.text_secondary\""
+        },
+        {
+          "description" : "Color of secondary labels and empty text.",
+          "key" : "muted",
+          "kind" : "default",
+          "value" : "\"theme.muted\""
+        },
+        {
+          "description" : "Background color of individual messages.",
+          "key" : "item_background",
+          "kind" : "default",
+          "value" : "\"theme.surface\""
+        },
+        {
+          "description" : "Color of message action buttons.",
+          "key" : "action",
+          "kind" : "default",
+          "value" : "\"theme.accent\""
+        },
+        {
+          "description" : "Unread indicator color for info messages.",
+          "key" : "info",
+          "kind" : "default",
+          "value" : "\"theme.accent\""
+        },
+        {
+          "description" : "Unread indicator color for success messages.",
+          "key" : "success",
+          "kind" : "default",
+          "value" : "\"theme.success\""
+        },
+        {
+          "description" : "Unread indicator color for warning messages.",
+          "key" : "warning",
+          "kind" : "default",
+          "value" : "\"theme.warning\""
+        },
+        {
+          "description" : "Unread indicator color for error messages.",
+          "key" : "error",
+          "kind" : "default",
+          "value" : "\"theme.error\""
+        }
+      ],
+      "name" : "builtins.inbox.colors"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Groups messages by source, date, category, severity, or none.",
+          "key" : "group_by",
+          "kind" : "default",
+          "value" : "\"source\""
+        },
+        {
+          "description" : "Sorts messages by timestamp, source, severity, or title.",
+          "key" : "sort_by",
+          "kind" : "default",
+          "value" : "\"timestamp\""
+        },
+        {
+          "description" : "Reverses the configured sort order when true.",
+          "key" : "sort_descending",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Shows the total unread message count beside the icon.",
+          "key" : "show_unread_count",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Uses the read icon and color when no unread messages remain.",
+          "key" : "use_inactive_style_when_read",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Keeps the read-state inbox icon visible when no messages exist.",
+          "key" : "show_when_empty",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Shows publisher-provided actions in the inbox popup header.",
+          "key" : "show_source_actions",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Shows the Refresh all button when at least one source participates.",
+          "key" : "show_refresh_all",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "SF Symbol used for the Refresh all button.",
+          "key" : "refresh_all_icon",
+          "kind" : "default",
+          "value" : "\"arrow.clockwise\""
+        },
+        {
+          "description" : "Tooltip and accessible label for the Refresh all button.",
+          "key" : "refresh_all_tooltip",
+          "kind" : "default",
+          "value" : "\"Refresh all\""
+        },
+        {
+          "description" : "Shows the Mark all read button when unread messages exist.",
+          "key" : "show_mark_all_read",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "SF Symbol used for the Mark all read button.",
+          "key" : "mark_all_read_icon",
+          "kind" : "default",
+          "value" : "\"envelope.open\""
+        },
+        {
+          "description" : "Tooltip and accessible label for the Mark all read button.",
+          "key" : "mark_all_read_tooltip",
+          "kind" : "default",
+          "value" : "\"Mark all read\""
+        },
+        {
+          "description" : "Shows the Dismiss all button when inbox messages exist.",
+          "key" : "show_dismiss_all",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "SF Symbol used for the Dismiss all button.",
+          "key" : "dismiss_all_icon",
+          "kind" : "default",
+          "value" : "\"xmark.circle\""
+        },
+        {
+          "description" : "Tooltip and accessible label for the Dismiss all button.",
+          "key" : "dismiss_all_tooltip",
+          "kind" : "default",
+          "value" : "\"Dismiss all\""
+        },
+        {
+          "description" : "Sets the inbox popup width in points (240–800).",
+          "key" : "popup_width",
+          "kind" : "default",
+          "value" : "360"
+        },
+        {
+          "description" : "Sets the maximum scrollable message-list height in points (120–1000).",
+          "key" : "popup_max_height",
+          "kind" : "default",
+          "value" : "540"
+        },
+        {
+          "description" : "Maximum number of current messages accepted from each publisher.",
+          "key" : "max_items",
+          "kind" : "default",
+          "value" : "100"
+        }
+      ],
+      "name" : "builtins.inbox.content"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides the CPU widget.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Places the widget on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "default",
+          "value" : "\"right\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "default",
+          "value" : "10"
+        }
+      ],
+      "name" : "builtins.cpu"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Leading icon of the widget.",
+          "key" : "icon",
+          "kind" : "default",
+          "value" : "\"󰍛\""
+        },
+        {
+          "description" : "Text color of the widget when no content color is set.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Background color of the widget.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border color of the widget.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border width of the widget.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Corner radius of the widget background.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal outer margin around the widget.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the widget.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal inner padding of the widget.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical inner padding of the widget.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Gap between the icon, label, and sparkline.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "6"
+        },
+        {
+          "description" : "Overall opacity of the widget.",
+          "key" : "opacity",
+          "kind" : "default",
+          "value" : "1"
+        }
+      ],
+      "name" : "builtins.cpu.style"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Text label shown next to the sparkline.",
+          "key" : "label",
+          "kind" : "default",
+          "value" : "\"CPU\""
+        },
+        {
+          "description" : "Number of samples kept in the sparkline history.",
+          "key" : "history_size",
+          "kind" : "default",
+          "value" : "10"
+        },
+        {
+          "description" : "Stroke width of the sparkline line.",
+          "key" : "line_width",
+          "kind" : "default",
+          "value" : "1.8"
+        },
+        {
+          "description" : "Color of the sparkline and label.",
+          "key" : "color",
+          "kind" : "default",
+          "value" : "\"theme.success_secondary\""
+        },
+        {
+          "description" : "Polling interval in seconds.",
+          "key" : "sample_interval_seconds",
+          "kind" : "default",
+          "value" : "1"
+        }
+      ],
+      "name" : "builtins.cpu.content"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides the battery widget.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Places the widget on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "default",
+          "value" : "\"right\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "default",
+          "value" : "20"
+        },
+        {
+          "description" : "Optional native group id that should contain this widget.",
+          "key" : "group",
+          "kind" : "example",
+          "value" : "\"system\""
+        }
+      ],
+      "name" : "builtins.battery"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Fallback or default battery icon.",
+          "key" : "icon",
+          "kind" : "default",
+          "value" : "\"􀫯\""
+        },
+        {
+          "description" : "Used when color_mode is fixed or data is unavailable.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Background color of the widget.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border color of the widget.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border width of the widget.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Corner radius of the widget background.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal outer margin around the widget.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the widget.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal inner padding of the widget.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Vertical inner padding of the widget.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Gap between the battery icon and text.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "6"
+        },
+        {
+          "description" : "Overall opacity of the widget.",
+          "key" : "opacity",
+          "kind" : "default",
+          "value" : "1.0"
+        }
+      ],
+      "name" : "builtins.battery.style"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Fallback text shown when battery data is unavailable.",
+          "key" : "unavailable_text",
+          "kind" : "default",
+          "value" : "\"n/a\""
+        },
+        {
+          "description" : "Font size of the battery icon.",
+          "key" : "icon_size",
+          "kind" : "default",
+          "value" : "18"
+        },
+        {
+          "description" : "Battery color mode: dynamic | fixed.",
+          "key" : "color_mode",
+          "kind" : "default",
+          "value" : "\"fixed\""
+        },
+        {
+          "description" : "Color used only when color_mode = \"fixed\".",
+          "key" : "fixed_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Display mode: none | tooltip | expand | always.",
+          "key" : "display_mode",
+          "kind" : "default",
+          "value" : "\"expand\""
+        }
+      ],
+      "name" : "builtins.battery.content"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Color used for 70-100%.",
+          "key" : "high",
+          "kind" : "default",
+          "value" : "\"theme.success\""
+        },
+        {
+          "description" : "Color used for 50-69%.",
+          "key" : "medium",
+          "kind" : "default",
+          "value" : "\"theme.warning\""
+        },
+        {
+          "description" : "Color used for 30-49%.",
+          "key" : "low",
+          "kind" : "default",
+          "value" : "\"theme.orange\""
+        },
+        {
+          "description" : "Color used for 0-29%.",
+          "key" : "critical",
+          "kind" : "default",
+          "value" : "\"theme.danger\""
+        },
+        {
+          "description" : "Secondary palette color for the battery frame.",
+          "key" : "frame",
+          "kind" : "default",
+          "value" : "\"theme.muted\""
+        },
+        {
+          "description" : "Outline color drawn behind battery overlay symbols.",
+          "key" : "overlay_outline",
+          "kind" : "default",
+          "value" : "\"theme.overlay_outline\""
+        },
+        {
+          "description" : "Color of the charging bolt overlay.",
+          "key" : "charging_overlay",
+          "kind" : "default",
+          "value" : "\"theme.overlay_text\""
+        },
+        {
+          "description" : "Color of the plugged-in holding overlay.",
+          "key" : "external_power_overlay",
+          "kind" : "default",
+          "value" : "\"theme.overlay_text\""
+        },
+        {
+          "description" : "Color of the on-hold pause overlay.",
+          "key" : "on_hold_overlay",
+          "kind" : "default",
+          "value" : "\"theme.overlay_text\""
+        },
+        {
+          "description" : "Color used when battery data is unavailable.",
+          "key" : "unavailable",
+          "kind" : "default",
+          "value" : "\"theme.muted\""
+        }
+      ],
+      "name" : "builtins.battery.colors"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Text color used in the tooltip.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Background color of the tooltip.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.background\""
+        },
+        {
+          "description" : "Border color of the tooltip.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.border_strong\""
+        },
+        {
+          "description" : "Border width of the tooltip.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "1"
+        },
+        {
+          "description" : "Corner radius of the tooltip.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal inner padding of the tooltip.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical inner padding of the tooltip.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "6"
+        },
+        {
+          "description" : "Horizontal outer margin around the tooltip.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the tooltip.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "8"
+        }
+      ],
+      "name" : "builtins.battery.tooltip"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides the built-in Wi-Fi widget.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Places the widget on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "default",
+          "value" : "\"right\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "default",
+          "value" : "30"
+        },
+        {
+          "description" : "Optional native group id that should contain this widget.",
+          "key" : "group",
+          "kind" : "example",
+          "value" : "\"system\""
+        }
+      ],
+      "name" : "builtins.wifi"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Background color of the widget.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border color of the widget.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border width of the widget.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Corner radius of the widget.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal outer margin around the widget.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the widget.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal inner padding of the widget.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical inner padding of the widget.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Gap between the signal bars and optional inline label.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "6"
+        },
+        {
+          "description" : "Overall opacity of the widget.",
+          "key" : "opacity",
+          "kind" : "default",
+          "value" : "1"
+        }
+      ],
+      "name" : "builtins.wifi.style"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Content mode: icon | inline | details.",
+          "key" : "mode",
+          "kind" : "default",
+          "value" : "\"icon\""
+        },
+        {
+          "description" : "Visibility timing for inline/details content: always | hover.",
+          "key" : "surface",
+          "kind" : "default",
+          "value" : "\"hover\""
+        },
+        {
+          "description" : "Separator used between enabled field values when mode = \"inline\".",
+          "key" : "inline_separator",
+          "kind" : "default",
+          "value" : "\" | \""
+        },
+        {
+          "description" : "Text shown for SSID when Wi-Fi is not connected.",
+          "key" : "disconnected_text",
+          "kind" : "default",
+          "value" : "\"disconnected\""
+        },
+        {
+          "description" : "Text shown for SSID when Wi-Fi permission is unavailable.",
+          "key" : "denied_text",
+          "kind" : "default",
+          "value" : "\"denied\""
+        },
+        {
+          "description" : "Color of active signal bars.",
+          "key" : "active_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Color of inactive signal bars.",
+          "key" : "inactive_color",
+          "kind" : "default",
+          "value" : "\"theme.muted\""
+        }
+      ],
+      "name" : "builtins.wifi.content"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Text color used for inline content.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        }
+      ],
+      "name" : "builtins.wifi.inline"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Enables the current Wi-Fi SSID for inline and details modes.",
+          "key" : "ssid",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the primary IPv4 address for inline and details modes.",
+          "key" : "ipv4_address",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the primary IPv6 address for inline and details modes.",
+          "key" : "ipv6_address",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the current Wi-Fi BSSID for inline and details modes.",
+          "key" : "bssid",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the current Wi-Fi interface name for inline and details modes.",
+          "key" : "interface",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the current Wi-Fi hardware address for inline and details modes.",
+          "key" : "hardware_address",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the current Wi-Fi power state for inline and details modes.",
+          "key" : "power",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the CoreWLAN service state for inline and details modes.",
+          "key" : "service_active",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables signal strength in dBm for inline and details modes.",
+          "key" : "rssi",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the noise floor in dBm for inline and details modes.",
+          "key" : "noise",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the signal-to-noise ratio in dB for inline and details modes.",
+          "key" : "snr",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the derived link quality percentage for inline and details modes.",
+          "key" : "link_quality",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the current transmit rate for inline and details modes.",
+          "key" : "tx_rate",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the current Wi-Fi channel for inline and details modes.",
+          "key" : "channel",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the current Wi-Fi band for inline and details modes.",
+          "key" : "channel_band",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the current Wi-Fi channel width for inline and details modes.",
+          "key" : "channel_width",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the current Wi-Fi security mode for inline and details modes.",
+          "key" : "security",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the current Wi-Fi PHY mode for inline and details modes.",
+          "key" : "phy_mode",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the current Wi-Fi interface mode for inline and details modes.",
+          "key" : "interface_mode",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the current Wi-Fi country code for inline and details modes.",
+          "key" : "country_code",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables whether access-point roaming was detected for inline and details modes.",
+          "key" : "roaming",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the last SSID change timestamp for inline and details modes.",
+          "key" : "ssid_changed_at",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Enables the last interface change timestamp for inline and details modes.",
+          "key" : "interface_changed_at",
+          "kind" : "default",
+          "value" : "false"
+        }
+      ],
+      "name" : "builtins.wifi.fields"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Text color used in the Wi-Fi popup.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Background color of the Wi-Fi popup.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.background\""
+        },
+        {
+          "description" : "Border color of the Wi-Fi popup.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.border_strong\""
+        },
+        {
+          "description" : "Border width of the Wi-Fi popup.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "1"
+        },
+        {
+          "description" : "Corner radius of the Wi-Fi popup.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal inner padding of the Wi-Fi popup.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical inner padding of the Wi-Fi popup.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "6"
+        },
+        {
+          "description" : "Horizontal outer margin around the Wi-Fi popup.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the Wi-Fi popup.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "8"
+        }
+      ],
+      "name" : "builtins.wifi.popup"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides the volume widget.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Places the widget on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "default",
+          "value" : "\"right\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "default",
+          "value" : "20"
+        }
+      ],
+      "name" : "builtins.volume"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Text color of the widget.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Background color of the widget.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border color of the widget.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border width of the widget.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Corner radius of the widget background.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal outer margin around the widget.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the widget.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal inner padding of the widget.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical inner padding of the widget.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Gap between the icon, label, and slider.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Overall opacity of the widget.",
+          "key" : "opacity",
+          "kind" : "default",
+          "value" : "1.0"
+        }
+      ],
+      "name" : "builtins.volume.style"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Icon shown when audio is muted.",
+          "key" : "muted_icon",
+          "kind" : "default",
+          "value" : "\"􀊢\""
+        },
+        {
+          "description" : "Icon shown for low volume.",
+          "key" : "low_icon",
+          "kind" : "default",
+          "value" : "\"􀊤\""
+        },
+        {
+          "description" : "Icon shown for high volume.",
+          "key" : "high_icon",
+          "kind" : "default",
+          "value" : "\"􀊦\""
+        },
+        {
+          "description" : "Shows the volume percentage text.",
+          "key" : "show_percentage",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Minimum slider and display value.",
+          "key" : "min",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Maximum slider and display value.",
+          "key" : "max",
+          "kind" : "default",
+          "value" : "100"
+        },
+        {
+          "description" : "Slider step size.",
+          "key" : "step",
+          "kind" : "default",
+          "value" : "1"
+        }
+      ],
+      "name" : "builtins.volume.content"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Expands from compact mode to slider mode on hover.",
+          "key" : "expand_to_slider_on_hover",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Width of the slider when shown.",
+          "key" : "width",
+          "kind" : "default",
+          "value" : "80"
+        }
+      ],
+      "name" : "builtins.volume.slider"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides the predefined fixed-width privacy spacer.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Places the spacer on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "default",
+          "value" : "\"right\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "default",
+          "value" : "1000"
+        },
+        {
+          "description" : "Optional native group id that should contain this spacer.",
+          "key" : "group",
+          "kind" : "example",
+          "value" : "\"system\""
+        },
+        {
+          "description" : "Width of the invisible reserved area in points (1–100).",
+          "key" : "width",
+          "kind" : "default",
+          "value" : "12"
+        }
+      ],
+      "name" : "builtins.privacy_spacer"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides this named spacer.",
+          "key" : "enabled",
+          "kind" : "example",
+          "value" : "true"
+        },
+        {
+          "description" : "Places this spacer on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "example",
+          "value" : "\"right\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "example",
+          "value" : "1000"
+        },
+        {
+          "description" : "Optional native group id that should contain this spacer.",
+          "key" : "group",
+          "kind" : "example",
+          "value" : "\"system\""
+        },
+        {
+          "description" : "Width of the invisible reserved area in points (1–100).",
+          "key" : "width",
+          "kind" : "example",
+          "value" : "8"
+        }
+      ],
+      "name" : "builtins.spacers.<name>"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides the unified calendar widget.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Places the widget on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "default",
+          "value" : "\"right\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "default",
+          "value" : "60"
+        },
+        {
+          "description" : "Popup mode: none | upcoming | month.",
+          "key" : "popup_mode",
+          "kind" : "default",
+          "value" : "\"month\""
+        }
+      ],
+      "name" : "builtins.calendar"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Optional leading icon for the calendar anchor.",
+          "key" : "icon",
+          "kind" : "default",
+          "value" : "\"\""
+        },
+        {
+          "description" : "Default text color of the anchor.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Background color of the anchor widget.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.surface\""
+        },
+        {
+          "description" : "Border color of the anchor widget.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.border\""
+        },
+        {
+          "description" : "Border width of the anchor widget.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "1"
+        },
+        {
+          "description" : "Corner radius of the anchor widget.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal outer margin around the anchor widget.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the anchor widget.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal inner padding of the anchor widget.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical inner padding of the anchor widget.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Gap between anchor contents.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "6"
+        },
+        {
+          "description" : "Overall opacity of the anchor widget.",
+          "key" : "opacity",
+          "kind" : "default",
+          "value" : "1.0"
+        }
+      ],
+      "name" : "builtins.calendar.style"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Field layout: row | column.",
+          "key" : "layout",
+          "kind" : "default",
+          "value" : "\"row\""
+        },
+        {
+          "description" : "Ordered anchor fields: time and/or date.",
+          "key" : "fields",
+          "kind" : "default",
+          "value" : "[\"date\", \"time\"]"
+        },
+        {
+          "description" : "Optional gap between configured fields.",
+          "key" : "spacing",
+          "kind" : "example",
+          "value" : "2"
+        },
+        {
+          "description" : "Text inserted between fields in row layout.",
+          "key" : "separator",
+          "kind" : "default",
+          "value" : "\" \""
+        }
+      ],
+      "name" : "builtins.calendar.anchor"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "DateFormatter pattern for the time field.",
+          "key" : "format",
+          "kind" : "default",
+          "value" : "\"HH:mm\""
+        },
+        {
+          "description" : "Text color of the time field.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Optional font family.",
+          "key" : "font_family",
+          "kind" : "example",
+          "value" : "\"SF Pro\""
+        },
+        {
+          "description" : "Optional font size in points.",
+          "key" : "font_size",
+          "kind" : "example",
+          "value" : "13"
+        },
+        {
+          "description" : "Font weight: ultralight | thin | light | regular | medium | semibold | bold | heavy | black.",
+          "key" : "font_weight",
+          "kind" : "default",
+          "value" : "\"regular\""
+        }
+      ],
+      "name" : "builtins.calendar.anchor.time"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "DateFormatter pattern for the date field.",
+          "key" : "format",
+          "kind" : "default",
+          "value" : "\"E, d. MMM\""
+        },
+        {
+          "description" : "Text color of the date field.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text_secondary\""
+        },
+        {
+          "description" : "Optional font family.",
+          "key" : "font_family",
+          "kind" : "example",
+          "value" : "\"SF Pro\""
+        },
+        {
+          "description" : "Optional font size in points.",
+          "key" : "font_size",
+          "kind" : "example",
+          "value" : "12"
+        },
+        {
+          "description" : "Font weight: ultralight | thin | light | regular | medium | semibold | bold | heavy | black.",
+          "key" : "font_weight",
+          "kind" : "default",
+          "value" : "\"regular\""
+        }
+      ],
+      "name" : "builtins.calendar.anchor.date"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Panel title shown when creating an appointment.",
+          "key" : "create_title",
+          "kind" : "default",
+          "value" : "\"New Appointment\""
+        },
+        {
+          "description" : "Panel title shown when editing an appointment.",
+          "key" : "edit_title",
+          "kind" : "default",
+          "value" : "\"Edit Appointment\""
+        },
+        {
+          "description" : "Label shown above the title field.",
+          "key" : "title_label",
+          "kind" : "default",
+          "value" : "\"Title\""
+        },
+        {
+          "description" : "Label shown above the location field.",
+          "key" : "location_label",
+          "kind" : "default",
+          "value" : "\"Location\""
+        },
+        {
+          "description" : "Label shown above the calendar picker.",
+          "key" : "calendar_label",
+          "kind" : "default",
+          "value" : "\"Calendar\""
+        },
+        {
+          "description" : "Label shown for the start time.",
+          "key" : "start_label",
+          "kind" : "default",
+          "value" : "\"Begin\""
+        },
+        {
+          "description" : "Label shown for the end time.",
+          "key" : "end_label",
+          "kind" : "default",
+          "value" : "\"End\""
+        },
+        {
+          "description" : "Label shown for all-day events.",
+          "key" : "all_day_label",
+          "kind" : "default",
+          "value" : "\"All day\""
+        },
+        {
+          "description" : "Label shown for the travel-time picker.",
+          "key" : "travel_time_label",
+          "kind" : "default",
+          "value" : "\"Travel time\""
+        },
+        {
+          "description" : "Label shown above the alerts section.",
+          "key" : "alert_label",
+          "kind" : "default",
+          "value" : "\"Alert\""
+        },
+        {
+          "description" : "Button label used to add another alert row.",
+          "key" : "add_alert_label",
+          "kind" : "default",
+          "value" : "\"Add alert\""
+        },
+        {
+          "description" : "Footer button label used to open Calendar.app.",
+          "key" : "open_calendar_label",
+          "kind" : "default",
+          "value" : "\"Calendar\""
+        },
+        {
+          "description" : "Footer cancel button label.",
+          "key" : "cancel_label",
+          "kind" : "default",
+          "value" : "\"Cancel\""
+        },
+        {
+          "description" : "Footer primary button label when creating.",
+          "key" : "save_label",
+          "kind" : "default",
+          "value" : "\"Save\""
+        },
+        {
+          "description" : "Footer primary button label when editing.",
+          "key" : "update_label",
+          "kind" : "default",
+          "value" : "\"Update\""
+        },
+        {
+          "description" : "Footer destructive button label.",
+          "key" : "remove_label",
+          "kind" : "default",
+          "value" : "\"Remove\""
+        },
+        {
+          "description" : "Delete confirmation title.",
+          "key" : "delete_confirmation_title",
+          "kind" : "default",
+          "value" : "\"Remove appointment?\""
+        },
+        {
+          "description" : "Delete confirmation message.",
+          "key" : "delete_confirmation_message",
+          "kind" : "default",
+          "value" : "\"This action cannot be undone.\""
+        },
+        {
+          "description" : "Placeholder text for the composer title field.",
+          "key" : "title_placeholder",
+          "kind" : "default",
+          "value" : "\"What are you doing?\""
+        },
+        {
+          "description" : "Placeholder text for the composer location field.",
+          "key" : "location_placeholder",
+          "kind" : "default",
+          "value" : "\"Where are you going?\""
+        },
+        {
+          "description" : "Default calendar name used when creating new appointments. Empty selects the first available writable calendar.",
+          "key" : "default_calendar_name",
+          "kind" : "default",
+          "value" : "\"\""
+        },
+        {
+          "description" : "Default alert lead time: none | at_time | 5_minutes | 10_minutes | 15_minutes | 30_minutes | 1_hour | 1_day.",
+          "key" : "default_alert",
+          "kind" : "default",
+          "value" : "\"1_hour\""
+        },
+        {
+          "description" : "Default travel time: none | 5_minutes | 10_minutes | 15_minutes | 20_minutes | 30_minutes | 45_minutes | 1_hour | 90_minutes | 2_hours.",
+          "key" : "default_travel_time",
+          "kind" : "default",
+          "value" : "\"none\""
+        }
+      ],
+      "name" : "builtins.calendar.composer"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Background color of the appointment composer panel.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.background\""
+        },
+        {
+          "description" : "Border and divider color of the appointment composer panel.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.border_strong\""
+        },
+        {
+          "description" : "Border width of the appointment composer panel.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "1"
+        },
+        {
+          "description" : "Corner radius of the appointment composer panel.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "10"
+        },
+        {
+          "description" : "Horizontal inner padding of the appointment composer panel.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "14"
+        },
+        {
+          "description" : "Vertical inner padding of the appointment composer panel.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "14"
+        },
+        {
+          "description" : "Header title color of the appointment composer panel.",
+          "key" : "header_text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        }
+      ],
+      "name" : "builtins.calendar.composer.style"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Label shown for no alert.",
+          "key" : "none",
+          "kind" : "example",
+          "value" : "\"None\""
+        },
+        {
+          "description" : "Label shown for alerts at event time.",
+          "key" : "at_time",
+          "kind" : "example",
+          "value" : "\"At time of event\""
+        },
+        {
+          "description" : "Label shown for a 5-minute alert.",
+          "key" : "5_minutes",
+          "kind" : "example",
+          "value" : "\"5 minutes before\""
+        },
+        {
+          "description" : "Label shown for a 10-minute alert.",
+          "key" : "10_minutes",
+          "kind" : "example",
+          "value" : "\"10 minutes before\""
+        },
+        {
+          "description" : "Label shown for a 15-minute alert.",
+          "key" : "15_minutes",
+          "kind" : "example",
+          "value" : "\"15 minutes before\""
+        },
+        {
+          "description" : "Label shown for a 30-minute alert.",
+          "key" : "30_minutes",
+          "kind" : "example",
+          "value" : "\"30 minutes before\""
+        },
+        {
+          "description" : "Label shown for a 1-hour alert.",
+          "key" : "1_hour",
+          "kind" : "example",
+          "value" : "\"1 hour before\""
+        },
+        {
+          "description" : "Label shown for a 1-day alert.",
+          "key" : "1_day",
+          "kind" : "example",
+          "value" : "\"1 day before\""
+        },
+        {
+          "description" : "Label shown for a custom alert lead time.",
+          "key" : "custom",
+          "kind" : "example",
+          "value" : "\"Custom\""
+        }
+      ],
+      "name" : "builtins.calendar.composer.alert_labels"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Label shown when no travel time is set.",
+          "key" : "none",
+          "kind" : "example",
+          "value" : "\"None\""
+        },
+        {
+          "description" : "Label shown for 5 minutes of travel time.",
+          "key" : "5_minutes",
+          "kind" : "example",
+          "value" : "\"5 minutes\""
+        },
+        {
+          "description" : "Label shown for 10 minutes of travel time.",
+          "key" : "10_minutes",
+          "kind" : "example",
+          "value" : "\"10 minutes\""
+        },
+        {
+          "description" : "Label shown for 15 minutes of travel time.",
+          "key" : "15_minutes",
+          "kind" : "example",
+          "value" : "\"15 minutes\""
+        },
+        {
+          "description" : "Label shown for 20 minutes of travel time.",
+          "key" : "20_minutes",
+          "kind" : "example",
+          "value" : "\"20 minutes\""
+        },
+        {
+          "description" : "Label shown for 30 minutes of travel time.",
+          "key" : "30_minutes",
+          "kind" : "example",
+          "value" : "\"30 minutes\""
+        },
+        {
+          "description" : "Label shown for 45 minutes of travel time.",
+          "key" : "45_minutes",
+          "kind" : "example",
+          "value" : "\"45 minutes\""
+        },
+        {
+          "description" : "Label shown for 1 hour of travel time.",
+          "key" : "1_hour",
+          "kind" : "example",
+          "value" : "\"1 hour\""
+        },
+        {
+          "description" : "Label shown for 90 minutes of travel time.",
+          "key" : "90_minutes",
+          "kind" : "example",
+          "value" : "\"1.5 hours\""
+        },
+        {
+          "description" : "Label shown for 2 hours of travel time.",
+          "key" : "2_hours",
+          "kind" : "example",
+          "value" : "\"2 hours\""
+        },
+        {
+          "description" : "Label shown for a custom travel time.",
+          "key" : "custom",
+          "kind" : "example",
+          "value" : "\"Custom\""
+        }
+      ],
+      "name" : "builtins.calendar.composer.travel_time_labels"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Number of days of upcoming events shown in the popup.",
+          "key" : "days",
+          "kind" : "default",
+          "value" : "3"
+        },
+        {
+          "description" : "Hides already-finished or already-started items from today's section when true.",
+          "key" : "exclude_past_events",
+          "kind" : "default",
+          "value" : "false"
+        }
+      ],
+      "name" : "builtins.calendar.upcoming.events"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Background color of the upcoming popup.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.background\""
+        },
+        {
+          "description" : "Border color of the upcoming popup.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.border_strong\""
+        },
+        {
+          "description" : "Border width of the upcoming popup.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "1"
+        },
+        {
+          "description" : "Corner radius of the upcoming popup.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "10"
+        },
+        {
+          "description" : "Horizontal inner padding of the upcoming popup.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "10"
+        },
+        {
+          "description" : "Vertical inner padding of the upcoming popup.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal outer margin around the whole popup.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical outer margin around the whole popup.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical spacing between popup sections.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "8"
+        }
+      ],
+      "name" : "builtins.calendar.upcoming.popup"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Left indent for appointment rows.",
+          "key" : "item_indent",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Text color of appointment rows.",
+          "key" : "event_text_color",
+          "kind" : "default",
+          "value" : "\"theme.text_secondary\""
+        },
+        {
+          "description" : "Text color of the appointments empty state.",
+          "key" : "empty_text_color",
+          "kind" : "default",
+          "value" : "\"theme.text_tertiary\""
+        },
+        {
+          "description" : "Text color of secondary appointment details and section headings.",
+          "key" : "secondary_text_color",
+          "kind" : "default",
+          "value" : "\"theme.accent\""
+        },
+        {
+          "description" : "Muted text color used for travel-time and end-time rows.",
+          "key" : "travel_text_color",
+          "kind" : "default",
+          "value" : "\"theme.muted_secondary\""
+        },
+        {
+          "description" : "Text shown when an appointment section has no events.",
+          "key" : "empty_text",
+          "kind" : "default",
+          "value" : "\"No appointments\""
+        },
+        {
+          "description" : "Shows the source calendar name for appointments.",
+          "key" : "show_calendar_name",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Shows \"All day\" for all-day events except birthdays, which omit it.",
+          "key" : "show_all_day_label",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Shows \"All day\" for all-day holiday-calendar events.",
+          "key" : "show_holiday_all_day_label",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Text shown for all-day events when show_all_day_label is true.",
+          "key" : "all_day_label",
+          "kind" : "default",
+          "value" : "\"All day\""
+        },
+        {
+          "description" : "Optional case-insensitive URL substrings used to label event links as Join Meeting. When omitted, the built-in list shown here is used; a configured list replaces it, and [] disables matching.",
+          "key" : "meeting_url_patterns",
+          "kind" : "example",
+          "value" : "[\"zoom.us\", \"meet.google.com\", \"teams.microsoft.com\", \"webex.com\", \"whereby.com\", \"jitsi\", \"gotomeeting.com\", \"bluejeans.com\"]"
+        },
+        {
+          "description" : "Shows the event location line when present.",
+          "key" : "show_location",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Leading icon shown for location rows. Set to an empty string to hide the icon.",
+          "key" : "location_icon",
+          "kind" : "default",
+          "value" : "\"\""
+        },
+        {
+          "description" : "Color of the location icon. When omitted, secondary_text_color is used.",
+          "key" : "location_icon_color",
+          "kind" : "default",
+          "value" : "\"theme.accent\""
+        },
+        {
+          "description" : "Shows the travel-time line when present.",
+          "key" : "show_travel_time",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Shows the end-time line for timed appointments.",
+          "key" : "show_end_time",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Leading icon shown for travel-time rows.",
+          "key" : "travel_icon",
+          "kind" : "default",
+          "value" : "\"\""
+        },
+        {
+          "description" : "Color of the travel-time icon.",
+          "key" : "travel_icon_color",
+          "kind" : "default",
+          "value" : "\"theme.muted_secondary\""
+        },
+        {
+          "description" : "Shows a small alert icon on timed appointments with at least one non-travel alert.",
+          "key" : "show_alert_icon",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Optional icon shown when show_alert_icon is true and the event has an alert.",
+          "key" : "alert_icon",
+          "kind" : "default",
+          "value" : "\"\""
+        },
+        {
+          "description" : "Color of the alert icon.",
+          "key" : "alert_icon_color",
+          "kind" : "default",
+          "value" : "\"theme.muted_secondary\""
+        }
+      ],
+      "name" : "builtins.calendar.appointments"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Includes birthday calendars in both month and upcoming appointment lists.",
+          "key" : "show_birthdays",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Shows parsed ages for birthday appointments when available.",
+          "key" : "birthdays_show_age",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Leading icon shown for birthday appointments.",
+          "key" : "birthday_icon",
+          "kind" : "default",
+          "value" : "\"\""
+        },
+        {
+          "description" : "Color of the birthday icon. When omitted, event_text_color is used.",
+          "key" : "birthday_icon_color",
+          "kind" : "default",
+          "value" : "\"theme.accent_soft\""
+        }
+      ],
+      "name" : "builtins.calendar.birthdays"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Optional allowlist of visible Calendar.app names. Empty means all calendars are eligible.",
+          "key" : "included_calendar_names",
+          "kind" : "default",
+          "value" : "[]"
+        },
+        {
+          "description" : "Optional denylist of visible Calendar.app names applied after the allowlist.",
+          "key" : "excluded_calendar_names",
+          "kind" : "default",
+          "value" : "[]"
+        },
+        {
+          "description" : "Optional advanced allowlist of exact calendar identifiers.",
+          "key" : "included_calendar_ids",
+          "kind" : "default",
+          "value" : "[]"
+        },
+        {
+          "description" : "Optional advanced denylist of exact calendar identifiers.",
+          "key" : "excluded_calendar_ids",
+          "kind" : "default",
+          "value" : "[]"
+        },
+        {
+          "description" : "Optional advanced allowlist of exact calendar source identifiers.",
+          "key" : "included_calendar_source_ids",
+          "kind" : "default",
+          "value" : "[]"
+        },
+        {
+          "description" : "Optional advanced denylist of exact calendar source identifiers.",
+          "key" : "excluded_calendar_source_ids",
+          "kind" : "default",
+          "value" : "[]"
+        }
+      ],
+      "name" : "builtins.calendar.filters"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Background color of the month popup.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.background\""
+        },
+        {
+          "description" : "Border color of the month popup.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.border_strong\""
+        },
+        {
+          "description" : "Border width of the month popup.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "1"
+        },
+        {
+          "description" : "Corner radius of the month popup. Set to 0 for square corners.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "14"
+        },
+        {
+          "description" : "Horizontal inner padding of the month popup.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "10"
+        },
+        {
+          "description" : "Vertical inner padding of the month popup.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Gap between the calendar and appointments sections.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal outer margin around the whole month popup.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical outer margin around the whole month popup.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "8"
+        }
+      ],
+      "name" : "builtins.calendar.month.popup.style"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows week numbers in the calendar grid.",
+          "key" : "show_week_numbers",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Shows dots under days that contain events.",
+          "key" : "show_event_indicators",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Text color of the month header and appointments title.",
+          "key" : "header_text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Text color of the weekday labels.",
+          "key" : "weekday_text_color",
+          "kind" : "default",
+          "value" : "\"theme.accent\""
+        },
+        {
+          "description" : "Optional first weekday override. 1 = Sunday, 2 = Monday, ... 7 = Saturday. When omitted, EasyBar uses the current calendar setting.",
+          "key" : "first_weekday",
+          "kind" : "example",
+          "value" : "2"
+        },
+        {
+          "description" : "Weekday label format: d | dd | ddd. dddd is not allowed.",
+          "key" : "weekday_format",
+          "kind" : "default",
+          "value" : "\"dd\""
+        },
+        {
+          "description" : "Optional custom weekday labels in Monday-first order. Must contain exactly 7 entries from Monday to Sunday.",
+          "key" : "weekday_symbols",
+          "kind" : "example",
+          "value" : "[\"M\", \"T\", \"W\", \"T\", \"F\", \"S\", \"S\"]"
+        },
+        {
+          "description" : "Text color of days in the current month.",
+          "key" : "day_text_color",
+          "kind" : "default",
+          "value" : "\"theme.text_secondary\""
+        },
+        {
+          "description" : "Text color of leading and trailing days outside the current month.",
+          "key" : "outside_month_text_color",
+          "kind" : "default",
+          "value" : "\"theme.outside_month\""
+        },
+        {
+          "description" : "Background color of today's day cell when it is not selected.",
+          "key" : "today_cell_background_color",
+          "kind" : "default",
+          "value" : "\"theme.transparent\""
+        },
+        {
+          "description" : "Border color of today's day cell when it is not selected.",
+          "key" : "today_cell_border_color",
+          "kind" : "default",
+          "value" : "\"theme.danger\""
+        },
+        {
+          "description" : "Border width of today's day cell when it is not selected.",
+          "key" : "today_cell_border_width",
+          "kind" : "default",
+          "value" : "1.4"
+        },
+        {
+          "description" : "Today's marker style: regular_rounded_rectangle | soft_wobble | double_sketch | open_loop.",
+          "key" : "today_marker_variant",
+          "kind" : "default",
+          "value" : "\"double_sketch\""
+        },
+        {
+          "description" : "Size of today's marker in points. Valid range: 12...28.",
+          "key" : "today_marker_size",
+          "kind" : "default",
+          "value" : "28"
+        },
+        {
+          "description" : "Default color of day event indicators when an event has no calendar color.",
+          "key" : "indicator_color",
+          "kind" : "default",
+          "value" : "\"theme.accent_soft\""
+        }
+      ],
+      "name" : "builtins.calendar.month.popup.calendar"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Text color of selected day cells.",
+          "key" : "selected_text_color",
+          "kind" : "default",
+          "value" : "\"theme.selection_text\""
+        },
+        {
+          "description" : "Background color of selected day cells.",
+          "key" : "selected_background_color",
+          "kind" : "default",
+          "value" : "\"theme.selection_background\""
+        },
+        {
+          "description" : "Date header format used when a multi-day range is selected.",
+          "key" : "selection_date_format",
+          "kind" : "default",
+          "value" : "\"yyyy-MM-dd\""
+        },
+        {
+          "description" : "Separator used between start and end dates when a date range is selected.",
+          "key" : "selection_date_separator",
+          "kind" : "default",
+          "value" : "\" - \""
+        },
+        {
+          "description" : "Allows selecting a date range by dragging across days.",
+          "key" : "allows_range_selection",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Reserved selection behavior flag for the month popup.",
+          "key" : "reset_selection_on_third_tap",
+          "kind" : "default",
+          "value" : "true"
+        }
+      ],
+      "name" : "builtins.calendar.month.popup.selection"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Popup layout: calendar_appointments_horizontal | appointments_calendar_horizontal | calendar_appointments_vertical | appointments_calendar_vertical.",
+          "key" : "layout",
+          "kind" : "default",
+          "value" : "\"calendar_appointments_vertical\""
+        },
+        {
+          "description" : "Makes the appointments area scroll vertically when true.",
+          "key" : "appointments_scrollable",
+          "kind" : "default",
+          "value" : "true"
+        },
+        {
+          "description" : "Minimum height of the appointments area. Set equal to appointments_max_height for a fixed height.",
+          "key" : "appointments_min_height",
+          "kind" : "default",
+          "value" : "180"
+        },
+        {
+          "description" : "Maximum height of the appointments area. Set equal to appointments_min_height for a fixed height.",
+          "key" : "appointments_max_height",
+          "kind" : "default",
+          "value" : "240"
+        },
+        {
+          "description" : "Title shown above the appointments list.",
+          "key" : "agenda_title",
+          "kind" : "default",
+          "value" : "\"Appointments\""
+        },
+        {
+          "description" : "Maximum number of visible appointments when scrolling is disabled.",
+          "key" : "max_visible_appointments",
+          "kind" : "default",
+          "value" : "8"
+        }
+      ],
+      "name" : "builtins.calendar.month.popup.agenda"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Date format used by the month popup agenda anchor.",
+          "key" : "date_format",
+          "kind" : "default",
+          "value" : "\"EEE d MMM\""
+        },
+        {
+          "description" : "Text color used when popup_mode = \"month\".",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Shows the date text when popup_mode = \"month\".",
+          "key" : "show_date_text",
+          "kind" : "default",
+          "value" : "true"
+        }
+      ],
+      "name" : "builtins.calendar.month.popup.anchor"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Title of the Today button.",
+          "key" : "title",
+          "kind" : "default",
+          "value" : "\"Today\""
+        },
+        {
+          "description" : "Horizontal inner padding of the Today button.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "7"
+        },
+        {
+          "description" : "Vertical inner padding of the Today button.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "2"
+        },
+        {
+          "description" : "Horizontal outer margin around the Today button.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the Today button.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Optional leading icon of the Today button, for example 󰃭.",
+          "key" : "icon",
+          "kind" : "default",
+          "value" : "\"\""
+        }
+      ],
+      "name" : "builtins.calendar.month.popup.today_button"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides the time widget.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Places the widget on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "default",
+          "value" : "\"right\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "default",
+          "value" : "40"
+        }
+      ],
+      "name" : "builtins.time"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Leading icon of the widget.",
+          "key" : "icon",
+          "kind" : "default",
+          "value" : "\"􀐫\""
+        },
+        {
+          "description" : "Text color of the widget.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Background color of the widget.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.surface\""
+        },
+        {
+          "description" : "Border color of the widget.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.border\""
+        },
+        {
+          "description" : "Border width of the widget.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "1"
+        },
+        {
+          "description" : "Corner radius of the widget background.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal outer margin around the widget.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the widget.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal inner padding of the widget.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical inner padding of the widget.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Gap between the icon and text.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "6"
+        },
+        {
+          "description" : "Overall opacity of the widget.",
+          "key" : "opacity",
+          "kind" : "default",
+          "value" : "1.0"
+        }
+      ],
+      "name" : "builtins.time.style"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Time format string.",
+          "key" : "format",
+          "kind" : "default",
+          "value" : "\"HH:mm\""
+        }
+      ],
+      "name" : "builtins.time.content"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Shows or hides the date widget.",
+          "key" : "enabled",
+          "kind" : "default",
+          "value" : "false"
+        },
+        {
+          "description" : "Places the widget on the left, center, or right side of the bar.",
+          "key" : "position",
+          "kind" : "default",
+          "value" : "\"right\""
+        },
+        {
+          "description" : "Sort order among widgets in the same position.",
+          "key" : "order",
+          "kind" : "default",
+          "value" : "50"
+        }
+      ],
+      "name" : "builtins.date"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Leading icon of the widget.",
+          "key" : "icon",
+          "kind" : "default",
+          "value" : "\"􀉉\""
+        },
+        {
+          "description" : "Text color of the widget.",
+          "key" : "text_color",
+          "kind" : "default",
+          "value" : "\"theme.text\""
+        },
+        {
+          "description" : "Background color of the widget.",
+          "key" : "background_color",
+          "kind" : "default",
+          "value" : "\"theme.surface\""
+        },
+        {
+          "description" : "Border color of the widget.",
+          "key" : "border_color",
+          "kind" : "default",
+          "value" : "\"theme.border\""
+        },
+        {
+          "description" : "Border width of the widget.",
+          "key" : "border_width",
+          "kind" : "default",
+          "value" : "1"
+        },
+        {
+          "description" : "Corner radius of the widget background.",
+          "key" : "corner_radius",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Horizontal outer margin around the widget.",
+          "key" : "margin_x",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Vertical outer margin around the widget.",
+          "key" : "margin_y",
+          "kind" : "default",
+          "value" : "0"
+        },
+        {
+          "description" : "Horizontal inner padding of the widget.",
+          "key" : "padding_x",
+          "kind" : "default",
+          "value" : "8"
+        },
+        {
+          "description" : "Vertical inner padding of the widget.",
+          "key" : "padding_y",
+          "kind" : "default",
+          "value" : "4"
+        },
+        {
+          "description" : "Gap between the icon and text.",
+          "key" : "spacing",
+          "kind" : "default",
+          "value" : "6"
+        },
+        {
+          "description" : "Overall opacity of the widget.",
+          "key" : "opacity",
+          "kind" : "default",
+          "value" : "1.0"
+        }
+      ],
+      "name" : "builtins.date.style"
+    },
+    {
+      "entries" : [
+        {
+          "description" : "Date format string.",
+          "key" : "format",
+          "kind" : "default",
+          "value" : "\"yyyy-MM-dd\""
+        }
+      ],
+      "name" : "builtins.date.content"
+    }
+  ]
+}

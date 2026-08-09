@@ -4,17 +4,13 @@ import XCTest
 
 final class ConfigReferenceTests: ConfigLoaderTestCase {
   func testGeneratedReferenceContainsEveryDocumentedSchemaKey() throws {
-    let referenceURL = repoRootURL()
-      .appendingPathComponent("docs/content/configuration/reference.md")
-    let reference = try String(contentsOf: referenceURL, encoding: .utf8)
+    let reference = ConfigReferenceRenderer.render()
 
     XCTAssertEqual(referenceKeys(in: reference), documentedSchemaKeys())
   }
 
   func testGeneratedReferenceDistinguishesDefaultsFromExamples() throws {
-    let referenceURL = repoRootURL()
-      .appendingPathComponent("docs/content/configuration/reference.md")
-    let reference = try String(contentsOf: referenceURL, encoding: .utf8)
+    let reference = ConfigReferenceRenderer.render()
 
     XCTAssertEqual(
       referenceRow(in: reference, section: "app", key: "show_menu_bar_icon"),
@@ -47,9 +43,7 @@ final class ConfigReferenceTests: ConfigLoaderTestCase {
   }
 
   func testGeneratedReferenceNamesCompleteSchemaSource() throws {
-    let referenceURL = repoRootURL()
-      .appendingPathComponent("docs/content/configuration/reference.md")
-    let reference = try String(contentsOf: referenceURL, encoding: .utf8)
+    let reference = ConfigReferenceRenderer.render()
 
     let provenance =
       "Generated from the `EasyBarConfigSchema` module: "

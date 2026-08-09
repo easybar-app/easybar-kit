@@ -1,6 +1,6 @@
 # EasyBar
 
-![EasyBar screenshot](./docs/content/assets/bar.png)
+![EasyBar screenshot](https://easybar.dev/assets/bar.png)
 
 EasyBar is a lightweight, scriptable macOS status bar built with SwiftUI and Lua. It combines
 native widgets with custom Lua widgets and integrates with AeroSpace.
