@@ -100,7 +100,7 @@ IMAGE_CONVERT ?= magick
 SVG_CONVERT ?= rsvg-convert
 CLICLICK ?= cliclick
 SCREENSHOT_CONTEXT_MENU_POINT ?= 1344,16
-PRETTIER ?= npx prettier
+PRETTIER ?= npx --yes prettier@3.9.6
 STYLUA ?= stylua
 LUA ?= lua
 
