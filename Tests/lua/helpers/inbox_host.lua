@@ -4,6 +4,7 @@ local M = {}
 local configured_root
 local json
 
+--- Configures repository and widget package module paths for inbox tests.
 local function configure(root)
 	if configured_root == root then
 		return
@@ -23,6 +24,7 @@ local function configure(root)
 	configured_root = root
 end
 
+--- Builds one decoded GitHub notification fixture.
 local function github_notification(id, title, updated_at)
 	return json.object({
 		id = id,
@@ -40,6 +42,7 @@ local function github_notification(id, title, updated_at)
 	})
 end
 
+--- Builds one decoded GitLab issue fixture.
 local function gitlab_issue(id)
 	return json.object({
 		id = id,
@@ -51,6 +54,7 @@ local function gitlab_issue(id)
 	})
 end
 
+--- Builds one decoded GitLab merge-request fixture.
 local function gitlab_merge_request(id)
 	return json.object({
 		id = id,
@@ -63,10 +67,12 @@ local function gitlab_merge_request(id)
 	})
 end
 
+--- Creates a callable no-op logger used by inbox widgets.
 local function callable_noop()
 	return setmetatable({}, { __call = function() end })
 end
 
+--- Returns a queued command result containing one JSON fixture.
 local function decoded_fixture(value)
 	if value == "github-one" then
 		return json.array({ json.array({ github_notification("thread-1", "Review requested", "2026-08-03T09:45:00Z") }) })
@@ -128,6 +134,7 @@ local function decoded_fixture(value)
 	error("unexpected JSON fixture: " .. tostring(value))
 end
 
+--- Creates an instrumented EasyBar inbox host and controllable state.
 local function make_host(root)
 	local state = {
 		configuration = nil,
@@ -141,18 +148,23 @@ local function make_host(root)
 	}
 
 	local inbox = {}
+	--- Records the latest source-level inbox configuration.
 	function inbox.configure(_, configuration)
 		state.configuration = configuration
 	end
+	--- Replaces the recorded inbox item snapshot.
 	function inbox.replace(_, items)
 		state.items = items
 	end
+	--- Clears every recorded inbox item.
 	function inbox.clear()
 		state.items = {}
 	end
+	--- Records the widget's item-action handler.
 	function inbox.on_action(_, handler)
 		state.action_handler = handler
 	end
+	--- Records the widget's source-action handler.
 	function inbox.on_context_action(_, handler)
 		state.context_action_handler = handler
 	end
@@ -180,6 +192,7 @@ local function make_host(root)
 		},
 	}
 
+	--- Resolves one package asset path below the widget repository.
 	function easybar.asset(path)
 		path = tostring(path)
 		if path:sub(1, 2) == "@/" then
@@ -188,12 +201,15 @@ local function make_host(root)
 		return root .. "/examples/" .. path
 	end
 
+	--- Creates a minimal node handle accepted by inbox widgets.
 	function easybar.add()
 		return { subscribe = function() end }
 	end
 
+	--- Queues one controllable timer callback.
 	function easybar.after(delay, callback)
 		local timer = { delay = delay, callback = callback, cancelled = false }
+		--- Cancels this queued test timer.
 		function timer:cancel()
 			self.cancelled = true
 		end
@@ -201,6 +217,7 @@ local function make_host(root)
 		return timer
 	end
 
+	--- Records one asynchronous command and optional fixture callback.
 	function easybar.spawn_async(command, options, callback)
 		state.next_token = state.next_token + 1
 		local token = "command-" .. tostring(state.next_token)
@@ -213,10 +230,12 @@ local function make_host(root)
 		return token
 	end
 
+	--- Accepts asynchronous cancellation requests in the inbox host.
 	function easybar.cancel_async()
 		return true
 	end
 
+	--- Runs and removes the next non-cancelled timer callback.
 	function state:run_next_timer()
 		while #self.timers > 0 do
 			local timer = table.remove(self.timers, 1)
@@ -228,10 +247,12 @@ local function make_host(root)
 		error("expected a pending timer")
 	end
 
+	--- Completes the oldest pending asynchronous command.
 	function state:complete_next_command(output, code)
 		return self:complete_command(1, output, code)
 	end
 
+	--- Completes one pending asynchronous command by index.
 	function state:complete_command(index, output, code)
 		local command = table.remove(self.commands, index)
 		assert(command ~= nil, "expected a pending command")
@@ -239,6 +260,7 @@ local function make_host(root)
 		return command
 	end
 
+	--- Returns whether the latest source actions expose busy activity.
 	function state:has_busy_source_action()
 		for _, action in ipairs((self.configuration or {}).actions or {}) do
 			if action.busy == true then
@@ -248,6 +270,7 @@ local function make_host(root)
 		return false
 	end
 
+	--- Returns one recorded inbox item by id.
 	function state:item(id)
 		for _, item in ipairs(self.items) do
 			if item.id == id then
@@ -257,6 +280,7 @@ local function make_host(root)
 		return nil
 	end
 
+	--- Returns whether one recorded item action is currently busy.
 	function state:item_action_is_busy(item_id, action_id)
 		local item = self:item(item_id)
 		if item == nil then
@@ -270,6 +294,7 @@ local function make_host(root)
 		return false
 	end
 
+	--- Returns whether one recorded item exposes an action id.
 	function state:item_has_action(item_id, action_id)
 		local item = self:item(item_id)
 		for _, action in ipairs(item and item.actions or {}) do
@@ -280,6 +305,7 @@ local function make_host(root)
 		return false
 	end
 
+	--- Returns one top-level recorded source action by id.
 	function state:source_action(action_id)
 		for _, action in ipairs((self.configuration or {}).actions or {}) do
 			if action.id == action_id then
@@ -292,6 +318,7 @@ local function make_host(root)
 	return easybar, state
 end
 
+--- Loads one inbox widget into the instrumented host and returns its state.
 function M.load(root, entrypoint)
 	configure(root)
 	local easybar, state = make_host(root)

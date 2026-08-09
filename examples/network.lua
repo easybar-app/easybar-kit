@@ -12,6 +12,9 @@ local COLORS = {
 	accent = easybar.theme.ref.accent,
 }
 
+--- Returns a trimmed interface name, or nil for missing and blank values.
+---@param value any Native network snapshot value.
+---@return string? interface_name
 local function normalize_interface_name(value)
 	if type(value) ~= "string" then
 		return nil
@@ -25,6 +28,8 @@ local function normalize_interface_name(value)
 	return trimmed
 end
 
+--- Applies relevant fields from one native network event to local state.
+---@param event table? EasyBar event payload.
 local function apply_event(event)
 	if event == nil or type(event.network) ~= "table" then
 		return
@@ -35,6 +40,8 @@ local function apply_event(event)
 	end
 end
 
+--- Returns the current interface label or the offline fallback.
+---@return string label
 local function label_text()
 	if state.interface_name ~= nil then
 		return state.interface_name
@@ -43,6 +50,7 @@ local function label_text()
 	return "offline"
 end
 
+--- Updates the network widget from the latest normalized state.
 local function render()
 	local connected = state.interface_name ~= nil
 	local color = connected and COLORS.text or COLORS.muted

@@ -5,6 +5,7 @@ local M = {}
 
 local style = require("easybar.render.style")
 
+--- Preserves enabled flags while omitting false values from host payloads.
 local function true_or_nil(value)
 	if value == true then
 		return true
@@ -13,6 +14,7 @@ local function true_or_nil(value)
 	return nil
 end
 
+--- Flattens one nested renderer node tree into host protocol node records.
 function M.flatten_node(node, root_id, parent_id, inherited_position, out)
 	local id = node.id or (root_id .. "_" .. tostring(#out + 1))
 	local position = style.normalize_position(node.position or inherited_position or "right")

@@ -33,6 +33,7 @@ local DEFAULT_POPUP_STYLE = {
 	spacing = 4,
 }
 
+--- Recursively merges one style table into another.
 local function deep_merge(target, source)
 	if type(source) ~= "table" then
 		return target
@@ -49,6 +50,7 @@ local function deep_merge(target, source)
 	return target
 end
 
+--- Normalizes a bar position to a supported host value.
 function M.normalize_position(position)
 	if position == "left" or position == "center" or position == "right" then
 		return position
@@ -57,6 +59,7 @@ function M.normalize_position(position)
 	return "right"
 end
 
+--- Extracts display text from scalar or structured label props.
 local function label_string(label)
 	if type(label) == "table" then
 		return label.string or ""
@@ -69,6 +72,7 @@ local function label_string(label)
 	return ""
 end
 
+--- Extracts display text from scalar or structured icon props.
 local function icon_string(icon)
 	if type(icon) == "table" then
 		return icon.string or ""
@@ -81,6 +85,7 @@ local function icon_string(icon)
 	return ""
 end
 
+--- Resolves the primary item color from label, icon, or root props.
 local function resolve_color(props)
 	if props.color ~= nil then
 		return props.color
@@ -97,6 +102,7 @@ local function resolve_color(props)
 	return ""
 end
 
+--- Resolves a label-specific color override.
 local function resolve_label_color(props)
 	if type(props.label) == "table" then
 		return props.label.color
@@ -105,6 +111,7 @@ local function resolve_label_color(props)
 	return nil
 end
 
+--- Resolves an icon-specific color override.
 local function resolve_icon_color(props)
 	if type(props.icon) == "table" then
 		return props.icon.color
@@ -113,6 +120,7 @@ local function resolve_icon_color(props)
 	return nil
 end
 
+--- Resolves a label font-size override from structured props.
 local function resolve_label_font_size(props)
 	if type(props.label) == "table" and type(props.label.font) == "table" then
 		return tonumber(props.label.font.size)
@@ -121,6 +129,7 @@ local function resolve_label_font_size(props)
 	return nil
 end
 
+--- Resolves an icon font-size override from structured props.
 local function resolve_icon_font_size(props)
 	if type(props.icon) == "table" and type(props.icon.font) == "table" then
 		return tonumber(props.icon.font.size)
@@ -129,6 +138,7 @@ local function resolve_icon_font_size(props)
 	return nil
 end
 
+--- Resolves a horizontal icon offset from structured props.
 local function resolve_icon_offset_x(props)
 	if type(props.icon) == "table" then
 		return tonumber(props.icon.offset_x)
@@ -137,6 +147,7 @@ local function resolve_icon_offset_x(props)
 	return nil
 end
 
+--- Resolves a vertical icon offset from structured props.
 local function resolve_icon_offset_y(props)
 	if type(props.icon) == "table" then
 		return tonumber(props.icon.offset_y)
@@ -145,6 +156,7 @@ local function resolve_icon_offset_y(props)
 	return nil
 end
 
+--- Selects the canonical image property table from supported aliases.
 local function resolve_image_props(props)
 	if type(props.icon) == "table" and type(props.icon.image) == "string" then
 		return { path = props.icon.image }
@@ -161,16 +173,19 @@ local function resolve_image_props(props)
 	return nil
 end
 
+--- Resolves a file-backed image path when configured.
 local function resolve_image_path(props)
 	local image = resolve_image_props(props)
 	return type(image) == "table" and image.path or nil
 end
 
+--- Resolves inline SVG image content when configured.
 local function resolve_image_svg(props)
 	local image = resolve_image_props(props)
 	return type(image) == "table" and image.svg or nil
 end
 
+--- Resolves image size from canonical and compatibility properties.
 local function resolve_image_size(props)
 	local image = resolve_image_props(props)
 	if type(image) == "table" and image.size ~= nil then
@@ -188,6 +203,7 @@ local function resolve_image_size(props)
 	return nil
 end
 
+--- Resolves image corner radius from canonical and compatibility properties.
 local function resolve_image_corner_radius(props)
 	local image = resolve_image_props(props)
 	if type(image) == "table" and image.corner_radius ~= nil then
@@ -205,6 +221,7 @@ local function resolve_image_corner_radius(props)
 	return nil
 end
 
+--- Resolves node spacing from canonical and compatibility properties.
 local function resolve_spacing(props)
 	if props.spacing ~= nil then
 		return tonumber(props.spacing)
@@ -217,6 +234,7 @@ local function resolve_spacing(props)
 	return nil
 end
 
+--- Resolves one box-model value from flat and nested property forms.
 local function resolve_box_value(props, key, box)
 	if props[key] ~= nil then
 		return tonumber(props[key])
@@ -229,6 +247,7 @@ local function resolve_box_value(props, key, box)
 	return nil
 end
 
+--- Resolves whether a node participates in drawing.
 local function resolve_drawing(props, default)
 	if props.drawing == nil then
 		return default
@@ -237,6 +256,7 @@ local function resolve_drawing(props, default)
 	return props.drawing ~= false
 end
 
+--- Returns the explicit popup parent id declared by one item.
 function M.popup_parent_id(item)
 	local position = item.props.position
 
@@ -247,6 +267,7 @@ function M.popup_parent_id(item)
 	return nil
 end
 
+--- Returns the explicit regular parent id declared by one item.
 function M.regular_parent_id(item)
 	if type(item.props.parent) == "string" and item.props.parent ~= "" then
 		return item.props.parent
@@ -255,18 +276,22 @@ function M.regular_parent_id(item)
 	return nil
 end
 
+--- Returns whether an item is attached inside a popup hierarchy.
 local function is_popup_item(item)
 	return M.popup_parent_id(item) ~= nil
 end
 
+--- Returns whether an item is a top-level bar root.
 local function is_bar_root_item(item)
 	return M.regular_parent_id(item) == nil and M.popup_parent_id(item) == nil
 end
 
+--- Returns whether a root receives the default layout and background shell.
 local function uses_default_root_shell(item)
 	return is_bar_root_item(item) and item.kind ~= "popup"
 end
 
+--- Creates the shared host node fields used by every rendered kind.
 local function base_node(id, kind, root_position, order, visible)
 	return {
 		id = id,
@@ -282,6 +307,7 @@ local function base_node(id, kind, root_position, order, visible)
 	}
 end
 
+--- Applies padding, border, background, and geometry props to a host node.
 local function apply_box_style(node, props)
 	node.paddingX = tonumber(props.padding_x or props.paddingX)
 	node.paddingY = tonumber(props.padding_y or props.paddingY)
@@ -309,6 +335,7 @@ local function apply_box_style(node, props)
 	return node
 end
 
+--- Applies validated interaction and context-menu metadata to a host node.
 local function apply_interaction(node, interaction)
 	node.receivesMouseHover = interaction.hover
 	node.receivesMouseDown = interaction.down
@@ -318,6 +345,7 @@ local function apply_interaction(node, interaction)
 	return node
 end
 
+--- Resolves mouse event requirements from active subscriptions for one node.
 local function resolve_mouse_interaction(registry, id)
 	local subscriptions = registry._state.subscriptions[id]
 	if type(subscriptions) ~= "table" then
@@ -361,6 +389,7 @@ local function resolve_mouse_interaction(registry, id)
 	}
 end
 
+--- Converts one registry item into a fully styled host render node.
 function M.make_node(registry, id, item, root_position, children)
 	local props = item.props
 	local resolved_props = props
@@ -406,6 +435,7 @@ function M.make_node(registry, id, item, root_position, children)
 	return apply_interaction(apply_box_style(node, resolved_props), resolve_mouse_interaction(registry, id))
 end
 
+--- Builds the renderer-owned container wrapping one item's popup children.
 function M.make_popup_container(id, root_position, popup_props, children)
 	local resolved_popup_props = {}
 	deep_merge(resolved_popup_props, DEFAULT_POPUP_STYLE)

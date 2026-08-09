@@ -139,6 +139,7 @@ local function next_storage_token()
 	return runtime_command_session .. ":storage:" .. tostring(next_storage_sequence)
 end
 
+--- Derives the stable host-log request id for one runtime command token.
 local function log_request_id(token)
 	local sequence = tostring(token or ""):match("([^:]+)$")
 	return sequence ~= nil and "lua-" .. sequence or "lua-unknown"
@@ -413,12 +414,15 @@ registry = api.new(log, {
 	request_cancel_async = request_cancel_async,
 	request_timer = request_timer,
 	request_cancel_timer = request_cancel_timer,
+	--- Reads one setting for the current widget namespace from host storage.
 	storage_get = function(widget, key)
 		return request_storage("get", widget, key)
 	end,
+	--- Persists one setting for the current widget namespace through host storage.
 	storage_set = function(widget, key, value)
 		return request_storage("set", widget, key, value)
 	end,
+	--- Sends a complete inbox snapshot for one widget-owned source.
 	publish_inbox = function(source, items)
 		send_payload({
 			protocol_version = PROTOCOL_VERSION,
@@ -427,6 +431,7 @@ registry = api.new(log, {
 			items = items,
 		})
 	end,
+	--- Clears every inbox item currently published by one widget-owned source.
 	clear_inbox = function(source)
 		send_payload({
 			protocol_version = PROTOCOL_VERSION,
@@ -434,6 +439,7 @@ registry = api.new(log, {
 			source = source,
 		})
 	end,
+	--- Publishes source-level inbox actions, ordering, and presentation metadata.
 	configure_inbox = function(source, actions, order, presentation)
 		send_payload({
 			protocol_version = PROTOCOL_VERSION,
@@ -444,6 +450,7 @@ registry = api.new(log, {
 			presentation = presentation,
 		})
 	end,
+	--- Emits structured diagnostics when one asynchronous command starts.
 	on_async_job_started = function(token, command, context, options)
 		local suffix = ""
 		local widget, operation = command_log_context(options, context)
@@ -461,6 +468,7 @@ registry = api.new(log, {
 				.. suffix
 		)
 	end,
+	--- Emits structured completion diagnostics for one asynchronous command.
 	on_async_job_completed = function(token, code, context, metadata, options)
 		local suffix = ""
 		local widget, operation = command_log_context(options, context)
@@ -475,12 +483,15 @@ registry = api.new(log, {
 		end
 		log.trace("async callback resumed request_id=" .. log_request_id(token) .. " status=" .. tostring(code) .. suffix)
 	end,
+	--- Reports an exception raised by a widget command callback.
 	on_async_callback_error = function(command, err)
 		log.error("lua async callback failed request_bytes=" .. tostring(#command) .. " error_type=" .. type(err))
 	end,
+	--- Reports a command response whose token is no longer pending.
 	on_unknown_command_response = function(token)
 		log.warn("lua command broker rejected unknown response token=" .. tostring(token))
 	end,
+	--- Reports invalid values passed through the public widget API.
 	on_invalid_public_api = function(path, value, expected)
 		log.error(
 			"lua rejected invalid public api value path="

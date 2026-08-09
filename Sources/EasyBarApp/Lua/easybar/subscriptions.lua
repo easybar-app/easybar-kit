@@ -6,6 +6,7 @@ local validation = require("easybar.validation")
 
 local INTERVAL_TICK_PREFIX = "interval_tick:"
 
+--- Creates a detached event payload targeted at one subscribed node.
 local function make_handler_event(id, event)
 	local handler_event = helpers.deep_copy(event)
 	handler_event.widget_id = id
@@ -15,6 +16,7 @@ local function make_handler_event(id, event)
 	return handler_event
 end
 
+--- Copies an array before dispatch so handlers may mutate subscriptions safely.
 local function snapshot_array(values)
 	local copy = {}
 	for index, value in ipairs(values or {}) do
@@ -23,17 +25,26 @@ local function snapshot_array(values)
 	return copy
 end
 
+--- Returns whether a targeted event should be delivered to one item id.
 local function should_dispatch_to_target(target, id)
 	return target == nil or target == id
 end
 
+--- Returns whether the source owner still requires one non-duplicate delivery.
 local function should_dispatch_to_owner(owner, target, id, dispatched)
 	return owner ~= nil and owner ~= target and owner == id and not dispatched[id]
 end
 
+--- Creates subscription, interval, and event-dispatch services for the registry.
+---@param state table Shared registry state.
+---@param ensure_item_exists fun(id:string) Node identity validator.
+---@param log table Runtime logger.
+---@param event_tokens table Event token normalization helpers.
+---@return table subscriptions Subscription service API.
 function M.new(state, ensure_item_exists, log, event_tokens)
 	local subscriptions = {}
 
+	--- Invokes a stable snapshot of handlers registered for one item and event.
 	local function dispatch_handlers_for(id, event)
 		local bucket = state.subscriptions[id]
 		if bucket == nil then
@@ -56,6 +67,7 @@ function M.new(state, ensure_item_exists, log, event_tokens)
 		end
 	end
 
+	--- Routes one event to its explicit target and source owner without duplicates.
 	local function dispatch_targeted(event)
 		local owner = event.widget_id
 		local target = event.target_widget_id or owner
@@ -73,6 +85,7 @@ function M.new(state, ensure_item_exists, log, event_tokens)
 		end
 	end
 
+	--- Invokes one node's configured interval callback with error isolation.
 	local function dispatch_interval_handler_for(id)
 		local handler = state.interval_handlers[id]
 		if type(handler) ~= "function" then
@@ -84,16 +97,19 @@ function M.new(state, ensure_item_exists, log, event_tokens)
 		end
 	end
 
+	--- Replaces the repeating interval callback owned by one node.
 	function subscriptions.set_interval_handler(id, handler)
 		ensure_item_exists(id)
 		assert(type(handler) == "function", "on_interval must be a function")
 		state.interval_handlers[id] = handler
 	end
 
+	--- Validates a node before its host-managed interval schedule is reset.
 	function subscriptions.reset_interval_schedule(id)
 		ensure_item_exists(id)
 	end
 
+	--- Registers one handler for normalized event tokens and returns a disposable handle.
 	function subscriptions.subscribe(id, events, handler)
 		ensure_item_exists(id)
 		assert(type(handler) == "function", "node:subscribe(events, handler) requires handler")
@@ -127,6 +143,7 @@ function M.new(state, ensure_item_exists, log, event_tokens)
 		end
 
 		local handle = {}
+		--- Removes this handler registration once and reports whether it was active.
 		function handle:unsubscribe()
 			if not entry.active then
 				return false
@@ -157,6 +174,7 @@ function M.new(state, ensure_item_exists, log, event_tokens)
 		return handle
 	end
 
+	--- Dispatches one normalized host event to targeted or broadcast subscribers.
 	function subscriptions.handle_event(event)
 		if event.name == "interval_tick" then
 			local target = event.widget_id or event.target_widget_id
@@ -167,6 +185,7 @@ function M.new(state, ensure_item_exists, log, event_tokens)
 		dispatch_targeted(event)
 	end
 
+	--- Returns the sorted host event set currently required by active subscriptions.
 	function subscriptions.required_events()
 		local events = {}
 		for _, id in ipairs(state.item_order) do

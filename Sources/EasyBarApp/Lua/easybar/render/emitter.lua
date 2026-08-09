@@ -8,6 +8,7 @@ local flatten = require("easybar.render.flatten")
 local PROTOCOL_VERSION = 1
 local last_emitted = {}
 
+--- Serializes and writes one complete root tree update to the host.
 local function emit_tree(tree, log, json)
 	local root_id = tree.id or "unknown"
 	local nodes = {}
@@ -37,6 +38,7 @@ local function emit_tree(tree, log, json)
 	end
 end
 
+--- Writes one root-removal update to the host.
 local function emit_root_clear(root_id, log, json)
 	local payload = {
 		protocol_version = PROTOCOL_VERSION,
@@ -54,6 +56,7 @@ local function emit_root_clear(root_id, log, json)
 	end
 end
 
+--- Emits changed trees, clears removed roots, and updates the live-root cache.
 function M.emit_all(trees, live_roots, log, json)
 	for _, tree in ipairs(trees) do
 		emit_tree(tree, log, json)

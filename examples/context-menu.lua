@@ -5,6 +5,7 @@
 local filter = "all"
 local github
 
+--- Builds the current native context menu with filter checkmarks.
 local function menu()
 	return {
 		{ id = "refresh", title = "Refresh" },
@@ -20,6 +21,7 @@ local function menu()
 	}
 end
 
+--- Updates the widget label and context menu from local filter state.
 local function render()
 	github:set({
 		label = "GitHub · " .. filter,

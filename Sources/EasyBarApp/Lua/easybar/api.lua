@@ -103,10 +103,12 @@ end
 local MAX_WIDGET_LOG_SCAN_BYTES = 8 * 1024 * 1024
 local WIDGET_LOG_READ_CHUNK_BYTES = 32 * 1024
 
+--- Quotes one filesystem value for the legacy shell-based discovery command.
 local function shell_quote(value)
 	return "'" .. tostring(value):gsub("'", "'\\''") .. "'"
 end
 
+--- Canonicalizes a widget root without resolving paths outside it.
 local function normalize_widget_root(widget_dir)
 	assert(type(widget_dir) == "string" and widget_dir ~= "", "widget directory must be a non-empty string")
 
@@ -117,6 +119,7 @@ local function normalize_widget_root(widget_dir)
 	return root
 end
 
+--- Returns a safe path relative to a widget root, or nil when it escapes.
 local function relative_widget_path(root, path)
 	if root == "/" then
 		if path:sub(1, 1) ~= "/" then
@@ -188,6 +191,7 @@ end
 
 local ensured_log_directories = {}
 
+--- Creates the configured widget log directory when it does not exist.
 local function ensure_log_directory(log_dir)
 	log_dir = tostring(log_dir or configured_log_dir())
 	if ensured_log_directories[log_dir] then
@@ -219,10 +223,12 @@ local function validate_log_file_name(file_name)
 	return file_name, nil
 end
 
+--- Resolves and validates one file-backed widget log path.
 local function widget_log_path(log_dir, file_name)
 	return tostring(log_dir or configured_log_dir()) .. "/" .. file_name
 end
 
+--- Appends normalized text to one widget log file.
 local function append_widget_log(log_dir, file_name, text)
 	local validated, validation_error = validate_log_file_name(file_name)
 	if validated == nil then
@@ -248,6 +254,7 @@ local function append_widget_log(log_dir, file_name, text)
 	return true, nil
 end
 
+--- Reads the newest bounded set of lines from one widget log file.
 local function read_widget_log_tail(log_dir, file_name, limit)
 	local validated, validation_error = validate_log_file_name(file_name)
 	if validated == nil then
@@ -293,6 +300,7 @@ local function read_widget_log_tail(log_dir, file_name, limit)
 	return tail, nil
 end
 
+--- Atomically rewrites one widget log with the supplied lines.
 local function write_widget_log_lines(log_dir, file_name, lines)
 	local validated, validation_error = validate_log_file_name(file_name)
 	if validated == nil then
@@ -317,6 +325,7 @@ local function write_widget_log_lines(log_dir, file_name, lines)
 	return true, nil
 end
 
+--- Returns one widget log's newest lines as newline-delimited text.
 local function tail_widget_log(log_dir, file_name, limit)
 	local lines, err = read_widget_log_tail(log_dir, file_name, limit)
 	if lines == nil then
@@ -325,6 +334,7 @@ local function tail_widget_log(log_dir, file_name, limit)
 	return table.concat(lines, "\n"), nil
 end
 
+--- Keeps only the newest requested lines in one widget log file.
 local function trim_widget_log(log_dir, file_name, limit)
 	local normalized_limit = validation.non_negative_number(limit)
 	if normalized_limit == nil or math.floor(normalized_limit) ~= normalized_limit then
@@ -362,6 +372,7 @@ local function valid_interval(value)
 	return validation.interval_seconds(value) ~= nil
 end
 
+--- Produces a stable widget identity for structured host logs.
 local function widget_log_source(source, widget_root)
 	local path = tostring(source or ""):gsub("\\", "/")
 	local root = tostring(widget_root or ""):gsub("\\", "/"):gsub("/+$", "")
@@ -417,6 +428,7 @@ function M.new(log, hooks)
 	local default_exec_options = type(hooks.default_exec_options) == "table" and hooks.default_exec_options or {}
 	local log_dir = configured_log_dir()
 
+	--- Creates a recursively read-only proxy for public constant tables.
 	local function readonly_copy(values, name)
 		local copy = {}
 
@@ -438,6 +450,7 @@ function M.new(log, hooks)
 		})
 	end
 
+	--- Writes one source-scoped widget message through the host logger.
 	local function log_widget(source, level, ...)
 		if not log or type(log.widget) ~= "function" then
 			return
@@ -446,10 +459,12 @@ function M.new(log, hooks)
 		log.widget(source or "widget", normalize_log_level(level), join_message(...))
 	end
 
+	--- Reports a file-backed logging failure without raising into widget code.
 	local function log_file_warning(source, message, err)
 		log_widget(source, "warn", "widget log file", message, tostring(err or "unknown error"))
 	end
 
+	--- Builds one normalized file-log line with level and optional prefix.
 	local function file_log_line(level, prefix, ...)
 		local normalized_level = string.lower(normalize_log_level(level))
 		local message
@@ -462,6 +477,7 @@ function M.new(log, hooks)
 		return os.date("%Y-%m-%dT%H:%M:%S%z") .. " [" .. normalized_level .. "] " .. message
 	end
 
+	--- Writes one source-scoped host log after applying a stable prefix.
 	local function log_widget_with_prefix(source, level, prefix, ...)
 		if type(prefix) == "string" and prefix ~= "" then
 			log_widget(source, level, prefix, ...)
@@ -470,6 +486,7 @@ function M.new(log, hooks)
 		end
 	end
 
+	--- Creates a callable widget logger that prepends one normalized prefix.
 	local function make_prefixed_logger(source, prefix)
 		if type(prefix) ~= "string" then
 			error("log prefix must be a string")
@@ -482,6 +499,7 @@ function M.new(log, hooks)
 		})
 	end
 
+	--- Creates a callable logger backed by both host logs and a bounded file.
 	local function make_file_logger(source, file_name, options)
 		local validated, validation_error = validate_log_file_name(file_name)
 		if validated == nil then
@@ -492,14 +510,17 @@ function M.new(log, hooks)
 		local prefix = type(options.prefix) == "string" and options.prefix or nil
 		local logger = {}
 
+		--- Appends raw text to this logger's file, adding a trailing newline when needed.
 		function logger.append(text)
 			return append_widget_log(log_dir, validated, text)
 		end
 
+		--- Appends one logical line to this logger's file.
 		function logger.line(text)
 			return append_widget_log(log_dir, validated, tostring(text or ""))
 		end
 
+		--- Returns the newest bounded lines from this logger's file.
 		function logger.tail(limit)
 			local tail, err = tail_widget_log(log_dir, validated, limit)
 			if err ~= nil then
@@ -508,6 +529,7 @@ function M.new(log, hooks)
 			return tail
 		end
 
+		--- Keeps only the newest bounded lines in this logger's file.
 		function logger.trim(limit)
 			return trim_widget_log(log_dir, validated, limit)
 		end
@@ -526,13 +548,16 @@ function M.new(log, hooks)
 		})
 	end
 
+	--- Creates the callable logging namespace scoped to one widget source.
 	local function make_log_api(source)
 		local logger = {}
 
+		--- Returns a callable host logger with a stable message prefix.
 		function logger.with_prefix(prefix)
 			return make_prefixed_logger(source, prefix)
 		end
 
+		--- Returns a callable host-and-file logger for one safe file name.
 		function logger.with_file(file_name, options)
 			return make_file_logger(source, file_name, options)
 		end
@@ -544,6 +569,7 @@ function M.new(log, hooks)
 		})
 	end
 
+	--- Returns the union of user subscriptions and internal driver events.
 	local function required_events()
 		local merged = {}
 
@@ -565,6 +591,7 @@ function M.new(log, hooks)
 		return result
 	end
 
+	--- Copies a handler list so callbacks may unsubscribe during dispatch safely.
 	local function handler_snapshot(handlers)
 		local copy = {}
 		for index, handler in ipairs(handlers or {}) do
@@ -573,6 +600,7 @@ function M.new(log, hooks)
 		return copy
 	end
 
+	--- Routes one normalized host event to commands, timers, inbox, and node subscriptions.
 	local function handle_event(event)
 		if event.name == "inbox.action" then
 			local handlers = registry._state.inbox_action_handlers[tostring(event.source or "")]
@@ -636,6 +664,7 @@ function M.new(log, hooks)
 
 	--- Returns one widget-scoped EasyBar API.
 	--- Defaults are isolated to this widget instance.
+	--- Creates the isolated public EasyBar API injected into one widget file.
 	function api.make_widget_api(widget_source, widget_root)
 		local widget_api = {}
 		local widget_defaults = {}
@@ -791,16 +820,19 @@ function M.new(log, hooks)
 			return make_node_handle(id)
 		end
 
+		--- Runs one synchronous shell command with widget-scoped diagnostics.
 		function widget_api.exec(command, options, ...)
 			assert(select("#", ...) == 0, "easybar.exec(command, options) does not accept a callback")
 			return registry.exec_for_widget(widget_name, command, options)
 		end
 
+		--- Starts one asynchronous shell command with widget-scoped diagnostics.
 		function widget_api.exec_async(command, options, callback, ...)
 			assert(select("#", ...) == 0, "easybar.exec_async(command, options, callback) does not accept extra arguments")
 			return registry.exec_async_for_widget(widget_name, command, options, callback)
 		end
 
+		--- Starts one direct executable command with widget-scoped diagnostics.
 		function widget_api.spawn_async(arguments, options, callback, ...)
 			assert(select("#", ...) == 0, "easybar.spawn_async(arguments, options, callback) does not accept extra arguments")
 			return registry.spawn_async_for_widget(widget_name, arguments, options, callback)
@@ -818,6 +850,7 @@ function M.new(log, hooks)
 		widget_api.inbox = {}
 		widget_api.storage = {}
 
+		--- Reads one persisted setting from an explicit or current widget namespace.
 		function widget_api.storage.get(widget, key, default)
 			widget = normalize_storage_segment(widget, "storage widget")
 			key = normalize_storage_segment(key, "storage key")
@@ -834,6 +867,7 @@ function M.new(log, hooks)
 			return default
 		end
 
+		--- Persists one validated setting in an explicit or current widget namespace.
 		function widget_api.storage.set(widget, key, value)
 			widget = normalize_storage_segment(widget, "storage widget")
 			key = normalize_storage_segment(key, "storage key")
@@ -845,6 +879,7 @@ function M.new(log, hooks)
 			return true, nil
 		end
 
+		--- Publishes a complete inbox snapshot for one normalized source.
 		function widget_api.inbox.replace(source, items)
 			source = normalize_inbox_source(source)
 			assert(json_module.is_array(items), "inbox items must be a dense array")
@@ -853,6 +888,7 @@ function M.new(log, hooks)
 			end)
 		end
 
+		--- Clears every published inbox item for one normalized source.
 		function widget_api.inbox.clear(source)
 			source = normalize_inbox_source(source)
 			registry.defer_side_effect(function()
@@ -860,11 +896,13 @@ function M.new(log, hooks)
 			end)
 		end
 
+		--- Validates and publishes source actions, order, and presentation metadata.
 		function widget_api.inbox.configure(source, configuration)
 			source = normalize_inbox_source(source)
 			assert(type(configuration) == "table", "inbox configuration must be a table")
 			local actions = configuration.actions or {}
 			local action_count = 0
+			--- Recursively validates bounded inbox source-action trees.
 			local function validate_actions(values, depth)
 				assert(json_module.is_array(values), "inbox configuration actions must be dense arrays")
 				assert(depth <= 3, "inbox configuration actions support at most three levels")
@@ -892,6 +930,7 @@ function M.new(log, hooks)
 			end)
 		end
 
+		--- Registers one source handler and returns an idempotent unsubscribe handle.
 		local function register_inbox_handler(storage, source, handler, description)
 			source = normalize_inbox_source(source)
 			assert(type(handler) == "function", description .. " must be a function")
@@ -899,6 +938,7 @@ function M.new(log, hooks)
 			local entry = { handler = handler, active = true }
 			table.insert(storage[source], entry)
 			local handle = {}
+			--- Removes this inbox handler registration once.
 			function handle:unsubscribe()
 				if not entry.active then
 					return false
@@ -919,10 +959,12 @@ function M.new(log, hooks)
 			return handle
 		end
 
+		--- Registers a handler for item actions from one normalized inbox source.
 		function widget_api.inbox.on_action(source, handler)
 			return register_inbox_handler(registry._state.inbox_action_handlers, source, handler, "inbox action handler")
 		end
 
+		--- Registers a handler for source context actions from one normalized inbox source.
 		function widget_api.inbox.on_context_action(source, handler)
 			return register_inbox_handler(
 				registry._state.inbox_context_action_handlers,

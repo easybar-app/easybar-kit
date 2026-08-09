@@ -8,10 +8,12 @@ local command_broker_module = require("easybar.registry.command_broker")
 local timer_broker_module = require("easybar.registry.timer_broker")
 local graph = require("easybar.registry.graph")
 
+--- Returns all arguments unchanged for optional hook defaults.
 local function noop(...)
 	return ...
 end
 
+--- Reports one invalid public value and raises a caller-facing validation error.
 local function invalid_public_value(path, value, expected, report)
 	report(path, value, expected)
 	error(
@@ -20,6 +22,7 @@ local function invalid_public_value(path, value, expected, report)
 	)
 end
 
+--- Normalizes public boolean values, including the supported `on` and `off` aliases.
 local function normalize_bool(value, default, path, report)
 	if value == nil then
 		return default
@@ -33,6 +36,7 @@ local function normalize_bool(value, default, path, report)
 	return invalid_public_value(path, value, "true, false, 'on', or 'off'", report)
 end
 
+--- Converts scalar text props into the structured renderer representation.
 local function normalize_string_prop(value)
 	if value == nil then
 		return nil
@@ -48,14 +52,17 @@ local MAX_CONTEXT_MENU_DEPTH = 8
 local MAX_CONTEXT_MENU_ITEMS = 256
 local MAX_CONTEXT_MENU_TEXT_BYTES = 1024
 
+--- Returns whether a context-menu title or action id is valid and bounded.
 local function is_valid_context_menu_text(value)
 	return type(value) == "string" and value ~= "" and #value <= MAX_CONTEXT_MENU_TEXT_BYTES
 end
 
+--- Returns whether an image attempts to use both a file path and inline SVG.
 local function has_conflicting_image_sources(image)
 	return image.path ~= nil and image.svg ~= nil
 end
 
+--- Normalizes a context-menu boolean while reporting invalid values non-fatally.
 local function normalize_menu_bool(value, default, path, report)
 	if value == nil then
 		return default
@@ -68,6 +75,7 @@ local function normalize_menu_bool(value, default, path, report)
 	return default
 end
 
+--- Validates and bounds a nested context menu for host transport.
 local function normalize_context_menu(menu, path, report)
 	if type(menu) ~= "table" then
 		report(path, menu, "array of context menu entries")
@@ -76,6 +84,7 @@ local function normalize_context_menu(menu, path, report)
 
 	local item_count = 0
 	local action_ids = {}
+	--- Recursively normalizes context-menu entries within depth and item limits.
 	local function normalize_entries(entries, entry_path, depth)
 		if depth > MAX_CONTEXT_MENU_DEPTH then
 			report(entry_path, entries, "context menu nesting at most 8 levels")
@@ -131,6 +140,7 @@ local function normalize_context_menu(menu, path, report)
 	return normalize_entries(menu, path, 1)
 end
 
+--- Validates one image property and removes unsafe or conflicting sources.
 local function normalize_image_prop(image, path, report)
 	if type(image) ~= "table" then
 		return image
@@ -157,6 +167,7 @@ local function normalize_image_prop(image, path, report)
 	return image
 end
 
+--- Produces a detached, host-safe node property table.
 local function normalize_props(props, report)
 	local normalized = helpers.deep_copy(props or {})
 	if normalized.label ~= nil then
@@ -188,6 +199,7 @@ local COMMAND_OPTION_KEYS = {
 	log_operation = true,
 }
 
+--- Validates command limits and logging metadata for one public API signature.
 local function normalize_command_options(options, signature)
 	if options == nil then
 		return nil
@@ -229,6 +241,7 @@ local function normalize_command_options(options, signature)
 	return next(normalized) and normalized or nil
 end
 
+--- Validates and copies one dense executable argument array.
 local function normalize_process_arguments(arguments, signature)
 	assert(type(arguments) == "table", signature .. " requires an argument array")
 	local normalized = {}
@@ -248,6 +261,7 @@ local function normalize_process_arguments(arguments, signature)
 	return normalized
 end
 
+--- Returns a shallow copy of one key-value table.
 local function copy_map(values)
 	local copy = {}
 	for key, value in pairs(values or {}) do
@@ -256,6 +270,7 @@ local function copy_map(values)
 	return copy
 end
 
+--- Copies event handler buckets while preserving active-state snapshots.
 local function copy_handler_buckets(values, active_states)
 	local copy = {}
 	for owner, bucket in pairs(values or {}) do
@@ -275,6 +290,7 @@ local function copy_handler_buckets(values, active_states)
 	return copy
 end
 
+--- Copies flat handler lists while preserving active-state snapshots.
 local function copy_handler_lists(values, active_states)
 	local copy = {}
 	for owner, handlers in pairs(values or {}) do
@@ -290,6 +306,7 @@ local function copy_handler_lists(values, active_states)
 	return copy
 end
 
+--- Captures mutable registry state for transactional widget loading.
 local function snapshot_state(state)
 	local active_states = {}
 	return {
@@ -308,6 +325,7 @@ local function snapshot_state(state)
 	}
 end
 
+--- Restores all mutable registry state from a transaction snapshot.
 local function restore_state(state, snapshot)
 	state.items = helpers.deep_copy(snapshot.items)
 	state.item_order = helpers.deep_copy(snapshot.item_order)
@@ -326,6 +344,9 @@ local function restore_state(state, snapshot)
 end
 
 --- Returns one new registry object.
+--- Creates the runtime registry and composes its item, command, timer, and subscription services.
+---@param hooks? table Host callbacks used for commands, timers, storage, inbox, and diagnostics.
+---@return table registry Runtime registry exposed to the loader and renderer.
 function M.new(hooks)
 	hooks = hooks or {}
 	local on_mutation = type(hooks.on_mutation) == "function" and hooks.on_mutation or noop
@@ -359,16 +380,19 @@ function M.new(hooks)
 	local token_session = tostring({}):gsub("[^%w]", "_")
 	local registry = { _state = state }
 
+	--- Returns the widget source currently owning a load transaction.
 	local function current_source()
 		return active_transaction and active_transaction.source or nil
 	end
 
+	--- Creates a deterministic fallback token when a host request hook omits one.
 	local function fallback_token(kind)
 		token_counter = token_counter + 1
 		return token_session .. ":" .. tostring(kind) .. ":" .. tostring(token_counter)
 	end
 
 	local item_store = item_store_module.new(state, {
+		--- Normalizes item props and reports validation failures through host hooks.
 		normalize_props = function(props)
 			return normalize_props(props, on_invalid_public_api)
 		end,
@@ -400,6 +424,7 @@ function M.new(hooks)
 
 	registry.ensure_item_exists = item_store.ensure_item_exists
 	registry.merge_props = item_store.merge_props
+	--- Adds one normalized node and applies interval behavior atomically.
 	function registry.add(kind, id, props, defaults, source)
 		return item_store.add(kind, id, props, defaults, source or current_source())
 	end
@@ -423,11 +448,13 @@ function M.new(hooks)
 	registry.handle_timer_fired = timer_broker.handle_timer_fired
 	registry.handle_timer_rejected = timer_broker.handle_timer_rejected
 
+	--- Validates the complete node graph and raises on structural errors.
 	function registry.validate()
 		graph.build(state)
 		return true
 	end
 
+	--- Begins a widget transaction and snapshots registry state for rollback.
 	function registry.begin_widget_load(source)
 		assert(active_transaction == nil, "nested easybar widget load transaction")
 		local loaded_modules = {}
@@ -443,6 +470,7 @@ function M.new(hooks)
 		return active_transaction
 	end
 
+	--- Defers a host side effect until the active widget transaction commits.
 	function registry.defer_side_effect(effect)
 		assert(type(effect) == "function", "deferred side effect must be a function")
 		if active_transaction ~= nil then
@@ -452,6 +480,7 @@ function M.new(hooks)
 		effect()
 	end
 
+	--- Validates and commits the active widget transaction and its deferred effects.
 	function registry.commit_widget_load(transaction)
 		assert(transaction ~= nil and transaction == active_transaction, "invalid easybar widget load transaction")
 		registry.validate()
@@ -466,6 +495,7 @@ function M.new(hooks)
 		end
 	end
 
+	--- Restores the snapshot owned by the active widget transaction.
 	function registry.rollback_widget_load(transaction)
 		assert(transaction ~= nil and transaction == active_transaction, "invalid easybar widget load transaction")
 		for token in pairs(state.pending_async_commands) do

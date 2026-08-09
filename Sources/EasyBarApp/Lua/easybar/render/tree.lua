@@ -8,24 +8,29 @@ local item_store = require("easybar.registry.item_store")
 
 local INTERNAL_ID_PREFIX = item_store.INTERNAL_ID_PREFIX
 
+--- Returns one registry item by id without exposing traversal details.
 local function item_by_id(registry, id)
 	return registry._state.items[id]
 end
 
+--- Returns the registry's stable item order.
 local function ordered_ids(registry)
 	return registry._state.item_order or {}
 end
 
+--- Appends one child id to a prepared parent index.
 local function add_child(index, parent_id, child_id)
 	index[parent_id] = index[parent_id] or {}
 	index[parent_id][#index[parent_id] + 1] = child_id
 end
 
+--- Returns one readable item identity for renderer diagnostics.
 local function describe_item(item, id)
 	return tostring(id) .. " source=" .. tostring(item and item.source or "unknown")
 end
 
 --- Builds and validates one render graph index.
+--- Validates parent graphs and prepares normal and popup child indexes.
 function M.prepare(registry)
 	local regular_children = {}
 	local popup_children = {}
@@ -66,6 +71,7 @@ function M.prepare(registry)
 
 	local marks = {}
 	local stack = {}
+	--- Visits one item to detect cycles across normal and popup parents.
 	local function visit(id)
 		if marks[id] == 2 then
 			return
@@ -113,10 +119,12 @@ function M.prepare(registry)
 	}
 end
 
+--- Builds a collision-resistant id for renderer-owned popup nodes.
 local function internal_popup_id(id, suffix)
 	return INTERNAL_ID_PREFIX .. tostring(id) .. ":" .. tostring(suffix)
 end
 
+--- Recursively builds one render tree from a registry item and prepared indexes.
 function M.build_tree(registry, id, root_position, prepared, visiting)
 	prepared = prepared or M.prepare(registry)
 	visiting = visiting or {}
@@ -170,6 +178,7 @@ function M.build_tree(registry, id, root_position, prepared, visiting)
 	return root
 end
 
+--- Returns stable render roots that are not attached to regular parents.
 function M.root_ids(registry, prepared)
 	prepared = prepared or M.prepare(registry)
 	local roots = {}

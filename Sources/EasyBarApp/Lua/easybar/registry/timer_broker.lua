@@ -3,6 +3,10 @@
 local M = {}
 local validation = require("easybar.validation")
 
+--- Creates a broker for cancellable host-owned one-shot timers.
+---@param state table Shared mutable runtime state.
+---@param hooks table Host timer request and cancellation callbacks.
+---@return table broker Timer API used by the registry.
 function M.new(state, hooks)
 	local broker = {}
 	local request_timer = hooks.request_timer
@@ -11,6 +15,7 @@ function M.new(state, hooks)
 	local on_async_callback_error = hooks.on_async_callback_error
 	local fallback_token = hooks.fallback_token
 
+	--- Schedules one validated one-shot callback and returns a cancellation handle.
 	function broker.after(delay_seconds, callback, ...)
 		local signature = "easybar.after(delay_seconds, callback)"
 		assert(select("#", ...) == 0, signature .. " does not accept extra arguments")
@@ -25,6 +30,7 @@ function M.new(state, hooks)
 		state.pending_timers[token] = callback
 		local handle = { token = token }
 
+		--- Cancels this timer if it is still pending.
 		function handle:cancel()
 			if state.pending_timers[self.token] == nil then
 				return false
@@ -37,6 +43,7 @@ function M.new(state, hooks)
 		return handle
 	end
 
+	--- Drops one callback after the host rejects its timer request.
 	function broker.handle_timer_rejected(token)
 		if state.pending_timers[token] == nil then
 			return false
@@ -45,6 +52,7 @@ function M.new(state, hooks)
 		return true
 	end
 
+	--- Runs and removes the callback for one fired timer token.
 	function broker.handle_timer_fired(token)
 		local callback = state.pending_timers[token]
 		if callback == nil then

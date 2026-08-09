@@ -5,6 +5,7 @@ local helpers = require("easybar.helpers")
 
 M.INTERNAL_ID_PREFIX = "__easybar_internal__:"
 
+--- Recursively merges a detached property table into a target table.
 local function deep_merge(target, source)
 	if type(source) ~= "table" then
 		return target
@@ -22,6 +23,7 @@ local function deep_merge(target, source)
 	return target
 end
 
+--- Splits one dot-delimited property path into validated segments.
 local function split_path(path)
 	local segments = {}
 	for segment in tostring(path):gmatch("[^%.]+") do
@@ -30,6 +32,7 @@ local function split_path(path)
 	return segments
 end
 
+--- Removes one nested property path and prunes empty intermediate tables.
 local function unset_path(target, path)
 	if type(target) ~= "table" then
 		return false
@@ -67,6 +70,7 @@ local function unset_path(target, path)
 	return true
 end
 
+--- Returns every distinct normal or popup parent id referenced by an item.
 local function parent_ids(item)
 	local result = {}
 	local seen = {}
@@ -82,6 +86,10 @@ local function parent_ids(item)
 	return result
 end
 
+--- Creates the mutable item store used by the widget registry.
+---@param state table Shared registry state.
+---@param options table Normalization and mutation callbacks.
+---@return table store Item CRUD API.
 function M.new(state, options)
 	local normalize_props = assert(options.normalize_props)
 	local on_mutation = assert(options.on_mutation)
@@ -91,6 +99,7 @@ function M.new(state, options)
 
 	local store = {}
 
+	--- Raises when a node id does not exist in the current registry.
 	function store.ensure_item_exists(id)
 		local item = state.items[id]
 		if item == nil then
@@ -99,6 +108,7 @@ function M.new(state, options)
 		return item
 	end
 
+	--- Merges defaults and explicit props into a normalized detached table.
 	function store.merge_props(defaults, props)
 		local merged = {}
 		deep_merge(merged, normalize_props(defaults or {}))
@@ -106,6 +116,7 @@ function M.new(state, options)
 		return merged
 	end
 
+	--- Adds one new item after validating identity and parent relationships.
 	function store.add(kind, id, props, defaults, source)
 		assert(type(kind) == "string" and kind ~= "", "easybar.add(kind, id, props) requires kind")
 		assert(type(id) == "string" and id ~= "", "easybar.add(kind, id, props) requires id")
@@ -131,16 +142,19 @@ function M.new(state, options)
 		on_mutation()
 	end
 
+	--- Merges normalized properties into one existing item.
 	function store.set(id, props)
 		local item = store.ensure_item_exists(id)
 		deep_merge(item.props, normalize_props(props or {}))
 		on_mutation()
 	end
 
+	--- Returns a detached copy of one existing item property table.
 	function store.get(id)
 		return helpers.deep_copy(store.ensure_item_exists(id).props)
 	end
 
+	--- Removes one item and all descendants attached through either parent graph.
 	function store.remove(id)
 		if state.items[id] == nil then
 			return false
@@ -183,6 +197,7 @@ function M.new(state, options)
 		return true
 	end
 
+	--- Removes one or more nested property paths from an existing item.
 	function store.unset(id, paths)
 		local item = store.ensure_item_exists(id)
 		local changed = false

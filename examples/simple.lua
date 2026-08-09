@@ -8,6 +8,7 @@ local COLORS = {
 	off = easybar.theme.ref.error,
 }
 
+--- Updates the toggle icon, label, and color from local state.
 local function render()
 	local color = enabled and COLORS.on or COLORS.off
 

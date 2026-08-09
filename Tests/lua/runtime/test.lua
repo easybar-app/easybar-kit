@@ -111,6 +111,7 @@ local log = {
 	end,
 }
 
+--- Creates one instrumented API instance and captures all host-hook activity.
 local function new_api()
 	return api_module.new(log, {
 		on_mutation = function() end,

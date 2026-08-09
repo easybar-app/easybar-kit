@@ -12,6 +12,8 @@ local COLORS = {
 	disconnected = easybar.theme.ref.muted,
 }
 
+--- Applies the primary-interface tunnel flag from one native network event.
+---@param event table? EasyBar event payload.
 local function apply_event(event)
 	if event == nil or type(event.network) ~= "table" then
 		return
@@ -23,6 +25,8 @@ local function apply_event(event)
 	end
 end
 
+--- Returns display content for the current VPN connection state.
+---@return table status Icon, label, and color fields.
 local function current_state()
 	if state.vpn_connected then
 		return {
@@ -39,6 +43,7 @@ local function current_state()
 	}
 end
 
+--- Updates the VPN widget from the latest native network state.
 local function render()
 	local status = current_state()
 

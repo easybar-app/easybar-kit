@@ -334,6 +334,7 @@ end
 function Parser:parse_number()
 	local start = self.pos
 
+	--- Consumes the next character when it matches one numeric grammar pattern.
 	local function advance_if(pattern)
 		local char = self:peek()
 		if char ~= "" and char:match(pattern) then

@@ -136,6 +136,9 @@ local DEMO_ITEMS = {
 local items = {}
 local source_busy = false
 
+--- Copies one demo item so local mutations never alter the templates.
+---@param item EasyBarInboxItem
+---@return EasyBarInboxItem copy
 local function copy_item(item)
 	return {
 		id = item.id,
@@ -152,6 +155,7 @@ local function copy_item(item)
 	}
 end
 
+--- Publishes the source context actions for the current busy state.
 local function configure_source_actions()
 	local actions
 	if source_busy then

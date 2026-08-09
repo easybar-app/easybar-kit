@@ -17,6 +17,7 @@ local COLORS = {
 	popup = easybar.theme.ref.background,
 }
 
+--- Builds the current native context menu with mode checkmarks.
 local function context_menu()
 	return {
 		{ id = "refresh", title = "Refresh" },
@@ -31,6 +32,7 @@ local function context_menu()
 	}
 end
 
+--- Updates both bar and popup content from the current demo state.
 local function render()
 	widget:set({
 		label = {

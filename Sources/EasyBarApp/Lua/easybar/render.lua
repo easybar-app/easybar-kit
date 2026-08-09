@@ -7,6 +7,11 @@ local style = require("easybar.render.style")
 local tree = require("easybar.render.tree")
 local emitter = require("easybar.render.emitter")
 
+--- Builds every current root tree and emits only changed or removed snapshots.
+---@param registry table Active widget registry.
+---@param log table Runtime logger.
+---@param json table JSON codec.
+---@return boolean emitted Whether host-visible tree state changed.
 function M.emit_all(registry, log, json)
 	local ok, prepared_or_error = pcall(tree.prepare, registry)
 	if not ok then

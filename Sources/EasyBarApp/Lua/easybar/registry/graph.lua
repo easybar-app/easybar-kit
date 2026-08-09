@@ -2,6 +2,7 @@
 --- Validates registry parent references and builds ordered adjacency maps once per render.
 local M = {}
 
+--- Returns one stable human-readable identifier for graph diagnostics.
 local function describe_item(item)
 	local source = item and item.source
 	if type(source) == "string" and source ~= "" then
@@ -10,12 +11,17 @@ local function describe_item(item)
 	return tostring(item and item.id or "<unknown>")
 end
 
+--- Appends one child id to a parent adjacency list.
 local function append_child(map, parent_id, child_id)
 	map[parent_id] = map[parent_id] or {}
 	map[parent_id][#map[parent_id] + 1] = child_id
 end
 
 --- Builds and validates one graph context in stable item order.
+--- Validates parent relationships and returns regular and popup child indexes.
+---@param state table Registry state containing ordered items.
+---@return table regular_children Children attached to normal node parents.
+---@return table popup_children Children attached to popup parents.
 function M.build(state)
 	local context = {
 		roots = {},
@@ -65,6 +71,7 @@ function M.build(state)
 	local path = {}
 	local path_index = {}
 
+	--- Visits one node to detect cycles in both parent graphs.
 	local function visit(id)
 		if visit_state[id] == 2 then
 			return

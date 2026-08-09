@@ -18,6 +18,7 @@ local COLORS = {
 	popup_bg = easybar.theme.ref.background,
 }
 
+--- Applies hover and enabled state to every child in the demo group.
 local function render()
 	group:set({
 		background = {
