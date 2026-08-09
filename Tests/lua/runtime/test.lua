@@ -6,6 +6,7 @@ local lua_root = root .. "/Sources/EasyBarApp/Lua/easybar/"
 ---@class RuntimeFixtures
 ---@field cleanup fun(path: string)
 ---@field discovery fun(): string
+---@field managed_discovery fun(): string, string
 ---@field module_resolution fun(): string
 ---@field rollback fun(): string
 ---@field existing_state fun(): string
@@ -328,6 +329,20 @@ do
 	local missing, missing_error = api_module.discover_widget_files(fixture_root .. "/missing")
 	assert(missing_error == nil)
 	assert(missing ~= nil and #missing == 0)
+	fixtures.cleanup(fixture_root)
+end
+
+-- Managed package discovery follows active version symlinks but prunes private package source.
+do
+	local fixture_root, active_root = fixtures.managed_discovery()
+	local without_follow, without_follow_error = api_module.discover_widget_files(active_root)
+	assert(without_follow_error == nil)
+	assert(without_follow ~= nil and #without_follow == 0)
+
+	local files, discovery_error = api_module.discover_widget_files(active_root, { follow_symlinks = true })
+	assert(discovery_error == nil)
+	assert(files ~= nil)
+	assert(table.concat(files, "|") == "clock/widget.lua")
 	fixtures.cleanup(fixture_root)
 end
 

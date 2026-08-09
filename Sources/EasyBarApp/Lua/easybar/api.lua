@@ -137,15 +137,19 @@ end
 
 --- Recursively returns every regular Lua file below the configured widget directory.
 --- Paths are relative to the widget directory and sorted for deterministic startup.
-function M.discover_widget_files(widget_dir)
+---@param options? { follow_symlinks?: boolean } Discovery options for managed package roots.
+function M.discover_widget_files(widget_dir, options)
 	local root = normalize_widget_root(widget_dir)
 	local quoted_root = shell_quote(root)
+	local follow_symlinks = type(options) == "table" and options.follow_symlinks == true
+	local find_options = follow_symlinks and "-L " or ""
 	local command = "if [ -d "
 		.. quoted_root
 		.. " ]; then /usr/bin/find "
+		.. find_options
 		.. quoted_root
-		.. " \\( -path "
-		.. shell_quote(root .. "/.easybar")
+		.. " \\( -type d -name "
+		.. shell_quote(".easybar")
 		.. " -o -path "
 		.. shell_quote(root .. "/shared")
 		.. " -o -path "
@@ -178,8 +182,9 @@ function M.discover_widget_files(widget_dir)
 end
 
 --- Discovers and transactionally loads every Lua file below the widget directory.
-function M.load_widgets(widget_dir, loader, registry, log)
-	local files, discovery_error = M.discover_widget_files(widget_dir)
+---@param options? { follow_symlinks?: boolean } Discovery options for managed package roots.
+function M.load_widgets(widget_dir, loader, registry, log, options)
+	local files, discovery_error = M.discover_widget_files(widget_dir, options)
 	if files == nil then
 		log.error("runtime widget discovery failed error=" .. tostring(discovery_error))
 		return 0, 1

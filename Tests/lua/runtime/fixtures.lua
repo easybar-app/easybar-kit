@@ -62,6 +62,19 @@ function M.discovery()
 	return root
 end
 
+--- Builds a managed package root whose active widget is a versioned-store symlink.
+function M.managed_discovery()
+	local root = make_temp_directory("-easybar-managed-discovery")
+	local active = root .. "/active"
+	local stored = root .. "/store/clock/1.0.0"
+	make_directory(active)
+	make_directory(stored .. "/.easybar/source")
+	write_file(stored .. "/widget.lua", "return nil\n")
+	write_file(stored .. "/.easybar/source/private.lua", "error('must not load')\n")
+	run("/bin/ln -s " .. shell_quote("../store/clock/1.0.0") .. " " .. shell_quote(active .. "/clock"))
+	return root, active
+end
+
 --- Builds package and shared-module fixtures for require-path tests.
 function M.module_resolution()
 	local root = make_temp_directory("-easybar-module-paths")

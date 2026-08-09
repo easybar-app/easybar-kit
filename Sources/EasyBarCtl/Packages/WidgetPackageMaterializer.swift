@@ -2,6 +2,15 @@ import EasyBarShared
 import Foundation
 
 struct WidgetPackageMaterializer {
+  private struct PreparedPackage {
+    let package: ResolvedWidgetPackage
+    let record: InstalledWidgetPackage
+    let stagingURL: URL
+    let storedURL: URL
+  }
+
+  private static let retainedVersionCount = 3
+
   private let fileManager: FileManager
 
   init(fileManager: FileManager) {
@@ -11,50 +20,67 @@ struct WidgetPackageMaterializer {
   func install(
     _ packages: [ResolvedWidgetPackage],
     into packagesDirectory: URL,
-    database: InstalledWidgetPackages,
-    stagingDirectory: URL,
-    replacingExistingPackages: Set<String> = []
+    database: InstalledWidgetPackages
   ) throws -> [InstalledWidgetPackage] {
     try validateConflicts(
       packages,
       packagesDirectory: packagesDirectory,
       database: database
     )
-    try fileManager.createDirectory(at: stagingDirectory, withIntermediateDirectories: true)
 
-    var records: [InstalledWidgetPackage] = []
-    for package in packages {
-      let packageStage = stagingDirectory.appending(
-        path: package.manifest.name,
-        directoryHint: .isDirectory
-      )
-      try prepare(package, at: packageStage)
-      records.append(
-        InstalledWidgetPackage(
-          name: package.manifest.name,
-          version: package.manifest.version.description,
-          kind: package.manifest.kind,
-          entrypoint: package.manifest.entrypoint,
-          dependencies: package.manifest.dependencies.mapValues(\.rawValue),
-          exports: package.manifest.exports,
-          source: package.source
-        )
-      )
+    let storeRoot = WidgetPackageStore.storeDirectory(in: packagesDirectory)
+    let activeDirectory = WidgetPackageStore.activeDirectory(in: packagesDirectory)
+    try fileManager.createDirectory(at: storeRoot, withIntermediateDirectories: true)
+    try fileManager.createDirectory(at: activeDirectory, withIntermediateDirectories: true)
+
+    let prepared = try preparePackages(packages, storeRoot: storeRoot)
+    defer {
+      for package in prepared {
+        if itemExists(package.stagingURL) {
+          try? fileManager.removeItem(at: package.stagingURL)
+        }
+        removeDirectoryIfEmpty(package.storedURL.deletingLastPathComponent())
+      }
     }
 
     var updated = database
-    for (package, record) in zip(packages, records) {
-      try commit(
-        package,
-        record: record,
-        from: stagingDirectory.appending(path: package.manifest.name),
-        into: packagesDirectory,
-        database: &updated,
-        replacingExistingPackages: replacingExistingPackages
+    var transactions: [WidgetPackageReplacementTransaction] = []
+
+    do {
+      for preparedPackage in prepared {
+        let transaction = try commit(
+          preparedPackage,
+          into: packagesDirectory,
+          database: &updated
+        )
+        transactions.append(transaction)
+      }
+      try write(updated, to: packagesDirectory.appending(path: "installed.json"))
+    } catch {
+      do {
+        try rollback(transactions)
+      } catch let rollbackError {
+        throw WidgetPackageError.installConflict(
+          "package install failed (\(error.localizedDescription)); recovery also failed: "
+            + rollbackError.localizedDescription
+        )
+      }
+      throw error
+    }
+
+    for transaction in transactions {
+      transaction.commit()
+    }
+    for preparedPackage in prepared {
+      touch(preparedPackage.storedURL)
+      pruneStoredVersions(
+        for: preparedPackage.record.name,
+        activeVersion: preparedPackage.record.version,
+        storeRoot: storeRoot
       )
     }
-    try write(updated, to: packagesDirectory.appending(path: "installed.json"))
-    return records
+
+    return prepared.map(\.record)
   }
 
   private func validateConflicts(
@@ -104,29 +130,76 @@ struct WidgetPackageMaterializer {
     }
   }
 
+  private func preparePackages(
+    _ packages: [ResolvedWidgetPackage],
+    storeRoot: URL
+  ) throws -> [PreparedPackage] {
+    var prepared: [PreparedPackage] = []
+
+    do {
+      for package in packages {
+        let record = InstalledWidgetPackage(
+          name: package.manifest.name,
+          version: package.manifest.version.description,
+          kind: package.manifest.kind,
+          entrypoint: package.manifest.entrypoint,
+          dependencies: package.manifest.dependencies.mapValues(\.rawValue),
+          exports: package.manifest.exports,
+          source: package.source
+        )
+        let packageStore = storeRoot.appending(path: record.name, directoryHint: .isDirectory)
+        try fileManager.createDirectory(at: packageStore, withIntermediateDirectories: true)
+        let stagingURL = packageStore.appending(
+          path: "\(record.version).staging-\(UUID().uuidString)",
+          directoryHint: .isDirectory
+        )
+        let storedURL = packageStore.appending(
+          path: record.version,
+          directoryHint: .isDirectory
+        )
+        do {
+          try prepare(package, at: stagingURL)
+        } catch {
+          try? fileManager.removeItem(at: stagingURL)
+          removeDirectoryIfEmpty(packageStore)
+          throw error
+        }
+        prepared.append(
+          PreparedPackage(
+            package: package,
+            record: record,
+            stagingURL: stagingURL,
+            storedURL: storedURL
+          )
+        )
+      }
+      return prepared
+    } catch {
+      for package in prepared where itemExists(package.stagingURL) {
+        try? fileManager.removeItem(at: package.stagingURL)
+      }
+      throw error
+    }
+  }
+
   private func prepare(_ package: ResolvedWidgetPackage, at stage: URL) throws {
-    let store = stage.appending(path: "store", directoryHint: .isDirectory)
-    try fileManager.createDirectory(at: stage, withIntermediateDirectories: true)
-    try fileManager.copyItem(at: package.directory, to: store)
+    let metadataDirectory = stage.appending(path: ".easybar", directoryHint: .isDirectory)
+    let sourceDirectory = metadataDirectory.appending(path: "source", directoryHint: .isDirectory)
+    try fileManager.createDirectory(at: metadataDirectory, withIntermediateDirectories: true)
+    try fileManager.copyItem(at: package.directory, to: sourceDirectory)
 
     if package.manifest.kind == .widget, let entrypoint = package.manifest.entrypoint {
-      let projection = stage.appending(path: "widget", directoryHint: .isDirectory)
       try copyWidgetProjection(
-        from: store,
-        to: projection,
+        from: sourceDirectory,
+        to: stage,
         entrypoint: entrypoint,
         exports: Set(package.manifest.exports.values)
       )
-    }
-
-    let modules = stage.appending(path: "modules", directoryHint: .isDirectory)
-    for (module, relativePath) in package.manifest.exports {
-      let destination = moduleURL(module, in: modules)
-      try fileManager.createDirectory(
-        at: destination.deletingLastPathComponent(),
-        withIntermediateDirectories: true
+    } else {
+      try fileManager.copyItem(
+        at: sourceDirectory.appending(path: "package.toml"),
+        to: stage.appending(path: "package.toml")
       )
-      try fileManager.copyItem(at: store.appending(path: relativePath), to: destination)
     }
   }
 
@@ -136,7 +209,6 @@ struct WidgetPackageMaterializer {
     entrypoint: String,
     exports: Set<String>
   ) throws {
-    try fileManager.createDirectory(at: destination, withIntermediateDirectories: true)
     guard let enumerator = fileManager.enumerator(atPath: source.path) else {
       throw WidgetPackageError.invalidSource("could not enumerate \(source.path)")
     }
@@ -168,7 +240,7 @@ struct WidgetPackageMaterializer {
     destination: URL,
     installed: [String: InstalledWidgetPackage]
   ) -> Bool {
-    fileManager.fileExists(atPath: destination.path) && installed[name] == nil
+    itemExists(destination) && installed[name] == nil
   }
 
   private func isModuleOwnershipConflict(
@@ -177,7 +249,7 @@ struct WidgetPackageMaterializer {
     destination: URL,
     exportOwners: [String: String]
   ) -> Bool {
-    fileManager.fileExists(atPath: destination.path) && exportOwners[module] != packageName
+    itemExists(destination) && exportOwners[module] != packageName
   }
 
   private func shouldExcludeFromWidgetProjection(
@@ -186,68 +258,145 @@ struct WidgetPackageMaterializer {
     entrypoint: String,
     exports: Set<String>
   ) -> Bool {
+    if relativePath == ".easybar" || relativePath.hasPrefix(".easybar/") {
+      return true
+    }
     guard relativePath != entrypoint else { return false }
     return file.pathExtension.lowercased() == "lua" || exports.contains(relativePath)
   }
 
   private func commit(
-    _ package: ResolvedWidgetPackage,
-    record: InstalledWidgetPackage,
-    from stage: URL,
+    _ prepared: PreparedPackage,
     into packagesDirectory: URL,
-    database: inout InstalledWidgetPackages,
-    replacingExistingPackages: Set<String>
-  ) throws {
-    let storeRoot = WidgetPackageStore.storeDirectory(in: packagesDirectory)
+    database: inout InstalledWidgetPackages
+  ) throws -> WidgetPackageReplacementTransaction {
     let activeDirectory = WidgetPackageStore.activeDirectory(in: packagesDirectory)
-    try fileManager.createDirectory(at: storeRoot, withIntermediateDirectories: true)
-    try fileManager.createDirectory(at: activeDirectory, withIntermediateDirectories: true)
+    let transaction = WidgetPackageReplacementTransaction(fileManager: fileManager)
+    let previous = database.packages.first { $0.name == prepared.record.name }
 
-    if let previous = database.packages.first(where: { $0.name == record.name }) {
-      if previous.kind == .widget {
-        try removeIfPresent(activeDirectory.appending(path: previous.name))
-      }
-      for module in previous.exports.keys {
-        try removeIfPresent(moduleURL(module, in: activeDirectory))
-      }
-    }
-    let packageStore = storeRoot.appending(path: record.name, directoryHint: .isDirectory)
-    if replacingExistingPackages.contains(record.name) {
-      try removeIfPresent(packageStore)
-    }
-    let storedPackage =
-      packageStore
-      .appending(path: record.version, directoryHint: .isDirectory)
-    try removeIfPresent(storedPackage)
-    try fileManager.createDirectory(
-      at: storedPackage.deletingLastPathComponent(),
-      withIntermediateDirectories: true
-    )
-    try fileManager.moveItem(
-      at: stage.appending(path: "store"),
-      to: storedPackage
-    )
-
-    if package.manifest.kind == .widget {
-      try fileManager.moveItem(
-        at: stage.appending(path: "widget"),
-        to: activeDirectory.appending(path: record.name)
+    do {
+      try transaction.replaceItem(
+        at: prepared.storedURL,
+        with: prepared.stagingURL
       )
-    }
-    let modules = stage.appending(path: "modules", directoryHint: .isDirectory)
-    for module in package.manifest.exports.keys {
-      let source = moduleURL(module, in: modules)
-      let destination = moduleURL(module, in: activeDirectory)
-      try fileManager.createDirectory(
-        at: destination.deletingLastPathComponent(),
-        withIntermediateDirectories: true
+
+      let activeWidget = activeDirectory.appending(
+        path: prepared.record.name,
+        directoryHint: .isDirectory
       )
-      try fileManager.moveItem(at: source, to: destination)
+      if prepared.package.manifest.kind == .widget {
+        try transaction.replaceWithSymbolicLink(
+          at: activeWidget,
+          to: prepared.storedURL
+        )
+      } else if previous?.kind == .widget {
+        try transaction.removeItem(at: activeWidget)
+      }
+
+      let previousExports = Set(previous?.exports.keys.map { $0 } ?? [])
+      let currentExports = Set(prepared.package.manifest.exports.keys)
+      for module in previousExports.subtracting(currentExports) {
+        try transaction.removeItem(at: moduleURL(module, in: activeDirectory))
+      }
+      for (module, relativePath) in prepared.package.manifest.exports {
+        let source = prepared.storedURL
+          .appending(path: ".easybar/source", directoryHint: .isDirectory)
+          .appending(path: relativePath)
+        try transaction.replaceWithSymbolicLink(
+          at: moduleURL(module, in: activeDirectory),
+          to: source
+        )
+      }
+    } catch {
+      do {
+        try transaction.rollback()
+      } catch let rollbackError {
+        throw WidgetPackageError.installConflict(
+          "could not install \(prepared.record.name) (\(error.localizedDescription)); "
+            + "recovery also failed: \(rollbackError.localizedDescription)"
+        )
+      }
+      throw error
     }
 
-    database.packages.removeAll { $0.name == record.name }
-    database.packages.append(record)
+    database.packages.removeAll { $0.name == prepared.record.name }
+    database.packages.append(prepared.record)
     database.packages.sort { $0.name < $1.name }
+    return transaction
+  }
+
+  private func rollback(_ transactions: [WidgetPackageReplacementTransaction]) throws {
+    var firstFailure: Error?
+    for transaction in transactions.reversed() {
+      do {
+        try transaction.rollback()
+      } catch {
+        if firstFailure == nil {
+          firstFailure = error
+        }
+      }
+    }
+    if let firstFailure {
+      throw firstFailure
+    }
+  }
+
+  private func pruneStoredVersions(
+    for packageName: String,
+    activeVersion: String,
+    storeRoot: URL
+  ) {
+    let packageStore = storeRoot.appending(path: packageName, directoryHint: .isDirectory)
+    guard
+      let entries = try? fileManager.contentsOfDirectory(
+        at: packageStore,
+        includingPropertiesForKeys: [.isDirectoryKey, .contentModificationDateKey],
+        options: [.skipsHiddenFiles]
+      )
+    else { return }
+
+    let versions = entries.compactMap { url -> (url: URL, modified: Date)? in
+      guard SemanticVersion(url.lastPathComponent) != nil else { return nil }
+      guard
+        let values = try? url.resourceValues(forKeys: [
+          .isDirectoryKey, .contentModificationDateKey,
+        ]),
+        values.isDirectory == true
+      else { return nil }
+      return (url, values.contentModificationDate ?? .distantPast)
+    }
+
+    let previous =
+      versions
+      .filter { $0.url.lastPathComponent != activeVersion }
+      .sorted { left, right in
+        if left.modified != right.modified {
+          return left.modified > right.modified
+        }
+        return left.url.lastPathComponent > right.url.lastPathComponent
+      }
+
+    var retained = Set([activeVersion])
+    retained.formUnion(
+      previous.prefix(max(0, Self.retainedVersionCount - 1)).map { $0.url.lastPathComponent }
+    )
+
+    for version in versions where !retained.contains(version.url.lastPathComponent) {
+      try? fileManager.removeItem(at: version.url)
+    }
+  }
+
+  private func removeDirectoryIfEmpty(_ url: URL) {
+    guard let contents = try? fileManager.contentsOfDirectory(atPath: url.path), contents.isEmpty
+    else { return }
+    try? fileManager.removeItem(at: url)
+  }
+
+  private func touch(_ url: URL) {
+    try? fileManager.setAttributes(
+      [.modificationDate: Date()],
+      ofItemAtPath: url.path
+    )
   }
 
   private func moduleURL(_ module: String, in root: URL) -> URL {
@@ -255,10 +404,9 @@ struct WidgetPackageMaterializer {
     return root.appending(path: "shared").appending(path: path)
   }
 
-  private func removeIfPresent(_ url: URL) throws {
-    if fileManager.fileExists(atPath: url.path) {
-      try fileManager.removeItem(at: url)
-    }
+  private func itemExists(_ url: URL) -> Bool {
+    fileManager.fileExists(atPath: url.path)
+      || (try? fileManager.destinationOfSymbolicLink(atPath: url.path)) != nil
   }
 
   private func write(_ database: InstalledWidgetPackages, to url: URL) throws {

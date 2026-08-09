@@ -77,6 +77,9 @@ final class WidgetPackageUpdaterTests: XCTestCase {
     XCTAssertEqual(changes.map(\.package.name), ["clock"])
     XCTAssertEqual(changes.first?.previousVersion, "1.0.0")
     XCTAssertEqual(changes.first?.package.version, "1.1.0")
+    XCTAssertTrue(fileExists("store/clock/1.0.0"))
+    XCTAssertTrue(fileExists("store/clock/1.1.0"))
+    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.1.0")
     XCTAssertEqual(try installedPackage(named: "personal")?.version, "1.0.0")
   }
 
@@ -187,6 +190,16 @@ final class WidgetPackageUpdaterTests: XCTestCase {
     {"registry_version": 1, "packages": [\(entries.joined(separator: ","))]}
     """.write(to: index, atomically: true, encoding: .utf8)
     return index
+  }
+
+  private func fileExists(_ relativePath: String) -> Bool {
+    FileManager.default.fileExists(atPath: packagesDirectory.appending(path: relativePath).path)
+  }
+
+  private func symbolicLinkDestination(_ relativePath: String) throws -> String {
+    try FileManager.default.destinationOfSymbolicLink(
+      atPath: packagesDirectory.appending(path: relativePath).path
+    )
   }
 
   private func installedPackage(named name: String) throws -> InstalledWidgetPackage? {

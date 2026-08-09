@@ -510,7 +510,7 @@ io.stderr:setvbuf("line")
 
 -- Load package-managed widgets first so their declared modules resolve from the managed store.
 if type(managed_widget_dir) == "string" and managed_widget_dir ~= "" then
-	api.load_widgets(managed_widget_dir, loader, registry, log)
+	api.load_widgets(managed_widget_dir, loader, registry, log, { follow_symlinks = true })
 end
 
 -- Load every manually managed user widget before announcing subscriptions to the host.

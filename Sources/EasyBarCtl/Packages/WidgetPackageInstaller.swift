@@ -56,59 +56,21 @@ final class WidgetPackageInstaller {
       at: temporaryDirectory.appending(path: "downloads", directoryHint: .isDirectory),
       withIntermediateDirectories: true
     )
-    var replacementTransaction: WidgetPackageReplacementTransaction?
-    if namedInstalledPackage != nil {
-      replacementTransaction = try WidgetPackageReplacementTransaction.begin(
-        packagesDirectory: packagesDirectory,
-        fileManager: fileManager
-      )
+    let packages = try await resolver.resolve(source: options.source, sha256: options.sha256)
+    guard let rootPackage = packages.last else {
+      throw WidgetPackageError.invalidSource("package resolution returned no packages")
     }
-    let installed: [InstalledWidgetPackage]
-    do {
-      let packages = try await resolver.resolve(source: options.source, sha256: options.sha256)
-      guard let rootPackage = packages.last else {
-        throw WidgetPackageError.invalidSource("package resolution returned no packages")
-      }
-      let existingRoot = database.packages.first { $0.name == rootPackage.manifest.name }
-      if let existingRoot, !options.force {
-        throw WidgetPackageError.packageAlreadyInstalled(existingRoot.name)
-      }
-      if existingRoot != nil, replacementTransaction == nil {
-        replacementTransaction = try WidgetPackageReplacementTransaction.begin(
-          packagesDirectory: packagesDirectory,
-          fileManager: fileManager
-        )
-      }
-
-      let replacingExistingPackages: Set<String> =
-        existingRoot == nil ? [] : [rootPackage.manifest.name]
-      let materializer = WidgetPackageMaterializer(fileManager: fileManager)
-      installed = try materializer.install(
-        packages,
-        into: packagesDirectory,
-        database: database,
-        stagingDirectory: temporaryDirectory.appending(
-          path: "install",
-          directoryHint: .isDirectory
-        ),
-        replacingExistingPackages: replacingExistingPackages
-      )
-    } catch {
-      if let replacementTransaction {
-        do {
-          try replacementTransaction.rollback()
-        } catch let rollbackError {
-          throw WidgetPackageError.installConflict(
-            "forced install failed (\(error.localizedDescription)); recovery also failed: "
-              + rollbackError.localizedDescription
-          )
-        }
-      }
-      throw error
+    if let existingRoot = database.packages.first(where: { $0.name == rootPackage.manifest.name }),
+      !options.force
+    {
+      throw WidgetPackageError.packageAlreadyInstalled(existingRoot.name)
     }
 
-    try replacementTransaction?.commit()
-    return installed
+    return try WidgetPackageMaterializer(fileManager: fileManager).install(
+      packages,
+      into: packagesDirectory,
+      database: database
+    )
   }
 
   private func resolvedLegacyWidgetsDirectory() throws -> URL {

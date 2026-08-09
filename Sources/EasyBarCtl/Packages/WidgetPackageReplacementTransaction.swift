@@ -1,96 +1,159 @@
 import Foundation
 
-/// Preserves the complete managed package state until a forced replacement succeeds.
+/// Tracks package-local filesystem replacements so a failed install can restore prior paths.
 final class WidgetPackageReplacementTransaction {
+  private struct Change {
+    let destination: URL
+    let backup: URL?
+    let installedReplacement: Bool
+  }
+
   private let fileManager: FileManager
-  private let packagesDirectory: URL
-  private let backupDirectory: URL
+  private let identifier = UUID().uuidString
+  private var changes: [Change] = []
 
-  private init(
-    fileManager: FileManager,
-    packagesDirectory: URL,
-    backupDirectory: URL
-  ) {
+  init(fileManager: FileManager) {
     self.fileManager = fileManager
-    self.packagesDirectory = packagesDirectory
-    self.backupDirectory = backupDirectory
   }
 
-  /// Moves the current state aside and creates a working copy for the replacement attempt.
-  static func begin(
-    packagesDirectory: URL,
-    fileManager: FileManager
-  ) throws -> WidgetPackageReplacementTransaction {
-    let backupDirectory = siblingDirectory(
-      of: packagesDirectory,
-      prefix: ".easybar-packages-replacement"
-    )
-    let transaction = WidgetPackageReplacementTransaction(
-      fileManager: fileManager,
-      packagesDirectory: packagesDirectory,
-      backupDirectory: backupDirectory
+  /// Replaces one path with a prepared item while retaining the previous item as a backup.
+  func replaceItem(at destination: URL, with preparedItem: URL) throws {
+    try fileManager.createDirectory(
+      at: destination.deletingLastPathComponent(),
+      withIntermediateDirectories: true
     )
 
-    try fileManager.moveItem(at: packagesDirectory, to: backupDirectory)
-    do {
-      try fileManager.copyItem(at: backupDirectory, to: packagesDirectory)
-    } catch {
-      try transaction.restoreAfterSetupFailure(originalError: error)
-    }
-    return transaction
-  }
-
-  /// Discards the preserved state after the replacement has been fully materialized.
-  func commit() throws {
-    try fileManager.removeItem(at: backupDirectory)
-  }
-
-  /// Restores the preserved state without first deleting the failed working tree.
-  func rollback() throws {
-    let failedDirectory = Self.siblingDirectory(
-      of: packagesDirectory,
-      prefix: ".easybar-packages-failed"
-    )
-    if fileManager.fileExists(atPath: packagesDirectory.path) {
-      try fileManager.moveItem(at: packagesDirectory, to: failedDirectory)
+    let backup = itemExists(destination) ? backupURL(for: destination) : nil
+    if let backup {
+      try fileManager.moveItem(at: destination, to: backup)
     }
 
     do {
-      try fileManager.moveItem(at: backupDirectory, to: packagesDirectory)
+      try fileManager.moveItem(at: preparedItem, to: destination)
     } catch {
-      if fileManager.fileExists(atPath: failedDirectory.path) {
-        try? fileManager.moveItem(at: failedDirectory, to: packagesDirectory)
+      if let backup {
+        try? fileManager.moveItem(at: backup, to: destination)
       }
-      throw WidgetPackageError.installConflict(
-        "forced install failed and the previous package state remains at "
-          + "\(backupDirectory.path): \(error.localizedDescription)"
+      throw error
+    }
+
+    changes.append(
+      Change(
+        destination: destination,
+        backup: backup,
+        installedReplacement: true
       )
-    }
-
-    if fileManager.fileExists(atPath: failedDirectory.path) {
-      try fileManager.removeItem(at: failedDirectory)
-    }
-  }
-
-  private func restoreAfterSetupFailure(originalError: Error) throws -> Never {
-    if fileManager.fileExists(atPath: packagesDirectory.path) {
-      try? fileManager.removeItem(at: packagesDirectory)
-    }
-    do {
-      try fileManager.moveItem(at: backupDirectory, to: packagesDirectory)
-    } catch {
-      throw WidgetPackageError.installConflict(
-        "could not prepare forced install and the previous package state remains at "
-          + "\(backupDirectory.path): \(error.localizedDescription)"
-      )
-    }
-    throw originalError
-  }
-
-  private static func siblingDirectory(of directory: URL, prefix: String) -> URL {
-    directory.deletingLastPathComponent().appending(
-      path: "\(prefix)-\(UUID().uuidString)",
-      directoryHint: .isDirectory
     )
+  }
+
+  /// Replaces one path with a relative symbolic link to a committed store item.
+  func replaceWithSymbolicLink(at destination: URL, to target: URL) throws {
+    try fileManager.createDirectory(
+      at: destination.deletingLastPathComponent(),
+      withIntermediateDirectories: true
+    )
+
+    let staged = stagingURL(for: destination)
+    let relativeTarget = relativePath(
+      from: destination.deletingLastPathComponent(),
+      to: target
+    )
+    try fileManager.createSymbolicLink(
+      atPath: staged.path,
+      withDestinationPath: relativeTarget
+    )
+
+    do {
+      try replaceItem(at: destination, with: staged)
+    } catch {
+      try? fileManager.removeItem(at: staged)
+      throw error
+    }
+  }
+
+  /// Removes one path transactionally, retaining it until the install commits.
+  func removeItem(at destination: URL) throws {
+    guard itemExists(destination) else { return }
+    let backup = backupURL(for: destination)
+    try fileManager.moveItem(at: destination, to: backup)
+    changes.append(
+      Change(
+        destination: destination,
+        backup: backup,
+        installedReplacement: false
+      )
+    )
+  }
+
+  /// Discards backups after the package database has been committed successfully.
+  func commit() {
+    for change in changes {
+      if let backup = change.backup, itemExists(backup) {
+        try? fileManager.removeItem(at: backup)
+      }
+    }
+    changes.removeAll()
+  }
+
+  /// Restores every replaced path in reverse order.
+  func rollback() throws {
+    var firstFailure: Error?
+
+    for change in changes.reversed() {
+      do {
+        if change.installedReplacement, itemExists(change.destination) {
+          try fileManager.removeItem(at: change.destination)
+        }
+        if let backup = change.backup, itemExists(backup) {
+          try fileManager.moveItem(at: backup, to: change.destination)
+        }
+      } catch {
+        if firstFailure == nil {
+          firstFailure = error
+        }
+      }
+    }
+
+    changes.removeAll()
+    if let firstFailure {
+      throw firstFailure
+    }
+  }
+
+  private func backupURL(for destination: URL) -> URL {
+    destination.deletingLastPathComponent().appending(
+      path: "\(destination.lastPathComponent).backup-\(identifier)",
+      directoryHint: destination.hasDirectoryPath ? .isDirectory : .notDirectory
+    )
+  }
+
+  private func stagingURL(for destination: URL) -> URL {
+    destination.deletingLastPathComponent().appending(
+      path: "\(destination.lastPathComponent).staging-\(identifier)",
+      directoryHint: .notDirectory
+    )
+  }
+
+  private func itemExists(_ url: URL) -> Bool {
+    fileManager.fileExists(atPath: url.path)
+      || (try? fileManager.destinationOfSymbolicLink(atPath: url.path)) != nil
+  }
+
+  private func relativePath(from directory: URL, to target: URL) -> String {
+    let sourceComponents = directory.standardizedFileURL.pathComponents
+    let targetComponents = target.standardizedFileURL.pathComponents
+    var common = 0
+
+    while common < sourceComponents.count,
+      common < targetComponents.count,
+      sourceComponents[common] == targetComponents[common]
+    {
+      common += 1
+    }
+
+    let parents = Array(repeating: "..", count: sourceComponents.count - common)
+    let descendants = Array(targetComponents.dropFirst(common))
+    let components = parents + descendants
+    return components.isEmpty ? "." : components.joined(separator: "/")
   }
 }

@@ -82,10 +82,14 @@ final class WidgetPackageInstallerTests: XCTestCase {
     XCTAssertTrue(fileExists("active/personal-clock/widget.lua"))
     XCTAssertTrue(fileExists("active/personal-clock/assets/icon.svg"))
     XCTAssertFalse(fileExists("active/personal-clock/helper.lua"))
-    XCTAssertTrue(fileExists("store/retry-kit/1.2.0/retry.lua"))
-    XCTAssertTrue(fileExists("store/personal-clock/0.1.0/helper.lua"))
+    XCTAssertTrue(fileExists("store/retry-kit/1.2.0/.easybar/source/retry.lua"))
+    XCTAssertTrue(fileExists("store/personal-clock/0.1.0/.easybar/source/helper.lua"))
     XCTAssertFalse(manualFileExists("personal-clock/widget.lua"))
     XCTAssertFalse(manualFileExists("shared/retry.lua"))
+    XCTAssertEqual(
+      try symbolicLinkDestination("active/personal-clock"),
+      "../store/personal-clock/0.1.0"
+    )
 
     let database = try installedDatabase()
     XCTAssertEqual(database.packages.map(\.name), ["personal-clock", "retry-kit"])
@@ -327,7 +331,7 @@ final class WidgetPackageInstallerTests: XCTestCase {
     XCTAssertEqual(try managedFileContents("active/clock/widget.lua"), "return 'original'\n")
   }
 
-  func testForceReplacesAnInstalledPackageAndRemovesItsPreviousStore() async throws {
+  func testForceReplacesAnInstalledPackageAndRetainsItsPreviousStore() async throws {
     let original = directory.appending(path: "clock-1.0.0", directoryHint: .isDirectory)
     try writePackage(
       at: original,
@@ -362,12 +366,74 @@ final class WidgetPackageInstallerTests: XCTestCase {
       try managedFileContents("active/clock/widget.lua"),
       "return 'replacement'\n"
     )
-    XCTAssertFalse(fileExists("store/clock/1.0.0"))
+    XCTAssertTrue(fileExists("store/clock/1.0.0"))
     XCTAssertTrue(fileExists("store/clock/2.0.0"))
+    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/2.0.0")
     XCTAssertEqual(try replacementArtifacts(), [])
   }
 
-  func testForceRestoresTheInstalledPackageWhenResolutionFails() async throws {
+  func testForceReinstallsTheSameVersionThroughStaging() async throws {
+    let package = directory.appending(path: "clock", directoryHint: .isDirectory)
+    try writePackage(
+      at: package,
+      manifest: """
+        manifest_version = 1
+        name = "clock"
+        version = "1.0.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """,
+      files: ["widget.lua": "return 'original'\n"]
+    )
+    _ = try await install(package.path, useRegistry: false)
+
+    try "return 'replacement'\n".write(
+      to: package.appending(path: "widget.lua"),
+      atomically: true,
+      encoding: .utf8
+    )
+    _ = try await install(package.path, useRegistry: false, force: true)
+
+    XCTAssertEqual(try installedDatabase().packages.first?.version, "1.0.0")
+    XCTAssertEqual(try managedFileContents("active/clock/widget.lua"), "return 'replacement'\n")
+    XCTAssertEqual(
+      try managedFileContents("store/clock/1.0.0/.easybar/source/widget.lua"),
+      "return 'replacement'\n"
+    )
+    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.0.0")
+    XCTAssertEqual(try replacementArtifacts(), [])
+  }
+
+  func testPackageStoreKeepsTheActiveVersionAndTwoPreviousVersions() async throws {
+    for version in ["1.0.0", "1.1.0", "1.2.0", "1.3.0"] {
+      let package = directory.appending(path: "clock-\(version)", directoryHint: .isDirectory)
+      try writePackage(
+        at: package,
+        manifest: """
+          manifest_version = 1
+          name = "clock"
+          version = "\(version)"
+          kind = "widget"
+          entrypoint = "widget.lua"
+          """,
+        files: ["widget.lua": "return '\(version)'\n"]
+      )
+      _ = try await install(
+        package.path,
+        useRegistry: false,
+        force: version != "1.0.0"
+      )
+    }
+
+    XCTAssertFalse(fileExists("store/clock/1.0.0"))
+    XCTAssertTrue(fileExists("store/clock/1.1.0"))
+    XCTAssertTrue(fileExists("store/clock/1.2.0"))
+    XCTAssertTrue(fileExists("store/clock/1.3.0"))
+    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.3.0")
+    XCTAssertEqual(try replacementArtifacts(), [])
+  }
+
+  func testForceLeavesTheInstalledPackageUntouchedWhenResolutionFails() async throws {
     let original = directory.appending(path: "clock", directoryHint: .isDirectory)
     try writePackage(
       at: original,
@@ -402,6 +468,60 @@ final class WidgetPackageInstallerTests: XCTestCase {
     XCTAssertEqual(try installedDatabase().packages.first?.version, "1.0.0")
     XCTAssertEqual(try managedFileContents("active/clock/widget.lua"), "return 'original'\n")
     XCTAssertTrue(fileExists("store/clock/1.0.0/widget.lua"))
+    XCTAssertEqual(try replacementArtifacts(), [])
+  }
+
+  func testForceRollsBackTheStoreWhenActivationFails() async throws {
+    let original = directory.appending(path: "clock-1.0.0", directoryHint: .isDirectory)
+    try writePackage(
+      at: original,
+      manifest: """
+        manifest_version = 1
+        name = "clock"
+        version = "1.0.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """,
+      files: ["widget.lua": "return 'original'\n"]
+    )
+    let replacement = directory.appending(path: "clock-2.0.0", directoryHint: .isDirectory)
+    try writePackage(
+      at: replacement,
+      manifest: """
+        manifest_version = 1
+        name = "clock"
+        version = "2.0.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """,
+      files: ["widget.lua": "return 'replacement'\n"]
+    )
+    _ = try await install(original.path, useRegistry: false)
+
+    let activeDirectory = packagesDirectory.appending(path: "active", directoryHint: .isDirectory)
+    try FileManager.default.setAttributes(
+      [.posixPermissions: 0o555],
+      ofItemAtPath: activeDirectory.path
+    )
+    defer {
+      try? FileManager.default.setAttributes(
+        [.posixPermissions: 0o755],
+        ofItemAtPath: activeDirectory.path
+      )
+    }
+
+    do {
+      _ = try await install(replacement.path, useRegistry: false, force: true)
+      XCTFail("Expected activation to fail")
+    } catch {
+      // The active directory is intentionally read-only for this replacement attempt.
+    }
+
+    XCTAssertEqual(try installedDatabase().packages.first?.version, "1.0.0")
+    XCTAssertEqual(try managedFileContents("active/clock/widget.lua"), "return 'original'\n")
+    XCTAssertTrue(fileExists("store/clock/1.0.0"))
+    XCTAssertFalse(fileExists("store/clock/2.0.0"))
+    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.0.0")
     XCTAssertEqual(try replacementArtifacts(), [])
   }
 
@@ -465,6 +585,12 @@ final class WidgetPackageInstallerTests: XCTestCase {
     FileManager.default.fileExists(atPath: packagesDirectory.appending(path: relativePath).path)
   }
 
+  private func symbolicLinkDestination(_ relativePath: String) throws -> String {
+    try FileManager.default.destinationOfSymbolicLink(
+      atPath: packagesDirectory.appending(path: relativePath).path
+    )
+  }
+
   private func manualFileExists(_ relativePath: String) -> Bool {
     FileManager.default.fileExists(
       atPath: legacyWidgetsDirectory.appending(path: relativePath).path
@@ -479,12 +605,12 @@ final class WidgetPackageInstallerTests: XCTestCase {
   }
 
   private func replacementArtifacts() throws -> [String] {
-    try FileManager.default.contentsOfDirectory(
-      atPath: packagesDirectory.deletingLastPathComponent().path
-    ).filter {
-      $0.hasPrefix(".easybar-packages-replacement-")
-        || $0.hasPrefix(".easybar-packages-failed-")
+    guard let enumerator = FileManager.default.enumerator(atPath: packagesDirectory.path) else {
+      return []
     }
+    return enumerator.compactMap { $0 as? String }.filter {
+      $0.contains(".staging-") || $0.contains(".backup-")
+    }.sorted()
   }
 
   private func installedDatabase() throws -> InstalledWidgetPackages {
