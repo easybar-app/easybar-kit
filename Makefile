@@ -98,7 +98,12 @@ WIDGETS_INSTALL_DIR ?= $(HOME)/.config/easybar/widgets
 WIDGETS_INSTALL_MANIFEST ?= $(CURDIR)/examples/install-manifest.csv
 PRETTIER ?= npx --yes prettier@3.9.6
 STYLUA ?= stylua
+TAPLO ?= npx --yes @taplo/cli@0.7.0
 LUA ?= lua
+PRETTIER_MD_SOURCES := README.md
+PRETTIER_YAML_SOURCES := ".github/**/*.{yml,yaml}"
+PRETTIER_JSON_SOURCES := ".github/**/*.json" .luarc.json
+TAPLO_SOURCES := .stylua.toml "examples/**/*.toml" "themes/**/*.toml"
 
 ifeq ($(ARCH),universal)
 ARCHES := arm64 x86_64
@@ -125,7 +130,7 @@ endif
 .PHONY: help all \
         generate check-generated generate-event-catalog generate-theme-tokens generate-config generate-default-config generate-swift-env \
         build bundle package release app cli validate-config \
-        fmt fmt-swift fmt-lua fmt-markdown \
+        fmt fmt-swift fmt-lua fmt-md fmt-yaml fmt-json fmt-toml \
         lint lint-swift lint-lua check-lua test test-hardening \
         clean clean-dist run run-debug run-trace install-local install-widgets uninstall-local stop restart-app icons \
         build-app build-lua-runtime build-calendar-agent build-network-agent build-cli \
@@ -137,7 +142,7 @@ endif
         demo
 
 help: ## Display this help.
-	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-24s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z\_0-9-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) }' $(MAKEFILE_LIST)
 
 ##@ Generated
 
@@ -186,7 +191,7 @@ validate-config: cli ## Validate a config file with CONFIG=/path/to/config.toml.
 
 ##@ Formatting
 
-fmt: fmt-swift fmt-lua fmt-markdown ## Format Swift, Lua, and Markdown files.
+fmt: fmt-swift fmt-lua fmt-md fmt-yaml fmt-json fmt-toml ## Format all supported source and configuration files.
 
 fmt-swift: ## Format all Swift source files in the repository.
 	@swift format format --in-place --recursive --parallel .
@@ -194,8 +199,17 @@ fmt-swift: ## Format all Swift source files in the repository.
 fmt-lua: ## Format all Lua source files in the repository.
 	@$(STYLUA) .
 
-fmt-markdown: ## Format Markdown files with Prettier.
-	@$(PRETTIER) --write "**/*.md"
+fmt-md: ## Format Markdown files with Prettier.
+	@$(PRETTIER) --write $(PRETTIER_MD_SOURCES)
+
+fmt-yaml: ## Format YAML files with Prettier.
+	@$(PRETTIER) --write $(PRETTIER_YAML_SOURCES)
+
+fmt-json: ## Format JSON configuration files with Prettier.
+	@$(PRETTIER) --write $(PRETTIER_JSON_SOURCES)
+
+fmt-toml: ## Format TOML files with Taplo.
+	@$(TAPLO) fmt $(TAPLO_SOURCES)
 
 lint: lint-swift lint-lua ## Check Swift and Lua formatting without modifying files.
 
@@ -206,6 +220,8 @@ lint-lua: ## Check Lua formatting, syntax, and example widget startup.
 	@$(STYLUA) --check .
 	@$(MAKE) --no-print-directory check-lua
 
+##@ Testing
+
 check-lua: ## Validate Lua sources, runtime behavior, and example widgets.
 	@LUA="$(LUA)" scripts/ci/check-lua.sh
 
@@ -214,6 +230,8 @@ test: generate-swift-env check-lua ## Run the Swift and Lua test suites without 
 
 test-hardening: generate-swift-env ## Run the focused hardening regression suite.
 	@env $(LOCAL_SWIFT_ENV) swift test --disable-sandbox --filter HardeningTests
+
+##@ Packaging
 
 bundle: ## Build the app, agent bundles, and CLI into dist/.
 	@scripts/build/bundle.sh \
@@ -292,6 +310,8 @@ verify: ## Show the built bundle structure and validate key packaged files.
 
 verify-release: package ## Build and validate the release package and print fingerprints.
 	@scripts/release/verify-release.sh --version "$(VERSION)" --arch "$(ARCH)" --dist-dir "$(DIST_DIR)"
+
+##@ Development
 
 run: ## Fast local run with debug builds and local agents.
 	@scripts/dev/run-local.sh info --run-arch "$(RUN_ARCH)" --version "$(VERSION)" --bundle-id "$(BUNDLE_ID)" --dist-dir "$(DIST_DIR)"
