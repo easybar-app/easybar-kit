@@ -14,7 +14,7 @@ easybar widgets install wireguard
 | Package metadata  | Value                          |
 | ----------------- | ------------------------------ |
 | Name              | `wireguard`                    |
-| Version           | `0.1.0`                        |
+| Version           | `0.1.1`                        |
 | Kind              | `widget`                       |
 | Minimum EasyBar   | `0.41.0`                       |
 | License           | `Apache-2.0`                   |

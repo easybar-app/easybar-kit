@@ -13,7 +13,7 @@ declares it as a dependency.
 | Package metadata | Value                    |
 | ---------------- | ------------------------ |
 | Name             | `shared`                 |
-| Version          | `0.1.0`                  |
+| Version          | `0.1.1`                  |
 | Kind             | `library`                |
 | Minimum EasyBar  | `0.41.0`                 |
 | License          | `Apache-2.0`             |

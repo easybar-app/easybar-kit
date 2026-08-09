@@ -14,7 +14,7 @@ easybar widgets install inbox-widgets
 | Package metadata  | Value                          |
 | ----------------- | ------------------------------ |
 | Name              | `inbox-widgets`                |
-| Version           | `0.7.0`                        |
+| Version           | `0.7.1`                        |
 | Kind              | `widget`                       |
 | Minimum EasyBar   | `0.49.0`                       |
 | License           | `Apache-2.0`                   |

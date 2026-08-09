@@ -14,7 +14,7 @@ easybar widgets install inbox-github
 | Package metadata  | Value                                       |
 | ----------------- | ------------------------------------------- |
 | Name              | `inbox-github`                              |
-| Version           | `0.5.0`                                     |
+| Version           | `0.5.1`                                     |
 | Kind              | `widget`                                    |
 | Minimum EasyBar   | `0.50.0`                                    |
 | License           | `Apache-2.0`                                |

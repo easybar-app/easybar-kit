@@ -14,7 +14,7 @@ easybar widgets install inbox-gitlab
 | Package metadata     | Value                                       |
 | -------------------- | ------------------------------------------- |
 | Name                 | `inbox-gitlab`                              |
-| Version              | `0.4.0`                                     |
+| Version              | `0.4.1`                                     |
 | Kind                 | `widget`                                    |
 | Minimum EasyBar      | `0.49.0`                                    |
 | License              | `Apache-2.0`                                |

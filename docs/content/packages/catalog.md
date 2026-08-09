@@ -24,7 +24,7 @@ Building your own widget? Start with the
 
 **[`brew`](brew.md)**
 
-`widget` · `v0.2.0` · `developer-tools` · `system`
+`widget` · `v0.2.1` · `developer-tools` · `system`
 
 Homebrew updates and upgrades in a standalone popup.
 
@@ -48,7 +48,7 @@ Shared Homebrew manual-upgrade policy for EasyBar widgets.
 
 **[`caffeinate`](caffeinate.md)**
 
-`widget` · `v0.1.0` · `system` · `utilities`
+`widget` · `v0.1.1` · `system` · `utilities`
 
 Keep macOS awake indefinitely or for a selected duration.
 
@@ -84,7 +84,7 @@ Assigned GitLab issues and merge requests in a standalone popup.
 
 **[`inbox-brew`](inbox-brew.md)**
 
-`widget` · `v0.4.0` · `developer-tools` · `inbox` · `system`
+`widget` · `v0.4.1` · `developer-tools` · `inbox` · `system`
 
 Homebrew updates and actions in EasyBar's native inbox.
 
@@ -96,7 +96,7 @@ Homebrew updates and actions in EasyBar's native inbox.
 
 **[`inbox-github`](inbox-github.md)**
 
-`widget` · `v0.5.0` · `developer-tools` · `inbox` · `notifications`
+`widget` · `v0.5.1` · `developer-tools` · `inbox` · `notifications`
 
 GitHub notifications and pull-request actions in EasyBar's native inbox.
 
@@ -108,7 +108,7 @@ GitHub notifications and pull-request actions in EasyBar's native inbox.
 
 **[`inbox-gitlab`](inbox-gitlab.md)**
 
-`widget` · `v0.4.0` · `developer-tools` · `inbox` · `notifications`
+`widget` · `v0.4.1` · `developer-tools` · `inbox` · `notifications`
 
 GitLab work items and merge-request actions in EasyBar's native inbox.
 
@@ -120,7 +120,7 @@ GitLab work items and merge-request actions in EasyBar's native inbox.
 
 **[`inbox-widgets`](inbox-widgets.md)**
 
-`widget` · `v0.7.0` · `inbox` · `system` · `utilities`
+`widget` · `v0.7.1` · `inbox` · `system` · `utilities`
 
 EasyBar package updates in the native inbox.
 
@@ -132,7 +132,7 @@ EasyBar package updates in the native inbox.
 
 **[`shared`](shared.md)**
 
-`library` · `v0.1.0` · `library`
+`library` · `v0.1.1` · `library`
 
 Shared text, retry, and native-inbox helpers for official EasyBar widgets.
 
@@ -144,7 +144,7 @@ Shared text, retry, and native-inbox helpers for official EasyBar widgets.
 
 **[`tailscale`](tailscale.md)**
 
-`widget` · `v0.1.0` · `network` · `system`
+`widget` · `v0.1.1` · `network` · `system`
 
 Tailscale status, connection controls, and exit-node selection.
 
@@ -156,7 +156,7 @@ Tailscale status, connection controls, and exit-node selection.
 
 **[`wireguard`](wireguard.md)**
 
-`widget` · `v0.1.0` · `network` · `system`
+`widget` · `v0.1.1` · `network` · `system`
 
 Control a macOS Network Extension VPN service with scutil.
 

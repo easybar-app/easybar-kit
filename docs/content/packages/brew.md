@@ -14,7 +14,7 @@ easybar widgets install brew
 | Package metadata  | Value                                                                    |
 | ----------------- | ------------------------------------------------------------------------ |
 | Name              | `brew`                                                                   |
-| Version           | `0.2.0`                                                                  |
+| Version           | `0.2.1`                                                                  |
 | Kind              | `widget`                                                                 |
 | Minimum EasyBar   | `0.41.0`                                                                 |
 | License           | `Apache-2.0`                                                             |

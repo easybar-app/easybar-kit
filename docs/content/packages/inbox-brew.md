@@ -14,7 +14,7 @@ easybar widgets install inbox-brew
 | Package metadata  | Value                                                                    |
 | ----------------- | ------------------------------------------------------------------------ |
 | Name              | `inbox-brew`                                                             |
-| Version           | `0.4.0`                                                                  |
+| Version           | `0.4.1`                                                                  |
 | Kind              | `widget`                                                                 |
 | Minimum EasyBar   | `0.49.0`                                                                 |
 | License           | `Apache-2.0`                                                             |
