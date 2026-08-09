@@ -14,9 +14,9 @@ easybar widgets install inbox-gitlab
 | Package metadata | Value |
 | --- | --- |
 | Name | `inbox-gitlab` |
-| Version | `0.3.2` |
+| Version | `0.3.3` |
 | Kind | `widget` |
-| Minimum EasyBar | `0.45.0` |
+| Minimum EasyBar | `0.49.0` |
 | License | `Apache-2.0` |
 | Categories | `developer-tools`, `inbox`, `notifications` |
 | Dependencies | [`shared`](shared.md) `^0.1.0` |
@@ -51,10 +51,10 @@ merge_method = "merge"
 confirm_merge = false
 ```
 
-Automatic checks run every 5 minutes by default; `refresh_interval_minutes` accepts values from 5 minutes to 7 days. Supported merge methods are `merge`, `squash`, and `rebase`. `merge` uses the project's configured strategy. Set `confirm_merge = true` to require a second action after the readiness check. The merge settings can also be changed from the inbox source menu.
+Automatic checks run every 5 minutes by default; `refresh_interval_minutes` accepts values from 5 minutes to 7 days. Supported merge methods are `merge`, `squash`, and `rebase`. `merge` uses the project's configured strategy. Set `confirm_merge = true` to require a second action after the readiness check. The active interval and merge settings appear in the source menu's **Settings** submenu.
 
 `source_order` controls the GitLab group when the inbox is grouped by source. `context_order`
 independently controls its position in the inbox source menu. Lower values appear first. The source
-context menu also shows the active refresh interval.
+context menu groups the active refresh interval and merge settings under **Settings**.
 
 The standalone popup presentation is the `gitlab` package.
