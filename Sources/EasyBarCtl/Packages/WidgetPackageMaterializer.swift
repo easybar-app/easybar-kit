@@ -100,7 +100,12 @@ struct WidgetPackageMaterializer {
     for package in packages {
       let name = package.manifest.name
       if package.manifest.kind == .widget {
-        let destination = activeDirectory.appending(path: name, directoryHint: .isDirectory)
+        guard name != "shared" else {
+          throw WidgetPackageError.installConflict(
+            "widget package name 'shared' is reserved for managed library exports"
+          )
+        }
+        let destination = activeDirectory.appending(path: name, directoryHint: .notDirectory)
         if isUnmanagedWidgetCollision(name: name, destination: destination, installed: installed) {
           throw WidgetPackageError.installConflict(
             "\(destination.path) already exists and is not package-managed"
@@ -183,52 +188,7 @@ struct WidgetPackageMaterializer {
   }
 
   private func prepare(_ package: ResolvedWidgetPackage, at stage: URL) throws {
-    let sourceDirectory = WidgetPackageStore.sourceDirectory(in: stage)
-    let runtimeDirectory = WidgetPackageStore.runtimeDirectory(in: stage)
-    try fileManager.createDirectory(at: stage, withIntermediateDirectories: true)
-    try fileManager.copyItem(at: package.directory, to: sourceDirectory)
-    try fileManager.createDirectory(at: runtimeDirectory, withIntermediateDirectories: true)
-
-    if package.manifest.kind == .widget, let entrypoint = package.manifest.entrypoint {
-      try copyWidgetProjection(
-        from: sourceDirectory,
-        to: runtimeDirectory,
-        entrypoint: entrypoint,
-        exports: Set(package.manifest.exports.values)
-      )
-    }
-  }
-
-  private func copyWidgetProjection(
-    from source: URL,
-    to destination: URL,
-    entrypoint: String,
-    exports: Set<String>
-  ) throws {
-    guard let enumerator = fileManager.enumerator(atPath: source.path) else {
-      throw WidgetPackageError.invalidSource("could not enumerate \(source.path)")
-    }
-
-    for case let relative as String in enumerator {
-      let file = source.appending(path: relative)
-      let values = try file.resourceValues(forKeys: [.isRegularFileKey])
-      guard values.isRegularFile == true else { continue }
-      if shouldExcludeFromWidgetProjection(
-        file: file,
-        relativePath: relative,
-        entrypoint: entrypoint,
-        exports: exports
-      ) {
-        continue
-      }
-
-      let output = destination.appending(path: relative)
-      try fileManager.createDirectory(
-        at: output.deletingLastPathComponent(),
-        withIntermediateDirectories: true
-      )
-      try fileManager.copyItem(at: file, to: output)
-    }
+    try fileManager.copyItem(at: package.directory, to: stage)
   }
 
   private func isUnmanagedWidgetCollision(
@@ -248,16 +208,6 @@ struct WidgetPackageMaterializer {
     itemExists(destination) && exportOwners[module] != packageName
   }
 
-  private func shouldExcludeFromWidgetProjection(
-    file: URL,
-    relativePath: String,
-    entrypoint: String,
-    exports: Set<String>
-  ) -> Bool {
-    guard relativePath != entrypoint else { return false }
-    return file.pathExtension.lowercased() == "lua" || exports.contains(relativePath)
-  }
-
   private func commit(
     _ prepared: PreparedPackage,
     into packagesDirectory: URL,
@@ -275,12 +225,14 @@ struct WidgetPackageMaterializer {
 
       let activeWidget = activeDirectory.appending(
         path: prepared.record.name,
-        directoryHint: .isDirectory
+        directoryHint: .notDirectory
       )
-      if prepared.package.manifest.kind == .widget {
+      if prepared.package.manifest.kind == .widget,
+        let entrypoint = prepared.package.manifest.entrypoint
+      {
         try transaction.replaceWithSymbolicLink(
           at: activeWidget,
-          to: WidgetPackageStore.runtimeDirectory(in: prepared.storedURL)
+          to: prepared.storedURL.appending(path: entrypoint, directoryHint: .notDirectory)
         )
       } else if previous?.kind == .widget {
         try transaction.removeItem(at: activeWidget)
@@ -292,11 +244,9 @@ struct WidgetPackageMaterializer {
         try transaction.removeItem(at: moduleURL(module, in: activeDirectory))
       }
       for (module, relativePath) in prepared.package.manifest.exports {
-        let source = WidgetPackageStore.sourceDirectory(in: prepared.storedURL)
-          .appending(path: relativePath)
         try transaction.replaceWithSymbolicLink(
           at: moduleURL(module, in: activeDirectory),
-          to: source
+          to: prepared.storedURL.appending(path: relativePath, directoryHint: .notDirectory)
         )
       }
     } catch {

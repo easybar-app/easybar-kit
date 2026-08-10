@@ -1,5 +1,5 @@
 --- Module contract:
---- Owns recursive widget discovery and the public EasyBar Lua API surface.
+--- Owns manual widget discovery, managed activation discovery, and the public EasyBar Lua API surface.
 --- Returns a registry-like object consumed by the loader, events, and renderer.
 
 --- Public EasyBar API module table.
@@ -135,18 +135,53 @@ local function relative_widget_path(root, path)
 	return path:sub(#prefix + 1)
 end
 
---- Recursively returns every regular Lua file below the configured widget directory.
+--- Normalizes an absolute path lexically without following filesystem links.
+local function normalize_absolute_path(path)
+	path = tostring(path or "")
+	if path:sub(1, 1) ~= "/" then
+		return nil
+	end
+
+	local segments = {}
+	for segment in path:gmatch("[^/]+") do
+		if segment == ".." then
+			if #segments == 0 then
+				return nil
+			end
+			segments[#segments] = nil
+		elseif segment ~= "." and segment ~= "" then
+			segments[#segments + 1] = segment
+		end
+	end
+	return "/" .. table.concat(segments, "/")
+end
+
+--- Reads one symbolic-link destination without following any later path components.
+local function read_symbolic_link(path)
+	local pipe, open_error = io.popen("/usr/bin/readlink " .. shell_quote(path), "r")
+	if pipe == nil then
+		return nil, "could not read managed widget activation: " .. tostring(open_error)
+	end
+	local target = pipe:read("*l")
+	local close_ok, close_reason, close_code = pipe:close()
+	if close_ok ~= true and close_ok ~= 0 then
+		return nil,
+			"could not read managed widget activation reason=" .. tostring(close_reason) .. " status=" .. tostring(close_code)
+	end
+	if type(target) ~= "string" or target == "" then
+		return nil, "managed widget activation has an empty symbolic-link target"
+	end
+	return target, nil
+end
+
+--- Recursively returns every regular Lua file below the manual widget directory.
 --- Paths are relative to the widget directory and sorted for deterministic startup.
----@param options? { follow_symlinks?: boolean } Discovery options for managed package roots.
-function M.discover_widget_files(widget_dir, options)
+function M.discover_widget_files(widget_dir)
 	local root = normalize_widget_root(widget_dir)
 	local quoted_root = shell_quote(root)
-	local follow_symlinks = type(options) == "table" and options.follow_symlinks == true
-	local find_options = follow_symlinks and "-L " or ""
 	local command = "if [ -d "
 		.. quoted_root
 		.. " ]; then /usr/bin/find "
-		.. find_options
 		.. quoted_root
 		.. " \\( -path "
 		.. shell_quote(root .. "/shared")
@@ -177,10 +212,83 @@ function M.discover_widget_files(widget_dir, options)
 	return files, nil
 end
 
---- Discovers and transactionally loads every Lua file below the widget directory.
----@param options? { follow_symlinks?: boolean } Discovery options for managed package roots.
-function M.load_widgets(widget_dir, loader, registry, log, options)
-	local files, discovery_error = M.discover_widget_files(widget_dir, options)
+--- Returns active managed widget entrypoints as resolved store paths.
+--- Only top-level symbolic links are considered widget activations; `shared/` remains module-only.
+function M.discover_managed_widgets(active_dir)
+	local root = normalize_widget_root(active_dir)
+	local package_root = root:match("^(.*)/[^/]+$")
+	if package_root == nil or package_root == "" then
+		return nil, "managed widget activation directory has no package root"
+	end
+	package_root = normalize_absolute_path(package_root)
+	if package_root == nil then
+		return nil, "managed widget activation directory must be absolute"
+	end
+
+	local quoted_root = shell_quote(root)
+	local command = "if [ -d "
+		.. quoted_root
+		.. " ]; then for path in "
+		.. quoted_root
+		.. '/*; do [ -L "$path" ] || continue; printf \'%s\\0\' "$path"; done; fi'
+	local pipe, open_error = io.popen(command, "r")
+	if pipe == nil then
+		return nil, "could not start managed widget discovery: " .. tostring(open_error)
+	end
+	local output = pipe:read("*a") or ""
+	local close_ok, close_reason, close_code = pipe:close()
+	if close_ok ~= true and close_ok ~= 0 then
+		return nil,
+			"managed widget discovery failed reason=" .. tostring(close_reason) .. " status=" .. tostring(close_code)
+	end
+
+	local widgets = {}
+	for activation_path in output:gmatch("([^%z]+)%z") do
+		local name = relative_widget_path(root, activation_path)
+		if name ~= nil and name ~= "" and name ~= "shared" and not name:find("/", 1, true) then
+			local link_target, target_error = read_symbolic_link(activation_path)
+			if link_target == nil then
+				return nil, target_error
+			end
+			local resolved_target
+			if link_target:sub(1, 1) == "/" then
+				resolved_target = normalize_absolute_path(link_target)
+			else
+				resolved_target = normalize_absolute_path(root .. "/" .. link_target)
+			end
+			if resolved_target == nil then
+				return nil, "managed widget activation '" .. name .. "' has an invalid target"
+			end
+
+			local package_store = package_root .. "/store/" .. name
+			local prefix = package_store .. "/"
+			if resolved_target:sub(1, #prefix) ~= prefix then
+				return nil, "managed widget activation '" .. name .. "' points outside its package store"
+			end
+			local relative_target = resolved_target:sub(#prefix + 1)
+			local version, entrypoint = relative_target:match("^([^/]+)/(.+)$")
+			if version == nil or entrypoint == nil or entrypoint == "" then
+				return nil, "managed widget activation '" .. name .. "' does not point to a versioned entrypoint"
+			end
+
+			widgets[#widgets + 1] = {
+				name = name,
+				path = resolved_target,
+				root = package_store .. "/" .. version,
+				activation = activation_path,
+			}
+		end
+	end
+
+	table.sort(widgets, function(left, right)
+		return left.name < right.name
+	end)
+	return widgets, nil
+end
+
+--- Discovers and transactionally loads every manually managed Lua widget file.
+function M.load_widgets(widget_dir, loader, registry, log)
+	local files, discovery_error = M.discover_widget_files(widget_dir)
 	if files == nil then
 		log.error("runtime widget discovery failed error=" .. tostring(discovery_error))
 		return 0, 1
@@ -188,6 +296,18 @@ function M.load_widgets(widget_dir, loader, registry, log, options)
 
 	log.debug("runtime widget_files=" .. tostring(#files))
 	return loader.load_widgets(widget_dir, files, registry, log)
+end
+
+--- Discovers and transactionally loads only explicitly activated package entrypoints.
+function M.load_managed_widgets(active_dir, loader, registry, log)
+	local widgets, discovery_error = M.discover_managed_widgets(active_dir)
+	if widgets == nil then
+		log.error("runtime managed widget discovery failed error=" .. tostring(discovery_error))
+		return 0, 1
+	end
+
+	log.debug("runtime managed_widget_files=" .. tostring(#widgets))
+	return loader.load_managed_widgets(active_dir, widgets, registry, log)
 end
 
 local ensured_log_directories = {}
@@ -666,12 +786,16 @@ function M.new(log, hooks)
 	--- Returns one widget-scoped EasyBar API.
 	--- Defaults are isolated to this widget instance.
 	--- Creates the isolated public EasyBar API injected into one widget file.
-	function api.make_widget_api(widget_source, widget_root)
+	function api.make_widget_api(widget_source, widget_root, widget_name_override, widget_diagnostic_source)
 		local widget_api = {}
 		local widget_defaults = {}
 		local source_directory = tostring(widget_source):match("^(.*)/[^/]+$") or "."
 		widget_root = tostring(widget_root or source_directory)
-		local widget_name = widget_log_source(widget_source, widget_root)
+		local widget_name = widget_name_override
+		if type(widget_name) ~= "string" or widget_name == "" then
+			widget_name = widget_log_source(widget_source, widget_root)
+		end
+		local widget_record_source = tostring(widget_diagnostic_source or widget_source)
 
 		--- Resolves one safe path relative to this widget's source directory.
 		function widget_api.asset(path)
@@ -812,7 +936,7 @@ function M.new(log, hooks)
 				error("interval requires on_interval")
 			end
 
-			registry.add(kind, id, item_props, widget_defaults, widget_source)
+			registry.add(kind, id, item_props, widget_defaults, widget_record_source)
 
 			if interval_handler ~= nil then
 				subscriptions.set_interval_handler(id, interval_handler)

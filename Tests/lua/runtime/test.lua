@@ -332,17 +332,19 @@ do
 	fixtures.cleanup(fixture_root)
 end
 
--- Managed package discovery follows active runtime symlinks without exposing stored source.
+-- Managed package discovery loads only explicit entrypoint symlinks, never sibling Lua source files.
 do
 	local fixture_root, active_root = fixtures.managed_discovery()
-	local without_follow, without_follow_error = api_module.discover_widget_files(active_root)
-	assert(without_follow_error == nil)
-	assert(without_follow ~= nil and #without_follow == 0)
-
-	local files, discovery_error = api_module.discover_widget_files(active_root, { follow_symlinks = true })
+	local widgets, discovery_error = api_module.discover_managed_widgets(active_root)
 	assert(discovery_error == nil)
-	assert(files ~= nil)
-	assert(table.concat(files, "|") == "clock/widget.lua")
+	assert(widgets ~= nil and #widgets == 1)
+	assert(widgets[1].name == "clock")
+	assert(widgets[1].path == fixture_root .. "/store/clock/1.0.0/widget.lua")
+	assert(widgets[1].root == fixture_root .. "/store/clock/1.0.0")
+
+	local api = new_api()
+	local loaded, failed = loader.load_managed_widgets(active_root, widgets, api, log)
+	assert(loaded == 1 and failed == 0)
 	fixtures.cleanup(fixture_root)
 end
 

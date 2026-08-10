@@ -74,7 +74,7 @@ final class WidgetPackageUpdaterTests: XCTestCase {
     XCTAssertEqual(changes.first?.package.version, "1.1.0")
     XCTAssertTrue(fileExists("store/clock/1.0.0"))
     XCTAssertTrue(fileExists("store/clock/1.1.0"))
-    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.1.0/runtime")
+    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.1.0/widget.lua")
     XCTAssertEqual(try installedPackage(named: "personal")?.version, "1.0.0")
   }
 

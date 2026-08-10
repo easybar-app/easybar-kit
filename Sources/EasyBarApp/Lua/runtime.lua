@@ -508,9 +508,9 @@ registry = api.new(log, {
 io.stdout:setvbuf("line")
 io.stderr:setvbuf("line")
 
--- Load package-managed widgets first so their declared modules resolve from the managed store.
+-- Load explicitly activated package entrypoints first so declared shared modules are available.
 if type(managed_widget_dir) == "string" and managed_widget_dir ~= "" then
-	api.load_widgets(managed_widget_dir, loader, registry, log, { follow_symlinks = true })
+	api.load_managed_widgets(managed_widget_dir, loader, registry, log)
 end
 
 -- Load every manually managed user widget before announcing subscriptions to the host.

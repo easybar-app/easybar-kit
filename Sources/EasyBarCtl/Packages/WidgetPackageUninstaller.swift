@@ -56,7 +56,7 @@ final class WidgetPackageUninstaller {
     do {
       if package.kind == .widget {
         try stage(
-          activeDirectory.appending(path: package.name, directoryHint: .isDirectory),
+          activeDirectory.appending(path: package.name, directoryHint: .notDirectory),
           at: "active/\(package.name)"
         )
       }
