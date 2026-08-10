@@ -6,9 +6,7 @@
       "?.lua",
       "?/init.lua",
       "shared/?.lua",
-      "shared/?/init.lua",
-      "lib/?.lua",
-      "lib/?/init.lua"
+      "shared/?/init.lua"
     ]
   },
   "workspace": {

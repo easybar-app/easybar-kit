@@ -318,13 +318,13 @@ do
 	assert(handle:cancel() == false)
 end
 
--- Runtime source discovery includes user widgets but excludes package metadata and module roots.
+-- Runtime source discovery includes user widgets while excluding the shared module root.
 do
 	local fixture_root = fixtures.discovery()
 	local files, discovery_error = api_module.discover_widget_files(fixture_root)
 	assert(discovery_error == nil)
 	assert(files ~= nil)
-	assert(table.concat(files, "|") == ".hidden.lua|assets/preview.lua|clock.lua|nested/STATUS.LUA")
+	assert(table.concat(files, "|") == ".easybar/custom.lua|.hidden.lua|assets/preview.lua|clock.lua|nested/STATUS.LUA")
 
 	local missing, missing_error = api_module.discover_widget_files(fixture_root .. "/missing")
 	assert(missing_error == nil)
@@ -346,19 +346,18 @@ do
 	fixtures.cleanup(fixture_root)
 end
 
--- Runtime module resolution prefers package-local modules, then shared modules, then the legacy lib fallback.
+-- Runtime module resolution prefers package-local modules, then shared modules.
 do
 	local fixture_root = fixtures.module_resolution()
 	local api = new_api()
 	local loaded, failed = loader.load_widgets(fixture_root, { "source.lua" }, api, log)
 	assert(loaded == 1 and failed == 0)
 	local module_node = assert(api._state.items["module-resolution"])
-	assert(module_node.props.label.string == "package:shared:legacy:package")
+	assert(module_node.props.label.string == "package:shared:package")
 
 	for _, module_name in ipairs({
 		"package.policy",
 		"shared_resolution",
-		"legacy_resolution",
 		"precedence_resolution",
 	}) do
 		package.loaded[module_name] = nil

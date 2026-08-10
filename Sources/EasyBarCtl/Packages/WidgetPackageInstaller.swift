@@ -5,27 +5,18 @@ final class WidgetPackageInstaller {
   private let logger: ProcessLogger
   private let fileManager: FileManager
   private let packagesDirectory: URL
-  private let legacyWidgetsDirectory: URL?
 
   init(
     logger: ProcessLogger,
     fileManager: FileManager = .default,
-    packagesDirectory: URL = SharedPathDefaults.defaultWidgetPackagesPath(),
-    legacyWidgetsDirectory: URL? = nil
+    packagesDirectory: URL = SharedPathDefaults.defaultWidgetPackagesPath()
   ) {
     self.logger = logger
     self.fileManager = fileManager
     self.packagesDirectory = packagesDirectory
-    self.legacyWidgetsDirectory = legacyWidgetsDirectory
   }
 
   func install(options: WidgetPackageInstallOptions) async throws -> [InstalledWidgetPackage] {
-    let legacyWidgetsDirectory = try resolvedLegacyWidgetsDirectory()
-    try WidgetPackageStore.migrateLegacyInstallation(
-      from: legacyWidgetsDirectory,
-      to: packagesDirectory,
-      fileManager: fileManager
-    )
     try fileManager.createDirectory(at: packagesDirectory, withIntermediateDirectories: true)
     let database = try WidgetPackageDatabaseStore(fileManager: fileManager).load(
       from: packagesDirectory
@@ -48,7 +39,8 @@ final class WidgetPackageInstaller {
     let resolver = WidgetPackageResolver(
       registrySource: options.registry,
       useRegistry: options.useRegistry,
-      temporaryDirectory: temporaryDirectory.appending(path: "downloads", directoryHint: .isDirectory),
+      temporaryDirectory: temporaryDirectory.appending(
+        path: "downloads", directoryHint: .isDirectory),
       installed: database.packages,
       logger: logger
     )
@@ -73,19 +65,6 @@ final class WidgetPackageInstaller {
     )
   }
 
-  private func resolvedLegacyWidgetsDirectory() throws -> URL {
-    if let legacyWidgetsDirectory {
-      return legacyWidgetsDirectory
-    }
-    do {
-      return URL(fileURLWithPath: try SharedRuntimeConfig.load().app.widgetsPath, isDirectory: true)
-    } catch {
-      throw WidgetPackageError.invalidSource(
-        "could not resolve widgets_dir for package migration: \(error.localizedDescription)"
-      )
-    }
-  }
-
   private func installedPackageNamedBySource(
     _ source: String,
     database: InstalledWidgetPackages
@@ -96,7 +75,6 @@ final class WidgetPackageInstaller {
     else { return nil }
     return database.packages.first { $0.name == source }
   }
-
 }
 
 func installWidgetPackage(
@@ -106,7 +84,8 @@ func installWidgetPackage(
   let spinner = CLIActivitySpinner(message: "Installing \(options.source)…")
   await spinner.start()
   do {
-    let installed = try await WidgetPackageInstaller(logger: context.logger).install(options: options)
+    let installed = try await WidgetPackageInstaller(logger: context.logger).install(
+      options: options)
     await spinner.stop()
     for package in installed {
       fputs("Installed \(package.name) \(package.version) (\(package.kind.rawValue))\n", stdout)

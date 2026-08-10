@@ -42,12 +42,12 @@ end
 function M.discovery()
 	local root = make_temp_directory("-easybar-discovery")
 	make_directory(root .. "/assets")
-	make_directory(root .. "/.easybar/packages/example")
+	make_directory(root .. "/.easybar")
 	make_directory(root .. "/shared")
-	make_directory(root .. "/lib")
 	make_directory(root .. "/nested")
 
 	for _, relative_path in ipairs({
+		".easybar/custom.lua",
 		".hidden.lua",
 		"assets/preview.lua",
 		"clock.lua",
@@ -56,9 +56,7 @@ function M.discovery()
 		write_file(root .. "/" .. relative_path, "return nil\n")
 	end
 	write_file(root .. "/ignored.txt", "not lua\n")
-	write_file(root .. "/.easybar/packages/example/widget.lua", "error('must not load')\n")
 	write_file(root .. "/shared/retry.lua", "return {}\n")
-	write_file(root .. "/lib/legacy.lua", "return {}\n")
 	return root
 end
 
@@ -80,7 +78,6 @@ function M.module_resolution()
 	local root = make_temp_directory("-easybar-module-paths")
 	make_directory(root .. "/package")
 	make_directory(root .. "/shared")
-	make_directory(root .. "/lib")
 
 	--- Writes one module below the active resolution fixture root.
 	local function write_module(relative_path, value)
@@ -89,19 +86,16 @@ function M.module_resolution()
 
 	write_module("package/policy.lua", "package")
 	write_module("shared/shared_resolution.lua", "shared")
-	write_module("lib/legacy_resolution.lua", "legacy")
 	write_module("precedence_resolution.lua", "package")
 	write_module("shared/precedence_resolution.lua", "shared")
-	write_module("lib/precedence_resolution.lua", "legacy")
 	write_file(
 		root .. "/source.lua",
 		[[
 local package_module = require("package.policy")
 local shared = require("shared_resolution")
-local legacy = require("legacy_resolution")
 local precedence = require("precedence_resolution")
 easybar.add(easybar.kind.item, "module-resolution", {
-	label = package_module .. ":" .. shared .. ":" .. legacy .. ":" .. precedence,
+	label = package_module .. ":" .. shared .. ":" .. precedence,
 })
 ]]
 	)

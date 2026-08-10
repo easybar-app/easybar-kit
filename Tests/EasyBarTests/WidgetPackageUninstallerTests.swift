@@ -7,7 +7,6 @@ import XCTest
 final class WidgetPackageUninstallerTests: XCTestCase {
   private var directory: URL!
   private var packagesDirectory: URL!
-  private var widgetsDirectory: URL!
   private var uninstaller: WidgetPackageUninstaller!
 
   override func setUpWithError() throws {
@@ -16,19 +15,13 @@ final class WidgetPackageUninstallerTests: XCTestCase {
       directoryHint: .isDirectory
     )
     packagesDirectory = directory.appending(path: "packages", directoryHint: .isDirectory)
-    widgetsDirectory = directory.appending(path: "widgets", directoryHint: .isDirectory)
-    try FileManager.default.createDirectory(at: widgetsDirectory, withIntermediateDirectories: true)
-    uninstaller = WidgetPackageUninstaller(
-      packagesDirectory: packagesDirectory,
-      legacyWidgetsDirectory: widgetsDirectory
-    )
+    uninstaller = WidgetPackageUninstaller(packagesDirectory: packagesDirectory)
   }
 
   override func tearDownWithError() throws {
     try? FileManager.default.removeItem(at: directory)
     directory = nil
     packagesDirectory = nil
-    widgetsDirectory = nil
     uninstaller = nil
   }
 
@@ -58,14 +51,12 @@ final class WidgetPackageUninstallerTests: XCTestCase {
       ),
       to: packagesDirectory
     )
-    try write("return nil\n", to: "active/clock/widget.lua")
-    try write("return {}\n", to: "active/shared/retry.lua")
     try write("return nil\n", to: "store/clock/2.0.0/widget.lua")
-    try write("return {}\n", to: "store/shared/1.0.0/retry.lua")
-    try "return 'manual'\n".write(
-      to: widgetsDirectory.appending(path: "manual.lua"),
-      atomically: true,
-      encoding: .utf8
+    try write("return {}\n", to: "store/shared/1.0.0/.easybar/source/retry.lua")
+    try link("active/clock", to: "../store/clock/2.0.0")
+    try link(
+      "active/shared/retry.lua",
+      to: "../../store/shared/1.0.0/.easybar/source/retry.lua"
     )
 
     XCTAssertThrowsError(try uninstaller.uninstall(name: "shared")) { error in
@@ -85,7 +76,6 @@ final class WidgetPackageUninstallerTests: XCTestCase {
     XCTAssertEqual(try uninstaller.uninstall(name: "shared"), shared)
     XCTAssertFalse(exists("active/shared/retry.lua"))
     XCTAssertFalse(exists("store/shared"))
-    XCTAssertTrue(FileManager.default.fileExists(atPath: widgetsDirectory.appending(path: "manual.lua").path))
     XCTAssertEqual(try database().packages, [])
   }
 
@@ -103,6 +93,18 @@ final class WidgetPackageUninstallerTests: XCTestCase {
       withIntermediateDirectories: true
     )
     try contents.write(to: url, atomically: true, encoding: .utf8)
+  }
+
+  private func link(_ relativePath: String, to destination: String) throws {
+    let url = packagesDirectory.appending(path: relativePath)
+    try FileManager.default.createDirectory(
+      at: url.deletingLastPathComponent(),
+      withIntermediateDirectories: true
+    )
+    try FileManager.default.createSymbolicLink(
+      atPath: url.path,
+      withDestinationPath: destination
+    )
   }
 
   private func exists(_ relativePath: String) -> Bool {

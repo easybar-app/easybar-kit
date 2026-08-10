@@ -4,23 +4,19 @@ import Foundation
 final class WidgetPackageUninstaller {
   private let fileManager: FileManager
   private let packagesDirectory: URL
-  private let legacyWidgetsDirectory: URL?
 
   init(
     fileManager: FileManager = .default,
-    packagesDirectory: URL = SharedPathDefaults.defaultWidgetPackagesPath(),
-    legacyWidgetsDirectory: URL? = nil
+    packagesDirectory: URL = SharedPathDefaults.defaultWidgetPackagesPath()
   ) {
     self.fileManager = fileManager
     self.packagesDirectory = packagesDirectory
-    self.legacyWidgetsDirectory = legacyWidgetsDirectory
   }
 
   func uninstall(name: String) throws -> InstalledWidgetPackage {
     guard WidgetPackageManifestParser.isPackageName(name) else {
       throw WidgetPackageError.invalidSource("invalid package name '\(name)'")
     }
-    try migrateLegacyInstallation()
 
     let databaseStore = WidgetPackageDatabaseStore(fileManager: fileManager)
     var database = try databaseStore.load(from: packagesDirectory)
@@ -47,7 +43,7 @@ final class WidgetPackageUninstaller {
     var moves: [(original: URL, staged: URL)] = []
 
     func stage(_ original: URL, at relativePath: String) throws {
-      guard fileManager.fileExists(atPath: original.path) else { return }
+      guard itemExists(original) else { return }
       let staged = stagingDirectory.appending(path: relativePath)
       try fileManager.createDirectory(
         at: staged.deletingLastPathComponent(),
@@ -79,7 +75,7 @@ final class WidgetPackageUninstaller {
       try databaseStore.write(database, to: packagesDirectory)
     } catch {
       var restorationFailure: Error?
-      for move in moves.reversed() where fileManager.fileExists(atPath: move.staged.path) {
+      for move in moves.reversed() where itemExists(move.staged) {
         do {
           try fileManager.createDirectory(
             at: move.original.deletingLastPathComponent(),
@@ -104,31 +100,13 @@ final class WidgetPackageUninstaller {
     return package
   }
 
-  private func migrateLegacyInstallation() throws {
-    let widgetsDirectory: URL
-    if let legacyWidgetsDirectory {
-      widgetsDirectory = legacyWidgetsDirectory
-    } else {
-      do {
-        widgetsDirectory = URL(
-          fileURLWithPath: try SharedRuntimeConfig.load().app.widgetsPath,
-          isDirectory: true
-        )
-      } catch {
-        throw WidgetPackageError.invalidSource(
-          "could not resolve widgets_dir for package migration: \(error.localizedDescription)"
-        )
-      }
-    }
-    try WidgetPackageStore.migrateLegacyInstallation(
-      from: widgetsDirectory,
-      to: packagesDirectory,
-      fileManager: fileManager
-    )
-  }
-
   private func moduleURL(_ module: String, in root: URL) -> URL {
     root.appending(path: "shared/\(module.replacing(".", with: "/")).lua")
+  }
+
+  private func itemExists(_ url: URL) -> Bool {
+    fileManager.fileExists(atPath: url.path)
+      || (try? fileManager.destinationOfSymbolicLink(atPath: url.path)) != nil
   }
 }
 

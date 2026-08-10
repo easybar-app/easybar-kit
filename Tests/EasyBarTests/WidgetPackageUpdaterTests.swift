@@ -8,7 +8,6 @@ import XCTest
 final class WidgetPackageUpdaterTests: XCTestCase {
   private var directory: URL!
   private var packagesDirectory: URL!
-  private var legacyWidgetsDirectory: URL!
   private var installer: WidgetPackageInstaller!
   private var updater: WidgetPackageUpdater!
 
@@ -18,18 +17,15 @@ final class WidgetPackageUpdaterTests: XCTestCase {
       directoryHint: .isDirectory
     )
     packagesDirectory = directory.appending(path: "packages", directoryHint: .isDirectory)
-    legacyWidgetsDirectory = directory.appending(path: "widgets", directoryHint: .isDirectory)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let logger = ProcessLogger(label: "package-update-tests", minimumLevel: .error)
     installer = WidgetPackageInstaller(
       logger: logger,
-      packagesDirectory: packagesDirectory,
-      legacyWidgetsDirectory: legacyWidgetsDirectory
+      packagesDirectory: packagesDirectory
     )
     updater = WidgetPackageUpdater(
       logger: logger,
-      packagesDirectory: packagesDirectory,
-      legacyWidgetsDirectory: legacyWidgetsDirectory
+      packagesDirectory: packagesDirectory
     )
   }
 
@@ -37,7 +33,6 @@ final class WidgetPackageUpdaterTests: XCTestCase {
     try? FileManager.default.removeItem(at: directory)
     directory = nil
     packagesDirectory = nil
-    legacyWidgetsDirectory = nil
     installer = nil
     updater = nil
   }

@@ -8,8 +8,6 @@ function M.configure(root)
 		root .. "/Sources/EasyBarApp/Lua/?.lua",
 		root .. "/examples/?.lua",
 		root .. "/examples/?/init.lua",
-		root .. "/examples/lib/?.lua",
-		root .. "/examples/lib/?/init.lua",
 		root .. "/Sources/EasyBarApp/Lua/?/init.lua",
 		package.path,
 	}, ";")

@@ -72,9 +72,9 @@ final class LuaWidgetLibraryTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     )
   }
 
-  func testWidgetCanRequireDirectAndPackageModulesFromLibDirectory() async throws {
+  func testWidgetCanRequireDirectAndPackageModulesFromSharedDirectory() async throws {
     let widgets = try makeWidgetsDirectory()
-    let library = widgets.appendingPathComponent("lib", isDirectory: true)
+    let library = widgets.appendingPathComponent("shared", isDirectory: true)
     let packageDirectory = library.appendingPathComponent("format", isDirectory: true)
     try FileManager.default.createDirectory(
       at: packageDirectory,
@@ -110,7 +110,7 @@ final class LuaWidgetLibraryTests: LuaRenderRuntimeTestCase, @unchecked Sendable
 
   func testWidgetLibraryModulesAreCachedByRequire() async throws {
     let widgets = try makeWidgetsDirectory()
-    let library = widgets.appendingPathComponent("lib", isDirectory: true)
+    let library = widgets.appendingPathComponent("shared", isDirectory: true)
     try FileManager.default.createDirectory(at: library, withIntermediateDirectories: true)
 
     try "return { token = {} }\n".write(
@@ -132,19 +132,18 @@ final class LuaWidgetLibraryTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     XCTAssertEqual(node.text, "true")
   }
 
-  func testLuaRuntimeDiscoversUserWidgetsButNotModuleOrPackageRoots() async throws {
+  func testLuaRuntimeDiscoversUserWidgetsButNotSharedModules() async throws {
     let widgets = try makeWidgetsDirectory()
     let discoveredFiles = [
       ("clock.lua", "discovery_root"),
+      (".easybar/custom.lua", "discovery_dot_easybar"),
       (".hidden.lua", "discovery_hidden"),
       ("assets/preview.lua", "discovery_assets"),
       ("inbox/github/status.lua", "discovery_inbox"),
       ("simple/toggle.lua", "discovery_simple"),
     ]
     let excludedFiles = [
-      "lib/compat.LUA",
-      "shared/helper.lua",
-      ".easybar/packages/example/widget.lua",
+      "shared/helper.lua"
     ]
 
     for (relativePath, rootID) in discoveredFiles {

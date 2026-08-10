@@ -7,7 +7,9 @@ the [widget registry](https://github.com/easybar-app/registry).
 
 ## Lua discovery
 
-EasyBar recursively loads regular `.lua` files below the configured widgets directory, excluding package metadata below `.easybar/` and reusable modules below `shared/` and `lib/`. Package-managed widgets use their declared entrypoint.
+EasyBar recursively loads regular `.lua` files below the configured widgets directory, excluding
+reusable modules below `shared/`. Package-managed widgets are loaded separately from the managed
+store and use their declared entrypoint.
 
 Reusable modules loaded with `require(...)` should keep their top level side-effect-free. Installable packages use explicit metadata so the package manager can distinguish widget entrypoints from library exports.
 

@@ -103,7 +103,7 @@ end
 local MAX_WIDGET_LOG_SCAN_BYTES = 8 * 1024 * 1024
 local WIDGET_LOG_READ_CHUNK_BYTES = 32 * 1024
 
---- Quotes one filesystem value for the legacy shell-based discovery command.
+--- Quotes one filesystem value for the widget discovery command.
 local function shell_quote(value)
 	return "'" .. tostring(value):gsub("'", "'\\''") .. "'"
 end
@@ -143,17 +143,16 @@ function M.discover_widget_files(widget_dir, options)
 	local quoted_root = shell_quote(root)
 	local follow_symlinks = type(options) == "table" and options.follow_symlinks == true
 	local find_options = follow_symlinks and "-L " or ""
+	local metadata_prune = follow_symlinks and (" -type d -name " .. shell_quote(".easybar") .. " -o") or ""
 	local command = "if [ -d "
 		.. quoted_root
 		.. " ]; then /usr/bin/find "
 		.. find_options
 		.. quoted_root
-		.. " \\( -type d -name "
-		.. shell_quote(".easybar")
-		.. " -o -path "
+		.. " \\("
+		.. metadata_prune
+		.. " -path "
 		.. shell_quote(root .. "/shared")
-		.. " -o -path "
-		.. shell_quote(root .. "/lib")
 		.. " \\) -prune -o"
 		.. " -type f -iname "
 		.. shell_quote("*.lua")

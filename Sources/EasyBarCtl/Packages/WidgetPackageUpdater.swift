@@ -23,7 +23,6 @@ final class WidgetPackageUpdater {
     logger: ProcessLogger,
     fileManager: FileManager = .default,
     packagesDirectory: URL = SharedPathDefaults.defaultWidgetPackagesPath(),
-    legacyWidgetsDirectory: URL? = nil,
     registryLoader: WidgetPackageRegistryLoader = WidgetPackageRegistryLoader()
   ) {
     self.packagesDirectory = packagesDirectory
@@ -32,8 +31,7 @@ final class WidgetPackageUpdater {
     installer = WidgetPackageInstaller(
       logger: logger,
       fileManager: fileManager,
-      packagesDirectory: packagesDirectory,
-      legacyWidgetsDirectory: legacyWidgetsDirectory
+      packagesDirectory: packagesDirectory
     )
   }
 

@@ -13,12 +13,10 @@ local function prepend_package_path(entry)
 	package.path = entry .. ";" .. package.path
 end
 
---- Adds package-local, shared, and legacy library paths for widget modules.
+--- Adds package-local and shared module paths for widgets.
 ---@param widget_dir string Root directory containing installed widgets and libraries.
 local function configure_widget_module_paths(widget_dir)
 	-- Prepend lower-priority paths first because each call inserts at the front.
-	prepend_package_path(widget_dir .. "/lib/?/init.lua")
-	prepend_package_path(widget_dir .. "/lib/?.lua")
 	prepend_package_path(widget_dir .. "/shared/?/init.lua")
 	prepend_package_path(widget_dir .. "/shared/?.lua")
 	prepend_package_path(widget_dir .. "/?/init.lua")
@@ -105,7 +103,6 @@ function M.load_widgets(widget_dir, widget_files, registry, log)
 	configure_widget_module_paths(widget_dir)
 	log.debug("runtime widget_packages=" .. widget_dir)
 	log.debug("runtime widget_shared=" .. widget_dir .. "/shared")
-	log.debug("runtime widget_lib_legacy=" .. widget_dir .. "/lib")
 
 	local loaded = 0
 	local failed = 0
