@@ -25,22 +25,23 @@ struct AgentVersionOutputEntry: Equatable {
 /// Prints user-facing CLI output.
 enum CLIOutput {
   static func printError(_ message: String) {
-    fputs("easybar: \(message)\n", stderr)
+    fputs("\(CLIProgram.current.commandName): \(message)\n", stderr)
   }
 
   static func printWarning(_ message: String) {
-    fputs("easybar: warning: \(message)\n", stderr)
+    fputs("\(CLIProgram.current.commandName): warning: \(message)\n", stderr)
   }
 
   static func printVersion() {
-    fputs("easybar \(BuildInfo.appVersion)\n", stdout)
+    fputs("\(CLIProgram.current.commandName) \(BuildInfo.appVersion)\n", stdout)
   }
 
   /// Prints root, group, or command-specific usage from the declarative command catalog.
   static func printUsage(topic: [String] = []) {
+    let program = CLIProgram.current
     let lines: [String]
 
-    if topic.isEmpty {
+    if topic.isEmpty || !program.isVisible(commandPath: topic) {
       lines = rootUsage()
     } else if let command = CLI.commands.first(where: { $0.path == topic }) {
       lines = commandUsage(command)
@@ -56,40 +57,48 @@ enum CLIOutput {
   }
 
   private static func rootUsage() -> [String] {
+    let program = CLIProgram.current
     var lines = [
       "usage:",
-      "  easybar <command> [options]",
+      "  \(program.commandName) <command> [options]",
       "",
       "commands:",
     ]
-    lines += CLI.commandGroups.map { CLI.formatRow($0.name, $0.description) }
+    lines += CLI.commandGroups
+      .filter { program.isVisible(commandPath: [$0.name]) }
+      .map { CLI.formatRow($0.name, program.userFacingDescription($0.description)) }
     lines += [
       "",
       "global options:",
     ]
-    lines += CLI.globalOptions.map { CLI.formatRow($0.helpText, $0.description) }
+    lines += CLI.globalOptions.map {
+      CLI.formatRow($0.helpText, program.userFacingDescription($0.description))
+    }
     lines += [
       "",
-      "run \"easybar <command> --help\" for command-specific help",
+      "run \"\(program.commandName) <command> --help\" for command-specific help",
     ]
     return lines
   }
 
   private static func groupUsage(_ group: CLICommandGroup) -> [String] {
-    let commands = CLI.commands.filter { $0.path.first == group.name }
+    let program = CLIProgram.current
+    let commands = CLI.commands.filter {
+      $0.path.first == group.name && program.isVisible(commandPath: $0.path)
+    }
     if commands.count == 1, let command = commands.first, command.path.count == 1 {
       return commandUsage(command)
     }
 
     var lines = [
       "usage:",
-      "  easybar \(group.name) <command> [options]",
+      "  \(program.commandName) \(group.name) <command> [options]",
       "",
       "commands:",
     ]
     lines += commands.map { command in
       let relativePath = command.path.dropFirst().joined(separator: " ")
-      return CLI.formatRow(relativePath, command.description)
+      return CLI.formatRow(relativePath, program.userFacingDescription(command.description))
     }
     lines += [
       "",
@@ -102,16 +111,21 @@ enum CLIOutput {
   }
 
   private static func commandUsage(_ command: CLICommandDescriptor) -> [String] {
+    let program = CLIProgram.current
+    let usageText = ([program.commandName] + command.path + command.usageArguments)
+      .joined(separator: " ")
     var lines = [
       "usage:",
-      "  \(command.usageText) [options]",
+      "  \(usageText) [options]",
       "",
-      command.description,
+      program.userFacingDescription(command.description),
     ]
 
     if !command.options.isEmpty {
       lines += ["", "options:"]
-      lines += command.options.map { CLI.formatRow($0.helpText, $0.description) }
+      lines += command.options.map {
+        CLI.formatRow($0.helpText, program.userFacingDescription($0.description))
+      }
     }
 
     lines += ["", "global options:"]
@@ -268,6 +282,8 @@ enum CLIOutput {
         )
       }
     }
-    fputs("Reload EasyBar with: easybar config reload\n", stdout)
+    fputs(
+      "Reload \(CLIProgram.current.displayName) with: \(CLIProgram.current.commandName) config reload\n",
+      stdout)
   }
 }

@@ -9,7 +9,7 @@ struct AppContext {
   /// Creates a context and enables debug logging when requested.
   init(debugEnabled: Bool) {
     logger = ProcessLogger(
-      label: "easybarctl",
+      label: CLIProgram.current.loggerLabel,
       minimumLevel: debugEnabled ? .debug : .info,
       outputStream: stderr,
       errorStream: stderr

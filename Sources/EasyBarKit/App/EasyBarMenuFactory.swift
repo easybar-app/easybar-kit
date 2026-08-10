@@ -53,6 +53,8 @@ final class EasyBarMenuFactory: NSObject {
   private let actions: EasyBarMenuActions
   private let stateProvider: BarContextMenuStateProvider
   private let runtimeState: () -> EasyBarRuntimeState
+  private let frontendDisplayName: String
+  private let builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy
 
   init(
     logger: ProcessLogger,
@@ -61,11 +63,20 @@ final class EasyBarMenuFactory: NSObject {
     stateProvider: BarContextMenuStateProvider,
     runtimeState: @escaping () -> EasyBarRuntimeState
   ) {
+    let environment = ProcessInfo.processInfo.environment
+    let configuredDisplayName = environment[SharedEnvironmentKeys.frontendDisplayName]?
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+    let configuredPolicy = environment[SharedEnvironmentKeys.frontendBuiltInSurfacePolicy]
+      .flatMap(EasyBarBuiltInSurfacePolicy.init(rawValue:))
+
     self.logger = logger
     self.configStore = configStore
     self.actions = actions
     self.stateProvider = stateProvider
     self.runtimeState = runtimeState
+    self.frontendDisplayName =
+      configuredDisplayName.flatMap { $0.isEmpty ? nil : $0 } ?? "EasyBar"
+    self.builtInSurfacePolicy = configuredPolicy ?? .all
     super.init()
   }
 
@@ -93,16 +104,18 @@ final class EasyBarMenuFactory: NSObject {
   ) -> [NSMenuItem] {
     switch group {
     case .version:
-      return [readOnlyItem("EasyBar \(BuildInfo.appVersion)", tertiary: true)]
+      return [readOnlyItem("\(frontendDisplayName) \(BuildInfo.appVersion)", tertiary: true)]
     case .lifecycle:
       return lifecycleItems
     case .runtime:
       return runtimeItems
     case .nativeWidgets:
-      return [nativeWidgetsMenuItem()]
+      guard let item = nativeWidgetsMenuItem() else { return [] }
+      return [item]
     case .theme:
       return [themeMenuItem()]
     case .agents:
+      guard builtInSurfacePolicy == .all else { return [] }
       return [calendarAgentMenuItem, networkAgentMenuItem]
     case .files:
       return fileItems
@@ -117,13 +130,15 @@ final class EasyBarMenuFactory: NSObject {
     switch runtimeState() {
     case .running:
       return [
-        actionItem(title: "Stop EasyBar", action: #selector(stopEasyBar(_:))),
-        actionItem(title: "Restart EasyBar", action: #selector(restartEasyBar(_:))),
+        actionItem(title: "Stop \(frontendDisplayName)", action: #selector(stopEasyBar(_:))),
+        actionItem(title: "Restart \(frontendDisplayName)", action: #selector(restartEasyBar(_:))),
       ]
     case .stopped:
-      return [actionItem(title: "Start EasyBar", action: #selector(startEasyBar(_:)))]
+      return [
+        actionItem(title: "Start \(frontendDisplayName)", action: #selector(startEasyBar(_:)))
+      ]
     case .transitioning:
-      return [readOnlyItem("Updating EasyBar…")]
+      return [readOnlyItem("Updating \(frontendDisplayName)…")]
     }
   }
 
@@ -141,8 +156,7 @@ final class EasyBarMenuFactory: NSObject {
         title: "Reload Config",
         action: #selector(reloadConfig(_:)),
         enabled: enabled,
-        toolTip:
-          "Reloads config.toml, rebuilds EasyBar state, and reconnects agent-backed subscriptions."
+        toolTip: "Reloads config.toml, rebuilds runtime state, and reconnects active subscriptions."
       ),
       actionItem(
         title: "Restart Lua Runtime",
@@ -154,22 +168,34 @@ final class EasyBarMenuFactory: NSObject {
     ]
   }
 
-  private func nativeWidgetsMenuItem() -> NSMenuItem {
+  private func nativeWidgetsMenuItem() -> NSMenuItem? {
     let builtins = configStore.snapshot.builtins
-    let widgets: [(String, String, Bool)] = [
-      ("spaces", "Spaces", builtins.spaces.enabled),
-      ("inbox", "Inbox", builtins.inbox.enabled),
-      ("privacy_spacer", "Privacy Spacer", builtins.privacySpacer.enabled),
-      ("battery", "Battery", builtins.battery.enabled),
-      ("wifi", "Wi-Fi", builtins.wifi.enabled),
-      ("calendar", "Calendar", builtins.calendar.enabled),
-      ("volume", "Volume", builtins.volume.enabled),
-      ("front_app", "Front App", builtins.frontApp.enabled),
-      ("aerospace_mode", "AeroSpace Mode", builtins.aerospaceMode.enabled),
-      ("cpu", "CPU", builtins.cpu.enabled),
-      ("time", "Time", builtins.time.placement.enabled),
-      ("date", "Date", builtins.date.placement.enabled),
-    ]
+    let widgets: [(String, String, Bool)]
+
+    switch builtInSurfacePolicy {
+    case .all:
+      widgets = [
+        ("spaces", "Spaces", builtins.spaces.enabled),
+        ("inbox", "Inbox", builtins.inbox.enabled),
+        ("privacy_spacer", "Privacy Spacer", builtins.privacySpacer.enabled),
+        ("battery", "Battery", builtins.battery.enabled),
+        ("wifi", "Wi-Fi", builtins.wifi.enabled),
+        ("calendar", "Calendar", builtins.calendar.enabled),
+        ("volume", "Volume", builtins.volume.enabled),
+        ("front_app", "Front App", builtins.frontApp.enabled),
+        ("aerospace_mode", "AeroSpace Mode", builtins.aerospaceMode.enabled),
+        ("cpu", "CPU", builtins.cpu.enabled),
+        ("time", "Time", builtins.time.placement.enabled),
+        ("date", "Date", builtins.date.placement.enabled),
+      ]
+    case .inboxOnly:
+      widgets = [("inbox", "Inbox", builtins.inbox.enabled)]
+    case .none:
+      widgets = []
+    }
+
+    guard !widgets.isEmpty else { return nil }
+
     let item = submenuItem(title: "Native Widgets")
     item.isEnabled = runtimeState() == .running
     for (key, title, enabled) in widgets {

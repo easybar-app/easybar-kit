@@ -52,22 +52,46 @@ public enum SharedPathDefaults {
 
   /// Returns the default widgets path in the current user's home directory.
   public static func defaultWidgetsPath() -> URL {
-    homeRelativePath(defaultWidgetsRelativePath)
+    bootstrapPath(
+      environmentKey: SharedEnvironmentKeys.widgetsDirectory,
+      defaultRelativePath: defaultWidgetsRelativePath
+    )
   }
 
   /// Returns the default logging directory in the current user's home directory.
   public static func defaultLoggingDirectory() -> URL {
-    homeRelativePath(defaultLoggingDirectoryRelativePath)
+    bootstrapPath(
+      environmentKey: SharedEnvironmentKeys.loggingDirectory,
+      defaultRelativePath: defaultLoggingDirectoryRelativePath
+    )
   }
 
   /// Returns the default widget editor stub path in the current user's home directory.
   public static func defaultWidgetEditorStubPath() -> URL {
-    homeRelativePath(defaultWidgetEditorStubRelativePath)
+    bootstrapPath(
+      environmentKey: SharedEnvironmentKeys.widgetEditorStubPath,
+      defaultRelativePath: defaultWidgetEditorStubRelativePath
+    )
   }
 
   /// Returns the managed widget package root in the current user's data directory.
   public static func defaultWidgetPackagesPath() -> URL {
-    homeRelativePath(defaultWidgetPackagesRelativePath)
+    bootstrapPath(
+      environmentKey: SharedEnvironmentKeys.widgetPackagesDirectory,
+      defaultRelativePath: defaultWidgetPackagesRelativePath
+    )
+  }
+
+  /// Resolves a frontend bootstrap override without changing the normal EasyBar defaults.
+  private static func bootstrapPath(environmentKey: String, defaultRelativePath: String) -> URL {
+    if let value = ProcessInfo.processInfo.environment[environmentKey]?
+      .trimmingCharacters(in: .whitespacesAndNewlines),
+      !value.isEmpty
+    {
+      return URL(fileURLWithPath: NSString(string: value).expandingTildeInPath)
+    }
+
+    return homeRelativePath(defaultRelativePath)
   }
 
   /// Returns one child path within the provided runtime directory.

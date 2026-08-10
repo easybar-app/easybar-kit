@@ -90,7 +90,8 @@ func installWidgetPackage(
     for package in installed {
       fputs("Installed \(package.name) \(package.version) (\(package.kind.rawValue))\n", stdout)
     }
-    fputs("Reload EasyBar with: easybar config reload\n", stdout)
+    let program = CLIProgram.current
+    fputs("Reload \(program.displayName) with: \(program.commandName) config reload\n", stdout)
   } catch {
     await spinner.stop()
     throw AppError.commandFailed(error.localizedDescription)

@@ -15,6 +15,7 @@ private struct AppController {
   func run() async -> Int32 {
     do {
       let parsed = try parseArguments(CommandLine.arguments)
+      try CLIProgram.current.validate(action: parsed.action)
       let context = AppContext(debugEnabled: parsed.debugEnabled)
 
       switch parsed.action {

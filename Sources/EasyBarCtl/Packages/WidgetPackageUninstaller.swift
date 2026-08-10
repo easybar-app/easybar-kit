@@ -115,7 +115,8 @@ func uninstallWidgetPackage(name: String, context: AppContext) throws {
     context.debug("uninstalling widget package \(name)")
     let package = try WidgetPackageUninstaller().uninstall(name: name)
     fputs("Uninstalled \(package.name) \(package.version) (\(package.kind.rawValue))\n", stdout)
-    fputs("Reload EasyBar with: easybar config reload\n", stdout)
+    let program = CLIProgram.current
+    fputs("Reload \(program.displayName) with: \(program.commandName) config reload\n", stdout)
   } catch {
     throw AppError.commandFailed(error.localizedDescription)
   }

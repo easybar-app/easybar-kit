@@ -62,6 +62,14 @@ public struct EasyBarApplicationIdentity: Sendable {
     for (key, value) in defaultEnvironment where environment[key] == nil {
       setenv(key, value, 0)
     }
+
+    // These values describe the active host itself rather than user overrides.
+    setenv(SharedEnvironmentKeys.frontendDisplayName, displayName, 1)
+    setenv(
+      SharedEnvironmentKeys.frontendBuiltInSurfacePolicy,
+      builtInSurfacePolicy.rawValue,
+      1
+    )
   }
 }
 
