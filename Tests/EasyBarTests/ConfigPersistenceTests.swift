@@ -3,7 +3,7 @@ import Foundation
 import SwiftTOMLEdit
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class ConfigPersistenceHardeningTests: XCTestCase {
   @MainActor

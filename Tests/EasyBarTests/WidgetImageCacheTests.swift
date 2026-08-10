@@ -3,7 +3,7 @@ import Foundation
 import SwiftUI
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class WidgetImageCacheTests: XCTestCase {
   private static let pixelPNG = Data(

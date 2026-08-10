@@ -3,7 +3,7 @@ import EasyBarShared
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 class ConfigLoaderTestCase: XCTestCase {
   let environmentKeys = [

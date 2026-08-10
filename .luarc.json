@@ -5,8 +5,8 @@
     "path": [
       "?.lua",
       "?/init.lua",
-      "Sources/EasyBarApp/Lua/?.lua",
-      "Sources/EasyBarApp/Lua/?/init.lua",
+      "Sources/EasyBarKit/Lua/?.lua",
+      "Sources/EasyBarKit/Lua/?/init.lua",
       "examples/?.lua",
       "examples/?/init.lua"
     ]
@@ -15,8 +15,8 @@
     "checkThirdParty": "Disable",
     "library": [],
     "ignoreDir": [
-      "Sources/EasyBarApp/Lua/easybar_api.lua",
-      "Sources/EasyBarApp/Lua/easybar_api.themes.lua"
+      "Sources/EasyBarKit/Lua/easybar_api.lua",
+      "Sources/EasyBarKit/Lua/easybar_api.themes.lua"
     ]
   },
   "diagnostics": {

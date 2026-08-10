@@ -3,7 +3,7 @@ import EasyBarShared
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class LuaTransportAuthenticationTests: XCTestCase {
   func testRejectsWrongTokenBeforeDeliveringRuntimeLines() async throws {

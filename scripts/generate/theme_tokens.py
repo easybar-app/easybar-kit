@@ -7,11 +7,11 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-MANIFEST_PATH = ROOT / "Sources/EasyBarApp/Theme/theme_tokens.json"
-SWIFT_OUTPUT_PATH = ROOT / "Sources/EasyBarApp/Theme/ThemeColorToken.swift"
-LUA_RUNTIME_OUTPUT_PATH = ROOT / "Sources/EasyBarApp/Lua/easybar/theme_tokens.lua"
-LUA_API_THEMES_PATH = ROOT / "Sources/EasyBarApp/Lua/easybar_api.themes.lua"
-LUA_API_BASE_PATH = ROOT / "Sources/EasyBarApp/Lua/easybar_api.base.lua"
+MANIFEST_PATH = ROOT / "Sources/EasyBarKit/Theme/theme_tokens.json"
+SWIFT_OUTPUT_PATH = ROOT / "Sources/EasyBarKit/Theme/ThemeColorToken.swift"
+LUA_RUNTIME_OUTPUT_PATH = ROOT / "Sources/EasyBarKit/Lua/easybar/theme_tokens.lua"
+LUA_API_THEMES_PATH = ROOT / "Sources/EasyBarKit/Lua/easybar_api.themes.lua"
+LUA_API_BASE_PATH = ROOT / "Sources/EasyBarKit/Lua/easybar_api.base.lua"
 LUA_API_THEMES_START = "-- GENERATED SECTION: easybar.themes"
 LUA_API_THEMES_END = "-- END GENERATED SECTION: easybar.themes"
 
@@ -89,7 +89,7 @@ def render_lua_api_themes(tokens: list[dict]) -> str:
     """Render the generated EmmyLua theme annotations."""
     lines = [
         "-- EasyBar generated theme stub. Do not edit by hand.",
-        "-- Source of truth: Sources/EasyBarApp/Theme/theme_tokens.json",
+        "-- Source of truth: Sources/EasyBarKit/Theme/theme_tokens.json",
         "-- Regenerate with: scripts/generate/theme_tokens.py",
         "---Resolved active theme colors.",
         "---@class EasyBarThemeColors",

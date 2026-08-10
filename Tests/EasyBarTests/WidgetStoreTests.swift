@@ -1,7 +1,7 @@
 import Combine
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 @MainActor
 final class WidgetStoreTests: XCTestCase {

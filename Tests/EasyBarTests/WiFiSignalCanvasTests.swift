@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 @MainActor
 final class WiFiSignalCanvasTests: XCTestCase {

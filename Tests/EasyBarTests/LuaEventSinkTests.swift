@@ -1,7 +1,7 @@
 import EasyBarShared
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 private actor BlockingLuaEventSend {
   private var blocked = false

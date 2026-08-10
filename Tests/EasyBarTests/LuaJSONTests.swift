@@ -2,13 +2,13 @@ import EasyBarShared
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class LuaJSONTests: XCTestCase {
   func testNullAndContainerShapesRoundTrip() throws {
     let output = try runLua(
       """
-      local json = dofile("Sources/EasyBarApp/Lua/easybar/json.lua")
+      local json = dofile("Sources/EasyBarKit/Lua/easybar/json.lua")
       local value = json.decode('{"values":[1,null,3],"emptyObject":{},"emptyArray":[]}')
       assert(#value.values == 3)
       assert(value.values[2] == json.null)
@@ -35,7 +35,7 @@ final class LuaJSONTests: XCTestCase {
   func testUnicodeSurrogatePairsDecodeToOneCodePoint() throws {
     let output = try runLua(
       """
-      local json = dofile("Sources/EasyBarApp/Lua/easybar/json.lua")
+      local json = dofile("Sources/EasyBarKit/Lua/easybar/json.lua")
       local value = json.decode([["\\uD83D\\uDE00"]])
       assert(value == "😀")
       print(value)
@@ -48,7 +48,7 @@ final class LuaJSONTests: XCTestCase {
   func testInvalidUnicodeAndNonFiniteNumbersAreRejected() throws {
     let output = try runLua(
       """
-      local json = dofile("Sources/EasyBarApp/Lua/easybar/json.lua")
+      local json = dofile("Sources/EasyBarKit/Lua/easybar/json.lua")
       assert(not pcall(json.decode, [["\\uD83D"]]))
       assert(not pcall(json.decode, [["\\uDE00"]]))
       assert(not pcall(json.encode, 0 / 0))

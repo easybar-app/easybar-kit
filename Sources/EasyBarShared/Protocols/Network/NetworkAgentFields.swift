@@ -34,7 +34,6 @@ public enum NetworkAgentField: String, Codable, CaseIterable, Sendable {
   case dnsServers = "network.dns_servers"
   case routeReachable = "network.route_reachable"
   case routeUnavailableWithLocalAddress = "network.route_unavailable_with_local_address"
-  case internetReachable = "network.internet_reachable"
   case captivePortal = "network.captive_portal"
   case locationAuthorized = "auth.location_authorized"
   case locationPermissionState = "auth.location_permission_state"
@@ -147,10 +146,6 @@ public let networkAgentFieldRegistry: [NetworkAgentFieldSpec] = [
   .init(
     field: .routeUnavailableWithLocalAddress,
     help: "Whether a local address exists while no usable route is reported"
-  ),
-  .init(
-    field: .internetReachable,
-    help: "Compatibility alias for route_reachable; it does not probe Internet access"
   ),
   .init(
     field: .captivePortal,

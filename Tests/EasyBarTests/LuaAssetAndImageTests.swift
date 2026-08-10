@@ -2,7 +2,7 @@ import EasyBarShared
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class LuaAssetAndImageTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
   func testAssetResolvesSiblingNestedAndNormalizedPaths() async throws {

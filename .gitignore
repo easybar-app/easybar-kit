@@ -1,9 +1,6 @@
-dist/
 .build/
 .swiftpm/
-.cache/
+dist/
 .home/
-__pycache__/
-
+.cache/
 .DS_Store
-todo.txt

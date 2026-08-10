@@ -11,6 +11,7 @@ enum WidgetPackageError: LocalizedError, Equatable {
   case packageRequired(name: String, dependents: [String])
   case unavailableDependency(package: String, dependency: String, constraint: String)
   case incompatibleDependency(package: String, dependency: String, constraint: String)
+  case incompatibleKitVersion(package: String, minimum: String, current: String)
   case checksumRequired(String)
   case checksumMismatch(expected: String, actual: String)
   case archiveTooLarge(Int)
@@ -40,6 +41,8 @@ enum WidgetPackageError: LocalizedError, Equatable {
       "package '\(package)' requires \(dependency) \(constraint); install that dependency directly or enable a registry"
     case .incompatibleDependency(let package, let dependency, let constraint):
       "package '\(package)' requires \(dependency) \(constraint), but the selected version is incompatible"
+    case .incompatibleKitVersion(let package, let minimum, let current):
+      "package '\(package)' requires EasyBarKit \(minimum) or newer, but this build provides \(current)"
     case .checksumRequired(let source):
       "a SHA-256 is required for direct remote archive \(source)"
     case .checksumMismatch(let expected, let actual):

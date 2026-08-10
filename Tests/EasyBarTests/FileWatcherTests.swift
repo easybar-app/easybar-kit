@@ -1,7 +1,7 @@
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 @testable import EasyBarShared
 
 final class FileWatcherTests: XCTestCase {

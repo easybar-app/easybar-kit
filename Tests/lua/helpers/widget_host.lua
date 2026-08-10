@@ -5,10 +5,10 @@ local M = {}
 --- Configures Lua module paths for the repository test host.
 function M.configure(root)
 	package.path = table.concat({
-		root .. "/Sources/EasyBarApp/Lua/?.lua",
+		root .. "/Sources/EasyBarKit/Lua/?.lua",
 		root .. "/examples/?.lua",
 		root .. "/examples/?/init.lua",
-		root .. "/Sources/EasyBarApp/Lua/?/init.lua",
+		root .. "/Sources/EasyBarKit/Lua/?/init.lua",
 		package.path,
 	}, ";")
 end

@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class EventCatalogTests: XCTestCase {
   /// Verifies that Lua definitions match Swift catalog.

@@ -11,10 +11,10 @@ local function configure(root)
 	end
 
 	package.path = table.concat({
-		root .. "/Sources/EasyBarApp/Lua/?.lua",
+		root .. "/Sources/EasyBarKit/Lua/?.lua",
 		root .. "/examples/?.lua",
 		root .. "/examples/?/init.lua",
-		root .. "/Sources/EasyBarApp/Lua/?/init.lua",
+		root .. "/Sources/EasyBarKit/Lua/?/init.lua",
 		package.path,
 	}, ";")
 

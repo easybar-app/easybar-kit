@@ -110,19 +110,7 @@ extension MetricsRenderer {
   /// Renders Lua transport, structured log, and input health counters.
   static func watchLua(_ snapshot: IPC.MetricsSnapshot, width: Int) -> String {
     let runtime = snapshot.runtime
-    let logs = runtime.luaLogLines.map(String.init) ?? "\(runtime.stderrLines) stderr"
-    let warningAndErrors: String
-    let rawStderr: String
-    if let warnings = runtime.luaWarningLines,
-      let errors = runtime.luaErrorLines,
-      let raw = runtime.luaRawStderrLines
-    {
-      warningAndErrors = "\(warnings)/\(errors)"
-      rawStderr = String(raw)
-    } else {
-      warningAndErrors = "-"
-      rawStderr = "-"
-    }
+    let warningAndErrors = "\(runtime.luaWarningLines)/\(runtime.luaErrorLines)"
 
     return [
       "Lua",
@@ -131,9 +119,9 @@ extension MetricsRenderer {
         "\(runtime.transportLines)/\(runtime.luaWrites)",
         width: width
       ),
-      compactMetric("logs", logs, width: width),
+      compactMetric("logs", String(runtime.luaLogLines), width: width),
       compactMetric("warn/error", warningAndErrors, width: width),
-      compactMetric("raw stderr", rawStderr, width: width),
+      compactMetric("raw stderr", String(runtime.luaRawStderrLines), width: width),
       compactMetric("decode errors", String(runtime.decodeErrors), width: width),
       compactMetric(
         "input overflow",
@@ -179,9 +167,7 @@ extension MetricsRenderer {
 
   /// Renders every global Lua event subscription in one compact tile.
   static func watchSubscriptions(_ snapshot: IPC.MetricsSnapshot, width _: Int) -> String {
-    guard let events = snapshot.runtime.subscribedEvents else {
-      return "Subscriptions\nunavailable"
-    }
+    let events = snapshot.runtime.subscribedEvents
     guard !events.isEmpty else { return "Subscriptions\nnone" }
 
     return (["Subscriptions (\(events.count))"] + events.map { subscription($0, compact: true) })

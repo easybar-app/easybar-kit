@@ -9,7 +9,7 @@ readonly targets=(
   EasyBarCalendarUI
   EasyBarNetworkAgentCore
   EasyBarShared
-  EasyBarApp
+  EasyBarKit
   EasyBarLuaRuntime
   EasyBarCtl
   EasyBarCalendarAgent

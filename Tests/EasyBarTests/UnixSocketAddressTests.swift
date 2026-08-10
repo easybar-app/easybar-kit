@@ -19,8 +19,8 @@ final class UnixSocketAddressTests: XCTestCase {
     let directory = FileManager.default.temporaryDirectory
       .appendingPathComponent(UUID().uuidString, isDirectory: true)
     let path = directory.appendingPathComponent("listener.sock").path
-    let listener = try makeListeningUnixSocket(at: path, backlog: 1)
-    defer { closeListeningUnixSocket(listener, at: path) }
+    let listener = try makeOwnedListeningUnixSocket(at: path, backlog: 1)
+    defer { closeListeningUnixSocket(listener) }
 
     let client = try openConnectedUnixSocket(at: path, timeout: 0.1)
     close(client)
@@ -104,9 +104,9 @@ final class UnixSocketAddressTests: XCTestCase {
     )
     close(staleFD)
 
-    let fd = try makeListeningUnixSocket(at: socketPath, backlog: 1)
+    let listener = try makeOwnedListeningUnixSocket(at: socketPath, backlog: 1)
     defer {
-      closeListeningUnixSocket(fd, at: socketPath)
+      closeListeningUnixSocket(listener)
     }
 
     var info = stat()
@@ -124,7 +124,7 @@ final class UnixSocketAddressTests: XCTestCase {
     let socketPath = directory.appendingPathComponent("server.sock").path
     try "important data".write(toFile: socketPath, atomically: true, encoding: .utf8)
 
-    XCTAssertThrowsError(try makeListeningUnixSocket(at: socketPath, backlog: 1)) { error in
+    XCTAssertThrowsError(try makeOwnedListeningUnixSocket(at: socketPath, backlog: 1)) { error in
       guard case UnixSocketListenError.existingPathIsNotSocket(let path) = error else {
         return XCTFail("Expected existingPathIsNotSocket, got \(error)")
       }

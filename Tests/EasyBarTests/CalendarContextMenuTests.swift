@@ -1,7 +1,7 @@
 import EasyBarCalendarConfig
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class CalendarContextMenuTests: XCTestCase {
   func testMenuReflectsEffectiveCalendarOptions() throws {

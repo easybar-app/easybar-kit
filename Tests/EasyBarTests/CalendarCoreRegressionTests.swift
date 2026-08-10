@@ -232,7 +232,7 @@ final class CalendarCoreRegressionTests: XCTestCase {
     XCTAssertFalse(EventKitTravelTimeAdapter.write(1_800, to: object))
   }
 
-  func testTravelTimeCompatibilityBridgeReadsAndWritesSupportedObjects() {
+  func testTravelTimeBridgeReadsAndWritesSupportedObjects() {
     let object = CalendarTravelTimeTestObject()
     XCTAssertTrue(EventKitTravelTimeAdapter.write(1_800, to: object))
     XCTAssertEqual(EventKitTravelTimeAdapter.read(from: object), 1_800)

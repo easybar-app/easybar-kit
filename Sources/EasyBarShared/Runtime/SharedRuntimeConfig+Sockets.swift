@@ -16,10 +16,12 @@ func resolvedCalendarAgentConfig(
 
   return SharedCalendarAgentRuntimeConfig(
     enabled: try calendar.bool("enabled", fallback: true),
-    socketPath: try calendar.expandedPath(
-      "socket_path",
-      fallback: SharedPathDefaults.calendarAgentSocketPath(in: runtimeDirectory)
-    )
+    socketPath: try
+      (expandedEnvironmentPath(named: SharedEnvironmentKeys.calendarAgentSocketPath)
+      ?? calendar.expandedPath(
+        "socket_path",
+        fallback: SharedPathDefaults.calendarAgentSocketPath(in: runtimeDirectory)
+      )),
   )
 }
 
@@ -29,7 +31,9 @@ func resolvedCalendarAgentEnvironmentDefaults(
 ) -> SharedCalendarAgentRuntimeConfig {
   SharedCalendarAgentRuntimeConfig(
     enabled: true,
-    socketPath: SharedPathDefaults.calendarAgentSocketPath(in: runtimeDirectory)
+    socketPath:
+      expandedEnvironmentPath(named: SharedEnvironmentKeys.calendarAgentSocketPath)
+      ?? SharedPathDefaults.calendarAgentSocketPath(in: runtimeDirectory)
   )
 }
 
@@ -42,10 +46,12 @@ func resolvedNetworkAgentConfig(
 
   return SharedNetworkAgentRuntimeConfig(
     enabled: try network.bool("enabled", fallback: true),
-    socketPath: try network.expandedPath(
-      "socket_path",
-      fallback: SharedPathDefaults.networkAgentSocketPath(in: runtimeDirectory)
-    ),
+    socketPath: try
+      (expandedEnvironmentPath(named: SharedEnvironmentKeys.networkAgentSocketPath)
+      ?? network.expandedPath(
+        "socket_path",
+        fallback: SharedPathDefaults.networkAgentSocketPath(in: runtimeDirectory)
+      )),
     refreshIntervalSeconds: try network.double(
       "refresh_interval_seconds",
       fallback: 60,
@@ -64,7 +70,9 @@ func resolvedNetworkAgentEnvironmentDefaults(
 ) -> SharedNetworkAgentRuntimeConfig {
   SharedNetworkAgentRuntimeConfig(
     enabled: true,
-    socketPath: SharedPathDefaults.networkAgentSocketPath(in: runtimeDirectory),
+    socketPath:
+      expandedEnvironmentPath(named: SharedEnvironmentKeys.networkAgentSocketPath)
+      ?? SharedPathDefaults.networkAgentSocketPath(in: runtimeDirectory),
     refreshIntervalSeconds: 60,
     allowUnauthorizedFieldsWithoutLocation: false
   )

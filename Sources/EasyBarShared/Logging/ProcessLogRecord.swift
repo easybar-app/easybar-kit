@@ -82,10 +82,6 @@ public struct ProcessLogRecord: Sendable {
       return .lua
     }
 
-    if fields["component"]?.lowercased() == "runtime" {
-      return .lua
-    }
-
     let subsystem = fields["subsystem"]?.lowercased() ?? ""
     let lowercasedMessage = message.lowercased()
     if looksLikeLuaRuntimeLog(subsystem: subsystem, message: lowercasedMessage) {
@@ -94,10 +90,6 @@ public struct ProcessLogRecord: Sendable {
 
     if looksLikeNativeWidgetLog(subsystem: subsystem, message: lowercasedMessage) {
       return .native
-    }
-
-    if source == "easybar", fields["widget"] != nil {
-      return .lua
     }
 
     return nil

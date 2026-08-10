@@ -2,7 +2,7 @@ import AppKit
 import EasyBarShared
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 @MainActor
 final class WidgetContextMenuTests: XCTestCase {

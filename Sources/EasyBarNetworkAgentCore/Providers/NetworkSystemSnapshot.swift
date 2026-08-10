@@ -39,9 +39,4 @@ struct NetworkSystemSnapshot: Equatable, Sendable {
   let routeUnavailableWithLocalAddress: Bool
   /// Confirmed captive-portal state, or nil when no probe ran.
   let captivePortal: Bool?
-
-  /// Backward-compatible route-level alias retained for existing clients.
-  var internetReachable: Bool {
-    routeReachable
-  }
 }

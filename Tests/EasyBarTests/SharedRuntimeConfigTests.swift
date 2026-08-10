@@ -8,6 +8,8 @@ final class SharedRuntimeConfigTests: XCTestCase {
     SharedEnvironmentKeys.configPath,
     SharedEnvironmentKeys.runtimeDirectory,
     SharedEnvironmentKeys.loggingLevel,
+    SharedEnvironmentKeys.calendarAgentSocketPath,
+    SharedEnvironmentKeys.networkAgentSocketPath,
   ]
 
   private var originalEnvironment: [String: String?] = [:]
@@ -162,6 +164,38 @@ final class SharedRuntimeConfigTests: XCTestCase {
       runtime.networkAgent.socketPath,
       SharedPathDefaults.networkAgentSocketPath(in: environmentDirectory)
     )
+  }
+
+  /// Verifies that frontends can share helper agents while isolating their own runtime directory.
+  func testLoadPrefersAgentSocketEnvironmentOverrides() throws {
+    let configFileURL = tempDirectoryURL.appendingPathComponent("runtime-agent-env.toml")
+    let runtimeDirectory = tempDirectoryURL.appendingPathComponent("native-runtime").path
+    let calendarSocketPath = tempDirectoryURL.appendingPathComponent("shared-calendar.sock").path
+    let networkSocketPath = tempDirectoryURL.appendingPathComponent("shared-network.sock").path
+
+    try writeConfig(
+      """
+      [app]
+      runtime_dir = "\(runtimeDirectory)"
+
+      [agents.calendar]
+      socket_path = "/ignored/calendar.sock"
+
+      [agents.network]
+      socket_path = "/ignored/network.sock"
+      """,
+      to: configFileURL
+    )
+
+    setEnvironmentValue(configFileURL.path, for: SharedEnvironmentKeys.configPath)
+    setEnvironmentValue(calendarSocketPath, for: SharedEnvironmentKeys.calendarAgentSocketPath)
+    setEnvironmentValue(networkSocketPath, for: SharedEnvironmentKeys.networkAgentSocketPath)
+
+    let runtime = try SharedRuntimeConfig.load()
+
+    XCTAssertEqual(runtime.app.runtimeDirectory, runtimeDirectory)
+    XCTAssertEqual(runtime.calendarAgent.socketPath, calendarSocketPath)
+    XCTAssertEqual(runtime.networkAgent.socketPath, networkSocketPath)
   }
 
   /// Verifies that load lets the diagnostic log-level environment override TOML.

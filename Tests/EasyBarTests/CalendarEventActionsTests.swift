@@ -4,7 +4,7 @@ import Foundation
 import XCTest
 
 final class CalendarEventActionsTests: XCTestCase {
-  func testBuiltInPatternsPreserveLegacyProviderList() {
+  func testBuiltInPatternsContainSupportedProviders() {
     XCTAssertEqual(
       CalendarMeetingURLMatcher.defaultPatterns,
       [

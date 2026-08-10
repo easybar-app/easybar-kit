@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 @MainActor
 final class WidgetPopupPanelControllerTests: XCTestCase {

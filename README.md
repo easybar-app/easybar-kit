@@ -1,54 +1,62 @@
-# EasyBar
+# EasyBarKit
 
-![EasyBar screenshot](https://easybar.dev/assets/bar.png)
+EasyBarKit is the shared runtime and widget framework used by the EasyBar frontends:
 
-EasyBar is a lightweight, scriptable macOS status bar built with SwiftUI and Lua. It combines
-native widgets with custom Lua widgets and integrates with AeroSpace.
+- `easybar`: the customizable full-width top bar.
+- `easybar-native`: native macOS menu-bar widgets backed by `NSStatusItem`.
+- `widgets`: shared Lua widget packages.
 
-## Features
+The kit owns configuration parsing, Lua execution, widget state and rendering, events, popups,
+context menus, themes, the inbox, system services, helper-agent protocols, package management, and
+the reusable SwiftUI widget renderer. Frontends own their application identity and decide where
+top-level widget surfaces are hosted.
 
-- Native widgets for spaces, apps, system status, calendar, and more
-- Scriptable Lua widgets with events, popups, groups, and context menus
-- Installable Lua widgets and libraries from the official package registry
-- Shared inbox with unread state, grouping, Markdown, and widget actions
-- File-based TOML themes and comment-preserving configuration updates
-- AeroSpace integration and separate calendar and network helper agents
-- Menu bar controller and CLI for runtime control and diagnostics
+## Frontend API
 
-See screenshots in the [documentation](https://easybar.dev/#screenshots).
+A frontend creates its own `EasyBarApplicationIdentity` and starts the shared application shell with
+an `EasyBarSurfaceFactory`:
 
-## Requirements
+```swift
+let identity = EasyBarApplicationIdentity(
+  displayName: "My Frontend",
+  processName: "my-frontend",
+  loggerLabel: "my-frontend",
+  logFileName: "my-frontend.out"
+)
 
-- macOS 14 Sonoma or newer
-- [Homebrew](https://brew.sh/) for installation
-- AeroSpace 0.21.0 or newer when using AeroSpace-backed widgets
-
-## Installation
-
-```bash
-brew tap easybar-app/tap
-brew install --cask easybar-app/tap/easybar
-open -a EasyBar
+EasyBarApplication.run(identity: identity) { context in
+  MySurfaceController(context: context)
+}
 ```
 
-See the [installation guide](https://easybar.dev/getting-started/installation/)
-for upgrades, verification, and removal.
+`EasyBarPresentationModel` exposes top-level `WidgetSurface` values. Each surface provides a
+self-contained SwiftUI view, so frontends do not need access to the internal widget tree.
 
-## Documentation
+EasyBar places those surfaces in a borderless top-edge panel. EasyBar Native places each surface in
+a separate `NSStatusItem`. Lua widget code is shared by both hosts.
 
-The full documentation is available at [easybar.dev](https://easybar.dev/).
+## Package contract
 
-- [Quick start](https://easybar.dev/getting-started/quick-start/)
-- [Configuration](https://easybar.dev/configuration/overview/)
-- [Themes](https://easybar.dev/configuration/themes/)
-- [Lua widgets](https://easybar.dev/lua/overview/)
-- [Widget packages](https://easybar.dev/runtime/widget-packages/)
-- [Runtime and troubleshooting](https://easybar.dev/runtime/troubleshooting/)
-- [Development](https://easybar.dev/internals/development/)
+Installable Lua packages use manifest version 2 and declare the minimum compatible EasyBarKit
+version with `minimum_easybar_kit_version`. EasyBarKit does not accept manifest version 1. The clean
+split starts with EasyBarKit `0.54.0`, which is the baseline for the first official manifest-v2
+package releases.
 
-The complete defaults and a small starter configuration are also available in
-[`config.defaults.toml`](./config.defaults.toml) and [`config.minimal.toml`](./config.minimal.toml).
+## Development
 
-## License
+```bash
+make build
+make test
+make check
+```
 
-Licensed under the [Apache License 2.0](./LICENSE).
+For sibling development, keep `easybar`, `easybar-native`, `easybar-kit`, and `widgets` next to each
+other. The frontend Swift packages resolve `../easybar-kit` directly.
+
+Install the shared CLI, Lua runtime, and helper agents into `~/.local/bin` with:
+
+```bash
+make install-local
+```
+
+Override the destination with `LOCAL_BIN_DIR=/path/to/bin`.

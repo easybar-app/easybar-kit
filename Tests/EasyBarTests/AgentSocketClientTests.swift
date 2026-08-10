@@ -546,7 +546,8 @@ final class AgentSocketClientTests: XCTestCase {
   }
 
   func testOneShotClientTimesOutWhenPeerDoesNotReadRequest() throws {
-    let listeningFD = try makeListeningUnixSocket(at: socketPath, backlog: 1)
+    let listener = try makeOwnedListeningUnixSocket(at: socketPath, backlog: 1)
+    let listeningFD = listener.fd
     let releaseAcceptedSocket = DispatchSemaphore(value: 0)
     let acceptFinished = DispatchSemaphore(value: 0)
 
@@ -569,7 +570,7 @@ final class AgentSocketClientTests: XCTestCase {
 
     defer {
       releaseAcceptedSocket.signal()
-      closeListeningUnixSocket(listeningFD, at: socketPath)
+      closeListeningUnixSocket(listener)
       _ = acceptFinished.wait(timeout: .now() + 2)
     }
 

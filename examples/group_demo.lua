@@ -66,7 +66,7 @@ group = easybar.add(easybar.kind.group, "group_demo", {
 })
 
 icon = easybar.add(easybar.kind.item, "group_demo_icon", {
-	parent = group.name,
+	parent = group.id,
 	icon = {
 		string = "󰄱",
 		color = COLORS.muted,
@@ -74,7 +74,7 @@ icon = easybar.add(easybar.kind.item, "group_demo_icon", {
 })
 
 label = easybar.add(easybar.kind.item, "group_demo_label", {
-	parent = group.name,
+	parent = group.id,
 	label = {
 		string = "Group",
 		color = COLORS.text,
@@ -82,7 +82,7 @@ label = easybar.add(easybar.kind.item, "group_demo_label", {
 })
 
 easybar.add(easybar.kind.item, "group_demo_popup", {
-	position = "popup." .. group.name,
+	position = "popup." .. group.id,
 	label = {
 		string = "Group popup",
 		color = COLORS.text,

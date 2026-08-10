@@ -19,6 +19,12 @@ public enum SharedEnvironmentKeys {
   /// Optional diagnostic override for the configured logging level.
   public static let loggingLevel = "EASYBAR_LOG_LEVEL"
 
+  /// Optional bootstrap override for the calendar-agent socket.
+  public static let calendarAgentSocketPath = "EASYBAR_CALENDAR_AGENT_SOCKET_PATH"
+
+  /// Optional bootstrap override for the network-agent socket.
+  public static let networkAgentSocketPath = "EASYBAR_NETWORK_AGENT_SOCKET_PATH"
+
   /// Internal key used to pass the resolved active theme to the Lua runtime.
   public static let luaThemeJSON = "EASYBAR_INTERNAL_THEME_JSON"
 

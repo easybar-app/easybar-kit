@@ -4,7 +4,7 @@ import Foundation
 import SwiftTOMLEdit
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class ConfigLoaderThemeTests: ConfigLoaderTestCase {
   /// Verifies that bootstrap theme palette stays aligned with bundled default theme.

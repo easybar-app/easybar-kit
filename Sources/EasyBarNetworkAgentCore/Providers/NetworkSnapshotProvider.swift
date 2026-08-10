@@ -278,7 +278,7 @@ public final class NetworkSnapshotProvider {
       return wifiFieldValue(for: field, wifi: context.wifi)
     case .primaryInterfaceIsTunnel, .primaryInterface, .activeTunnelInterface,
       .activeTunnelInterfaces, .ipv4Address, .ipv6Address, .defaultGateway, .dnsServers,
-      .routeReachable, .routeUnavailableWithLocalAddress, .internetReachable, .captivePortal:
+      .routeReachable, .routeUnavailableWithLocalAddress, .captivePortal:
       return networkFieldValue(for: field, network: context.network)
     case .locationAuthorized, .locationPermissionState:
       return authorizationFieldValue(for: field, authorization: context.authorization)
@@ -364,8 +364,6 @@ public final class NetworkSnapshotProvider {
       return .bool(network.routeReachable)
     case .routeUnavailableWithLocalAddress:
       return .bool(network.routeUnavailableWithLocalAddress)
-    case .internetReachable:
-      return .bool(network.internetReachable)
     case .captivePortal:
       return network.captivePortal.map(NetworkAgentFieldValue.bool)
     default:

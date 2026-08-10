@@ -1,7 +1,7 @@
 import EasyBarShared
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class LuaTimerServiceTests: XCTestCase {
   func testRejectsNewTimerWhenActiveLimitIsReached() async throws {

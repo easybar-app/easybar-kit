@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class InboxActionActivityTests: XCTestCase {
   func testActionDefaultsToEnabledAndIdle() {

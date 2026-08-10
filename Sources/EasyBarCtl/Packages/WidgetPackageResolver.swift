@@ -21,18 +21,21 @@ final class WidgetPackageResolver {
   private var resolutionOrder: [String] = []
   private var resolving: [String] = []
   private let installed: [String: InstalledWidgetPackage]
+  private let currentKitVersion: SemanticVersion?
 
   init(
     registrySource: String?,
     useRegistry: Bool,
     temporaryDirectory: URL,
     installed: [InstalledWidgetPackage],
-    logger: ProcessLogger
+    logger: ProcessLogger,
+    currentKitVersion: SemanticVersion? = SemanticVersion(BuildInfo.appVersion)
   ) {
     self.registrySource = registrySource
     self.useRegistry = useRegistry
     self.temporaryDirectory = temporaryDirectory
     self.installed = Dictionary(uniqueKeysWithValues: installed.map { ($0.name, $0) })
+    self.currentKitVersion = currentKitVersion
     processExecutor = ProcessExecutor(logger: logger.child("archive"))
   }
 
@@ -69,6 +72,7 @@ final class WidgetPackageResolver {
     }
 
     let package = try await load(request)
+    try validateKitCompatibility(package.manifest)
     if let expectedName, package.manifest.name != expectedName {
       throw WidgetPackageError.invalidManifest(
         "expected package '\(expectedName)', archive contains '\(package.manifest.name)'"
@@ -117,6 +121,17 @@ final class WidgetPackageResolver {
     resolved[package.manifest.name] = package
     resolutionOrder.append(package.manifest.name)
     return package
+  }
+
+  private func validateKitCompatibility(_ manifest: WidgetPackageManifest) throws {
+    guard let currentKitVersion else { return }
+    guard currentKitVersion >= manifest.minimumEasyBarKitVersion else {
+      throw WidgetPackageError.incompatibleKitVersion(
+        package: manifest.name,
+        minimum: manifest.minimumEasyBarKitVersion.description,
+        current: currentKitVersion.description
+      )
+    }
   }
 
   private func rootRequest(source: String, sha256: String?) throws -> WidgetPackageRequest {
@@ -172,7 +187,8 @@ final class WidgetPackageResolver {
       guard let entry = index.packages.first(where: { $0.name == name }) else {
         throw WidgetPackageError.unavailablePackage(name)
       }
-      let releases = entry.versions.compactMap { release -> (PackageRegistryRelease, SemanticVersion)? in
+      let releases = entry.versions.compactMap {
+        release -> (PackageRegistryRelease, SemanticVersion)? in
         guard let version = SemanticVersion(release.version),
           constraint?.contains(version) ?? (release.version == entry.latest)
         else { return nil }
@@ -324,7 +340,8 @@ final class WidgetPackageResolver {
     }
     for case let url as URL in enumerator {
       if try url.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink == true {
-        throw WidgetPackageError.unsafeArchive("symbolic links are not allowed: \(url.lastPathComponent)")
+        throw WidgetPackageError.unsafeArchive(
+          "symbolic links are not allowed: \(url.lastPathComponent)")
       }
     }
   }

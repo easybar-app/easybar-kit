@@ -120,9 +120,10 @@ final class WidgetPackageUpdaterTests: XCTestCase {
     )
     try FileManager.default.createDirectory(at: package, withIntermediateDirectories: true)
     try """
-    manifest_version = 1
+    manifest_version = 2
     name = "\(name)"
     version = "\(version)"
+    minimum_easybar_kit_version = "0.1.0"
     kind = "widget"
     entrypoint = "widget.lua"
     """.write(to: package.appending(path: "package.toml"), atomically: true, encoding: .utf8)

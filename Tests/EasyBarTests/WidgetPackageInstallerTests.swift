@@ -35,9 +35,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     try writePackage(
       at: library,
       manifest: """
-        manifest_version = 1
+        manifest_version = 2
         name = "retry-kit"
         version = "1.2.0"
+        minimum_easybar_kit_version = "0.1.0"
         kind = "library"
 
         [exports]
@@ -53,9 +54,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     try writePackage(
       at: widget,
       manifest: """
-        manifest_version = 1
+        manifest_version = 2
         name = "personal-clock"
         version = "0.1.0"
+        minimum_easybar_kit_version = "0.1.0"
         kind = "widget"
         entrypoint = "widget.lua"
 
@@ -101,9 +103,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     try writePackage(
       at: package,
       manifest: """
-        manifest_version = 1
+        manifest_version = 2
         name = "caffeinate"
         version = "1.0.0"
+        minimum_easybar_kit_version = "0.1.0"
         kind = "widget"
         entrypoint = "widget.lua"
         """,
@@ -190,9 +193,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     try writePackage(
       at: package,
       manifest: """
-        manifest_version = 1
+        manifest_version = 2
         name = "shared"
         version = "1.0.0"
+        minimum_easybar_kit_version = "0.1.0"
         kind = "widget"
         entrypoint = "widget.lua"
         """,
@@ -215,9 +219,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     try writePackage(
       at: package,
       manifest: """
-        manifest_version = 1
+        manifest_version = 2
         name = "direct"
         version = "1.0.0"
+        minimum_easybar_kit_version = "0.1.0"
         kind = "widget"
         entrypoint = "widget.lua"
         """,
@@ -239,9 +244,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     try writePackage(
       at: package,
       manifest: """
-        manifest_version = 1
+        manifest_version = 2
         name = "clock"
         version = "1.0.0"
+        minimum_easybar_kit_version = "0.1.0"
         kind = "widget"
         entrypoint = "widget.lua"
         """,
@@ -265,9 +271,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     try writePackage(
       at: original,
       manifest: """
-        manifest_version = 1
+        manifest_version = 2
         name = "clock"
         version = "1.0.0"
+        minimum_easybar_kit_version = "0.1.0"
         kind = "widget"
         entrypoint = "widget.lua"
         """,
@@ -277,9 +284,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     try writePackage(
       at: replacement,
       manifest: """
-        manifest_version = 1
+        manifest_version = 2
         name = "clock"
         version = "2.0.0"
+        minimum_easybar_kit_version = "0.1.0"
         kind = "widget"
         entrypoint = "widget.lua"
         """,
@@ -306,9 +314,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     try writePackage(
       at: package,
       manifest: """
-        manifest_version = 1
+        manifest_version = 2
         name = "clock"
         version = "1.0.0"
+        minimum_easybar_kit_version = "0.1.0"
         kind = "widget"
         entrypoint = "widget.lua"
         """,
@@ -339,9 +348,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
       try writePackage(
         at: package,
         manifest: """
-          manifest_version = 1
+          manifest_version = 2
           name = "clock"
           version = "\(version)"
+          minimum_easybar_kit_version = "0.1.0"
           kind = "widget"
           entrypoint = "widget.lua"
           """,
@@ -367,9 +377,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     try writePackage(
       at: original,
       manifest: """
-        manifest_version = 1
+        manifest_version = 2
         name = "clock"
         version = "1.0.0"
+        minimum_easybar_kit_version = "0.1.0"
         kind = "widget"
         entrypoint = "widget.lua"
         """,
@@ -405,9 +416,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     try writePackage(
       at: original,
       manifest: """
-        manifest_version = 1
+        manifest_version = 2
         name = "clock"
         version = "1.0.0"
+        minimum_easybar_kit_version = "0.1.0"
         kind = "widget"
         entrypoint = "widget.lua"
         """,
@@ -417,9 +429,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     try writePackage(
       at: replacement,
       manifest: """
-        manifest_version = 1
+        manifest_version = 2
         name = "clock"
         version = "2.0.0"
+        minimum_easybar_kit_version = "0.1.0"
         kind = "widget"
         entrypoint = "widget.lua"
         """,

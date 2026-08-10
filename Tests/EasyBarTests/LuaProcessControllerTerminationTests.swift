@@ -2,7 +2,7 @@ import EasyBarShared
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 private actor AsyncTestBarrier {
   private let participantCount: Int

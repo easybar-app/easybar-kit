@@ -2,7 +2,7 @@ import EasyBarShared
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class LuaCommandRunnerTests: XCTestCase {
   private let defaultLimits = LuaCommandRunner.Limits(

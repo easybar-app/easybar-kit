@@ -15,7 +15,7 @@ extension MetricsRenderer {
 
   /// Renders the global event names forwarded to the Lua runtime.
   static func subscriptions(_ snapshot: IPC.MetricsSnapshot) -> String {
-    guard let events = snapshot.runtime.subscribedEvents else { return "" }
+    let events = snapshot.runtime.subscribedEvents
     guard !events.isEmpty else { return "Subscribed events\nnone" }
 
     return (["Subscribed events (\(events.count))"] + events.map { "- \(subscription($0))" })
@@ -123,14 +123,8 @@ extension MetricsRenderer {
       row([
         column("event_queue", width: 16),
         column(String(runtime.luaEventQueueDepth), width: 18),
-        column(
-          runtime.luaLogLines == nil ? "lua_stderr" : "lua_logs",
-          width: 16
-        ),
-        column(
-          String(runtime.luaLogLines ?? runtime.stderrLines),
-          width: 18
-        ),
+        column("lua_logs", width: 16),
+        column(String(runtime.luaLogLines), width: 18),
       ]),
       row([
         column("lua_reads", width: 16),
@@ -140,27 +134,22 @@ extension MetricsRenderer {
       ]),
     ]
 
-    if let warningLines = runtime.luaWarningLines,
-      let errorLines = runtime.luaErrorLines,
-      let rawStderrLines = runtime.luaRawStderrLines
-    {
-      lines.append(
-        row([
-          column("lua_warn", width: 16),
-          column(String(warningLines), width: 18),
-          column("lua_error", width: 16),
-          column(String(errorLines), width: 18),
-        ])
-      )
-      lines.append(
-        row([
-          column("lua_raw_stderr", width: 16),
-          column(String(rawStderrLines), width: 18),
-          column("", width: 16),
-          column("", width: 18),
-        ])
-      )
-    }
+    lines.append(
+      row([
+        column("lua_warn", width: 16),
+        column(String(runtime.luaWarningLines), width: 18),
+        column("lua_error", width: 16),
+        column(String(runtime.luaErrorLines), width: 18),
+      ])
+    )
+    lines.append(
+      row([
+        column("lua_raw_stderr", width: 16),
+        column(String(runtime.luaRawStderrLines), width: 18),
+        column("", width: 16),
+        column("", width: 18),
+      ])
+    )
 
     lines.append(
       row([

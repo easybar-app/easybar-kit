@@ -1,8 +1,8 @@
 import EasyBarShared
 import XCTest
 
-@testable import EasyBarApp
 @testable import EasyBarCalendarPresentation
+@testable import EasyBarKit
 
 final class CalendarMonthRangeBuilderTests: XCTestCase {
   func testVisibleGridRangeStartsAtWeekBoundaryAndEndsAfterLastVisibleWeek() {

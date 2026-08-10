@@ -1,0 +1,70 @@
+-- EasyBar generated theme stub. Do not edit by hand.
+-- Source of truth: Sources/EasyBarKit/Theme/theme_tokens.json
+-- Regenerate with: scripts/generate/theme_tokens.py
+---Resolved active theme colors.
+---@class EasyBarThemeColors
+---@field background string Main bar and popup background color.
+---@field surface string Normal widget or inactive surface color.
+---@field surface_elevated string Focused, active, or raised surface color.
+---@field surface_hover string Hover or highlighted surface color.
+---@field text string Primary text color.
+---@field text_secondary string Secondary body or label text color.
+---@field text_tertiary string Tertiary text color for quieter labels.
+---@field muted string Secondary, inactive, or unavailable text color.
+---@field muted_secondary string Secondary muted tone for softer supporting content.
+---@field outside_month string Calendar text color for days outside the active month.
+---@field accent string Accent color.
+---@field accent_secondary string Secondary accent color for supporting highlights.
+---@field accent_soft string Softer accent color for subtle emphasis.
+---@field success string Positive or healthy status color.
+---@field success_secondary string Secondary positive color for supporting signals.
+---@field warning string Warning status color.
+---@field orange string Orange status color for low or degraded states.
+---@field error string Error or critical status color.
+---@field danger string Strong danger color for urgent attention.
+---@field border string Normal border color.
+---@field border_strong string Emphasized border color.
+---@field border_subtle string Subtle or transparent border color.
+---@field selection_text string Text color drawn on top of selected surfaces.
+---@field selection_background string Background color used for selected surfaces.
+---@field transparent string Fully transparent color.
+---@field overlay_outline string Overlay outline color with alpha.
+---@field overlay_text string High-contrast overlay glyph or text color.
+
+---Theme reference strings accepted by color fields.
+---These always mirror the active `EasyBarThemeColors` keys.
+---@class EasyBarThemeRefs
+---@field background string Reference string for `theme.background`.
+---@field surface string Reference string for `theme.surface`.
+---@field surface_elevated string Reference string for `theme.surface_elevated`.
+---@field surface_hover string Reference string for `theme.surface_hover`.
+---@field text string Reference string for `theme.text`.
+---@field text_secondary string Reference string for `theme.text_secondary`.
+---@field text_tertiary string Reference string for `theme.text_tertiary`.
+---@field muted string Reference string for `theme.muted`.
+---@field muted_secondary string Reference string for `theme.muted_secondary`.
+---@field outside_month string Reference string for `theme.outside_month`.
+---@field accent string Reference string for `theme.accent`.
+---@field accent_secondary string Reference string for `theme.accent_secondary`.
+---@field accent_soft string Reference string for `theme.accent_soft`.
+---@field success string Reference string for `theme.success`.
+---@field success_secondary string Reference string for `theme.success_secondary`.
+---@field warning string Reference string for `theme.warning`.
+---@field orange string Reference string for `theme.orange`.
+---@field error string Reference string for `theme.error`.
+---@field danger string Reference string for `theme.danger`.
+---@field border string Reference string for `theme.border`.
+---@field border_strong string Reference string for `theme.border_strong`.
+---@field border_subtle string Reference string for `theme.border_subtle`.
+---@field selection_text string Reference string for `theme.selection_text`.
+---@field selection_background string Reference string for `theme.selection_background`.
+---@field transparent string Reference string for `theme.transparent`.
+---@field overlay_outline string Reference string for `theme.overlay_outline`.
+---@field overlay_text string Reference string for `theme.overlay_text`.
+
+---Active resolved theme exposed to Lua widgets.
+---Use `theme.colors.<token>` for resolved hex colors and `theme.ref.<token>` when you want to keep a node color bound to the active theme.
+---@class EasyBarTheme
+---@field name string Active theme name from `[theme].name`.
+---@field colors EasyBarThemeColors Resolved theme colors.
+---@field ref EasyBarThemeRefs Theme reference strings such as `theme.text`.

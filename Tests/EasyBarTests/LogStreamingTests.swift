@@ -4,9 +4,9 @@ import EasyBarShared
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
 @testable import EasyBarCalendarCore
 @testable import EasyBarCtl
+@testable import EasyBarKit
 @testable import EasyBarNetworkAgentCore
 
 final class LogStreamingTests: XCTestCase {

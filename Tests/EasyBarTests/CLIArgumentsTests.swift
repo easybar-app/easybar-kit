@@ -454,7 +454,7 @@ final class CLIArgumentsTests: XCTestCase {
     )
   }
 
-  func testRemovedLegacySyntaxIsRejected() {
+  func testRemovedSyntaxIsRejected() {
     XCTAssertThrowsError(try parseArguments(["easybar", "--refresh"]))
     XCTAssertThrowsError(try parseArguments(["easybar", "--metrics"]))
     XCTAssertThrowsError(try parseArguments(["easybar", "--validate-config"]))

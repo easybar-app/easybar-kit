@@ -3,7 +3,7 @@ import EasyBarShared
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class LuaRenderIntervalTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
   func testIntervalSubscriptionChangesAreReemittedAfterWidgetMutation() async throws {

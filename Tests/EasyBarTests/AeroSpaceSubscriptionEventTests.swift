@@ -1,7 +1,7 @@
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class AeroSpaceSubscriptionEventTests: XCTestCase {
   func testDecodeParsesAeroSpaceEventName() throws {

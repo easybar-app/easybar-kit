@@ -1,8 +1,8 @@
-import CEasyBarEventKitCompat
+import CEasyBarEventKitBridge
 import EasyBarShared
 import Foundation
 
-/// Narrow compatibility adapter for EventKit's non-public travel-time storage.
+/// Narrow adapter for EventKit's non-public travel-time storage.
 ///
 /// The Objective-C bridge catches KVC exceptions that Swift cannot catch. The
 /// adapter additionally rejects unsupported objects and invalid durations.

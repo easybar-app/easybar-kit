@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 private actor DispatchedValueRecorder {
   private(set) var values: [Int] = []

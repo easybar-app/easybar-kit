@@ -1,7 +1,7 @@
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class AppResourceLocatorTests: XCTestCase {
   private struct SourceResourceFixture {
@@ -16,43 +16,43 @@ final class AppResourceLocatorTests: XCTestCase {
       AppResourceLocator.url(forResource: "runtime", withExtension: "lua")
     )
 
-    XCTAssertTrue(url.path.hasSuffix("Sources/EasyBarApp/Lua/runtime.lua"))
+    XCTAssertTrue(url.path.hasSuffix("Sources/EasyBarKit/Lua/runtime.lua"))
   }
 
   func testPackagedSourceResourceFixturesExistAndResolve() throws {
     let fixtures = [
       SourceResourceFixture(
-        sourcePath: "Sources/EasyBarApp/Lua/runtime.lua",
+        sourcePath: "Sources/EasyBarKit/Lua/runtime.lua",
         resource: "runtime",
         fileExtension: "lua",
         subdirectory: nil
       ),
       SourceResourceFixture(
-        sourcePath: "Sources/EasyBarApp/Lua/easybar_api.lua",
+        sourcePath: "Sources/EasyBarKit/Lua/easybar_api.lua",
         resource: "easybar_api",
         fileExtension: "lua",
         subdirectory: nil
       ),
       SourceResourceFixture(
-        sourcePath: "Sources/EasyBarApp/Lua/easybar/json.lua",
+        sourcePath: "Sources/EasyBarKit/Lua/easybar/json.lua",
         resource: "json",
         fileExtension: "lua",
         subdirectory: "easybar"
       ),
       SourceResourceFixture(
-        sourcePath: "Sources/EasyBarApp/Assets/easybar-menubar.svg",
+        sourcePath: "Sources/EasyBarKit/Assets/easybar-menubar.svg",
         resource: "easybar-menubar",
         fileExtension: "svg",
         subdirectory: "Assets"
       ),
       SourceResourceFixture(
-        sourcePath: "Sources/EasyBarApp/Events/event_catalog.json",
+        sourcePath: "Sources/EasyBarKit/Events/event_catalog.json",
         resource: "event_catalog",
         fileExtension: "json",
         subdirectory: nil
       ),
       SourceResourceFixture(
-        sourcePath: "Sources/EasyBarApp/Theme/theme_tokens.json",
+        sourcePath: "Sources/EasyBarKit/Theme/theme_tokens.json",
         resource: "theme_tokens",
         fileExtension: "json",
         subdirectory: "ThemeTokens"
@@ -95,7 +95,7 @@ final class AppResourceLocatorTests: XCTestCase {
       "Expected packaged event catalog candidate in \(paths)"
     )
     XCTAssertTrue(
-      paths.contains { $0.hasSuffix("Sources/EasyBarApp/Events/event_catalog.json") },
+      paths.contains { $0.hasSuffix("Sources/EasyBarKit/Events/event_catalog.json") },
       "Expected source event catalog candidate in \(paths)"
     )
   }
@@ -112,7 +112,7 @@ final class AppResourceLocatorTests: XCTestCase {
       "Expected packaged theme-token candidate in \(paths)"
     )
     XCTAssertTrue(
-      paths.contains { $0.hasSuffix("Sources/EasyBarApp/Theme/theme_tokens.json") },
+      paths.contains { $0.hasSuffix("Sources/EasyBarKit/Theme/theme_tokens.json") },
       "Expected source theme-token candidate in \(paths)"
     )
   }
@@ -129,7 +129,7 @@ final class AppResourceLocatorTests: XCTestCase {
       "Expected packaged asset candidate in \(paths)"
     )
     XCTAssertTrue(
-      paths.contains { $0.hasSuffix("Sources/EasyBarApp/Assets/easybar-menubar.svg") },
+      paths.contains { $0.hasSuffix("Sources/EasyBarKit/Assets/easybar-menubar.svg") },
       "Expected source asset candidate in \(paths)"
     )
   }
@@ -146,7 +146,7 @@ final class AppResourceLocatorTests: XCTestCase {
       "Expected packaged Lua subdirectory candidate in \(paths)"
     )
     XCTAssertTrue(
-      paths.contains { $0.hasSuffix("Sources/EasyBarApp/Lua/easybar/json.lua") },
+      paths.contains { $0.hasSuffix("Sources/EasyBarKit/Lua/easybar/json.lua") },
       "Expected source Lua subdirectory candidate in \(paths)"
     )
   }

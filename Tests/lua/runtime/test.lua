@@ -1,7 +1,7 @@
 local root = assert(arg[1], "usage: Tests/lua/runtime/test.lua <repository-root>")
-package.path = root .. "/Sources/EasyBarApp/Lua/?.lua;" .. root .. "/Sources/EasyBarApp/Lua/?/init.lua;" .. package.path
+package.path = root .. "/Sources/EasyBarKit/Lua/?.lua;" .. root .. "/Sources/EasyBarKit/Lua/?/init.lua;" .. package.path
 
-local lua_root = root .. "/Sources/EasyBarApp/Lua/easybar/"
+local lua_root = root .. "/Sources/EasyBarKit/Lua/easybar/"
 
 ---@class RuntimeFixtures
 ---@field cleanup fun(path: string)
@@ -248,11 +248,11 @@ do
 	assert(first_calls == 1 and late_calls == 0, "new handler ran during the same dispatch turn")
 	api.handle_event({ name = "forced" })
 	assert(first_calls == 2 and late_calls == 1)
-	assert(first_handle:dispose() == true)
+	assert(first_handle:unsubscribe() == true)
 	assert(first_handle:unsubscribe() == false)
 	api.handle_event({ name = "forced" })
 	assert(first_calls == 2 and late_calls == 2)
-	assert(assert(late_handle):dispose() == true)
+	assert(assert(late_handle):unsubscribe() == true)
 end
 
 -- Numeric command, timer, and interval options reject non-finite and excessive values consistently.
@@ -398,7 +398,7 @@ do
 	assert(api._state.items.existing ~= nil and api._state.items.temporary == nil)
 	api.handle_event({ name = "forced" })
 	assert(calls == 1)
-	assert(handle:dispose() == true)
+	assert(handle:unsubscribe() == true)
 	api.handle_event({ name = "forced" })
 	assert(calls == 1)
 	fixtures.cleanup(fixture_root)

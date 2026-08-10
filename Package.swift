@@ -7,11 +7,12 @@ let strictConcurrencySettings: [SwiftSetting] = [
 ]
 
 let package = Package(
-  name: "EasyBar",
+  name: "EasyBarKit",
   platforms: [
     .macOS(.v14)
   ],
   products: [
+    .library(name: "EasyBarKit", targets: ["EasyBarKit"]),
     .library(name: "EasyBarShared", targets: ["EasyBarShared"]),
     .library(name: "EasyBarConfigSchema", targets: ["EasyBarConfigSchema"]),
     .library(name: "EasyBarCalendarConfig", targets: ["EasyBarCalendarConfig"]),
@@ -19,7 +20,6 @@ let package = Package(
     .library(name: "EasyBarCalendarPresentation", targets: ["EasyBarCalendarPresentation"]),
     .library(name: "EasyBarCalendarUI", targets: ["EasyBarCalendarUI"]),
     .library(name: "EasyBarNetworkAgentCore", targets: ["EasyBarNetworkAgentCore"]),
-    .executable(name: "EasyBar", targets: ["EasyBarApp"]),
     .executable(name: "EasyBarLuaRuntime", targets: ["EasyBarLuaRuntime"]),
     .executable(name: "EasyBarCtl", targets: ["EasyBarCtl"]),
     .executable(name: "EasyBarCalendarAgent", targets: ["EasyBarCalendarAgent"]),
@@ -34,8 +34,8 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "CEasyBarEventKitCompat",
-      path: "Sources/CEasyBarEventKitCompat",
+      name: "CEasyBarEventKitBridge",
+      path: "Sources/CEasyBarEventKitBridge",
       publicHeadersPath: "include"
     ),
     .executableTarget(
@@ -71,7 +71,7 @@ let package = Package(
       name: "EasyBarCalendarCore",
       dependencies: [
         "EasyBarShared",
-        "CEasyBarEventKitCompat",
+        "CEasyBarEventKitBridge",
       ],
       path: "Sources/EasyBarCalendarCore",
       swiftSettings: strictConcurrencySettings
@@ -110,8 +110,8 @@ let package = Package(
       path: "Sources/EasyBarNetworkAgentCore",
       swiftSettings: strictConcurrencySettings
     ),
-    .executableTarget(
-      name: "EasyBarApp",
+    .target(
+      name: "EasyBarKit",
       dependencies: [
         "EasyBarShared",
         "EasyBarConfigSchema",
@@ -120,7 +120,7 @@ let package = Package(
         "EasyBarCalendarUI",
         .product(name: "SwiftTOMLEdit", package: "swifttomledit"),
       ],
-      path: "Sources/EasyBarApp",
+      path: "Sources/EasyBarKit",
       exclude: [
         "Info.plist",
         "Lua/easybar_api.base.lua",
@@ -181,7 +181,7 @@ let package = Package(
     .testTarget(
       name: "EasyBarTests",
       dependencies: [
-        "EasyBarApp",
+        "EasyBarKit",
         "EasyBarCtl",
         "EasyBarLuaRuntime",
         "EasyBarShared",

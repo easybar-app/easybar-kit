@@ -2,8 +2,8 @@ import EasyBarShared
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
 @testable import EasyBarCtl
+@testable import EasyBarKit
 
 final class LuaMetricsTests: XCTestCase {
   func testLogBridgeClassifiesStructuredLevelsAndRawStderr() {
@@ -76,7 +76,6 @@ final class LuaMetricsTests: XCTestCase {
     let runtime = await coordinator.snapshot().runtime
 
     XCTAssertEqual(runtime.subscribedEvents, ["focus_change", "system_woke"])
-    XCTAssertEqual(runtime.stderrLines, 4)
     XCTAssertEqual(runtime.luaLogLines, 3)
     XCTAssertEqual(runtime.luaWarningLines, 1)
     XCTAssertEqual(runtime.luaErrorLines, 1)
@@ -92,7 +91,6 @@ final class LuaMetricsTests: XCTestCase {
             "interval_tick:github_inbox_timer:300",
             "system_woke",
           ],
-          stderrLines: 10,
           luaLogLines: 8,
           luaWarningLines: 2,
           luaErrorLines: 1,
@@ -118,15 +116,6 @@ final class LuaMetricsTests: XCTestCase {
     XCTAssertFalse(text.contains("transport/err"))
   }
 
-  func testMetricsRendererFallsBackForLegacyStderrTotals() {
-    let text = MetricsRenderer.snapshotText(
-      snapshot(runtime: runtimeMetrics(stderrLines: 7))
-    )
-
-    XCTAssertTrue(text.contains("lua_stderr"))
-    XCTAssertFalse(text.contains("lua_raw_stderr"))
-  }
-
   func testWideWatchRendererUsesCompactSideBySideTiles() {
     let snapshot = snapshot(
       runtime: runtimeMetrics(
@@ -135,7 +124,6 @@ final class LuaMetricsTests: XCTestCase {
           "interval_tick:github_inbox_timer:300",
           "system_woke",
         ],
-        stderrLines: 10,
         luaLogLines: 8,
         luaWarningLines: 2,
         luaErrorLines: 1,
@@ -169,7 +157,6 @@ final class LuaMetricsTests: XCTestCase {
     let snapshot = snapshot(
       runtime: runtimeMetrics(
         subscribedEvents: ["forced", "system_woke"],
-        stderrLines: 1,
         luaLogLines: 1,
         luaWarningLines: 0,
         luaErrorLines: 0,
@@ -197,8 +184,7 @@ final class LuaMetricsTests: XCTestCase {
         subscribedEvents: [
           "interval_tick:infinite:inf",
           "interval_tick:huge:1e20",
-        ],
-        stderrLines: 0
+        ]
       )
     )
 
@@ -212,7 +198,6 @@ final class LuaMetricsTests: XCTestCase {
   func testWatchRendererSanitizesNonFiniteSamples() {
     let value = snapshot(
       runtime: runtimeMetrics(
-        stderrLines: 0,
         eventsPerSecond: .nan,
         treeUpdatesPerSecond: .infinity
       ),
@@ -227,30 +212,6 @@ final class LuaMetricsTests: XCTestCase {
 
     XCTAssertFalse(text.contains("nan"))
     XCTAssertFalse(text.contains("inf"))
-  }
-
-  func testRuntimeMetricsDecodesPayloadWithoutLuaLogBreakdown() throws {
-    let encoder = JSONEncoder()
-    let encoded = try encoder.encode(runtimeMetrics(stderrLines: 7))
-    guard var object = try JSONSerialization.jsonObject(with: encoded) as? [String: Any] else {
-      return XCTFail("Expected a runtime metrics JSON object")
-    }
-
-    object.removeValue(forKey: "luaLogLines")
-    object.removeValue(forKey: "luaWarningLines")
-    object.removeValue(forKey: "luaErrorLines")
-    object.removeValue(forKey: "luaRawStderrLines")
-    object.removeValue(forKey: "subscribedEvents")
-
-    let legacyPayload = try JSONSerialization.data(withJSONObject: object)
-    let decoded = try JSONDecoder().decode(IPC.RuntimeMetrics.self, from: legacyPayload)
-
-    XCTAssertEqual(decoded.stderrLines, 7)
-    XCTAssertNil(decoded.subscribedEvents)
-    XCTAssertNil(decoded.luaLogLines)
-    XCTAssertNil(decoded.luaWarningLines)
-    XCTAssertNil(decoded.luaErrorLines)
-    XCTAssertNil(decoded.luaRawStderrLines)
   }
 
   private func assertStructured(
@@ -305,12 +266,11 @@ final class LuaMetricsTests: XCTestCase {
   }
 
   private func runtimeMetrics(
-    subscribedEvents: [String]? = nil,
-    stderrLines: Int,
-    luaLogLines: Int? = nil,
-    luaWarningLines: Int? = nil,
-    luaErrorLines: Int? = nil,
-    luaRawStderrLines: Int? = nil,
+    subscribedEvents: [String] = [],
+    luaLogLines: Int = 0,
+    luaWarningLines: Int = 0,
+    luaErrorLines: Int = 0,
+    luaRawStderrLines: Int = 0,
     eventsPerSecond: Double = 0,
     treeUpdatesPerSecond: Double = 0
   ) -> IPC.RuntimeMetrics {
@@ -318,7 +278,7 @@ final class LuaMetricsTests: XCTestCase {
       subscriberCount: 0,
       luaRestartCount: 0,
       luaReady: true,
-      subscribedEventCount: subscribedEvents?.count ?? 0,
+      subscribedEventCount: subscribedEvents.count,
       subscribedEvents: subscribedEvents,
       totalEvents: 0,
       appEvents: 0,
@@ -329,7 +289,6 @@ final class LuaMetricsTests: XCTestCase {
       coalescedEvents: 0,
       coalescedEventsPerSecond: 0,
       transportLines: 4,
-      stderrLines: stderrLines,
       luaWrites: 5,
       luaLogLines: luaLogLines,
       luaWarningLines: luaWarningLines,

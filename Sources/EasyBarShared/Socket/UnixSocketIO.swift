@@ -401,36 +401,11 @@ public func makeOwnedListeningUnixSocket(
   }
 }
 
-/// Compatibility wrapper that returns only the listening descriptor.
-public func makeListeningUnixSocket(
-  at socketPath: String,
-  backlog: Int32,
-  mode: mode_t = 0o600,
-  onChmodFailure: ((Int32) -> Void)? = nil
-) throws -> Int32 {
-  try makeOwnedListeningUnixSocket(
-    at: socketPath,
-    backlog: backlog,
-    mode: mode,
-    onChmodFailure: onChmodFailure
-  ).fd
-}
-
 /// Closes one owned listener and removes only the path entry it originally created.
 public func closeListeningUnixSocket(_ listener: OwnedUnixSocketListener) {
   Darwin.shutdown(listener.fd, SHUT_RDWR)
   close(listener.fd)
   unlinkSocketPathIfOwned(listener.socketPath, expectedIdentity: listener.pathIdentity)
-}
-
-/// Compatibility wrapper for call sites that do not retain path ownership metadata.
-public func closeListeningUnixSocket(_ fd: Int32, at socketPath: String) {
-  let identity = try? unixSocketPathIdentity(at: socketPath)
-  Darwin.shutdown(fd, SHUT_RDWR)
-  close(fd)
-  if let identity {
-    unlinkSocketPathIfOwned(socketPath, expectedIdentity: identity)
-  }
 }
 
 /// Returns the identity of one filesystem socket entry.

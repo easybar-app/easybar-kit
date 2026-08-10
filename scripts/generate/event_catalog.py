@@ -7,11 +7,11 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-MANIFEST_PATH = ROOT / "Sources/EasyBarApp/Events/event_catalog.json"
-EVENT_TOKENS_PATH = ROOT / "Sources/EasyBarApp/Lua/easybar/event_tokens.lua"
-LUA_API_BASE_PATH = ROOT / "Sources/EasyBarApp/Lua/easybar_api.base.lua"
-LUA_API_EVENTS_PATH = ROOT / "Sources/EasyBarApp/Lua/easybar_api.events.lua"
-LUA_API_STUB_PATH = ROOT / "Sources/EasyBarApp/Lua/easybar_api.lua"
+MANIFEST_PATH = ROOT / "Sources/EasyBarKit/Events/event_catalog.json"
+EVENT_TOKENS_PATH = ROOT / "Sources/EasyBarKit/Lua/easybar/event_tokens.lua"
+LUA_API_BASE_PATH = ROOT / "Sources/EasyBarKit/Lua/easybar_api.base.lua"
+LUA_API_EVENTS_PATH = ROOT / "Sources/EasyBarKit/Lua/easybar_api.events.lua"
+LUA_API_STUB_PATH = ROOT / "Sources/EasyBarKit/Lua/easybar_api.lua"
 LUA_API_INSERT_MARKER = "-- GENERATED SECTION: easybar.events"
 LUA_API_VERSION_PLACEHOLDER = "__EASYBAR_VERSION__"
 
@@ -237,7 +237,7 @@ def render_lua_api_block(manifest: dict) -> str:
 
     lines = [
         "-- EasyBar generated event stub. Do not edit by hand.",
-        "-- Source of truth: Sources/EasyBarApp/Events/event_catalog.json",
+        "-- Source of truth: Sources/EasyBarKit/Events/event_catalog.json",
         "-- Regenerate with: scripts/generate/event_catalog.py",
         f'---{docs["eventNameAlias"]}',
         f'---{docs["eventNameAliasExtra"]}',

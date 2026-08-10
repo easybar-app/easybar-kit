@@ -1,13 +1,13 @@
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class LuaEventNormalizationTests: XCTestCase {
   func testCapturePayloadRemainsStructuredAndRejectsInvalidShape() throws {
     let output = try runLua(
       """
-      package.path = "Sources/EasyBarApp/Lua/?.lua;Sources/EasyBarApp/Lua/?/init.lua;" .. package.path
+      package.path = "Sources/EasyBarKit/Lua/?.lua;Sources/EasyBarKit/Lua/?/init.lua;" .. package.path
       local events = require("easybar.events")
 
       local event = events.normalize_event({

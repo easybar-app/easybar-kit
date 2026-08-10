@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[2]
-STUB = ROOT / "Sources/EasyBarApp/Lua/easybar_api.lua"
+STUB = ROOT / "Sources/EasyBarKit/Lua/easybar_api.lua"
 OUT: Path
 
 HEADER = """<!--
@@ -564,7 +564,7 @@ def write_events(aliases: dict[str, AliasDoc], classes: dict[str, ClassDoc]) -> 
 
 def write_properties(aliases: dict[str, AliasDoc], classes: dict[str, ClassDoc]) -> None:
     property_aliases = [
-        "EasyBarBoolLike", "EasyBarIconLike", "EasyBarLabelLike",
+        "EasyBarIconLike", "EasyBarLabelLike",
         "EasyBarPosition", "EasyBarRootPosition",
     ]
     property_classes = [

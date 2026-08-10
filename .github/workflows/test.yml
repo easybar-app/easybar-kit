@@ -1,56 +1,10 @@
 name: Test
 
 on:
+  pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
-    inputs:
-      xcode_version:
-        description: Xcode version to select
-        required: false
-        default: "26"
-        type: string
-      dependency_mode:
-        description: Dependency mode for scripts/ci/install-dependencies.sh
-        required: false
-        default: "test"
-        type: string
-      clean_before_cache:
-        description: Run make clean before restoring SwiftPM dependency cache
-        required: false
-        default: false
-        type: boolean
-      check_generated:
-        description: Run make check-generated after tests
-        required: false
-        default: true
-        type: boolean
-      test_timeout_minutes:
-        description: Timeout for swift test
-        required: false
-        default: 5
-        type: number
-
-  workflow_call:
-    inputs:
-      xcode_version:
-        required: false
-        default: "26"
-        type: string
-      dependency_mode:
-        required: false
-        default: "test"
-        type: string
-      clean_before_cache:
-        required: false
-        default: false
-        type: boolean
-      check_generated:
-        required: false
-        default: true
-        type: boolean
-      test_timeout_minutes:
-        required: false
-        default: 5
-        type: number
 
 permissions:
   contents: read
@@ -58,68 +12,12 @@ permissions:
 jobs:
   test:
     runs-on: macos-26
-
     steps:
       - uses: actions/checkout@v7
+      - uses: maxim-lobanov/setup-xcode@v1
         with:
-          fetch-depth: 0
-
-      - name: Select pinned Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: ${{ inputs.xcode_version }}
-
+          xcode-version: "26"
       - name: Install dependencies
-        shell: bash
-        run: scripts/ci/install-dependencies.sh "${{ inputs.dependency_mode }}"
-
-      - name: Check Lua syntax and bundled examples
-        shell: bash
-        run: make check-lua
-
-      - name: Clean stale build directories
-        if: ${{ inputs.clean_before_cache }}
-        shell: bash
-        run: make clean
-
-      - name: Cache SwiftPM dependencies
-        uses: actions/cache@v6
-        with:
-          path: |
-            .build/repositories
-            .build/checkouts
-            ~/Library/Caches/org.swift.swiftpm
-            ~/Library/org.swift.swiftpm
-          key: swiftpm-deps-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.xcode_version }}-${{ hashFiles('Package.resolved', 'Package.swift') }}
-          restore-keys: |
-            swiftpm-deps-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.xcode_version }}-
-
-      - name: Run hardening tests
-        shell: bash
-        env:
-          CI_COMMAND_TIMEOUT_MINUTES: ${{ inputs.test_timeout_minutes }}
-        run: scripts/ci/run-swift-tests.sh hardening-test.log swift test --filter HardeningTests
-
-      - name: Run primary tests
-        shell: bash
-        env:
-          CI_COMMAND_TIMEOUT_MINUTES: ${{ inputs.test_timeout_minutes }}
-        run: scripts/ci/run-swift-tests.sh test.log swift test --skip HardeningTests
-
-      - name: Check strict concurrency
-        shell: bash
-        run: scripts/ci/check-strict-concurrency.sh
-
-      - name: Upload Swift test logs
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: swift-test-logs
-          path: |
-            test.log
-            hardening-test.log
-          if-no-files-found: ignore
-
-      - name: Verify generated artifacts are current
-        if: ${{ inputs.check_generated }}
-        run: make check-generated
+        run: scripts/ci/install-dependencies.sh format
+      - name: Run checks
+        run: make check

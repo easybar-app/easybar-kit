@@ -3,7 +3,7 @@ import EasyBarShared
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class ConfigUnknownKeyWarningTests: ConfigLoaderTestCase {
   /// Verifies that validate-config reports typoed keys without rejecting the config.
@@ -41,9 +41,9 @@ final class ConfigUnknownKeyWarningTests: ConfigLoaderTestCase {
     XCTAssertEqual(result.warnings, ["unknown config section builtins.cpu.contnet"])
   }
 
-  /// Verifies that removed legacy calendar aliases are reported as unknown keys.
-  func testValidateConfigWarnsAboutLegacyMonthAnchorAliases() throws {
-    let configFileURL = tempDirectoryURL.appendingPathComponent("legacy-anchor-key.toml")
+  /// Verifies that removed calendar keys are reported as unknown.
+  func testValidateConfigWarnsAboutRemovedMonthAnchorKeys() throws {
+    let configFileURL = tempDirectoryURL.appendingPathComponent("removed-anchor-key.toml")
 
     try writeConfig(
       """

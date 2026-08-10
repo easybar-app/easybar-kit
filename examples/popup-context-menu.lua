@@ -88,7 +88,7 @@ widget = easybar.add(easybar.kind.item, "popup_context_menu_example", {
 })
 
 popup_status = easybar.add(easybar.kind.item, "popup_context_menu_status", {
-	position = "popup." .. widget.name,
+	position = "popup." .. widget.id,
 	order = 1,
 	label = {
 		string = "",
@@ -97,7 +97,7 @@ popup_status = easybar.add(easybar.kind.item, "popup_context_menu_status", {
 })
 
 easybar.add(easybar.kind.item, "popup_context_menu_hint", {
-	position = "popup." .. widget.name,
+	position = "popup." .. widget.id,
 	order = 2,
 	label = {
 		string = "Right-click the bar item for actions",

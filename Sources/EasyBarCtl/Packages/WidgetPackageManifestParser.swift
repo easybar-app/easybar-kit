@@ -2,6 +2,24 @@ import Foundation
 import SwiftTOMLEdit
 
 enum WidgetPackageManifestParser {
+  private static let supportedTopLevelKeys: Set<String> = [
+    "manifest_version",
+    "name",
+    "version",
+    "minimum_easybar_kit_version",
+    "kind",
+    "description",
+    "license",
+    "readme",
+    "categories",
+    "entrypoint",
+    "repository",
+    "dependencies",
+    "exports",
+    "requirements",
+    "settings",
+  ]
+
   static func parse(directory: URL) throws -> WidgetPackageManifest {
     let manifestURL = directory.appending(path: "package.toml")
     let source: String
@@ -18,8 +36,14 @@ enum WidgetPackageManifestParser {
       throw WidgetPackageError.invalidManifest(error.localizedDescription)
     }
 
-    guard table["manifest_version"]?.int == 1 else {
-      throw WidgetPackageError.invalidManifest("manifest_version must be 1")
+    guard table["manifest_version"]?.int == 2 else {
+      throw WidgetPackageError.invalidManifest("manifest_version must be 2")
+    }
+    let unsupportedKeys = Set(table.keys).subtracting(supportedTopLevelKeys).sorted()
+    guard unsupportedKeys.isEmpty else {
+      throw WidgetPackageError.invalidManifest(
+        "unsupported manifest fields: \(unsupportedKeys.joined(separator: ", "))"
+      )
     }
     let name = try requiredString("name", in: table)
     guard isPackageName(name) else {
@@ -28,6 +52,15 @@ enum WidgetPackageManifestParser {
     let versionText = try requiredString("version", in: table)
     guard let version = SemanticVersion(versionText) else {
       throw WidgetPackageError.invalidManifest("invalid version '\(versionText)'")
+    }
+    let minimumEasyBarKitVersionText = try requiredString(
+      "minimum_easybar_kit_version",
+      in: table
+    )
+    guard let minimumEasyBarKitVersion = SemanticVersion(minimumEasyBarKitVersionText) else {
+      throw WidgetPackageError.invalidManifest(
+        "invalid minimum_easybar_kit_version '\(minimumEasyBarKitVersionText)'"
+      )
     }
     let kindText = try requiredString("kind", in: table)
     guard let kind = WidgetPackageKind(rawValue: kindText) else {
@@ -71,6 +104,7 @@ enum WidgetPackageManifestParser {
     return WidgetPackageManifest(
       name: name,
       version: version,
+      minimumEasyBarKitVersion: minimumEasyBarKitVersion,
       kind: kind,
       entrypoint: entrypoint,
       dependencies: dependencies,

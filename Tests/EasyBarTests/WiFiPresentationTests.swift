@@ -2,7 +2,7 @@ import EasyBarShared
 import Foundation
 import XCTest
 
-@testable import EasyBarApp
+@testable import EasyBarKit
 
 final class WiFiPresentationTests: ConfigLoaderTestCase {
   /// Verifies that parsed Wi-Fi field toggles render through the shared field catalog.
