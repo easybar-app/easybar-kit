@@ -2,6 +2,9 @@ import EasyBarShared
 import Foundation
 import SwiftTOMLEdit
 
+/// Internal registry for EasyBarKit-owned built-in surfaces.
+///
+/// This is not a public Swift widget extension point; third-party widgets are Lua packages.
 @MainActor
 final class NativeWidgetRegistry {
   private struct Registration {
@@ -11,6 +14,7 @@ final class NativeWidgetRegistry {
   }
 
   private let logger: ProcessLogger
+  private let builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy
   private let widgetStore: WidgetStore
   private let configSnapshotStore: ConfigSnapshotStore
   private let configPersistence: ConfigPersistence
@@ -33,6 +37,7 @@ final class NativeWidgetRegistry {
   init(
     logger: ProcessLogger,
     snapshot: ConfigSnapshot,
+    builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy,
     widgetStore: WidgetStore,
     configSnapshotStore: ConfigSnapshotStore,
     eventManager: EventManager,
@@ -49,6 +54,7 @@ final class NativeWidgetRegistry {
   ) {
     self.logger = logger
     self.snapshot = snapshot
+    self.builtInSurfacePolicy = builtInSurfacePolicy
     self.widgetStore = widgetStore
     self.configSnapshotStore = configSnapshotStore
     self.configPersistence = ConfigPersistence(
@@ -69,7 +75,7 @@ final class NativeWidgetRegistry {
     self.monthCalendarAgentClient = monthCalendarAgentClient
   }
 
-  /// Starts all enabled native widgets using the current immutable config snapshot.
+  /// Starts all enabled built-in surfaces allowed by the frontend policy.
   func start(snapshot: ConfigSnapshot? = nil) {
     if let snapshot {
       self.snapshot = snapshot
@@ -78,40 +84,47 @@ final class NativeWidgetRegistry {
     registerAll()
   }
 
-  /// Rebuilds the native widget list from an immutable config snapshot.
+  /// Rebuilds the built-in surface list from an immutable config snapshot.
   func reload(snapshot: ConfigSnapshot) {
     self.snapshot = snapshot
     registerAll()
   }
 
-  /// Stops all native widgets.
+  /// Stops all built-in surfaces.
   func stop() {
     stopAll()
   }
 
-  /// Registers all enabled native widgets.
+  /// Registers all enabled built-in surfaces allowed by the frontend.
   private func registerAll() {
-    logger.debug("native widget registry registerAll begin")
+    logger.debug(
+      "built-in surface registry registerAll begin",
+      .field("policy", builtInSurfacePolicy.rawValue)
+    )
 
     stopAll()
 
-    let registrations = registrations()
+    let registrations = registrations().filter { builtInSurfacePolicy.allows($0.id) }
 
-    logger.debug("registering native widgets")
+    logger.debug("registering built-in surfaces")
     logger.debug(
-      "native widget config",
+      "built-in surface config",
       .field(
-        "widgets",
+        "surfaces",
         registrations.map { "\($0.id)=\($0.enabled)" }.joined(separator: ",")
       ),
       .field("calendar_popup_mode", snapshot.builtins.calendar.popupMode.rawValue),
     )
 
-    publishGroups(snapshot.builtins.groups)
+    if builtInSurfacePolicy == .all {
+      publishGroups(snapshot.builtins.groups)
+    } else {
+      clearGroups()
+    }
     widgets = registrations.filter(\.enabled).map { $0.makeWidget() }
 
     logger.debug(
-      "native widgets registered",
+      "built-in surfaces registered",
       .field("count", widgets.count),
       .field("ids", widgets.map(\.rootID).joined(separator: ",")),
     )
@@ -120,14 +133,14 @@ final class NativeWidgetRegistry {
       result.formUnion(widget.appEventSubscriptions)
     }
     logger.debug(
-      "native widget event subscriptions",
+      "built-in surface event subscriptions",
       .field("subscriptions", subscriptions),
     )
     eventManager.setNativeSubscriptions(subscriptions)
 
     for widget in widgets {
       logger.debug(
-        "starting native widget",
+        "starting built-in surface",
         .field("runtime", "native"),
         .field("widget", widget.rootID)
       )
@@ -136,7 +149,7 @@ final class NativeWidgetRegistry {
 
     observeCommonContextMenuActions()
 
-    logger.debug("native widget registry registerAll end")
+    logger.debug("built-in surface registry registerAll end")
   }
 
   /// Stops and clears all widgets.
@@ -144,14 +157,14 @@ final class NativeWidgetRegistry {
     contextMenuObserver.stop()
     if !widgets.isEmpty {
       logger.debug(
-        "native widget registry stopping",
+        "built-in surface registry stopping",
         .field("count", widgets.count),
       )
     }
 
     for widget in widgets {
       logger.debug(
-        "stopping native widget",
+        "stopping built-in surface",
         .field("runtime", "native"),
         .field("widget", widget.rootID),
       )
@@ -245,7 +258,7 @@ final class NativeWidgetRegistry {
     groupRootIDs.removeAll()
   }
 
-  /// Returns the native widget registration list for the current config snapshot.
+  /// Returns the built-in surface registration list for the current config snapshot.
   private func registrations() -> [Registration] {
     let snapshot = self.snapshot
     let builtins = snapshot.builtins

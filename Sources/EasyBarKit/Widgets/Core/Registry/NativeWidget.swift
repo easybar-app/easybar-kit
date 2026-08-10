@@ -1,6 +1,8 @@
 import Foundation
 
-/// Lifecycle contract implemented by all native widgets.
+/// Internal lifecycle contract implemented by EasyBarKit-owned built-in surfaces.
+///
+/// Lua packages are the public widget extension mechanism; this protocol is intentionally internal.
 @MainActor
 protocol NativeWidget: AnyObject {
   var rootID: String { get }
@@ -25,12 +27,12 @@ extension NativeWidget {
     start()
   }
 
-  /// Clears all rendered nodes owned by this native widget.
+  /// Clears all rendered nodes owned by this built-in surface.
   func clearNodes() {
     applyNodes([])
   }
 
-  /// Applies the latest rendered nodes owned by this native widget.
+  /// Applies the latest rendered nodes owned by this built-in surface.
   func applyNodes(_ nodes: [WidgetNodeState]) {
     var nodes = nodes
     if let rootIndex = nodes.firstIndex(where: { $0.id == rootID }) {

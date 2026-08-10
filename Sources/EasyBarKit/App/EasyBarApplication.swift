@@ -12,6 +12,8 @@ public struct EasyBarApplicationIdentity: Sendable {
   public let defaultConfigRelativePath: String?
   public let defaultRuntimeRelativePath: String?
   public let defaultEnvironment: [String: String]
+  /// Host-owned built-in surfaces enabled for this frontend.
+  public let builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy
 
   public init(
     displayName: String,
@@ -20,7 +22,8 @@ public struct EasyBarApplicationIdentity: Sendable {
     logFileName: String,
     defaultConfigRelativePath: String? = nil,
     defaultRuntimeRelativePath: String? = nil,
-    defaultEnvironment: [String: String] = [:]
+    defaultEnvironment: [String: String] = [:],
+    builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy = .all
   ) {
     self.displayName = displayName
     self.processName = processName
@@ -29,6 +32,7 @@ public struct EasyBarApplicationIdentity: Sendable {
     self.defaultConfigRelativePath = defaultConfigRelativePath
     self.defaultRuntimeRelativePath = defaultRuntimeRelativePath
     self.defaultEnvironment = defaultEnvironment
+    self.builtInSurfacePolicy = builtInSurfacePolicy
   }
 
   /// Applies frontend bootstrap defaults without overriding explicit user values.

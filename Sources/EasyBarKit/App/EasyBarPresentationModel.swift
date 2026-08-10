@@ -30,7 +30,10 @@ public final class EasyBarPresentationModel: ObservableObject {
     }
   }
 
-  /// One top-level widget rendered by EasyBarKit.
+  /// One top-level surface rendered by EasyBarKit.
+  ///
+  /// Scripted surfaces come from Lua widgets. EasyBarKit may also publish host-owned built-in
+  /// surfaces selected by the frontend's `EasyBarBuiltInSurfacePolicy`.
   public struct WidgetSurface: Identifiable {
     public let id: String
     public let position: EasyBarShared.WidgetPosition

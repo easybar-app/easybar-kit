@@ -30,7 +30,10 @@ struct AppServices: @unchecked Sendable {
   let metricsCoordinator: MetricsCoordinator
 
   @MainActor
-  static func bootstrap(logger: ProcessLogger) -> AppServices {
+  static func bootstrap(
+    logger: ProcessLogger,
+    builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy = .all
+  ) -> AppServices {
     let config = Config.makeUnloadedConfig()
     let bootstrapSnapshot = config.snapshot()
     let configSnapshotStore = ConfigSnapshotStore(
@@ -96,6 +99,7 @@ struct AppServices: @unchecked Sendable {
     let nativeServices = makeNativeServices(
       logger: logger,
       snapshot: bootstrapSnapshot,
+      builtInSurfacePolicy: builtInSurfacePolicy,
       configSnapshotStore: configSnapshotStore,
       eventManager: eventManager,
       eventHub: eventHub,
@@ -161,6 +165,7 @@ struct AppServices: @unchecked Sendable {
   private static func makeNativeServices(
     logger: ProcessLogger,
     snapshot: ConfigSnapshot,
+    builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy,
     configSnapshotStore: ConfigSnapshotStore,
     eventManager: EventManager,
     eventHub: EventHub,
@@ -184,6 +189,7 @@ struct AppServices: @unchecked Sendable {
       nativeWidgetRegistry: NativeWidgetRegistry(
         logger: logger.child("widgets"),
         snapshot: snapshot,
+        builtInSurfacePolicy: builtInSurfacePolicy,
         widgetStore: widgetStore,
         configSnapshotStore: configSnapshotStore,
         eventManager: eventManager,
@@ -265,7 +271,7 @@ struct AppServices: @unchecked Sendable {
   }
 }
 
-/// UI-facing services and stores for native widgets.
+/// UI-facing services and stores for host-owned built-in surfaces.
 private struct NativeServices {
   let widgetStore: WidgetStore
   let nativeWidgetRegistry: NativeWidgetRegistry

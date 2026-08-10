@@ -3,13 +3,16 @@
 EasyBarKit is the shared runtime and widget framework used by the EasyBar frontends:
 
 - `easybar`: the customizable full-width top bar.
-- `easybar-native`: native macOS menu-bar widgets backed by `NSStatusItem`.
+- `easybar-native`: native macOS menu-bar hosting for Lua widgets backed by `NSStatusItem`.
 - `widgets`: shared Lua widget packages.
 
 The kit owns configuration parsing, Lua execution, widget state and rendering, events, popups,
 context menus, themes, the inbox, system services, helper-agent protocols, package management, and
-the reusable SwiftUI widget renderer. Frontends own their application identity and decide where
-top-level widget surfaces are hosted.
+the reusable SwiftUI widget renderer. Frontends own their application identity, choose which
+EasyBarKit-owned built-in surfaces are enabled, and decide where top-level surfaces are hosted.
+
+Lua packages are the only public widget extension model. EasyBarKit still contains native SwiftUI
+implementations for product-owned surfaces, but it does not expose a Swift/native widget plugin API.
 
 ## Frontend API
 
@@ -21,7 +24,8 @@ let identity = EasyBarApplicationIdentity(
   displayName: "My Frontend",
   processName: "my-frontend",
   loggerLabel: "my-frontend",
-  logFileName: "my-frontend.out"
+  logFileName: "my-frontend.out",
+  builtInSurfacePolicy: .inboxOnly
 )
 
 EasyBarApplication.run(identity: identity) { context in
@@ -32,8 +36,10 @@ EasyBarApplication.run(identity: identity) { context in
 `EasyBarPresentationModel` exposes top-level `WidgetSurface` values. Each surface provides a
 self-contained SwiftUI view, so frontends do not need access to the internal widget tree.
 
-EasyBar places those surfaces in a borderless top-edge panel. EasyBar Native places each surface in
-a separate `NSStatusItem`. Lua widget code is shared by both hosts.
+EasyBar opts into `.all` and places Lua widgets plus the complete built-in surface set in a
+borderless top-edge panel. EasyBar Native opts into `.inboxOnly`: Lua widget roots become independent
+`NSStatusItem`s, while the shared Inbox remains a host-owned aggregation surface. Regular built-ins
+such as Calendar, Battery, Wi-Fi, Spaces, and CPU are not registered by EasyBar Native.
 
 ## Package contract
 

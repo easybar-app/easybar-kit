@@ -59,7 +59,10 @@ final class AppController {
     surfaceFactory: @escaping EasyBarSurfaceFactory,
     requestAppTermination: @escaping () -> Void
   ) {
-    let services = AppServices.bootstrap(logger: logger.child("services"))
+    let services = AppServices.bootstrap(
+      logger: logger.child("services"),
+      builtInSurfacePolicy: identity.builtInSurfacePolicy
+    )
     let presentationModel = EasyBarPresentationModel(
       logger: logger.child("presentation"),
       services: services
@@ -108,6 +111,10 @@ final class AppController {
     let initialConfigError = services.config.loadInitialState()
     configureLogging()
     logger.debug("process logging configured")
+    logger.info(
+      "frontend built-in surface policy",
+      .field("policy", identity.builtInSurfacePolicy.rawValue)
+    )
 
     if let error = initialConfigError {
       logger.error(
