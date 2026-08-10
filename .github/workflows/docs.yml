@@ -5,18 +5,17 @@ on:
     branches:
       - main
     paths:
+      - "README.md"
+      - "Package.swift"
+      - "config.defaults.toml"
+      - "config.minimal.toml"
       - "config.schema.json"
       - "Sources/EasyBarConfigSchema/**"
       - "Sources/EasyBarGenerateConfig/**"
-      - "Sources/EasyBarKit/Events/event_catalog.json"
-      - "Sources/EasyBarKit/Theme/theme_tokens.json"
-      - "Sources/EasyBarKit/Lua/easybar_api.base.lua"
-      - "Sources/EasyBarKit/Lua/easybar_api.events.lua"
-      - "Sources/EasyBarKit/Lua/easybar_api.themes.lua"
-      - "Sources/EasyBarKit/Lua/easybar_api.lua"
-      - "Sources/EasyBarKit/Lua/easybar/event_tokens.lua"
-      - "Sources/EasyBarKit/Lua/easybar/theme_tokens.lua"
-      - "scripts/generate/lua_docs.py"
+      - "Sources/EasyBarKit/Events/**"
+      - "Sources/EasyBarKit/Theme/**"
+      - "Sources/EasyBarKit/Lua/**"
+      - "scripts/generate/**"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
@@ -33,6 +32,7 @@ jobs:
 
     steps:
       - name: Require Cloudflare deploy hook
+        shell: bash
         env:
           DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DOCS_DEPLOY_HOOK }}
         run: |
@@ -42,6 +42,7 @@ jobs:
           fi
 
       - name: Trigger easybar.dev rebuild
+        shell: bash
         env:
           DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DOCS_DEPLOY_HOOK }}
         run: curl --fail-with-body --request POST "${DEPLOY_HOOK}"

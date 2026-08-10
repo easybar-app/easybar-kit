@@ -1,0 +1,24 @@
+name: Autorelease
+
+on:
+  pull_request:
+    types:
+      - closed
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  create-release-tag:
+    if: >
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main' &&
+      contains(github.event.pull_request.labels.*.name, 'Build')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create release tag
+        uses: projectsyn/pr-label-tag-action@v1
+        with:
+          trigger: |
+            Build
