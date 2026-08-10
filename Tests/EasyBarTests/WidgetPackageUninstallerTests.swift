@@ -70,7 +70,7 @@ final class WidgetPackageUninstallerTests: XCTestCase {
     XCTAssertFalse(exists("active/clock"))
     XCTAssertFalse(exists("store/clock"))
     XCTAssertTrue(exists("active/shared/retry.lua"))
-    XCTAssertTrue(exists("store/shared/1.0.0/retry.lua"))
+    XCTAssertTrue(exists("store/shared/1.0.0/.easybar/source/retry.lua"))
     XCTAssertEqual(try database().packages.map(\.name), ["shared"])
 
     XCTAssertEqual(try uninstaller.uninstall(name: "shared"), shared)

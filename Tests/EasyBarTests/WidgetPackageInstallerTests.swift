@@ -155,6 +155,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
   }
 
   func testRejectsOlderPackageStoreLayouts() async throws {
+    try FileManager.default.createDirectory(
+      at: packagesDirectory,
+      withIntermediateDirectories: true
+    )
     try """
     {
       "layout_version": 2,
