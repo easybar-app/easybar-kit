@@ -66,10 +66,11 @@ function M.managed_discovery()
 	local active = root .. "/active"
 	local stored = root .. "/store/clock/1.0.0"
 	make_directory(active)
-	make_directory(stored .. "/.easybar/source")
-	write_file(stored .. "/widget.lua", "return nil\n")
-	write_file(stored .. "/.easybar/source/private.lua", "error('must not load')\n")
-	run("/bin/ln -s " .. shell_quote("../store/clock/1.0.0") .. " " .. shell_quote(active .. "/clock"))
+	make_directory(stored .. "/source")
+	make_directory(stored .. "/runtime")
+	write_file(stored .. "/source/private.lua", "error('must not load')\n")
+	write_file(stored .. "/runtime/widget.lua", "return nil\n")
+	run("/bin/ln -s " .. shell_quote("../store/clock/1.0.0/runtime") .. " " .. shell_quote(active .. "/clock"))
 	return root, active
 end
 

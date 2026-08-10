@@ -7,20 +7,25 @@ import XCTest
 final class LuaWidgetLibraryTests: LuaRenderRuntimeTestCase, @unchecked Sendable {
   func testRuntimeLoadsManagedPackagesSeparatelyFromManualWidgets() async throws {
     let widgets = try makeWidgetsDirectory()
-    let activePackages = tempDirectoryURL.appendingPathComponent(
-      "managed-packages/active",
+    let managedPackages = tempDirectoryURL.appendingPathComponent(
+      "managed-packages",
       isDirectory: true
     )
+    let activePackages = managedPackages.appendingPathComponent("active", isDirectory: true)
+    let versionDirectory = managedPackages.appendingPathComponent(
+      "store/managed-clock/1.0.0",
+      isDirectory: true
+    )
+    let sourceDirectory = versionDirectory.appendingPathComponent("source", isDirectory: true)
+    let runtimeDirectory = versionDirectory.appendingPathComponent("runtime", isDirectory: true)
     try FileManager.default.createDirectory(
       at: activePackages.appendingPathComponent("shared", isDirectory: true),
       withIntermediateDirectories: true
     )
-    try FileManager.default.createDirectory(
-      at: activePackages.appendingPathComponent("managed-clock", isDirectory: true),
-      withIntermediateDirectories: true
-    )
+    try FileManager.default.createDirectory(at: sourceDirectory, withIntermediateDirectories: true)
+    try FileManager.default.createDirectory(at: runtimeDirectory, withIntermediateDirectories: true)
     try "return { label = 'managed' }\n".write(
-      to: activePackages.appendingPathComponent("shared/retry.lua"),
+      to: sourceDirectory.appendingPathComponent("retry.lua"),
       atomically: true,
       encoding: .utf8
     )
@@ -28,9 +33,17 @@ final class LuaWidgetLibraryTests: LuaRenderRuntimeTestCase, @unchecked Sendable
     local retry = require("retry")
     easybar.add(easybar.kind.item, "managed_clock", { label = retry.label })
     """.write(
-      to: activePackages.appendingPathComponent("managed-clock/widget.lua"),
+      to: runtimeDirectory.appendingPathComponent("widget.lua"),
       atomically: true,
       encoding: .utf8
+    )
+    try FileManager.default.createSymbolicLink(
+      atPath: activePackages.appendingPathComponent("managed-clock", isDirectory: true).path,
+      withDestinationPath: "../store/managed-clock/1.0.0/runtime"
+    )
+    try FileManager.default.createSymbolicLink(
+      atPath: activePackages.appendingPathComponent("shared/retry.lua").path,
+      withDestinationPath: "../../store/managed-clock/1.0.0/source/retry.lua"
     )
     try """
     easybar.add(easybar.kind.item, "manual_clock", { label = "manual" })

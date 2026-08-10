@@ -51,12 +51,12 @@ final class WidgetPackageUninstallerTests: XCTestCase {
       ),
       to: packagesDirectory
     )
-    try write("return nil\n", to: "store/clock/2.0.0/widget.lua")
-    try write("return {}\n", to: "store/shared/1.0.0/.easybar/source/retry.lua")
-    try link("active/clock", to: "../store/clock/2.0.0")
+    try write("return nil\n", to: "store/clock/2.0.0/runtime/widget.lua")
+    try write("return {}\n", to: "store/shared/1.0.0/source/retry.lua")
+    try link("active/clock", to: "../store/clock/2.0.0/runtime")
     try link(
       "active/shared/retry.lua",
-      to: "../../store/shared/1.0.0/.easybar/source/retry.lua"
+      to: "../../store/shared/1.0.0/source/retry.lua"
     )
 
     XCTAssertThrowsError(try uninstaller.uninstall(name: "shared")) { error in
@@ -70,7 +70,7 @@ final class WidgetPackageUninstallerTests: XCTestCase {
     XCTAssertFalse(exists("active/clock"))
     XCTAssertFalse(exists("store/clock"))
     XCTAssertTrue(exists("active/shared/retry.lua"))
-    XCTAssertTrue(exists("store/shared/1.0.0/.easybar/source/retry.lua"))
+    XCTAssertTrue(exists("store/shared/1.0.0/source/retry.lua"))
     XCTAssertEqual(try database().packages.map(\.name), ["shared"])
 
     XCTAssertEqual(try uninstaller.uninstall(name: "shared"), shared)

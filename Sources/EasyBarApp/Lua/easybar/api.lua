@@ -143,15 +143,12 @@ function M.discover_widget_files(widget_dir, options)
 	local quoted_root = shell_quote(root)
 	local follow_symlinks = type(options) == "table" and options.follow_symlinks == true
 	local find_options = follow_symlinks and "-L " or ""
-	local metadata_prune = follow_symlinks and (" -type d -name " .. shell_quote(".easybar") .. " -o") or ""
 	local command = "if [ -d "
 		.. quoted_root
 		.. " ]; then /usr/bin/find "
 		.. find_options
 		.. quoted_root
-		.. " \\("
-		.. metadata_prune
-		.. " -path "
+		.. " \\( -path "
 		.. shell_quote(root .. "/shared")
 		.. " \\) -prune -o"
 		.. " -type f -iname "

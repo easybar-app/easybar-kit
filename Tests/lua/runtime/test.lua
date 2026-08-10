@@ -332,7 +332,7 @@ do
 	fixtures.cleanup(fixture_root)
 end
 
--- Managed package discovery follows active version symlinks but prunes private package source.
+-- Managed package discovery follows active runtime symlinks without exposing stored source.
 do
 	local fixture_root, active_root = fixtures.managed_discovery()
 	local without_follow, without_follow_error = api_module.discover_widget_files(active_root)

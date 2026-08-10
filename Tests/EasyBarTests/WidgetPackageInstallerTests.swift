@@ -78,11 +78,14 @@ final class WidgetPackageInstallerTests: XCTestCase {
     XCTAssertTrue(fileExists("active/personal-clock/widget.lua"))
     XCTAssertTrue(fileExists("active/personal-clock/assets/icon.svg"))
     XCTAssertFalse(fileExists("active/personal-clock/helper.lua"))
-    XCTAssertTrue(fileExists("store/retry-kit/1.2.0/.easybar/source/retry.lua"))
-    XCTAssertTrue(fileExists("store/personal-clock/0.1.0/.easybar/source/helper.lua"))
+    XCTAssertTrue(fileExists("store/personal-clock/0.1.0/runtime/widget.lua"))
+    XCTAssertTrue(fileExists("store/personal-clock/0.1.0/runtime/assets/icon.svg"))
+    XCTAssertFalse(fileExists("store/personal-clock/0.1.0/runtime/helper.lua"))
+    XCTAssertTrue(fileExists("store/retry-kit/1.2.0/source/retry.lua"))
+    XCTAssertTrue(fileExists("store/personal-clock/0.1.0/source/helper.lua"))
     XCTAssertEqual(
       try symbolicLinkDestination("active/personal-clock"),
-      "../store/personal-clock/0.1.0"
+      "../store/personal-clock/0.1.0/runtime"
     )
 
     let database = try installedDatabase()
@@ -161,7 +164,7 @@ final class WidgetPackageInstallerTests: XCTestCase {
     )
     try """
     {
-      "layout_version": 2,
+      "layout_version": 3,
       "packages": []
     }
     """.write(
@@ -265,7 +268,7 @@ final class WidgetPackageInstallerTests: XCTestCase {
     )
     XCTAssertTrue(fileExists("store/clock/1.0.0"))
     XCTAssertTrue(fileExists("store/clock/2.0.0"))
-    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/2.0.0")
+    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/2.0.0/runtime")
     XCTAssertEqual(try replacementArtifacts(), [])
   }
 
@@ -294,10 +297,10 @@ final class WidgetPackageInstallerTests: XCTestCase {
     XCTAssertEqual(try installedDatabase().packages.first?.version, "1.0.0")
     XCTAssertEqual(try managedFileContents("active/clock/widget.lua"), "return 'replacement'\n")
     XCTAssertEqual(
-      try managedFileContents("store/clock/1.0.0/.easybar/source/widget.lua"),
+      try managedFileContents("store/clock/1.0.0/source/widget.lua"),
       "return 'replacement'\n"
     )
-    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.0.0")
+    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.0.0/runtime")
     XCTAssertEqual(try replacementArtifacts(), [])
   }
 
@@ -326,7 +329,7 @@ final class WidgetPackageInstallerTests: XCTestCase {
     XCTAssertTrue(fileExists("store/clock/1.1.0"))
     XCTAssertTrue(fileExists("store/clock/1.2.0"))
     XCTAssertTrue(fileExists("store/clock/1.3.0"))
-    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.3.0")
+    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.3.0/runtime")
     XCTAssertEqual(try replacementArtifacts(), [])
   }
 
@@ -364,7 +367,7 @@ final class WidgetPackageInstallerTests: XCTestCase {
     XCTAssertTrue(resolutionFailed)
     XCTAssertEqual(try installedDatabase().packages.first?.version, "1.0.0")
     XCTAssertEqual(try managedFileContents("active/clock/widget.lua"), "return 'original'\n")
-    XCTAssertTrue(fileExists("store/clock/1.0.0/widget.lua"))
+    XCTAssertTrue(fileExists("store/clock/1.0.0/runtime/widget.lua"))
     XCTAssertEqual(try replacementArtifacts(), [])
   }
 
@@ -418,7 +421,7 @@ final class WidgetPackageInstallerTests: XCTestCase {
     XCTAssertEqual(try managedFileContents("active/clock/widget.lua"), "return 'original'\n")
     XCTAssertTrue(fileExists("store/clock/1.0.0"))
     XCTAssertFalse(fileExists("store/clock/2.0.0"))
-    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.0.0")
+    XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.0.0/runtime")
     XCTAssertEqual(try replacementArtifacts(), [])
   }
 

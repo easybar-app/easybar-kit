@@ -183,22 +183,18 @@ struct WidgetPackageMaterializer {
   }
 
   private func prepare(_ package: ResolvedWidgetPackage, at stage: URL) throws {
-    let metadataDirectory = stage.appending(path: ".easybar", directoryHint: .isDirectory)
-    let sourceDirectory = metadataDirectory.appending(path: "source", directoryHint: .isDirectory)
-    try fileManager.createDirectory(at: metadataDirectory, withIntermediateDirectories: true)
+    let sourceDirectory = WidgetPackageStore.sourceDirectory(in: stage)
+    let runtimeDirectory = WidgetPackageStore.runtimeDirectory(in: stage)
+    try fileManager.createDirectory(at: stage, withIntermediateDirectories: true)
     try fileManager.copyItem(at: package.directory, to: sourceDirectory)
+    try fileManager.createDirectory(at: runtimeDirectory, withIntermediateDirectories: true)
 
     if package.manifest.kind == .widget, let entrypoint = package.manifest.entrypoint {
       try copyWidgetProjection(
         from: sourceDirectory,
-        to: stage,
+        to: runtimeDirectory,
         entrypoint: entrypoint,
         exports: Set(package.manifest.exports.values)
-      )
-    } else {
-      try fileManager.copyItem(
-        at: sourceDirectory.appending(path: "package.toml"),
-        to: stage.appending(path: "package.toml")
       )
     }
   }
@@ -258,9 +254,6 @@ struct WidgetPackageMaterializer {
     entrypoint: String,
     exports: Set<String>
   ) -> Bool {
-    if relativePath == ".easybar" || relativePath.hasPrefix(".easybar/") {
-      return true
-    }
     guard relativePath != entrypoint else { return false }
     return file.pathExtension.lowercased() == "lua" || exports.contains(relativePath)
   }
@@ -287,7 +280,7 @@ struct WidgetPackageMaterializer {
       if prepared.package.manifest.kind == .widget {
         try transaction.replaceWithSymbolicLink(
           at: activeWidget,
-          to: prepared.storedURL
+          to: WidgetPackageStore.runtimeDirectory(in: prepared.storedURL)
         )
       } else if previous?.kind == .widget {
         try transaction.removeItem(at: activeWidget)
@@ -299,8 +292,7 @@ struct WidgetPackageMaterializer {
         try transaction.removeItem(at: moduleURL(module, in: activeDirectory))
       }
       for (module, relativePath) in prepared.package.manifest.exports {
-        let source = prepared.storedURL
-          .appending(path: ".easybar/source", directoryHint: .isDirectory)
+        let source = WidgetPackageStore.sourceDirectory(in: prepared.storedURL)
           .appending(path: relativePath)
         try transaction.replaceWithSymbolicLink(
           at: moduleURL(module, in: activeDirectory),
