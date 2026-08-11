@@ -32,7 +32,8 @@ struct AppServices: @unchecked Sendable {
   @MainActor
   static func bootstrap(
     logger: ProcessLogger,
-    builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy = .all
+    builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy = .all,
+    cliName: String = "easybar"
   ) -> AppServices {
     let config = Config.makeUnloadedConfig(builtInSurfacePolicy: builtInSurfacePolicy)
     let bootstrapSnapshot = config.snapshot()
@@ -61,7 +62,8 @@ struct AppServices: @unchecked Sendable {
     )
     let luaRuntime = LuaRuntime(
       logger: logger.child("lua"),
-      metricsCoordinator: metricsCoordinator
+      metricsCoordinator: metricsCoordinator,
+      cliName: cliName
     )
     let eventLogger = logger.child("events")
     let eventHub = EventHub(

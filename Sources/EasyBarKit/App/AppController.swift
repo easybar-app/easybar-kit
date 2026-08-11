@@ -61,7 +61,8 @@ final class AppController {
   ) {
     let services = AppServices.bootstrap(
       logger: logger.child("services"),
-      builtInSurfacePolicy: identity.builtInSurfacePolicy
+      builtInSurfacePolicy: identity.builtInSurfacePolicy,
+      cliName: identity.processName
     )
     let presentationModel = EasyBarPresentationModel(
       logger: logger.child("presentation"),

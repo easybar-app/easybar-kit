@@ -12,11 +12,18 @@ actor LuaRuntime {
   private var terminationHandler: LuaProcessController.TerminationHandler?
   private var runtimeGeneration: UInt64 = 0
 
-  /// Creates one Lua runtime.
-  init(logger: ProcessLogger, metricsCoordinator: MetricsCoordinator = .shared) {
+  /// Creates one Lua runtime for the named frontend CLI.
+  init(
+    logger: ProcessLogger,
+    metricsCoordinator: MetricsCoordinator = .shared,
+    cliName: String = "easybar"
+  ) {
     self.logger = logger
     self.metricsCoordinator = metricsCoordinator
-    self.processController = LuaProcessController(logger: logger.child("process"))
+    self.processController = LuaProcessController(
+      logger: logger.child("process"),
+      cliName: cliName
+    )
     self.transport = LuaTransport(
       logger: logger.child("transport"),
       metricsCoordinator: metricsCoordinator

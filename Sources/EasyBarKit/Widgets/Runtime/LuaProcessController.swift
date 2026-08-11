@@ -63,11 +63,13 @@ final class LuaProcessController: @unchecked Sendable {
   }
 
   let logger: ProcessLogger
+  let cliName: String
   let state = LockedState(State())
 
-  /// Creates one Lua process controller.
-  init(logger: ProcessLogger) {
+  /// Creates one Lua process controller for the named frontend CLI.
+  init(logger: ProcessLogger, cliName: String = "easybar") {
     self.logger = logger
+    self.cliName = cliName
   }
 
   /// Returns the running Lua process identifier when available.

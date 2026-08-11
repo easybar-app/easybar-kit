@@ -220,10 +220,11 @@ extension LuaProcessController {
     try? resources.error.fileHandleForWriting.close()
   }
 
-  /// Returns the Lua runtime environment with app config and resolved theme values.
-  private func luaRuntimeEnvironment(config: ConfigSnapshot) -> [String: String] {
+  /// Returns the Lua runtime environment with app config, frontend identity, and resolved paths.
+  func luaRuntimeEnvironment(config: ConfigSnapshot) -> [String: String] {
     var environment = config.app.environment
       .merging(config.luaThemeEnvironment()) { _, themeValue in themeValue }
+    environment[SharedEnvironmentKeys.cliName] = cliName
     environment[SharedEnvironmentKeys.luaWidgetPackagesDirectory] =
       WidgetPackageStore.activeDirectory(
         in: SharedPathDefaults.defaultWidgetPackagesPath()
