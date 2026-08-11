@@ -104,8 +104,8 @@ extension Config {
   private func applyThemeInboxDefaults() {
     builtinInbox.style.chrome.backgroundColorHex = themeTransparentColorHex
     builtinInbox.style.chrome.borderColorHex = themeTransparentColorHex
-    builtinInbox.style.unreadIconColorHex = themeTextSecondaryColorHex
-    builtinInbox.style.readIconColorHex = themeMutedColorHex
+    builtinInbox.style.unreadIconColorHex = themeTextColorHex
+    builtinInbox.style.readIconColorHex = themeTextColorHex
     builtinInbox.style.unreadCountColorHex = themeAccentColorHex
     builtinInbox.popupBackgroundColorHex = themeBackgroundHex
     builtinInbox.popupBorderColorHex = themeBorderStrongColorHex

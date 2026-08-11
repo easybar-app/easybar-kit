@@ -105,11 +105,11 @@ final class ConfigUnknownKeyWarningTests: ConfigLoaderTestCase {
     )
     XCTAssertEqual(
       config.builtinInbox.style.unreadIconColorHex,
-      config.themeTextSecondaryColorHex
+      config.themeTextColorHex
     )
     XCTAssertEqual(
       config.builtinInbox.style.readIconColorHex,
-      config.themeMutedColorHex
+      config.themeTextColorHex
     )
   }
 

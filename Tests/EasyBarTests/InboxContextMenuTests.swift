@@ -24,6 +24,13 @@ final class InboxContextMenuTests: XCTestCase {
     XCTAssertNil(InboxContextMenuAction(id: "inbox.unknown"))
   }
 
+  func testDefaultInboxIconsUseTheStandardWidgetTextColor() {
+    let config = Config.InboxBuiltinConfig.default
+
+    XCTAssertEqual(config.style.unreadIconColorHex, "theme.text")
+    XCTAssertEqual(config.style.readIconColorHex, "theme.text")
+  }
+
   func testUnreadPresentationUsesUnreadIconAndColors() {
     var config = Config.InboxBuiltinConfig.default
     config.style.unreadIcon = "UNREAD"

@@ -886,13 +886,13 @@
           "description" : "Color of the inbox icon when unread messages exist.",
           "key" : "unread_icon_color",
           "kind" : "default",
-          "value" : "\"theme.text_secondary\""
+          "value" : "\"theme.text\""
         },
         {
           "description" : "Color of the inbox icon when no unread messages exist.",
           "key" : "read_icon_color",
           "kind" : "default",
-          "value" : "\"theme.muted\""
+          "value" : "\"theme.text\""
         },
         {
           "description" : "Color of the unread count.",

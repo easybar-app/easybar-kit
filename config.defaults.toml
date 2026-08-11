@@ -170,8 +170,8 @@ order = 5 # Sort order among widgets in the same position.
 [builtins.inbox.style]
 unread_icon = "􀛬" # Icon shown when unread inbox messages exist.
 read_icon = "􀍕" # Icon shown when no unread inbox messages exist.
-unread_icon_color = "theme.text_secondary" # Color of the inbox icon when unread messages exist.
-read_icon_color = "theme.muted" # Color of the inbox icon when no unread messages exist.
+unread_icon_color = "theme.text" # Color of the inbox icon when unread messages exist.
+read_icon_color = "theme.text" # Color of the inbox icon when no unread messages exist.
 unread_count_color = "theme.accent" # Color of the unread count.
 background_color = "theme.transparent" # Background color of the inbox anchor.
 border_color = "theme.transparent" # Border color of the inbox anchor.

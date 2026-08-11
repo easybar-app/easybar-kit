@@ -46,8 +46,8 @@ extension Config {
       style: .init(
         unreadIcon: "􀛬",
         readIcon: "􀍕",
-        unreadIconColorHex: "theme.text_secondary",
-        readIconColorHex: "theme.muted",
+        unreadIconColorHex: "theme.text",
+        readIconColorHex: "theme.text",
         unreadCountColorHex: "theme.accent",
         chrome: .init(
           backgroundColorHex: "theme.transparent",
