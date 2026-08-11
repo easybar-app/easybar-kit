@@ -34,7 +34,7 @@ struct AppServices: @unchecked Sendable {
     logger: ProcessLogger,
     builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy = .all
   ) -> AppServices {
-    let config = Config.makeUnloadedConfig()
+    let config = Config.makeUnloadedConfig(builtInSurfacePolicy: builtInSurfacePolicy)
     let bootstrapSnapshot = config.snapshot()
     let configSnapshotStore = ConfigSnapshotStore(
       snapshot: bootstrapSnapshot,

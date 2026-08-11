@@ -176,6 +176,41 @@ final class ConfigLoaderThemeTests: ConfigLoaderTestCase {
     XCTAssertEqual(reloaded.snapshot.theme.name, "nord")
   }
 
+  /// Verifies that Native's primary Inbox palette survives staged startup and reload parsing.
+  @MainActor
+  func testNativeInboxPaletteSurvivesInitialLoadAndReload() async throws {
+    let configFileURL = tempDirectoryURL.appendingPathComponent("native-inbox.toml")
+    try writeConfig("", to: configFileURL)
+    setEnvironmentValue(configFileURL.path, for: SharedEnvironmentKeys.configPath)
+
+    let manager = ConfigManager(
+      config: Config.makeUnloadedConfig(builtInSurfacePolicy: .inboxOnly)
+    )
+    let initial = await manager.loadInitialConfig()
+
+    XCTAssertTrue(initial.succeeded)
+    XCTAssertEqual(
+      initial.snapshot.builtins.inbox.style.unreadIconColorHex,
+      initial.snapshot.theme.colors.text
+    )
+    XCTAssertEqual(
+      initial.snapshot.builtins.inbox.style.readIconColorHex,
+      initial.snapshot.theme.colors.text
+    )
+
+    let reloaded = await manager.reload()
+
+    XCTAssertTrue(reloaded.succeeded)
+    XCTAssertEqual(
+      reloaded.snapshot.builtins.inbox.style.unreadIconColorHex,
+      reloaded.snapshot.theme.colors.text
+    )
+    XCTAssertEqual(
+      reloaded.snapshot.builtins.inbox.style.readIconColorHex,
+      reloaded.snapshot.theme.colors.text
+    )
+  }
+
   /// Verifies that loading bundled themes does not create the custom theme directory.
   func testReloadDoesNotCreateMissingCustomThemesDirectory() throws {
     let config = Config.makeUnloadedConfig()

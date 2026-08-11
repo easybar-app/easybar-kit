@@ -12,6 +12,8 @@ final class Config: ObservableObject, @unchecked Sendable {
 
   /// Explicit config path override used by staged validation loads.
   private let configPathOverride: String?
+  /// Frontend-owned built-in surface selection used to derive presentation defaults.
+  let builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy
 
   /// Context in which config loading failed.
   enum LoadFailureContext: Equatable {
@@ -261,8 +263,12 @@ final class Config: ObservableObject, @unchecked Sendable {
   /// Non-fatal warnings produced while parsing the current config.
   var configWarnings: [String] = []
 
-  private init(configPathOverride: String? = nil) {
+  private init(
+    configPathOverride: String? = nil,
+    builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy = .all
+  ) {
     self.configPathOverride = expandedPath(configPathOverride)
+    self.builtInSurfacePolicy = builtInSurfacePolicy
 
     appSection = .init(
       runtimeDirectory: "",
@@ -303,8 +309,14 @@ final class Config: ObservableObject, @unchecked Sendable {
   }
 
   /// Builds one unloaded config instance for staged parsing work.
-  static func makeUnloadedConfig(configPathOverride: String? = nil) -> Config {
-    Config(configPathOverride: configPathOverride)
+  static func makeUnloadedConfig(
+    configPathOverride: String? = nil,
+    builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy = .all
+  ) -> Config {
+    Config(
+      configPathOverride: configPathOverride,
+      builtInSurfacePolicy: builtInSurfacePolicy
+    )
   }
 
   /// Absolute path to the active config file.

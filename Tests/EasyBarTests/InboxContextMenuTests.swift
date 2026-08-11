@@ -24,11 +24,22 @@ final class InboxContextMenuTests: XCTestCase {
     XCTAssertNil(InboxContextMenuAction(id: "inbox.unknown"))
   }
 
-  func testDefaultInboxIconsUseTheStandardWidgetTextColor() {
+  /// Verifies that the shared default retains EasyBar's secondary and muted Inbox colors.
+  func testDefaultInboxIconsUseTheBarPalette() {
     let config = Config.InboxBuiltinConfig.default
 
-    XCTAssertEqual(config.style.unreadIconColorHex, "theme.text")
-    XCTAssertEqual(config.style.readIconColorHex, "theme.text")
+    XCTAssertEqual(config.style.unreadIconColorHex, "theme.text_secondary")
+    XCTAssertEqual(config.style.readIconColorHex, "theme.muted")
+  }
+
+  /// Verifies that the Native surface policy promotes both Inbox states to primary text.
+  func testNativeInboxIconsUseThePrimaryMenuBarColor() {
+    let config = Config.makeUnloadedConfig(builtInSurfacePolicy: .inboxOnly)
+
+    config.applyThemeDefaults()
+
+    XCTAssertEqual(config.builtinInbox.style.unreadIconColorHex, config.themeTextColorHex)
+    XCTAssertEqual(config.builtinInbox.style.readIconColorHex, config.themeTextColorHex)
   }
 
   func testUnreadPresentationUsesUnreadIconAndColors() {

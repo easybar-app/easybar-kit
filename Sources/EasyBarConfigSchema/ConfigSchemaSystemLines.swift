@@ -11,10 +11,10 @@ extension ConfigSchemaRegistry {
     entry(key: "unread_icon", value: "\"􀛬\"", description: "Icon shown when unread inbox messages exist."),
     entry(key: "read_icon", value: "\"􀍕\"", description: "Icon shown when no unread inbox messages exist."),
     entry(
-      key: "unread_icon_color", value: "\"theme.text\"",
+      key: "unread_icon_color", value: "\"theme.text_secondary\"",
       description: "Color of the inbox icon when unread messages exist."),
     entry(
-      key: "read_icon_color", value: "\"theme.text\"",
+      key: "read_icon_color", value: "\"theme.muted\"",
       description: "Color of the inbox icon when no unread messages exist."),
     entry(key: "unread_count_color", value: "\"theme.accent\"", description: "Color of the unread count."),
     entry(

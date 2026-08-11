@@ -22,7 +22,7 @@ extension Config {
   @discardableResult
   func loadInitialState() -> (any Error)? {
     do {
-      applyLoadedState(try Self.makeLoadedState())
+      applyLoadedState(try Self.makeLoadedState(builtInSurfacePolicy: builtInSurfacePolicy))
       loadFailureState = nil
       objectWillChange.send()
       return nil
@@ -41,7 +41,7 @@ extension Config {
     let fallbackWarnings = configWarnings
 
     do {
-      applyLoadedState(try Self.makeLoadedState())
+      applyLoadedState(try Self.makeLoadedState(builtInSurfacePolicy: builtInSurfacePolicy))
       loadFailureState = nil
       objectWillChange.send()
       return nil
@@ -65,9 +65,13 @@ extension Config {
   /// Builds one staged config state without mutating the live singleton.
   private static func makeLoadedState(
     configPathOverride: String? = nil,
-    validateOnly: Bool = false
+    validateOnly: Bool = false,
+    builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy = .all
   ) throws -> LoadedState {
-    let staged = Self.makeUnloadedConfig(configPathOverride: configPathOverride)
+    let staged = Self.makeUnloadedConfig(
+      configPathOverride: configPathOverride,
+      builtInSurfacePolicy: builtInSurfacePolicy
+    )
     staged.resetToDefaults()
     try staged.load(validateOnly: validateOnly)
 
