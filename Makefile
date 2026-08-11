@@ -35,7 +35,7 @@ NEXT_MAJOR := $(shell python3 -c 'm,n,p=map(int,"$(CURRENT_CORE_VERSION)".split(
 .PHONY: help build test check check-lua check-concurrency prepare-build-version generate check-generated \
         generate-event-catalog generate-theme-tokens generate-config \
         fmt fmt-swift fmt-lua fmt-md fmt-yaml fmt-json fmt-toml \
-        lint lint-swift lint-lua install-local clean
+        lint lint-swift lint-lua update install-local clean
 
 help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z\_0-9-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) }' $(MAKEFILE_LIST)
@@ -108,6 +108,9 @@ lint-lua: ## Check Lua formatting.
 	@$(STYLUA) --check Sources/EasyBarKit/Lua examples Tests/lua
 
 ##@ Development
+
+update: ## Update Swift package dependencies.
+	@$(SWIFT) package update
 
 install-local: prepare-build-version ## Install the kit's CLI, Lua runtime, and helper agents into LOCAL_BIN_DIR.
 	@$(SWIFT) build -c release
