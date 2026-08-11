@@ -46,13 +46,6 @@ public enum SharedEnvironmentKeys {
   /// Internal key used to hide helper-agent commands from frontends that do not own them.
   public static let cliSupportsHelperAgents = "EASYBAR_INTERNAL_CLI_SUPPORTS_HELPER_AGENTS"
 
-  /// Internal key used to expose the active frontend display name to shared native menus.
-  public static let frontendDisplayName = "EASYBAR_INTERNAL_FRONTEND_DISPLAY_NAME"
-
-  /// Internal key used to expose the active frontend built-in surface policy to shared menus.
-  public static let frontendBuiltInSurfacePolicy =
-    "EASYBAR_INTERNAL_FRONTEND_BUILTIN_SURFACE_POLICY"
-
   /// Internal key used to pass the resolved active theme to the Lua runtime.
   public static let luaThemeJSON = "EASYBAR_INTERNAL_THEME_JSON"
 

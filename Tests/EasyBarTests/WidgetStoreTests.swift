@@ -5,6 +5,24 @@ import XCTest
 
 @MainActor
 final class WidgetStoreTests: XCTestCase {
+  func testPublishedNodesAndRelationshipIndexesDescribeTheSameSnapshot() throws {
+    let store = WidgetStore()
+    let root = try makeNode(id: "root", root: "root", text: "root")
+    let child = try makeNode(id: "child", root: "root", text: "child", parent: root.id)
+    var publishedTopLevelNodes: [WidgetNodeState] = []
+    var publishedChildren: [WidgetNodeState] = []
+    let cancellable = store.$nodes.dropFirst().sink { _ in
+      publishedTopLevelNodes = store.topLevelNodes(for: .right)
+      publishedChildren = store.children(of: root.id)
+    }
+
+    store.apply(owner: .scripted(root: root.root), nodes: [root, child])
+
+    XCTAssertEqual(publishedTopLevelNodes, [root])
+    XCTAssertEqual(publishedChildren, [child])
+    withExtendedLifetime(cancellable) {}
+  }
+
   func testIdenticalReplacementDoesNotRepublishStore() throws {
     let store = WidgetStore()
     let node = try makeNode(id: "stable", root: "root", text: "unchanged")

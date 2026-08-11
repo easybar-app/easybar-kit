@@ -334,6 +334,8 @@ final class AppController {
         quit: { [weak self] in self?.requestAppTermination() }
       ),
       stateProvider: stateProvider,
+      frontendDisplayName: identity.displayName,
+      builtInSurfacePolicy: identity.builtInSurfacePolicy,
       runtimeState: { [weak self] in self?.barRuntimeState ?? .stopped }
     )
   }

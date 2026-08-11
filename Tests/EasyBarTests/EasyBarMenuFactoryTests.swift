@@ -64,6 +64,21 @@ final class EasyBarMenuFactoryTests: XCTestCase {
     XCTAssertNil(menu.item(withTitle: "Quit Completely"))
   }
 
+  func testInboxOnlyFrontendUsesItsIdentityAndOmitsUnsupportedControls() throws {
+    let menu = makeFactory(
+      runtimeState: { .running },
+      frontendDisplayName: "EasyBar Native",
+      builtInSurfacePolicy: .inboxOnly
+    ).makeMenu()
+
+    XCTAssertEqual(menu.items.first?.title, "EasyBar Native \(BuildInfo.appVersion)")
+    XCTAssertNotNil(menu.item(withTitle: "Stop EasyBar Native"))
+    XCTAssertNil(menu.item(withTitle: "Calendar Agent"))
+    XCTAssertNil(menu.item(withTitle: "Network Agent"))
+    let nativeWidgets = try XCTUnwrap(menu.item(withTitle: "Native Widgets")?.submenu)
+    XCTAssertEqual(nativeWidgets.items.map(\.title), ["Inbox"])
+  }
+
   func testLogLevelSelectionUsesConfiguredAction() throws {
     var selectedLevel: ProcessLogLevel?
     let factory = makeFactory(
@@ -86,6 +101,8 @@ final class EasyBarMenuFactoryTests: XCTestCase {
 
   private func makeFactory(
     runtimeState: @escaping () -> EasyBarRuntimeState,
+    frontendDisplayName: String = "EasyBar",
+    builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy = .all,
     setLogLevel: @escaping (ProcessLogLevel) -> Void = { _ in }
   ) -> EasyBarMenuFactory {
     let logger = ProcessLogger(label: "menu.factory.test", minimumLevel: .error)
@@ -116,6 +133,8 @@ final class EasyBarMenuFactoryTests: XCTestCase {
         quit: {}
       ),
       stateProvider: stateProvider,
+      frontendDisplayName: frontendDisplayName,
+      builtInSurfacePolicy: builtInSurfacePolicy,
       runtimeState: runtimeState
     )
   }

@@ -5,16 +5,24 @@ import Foundation
 
 /// Product identity used by one EasyBarKit frontend.
 public struct EasyBarApplicationIdentity: Sendable {
+  /// Human-readable product name shown in shared UI and version output.
   public let displayName: String
+  /// Stable lowercase process name used for locks and diagnostics.
   public let processName: String
+  /// Root label used by structured process logging.
   public let loggerLabel: String
+  /// File name used for the frontend's retained process log.
   public let logFileName: String
+  /// Optional home-relative config path used when no environment override exists.
   public let defaultConfigRelativePath: String?
+  /// Optional home-relative runtime path used when no environment override exists.
   public let defaultRuntimeRelativePath: String?
+  /// Additional frontend-specific environment defaults, keyed by canonical variable name.
   public let defaultEnvironment: [String: String]
   /// Host-owned built-in surfaces enabled for this frontend.
   public let builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy
 
+  /// Creates the identity and bootstrap defaults for one frontend executable.
   public init(
     displayName: String,
     processName: String,
@@ -62,14 +70,6 @@ public struct EasyBarApplicationIdentity: Sendable {
     for (key, value) in defaultEnvironment where environment[key] == nil {
       setenv(key, value, 0)
     }
-
-    // These values describe the active host itself rather than user overrides.
-    setenv(SharedEnvironmentKeys.frontendDisplayName, displayName, 1)
-    setenv(
-      SharedEnvironmentKeys.frontendBuiltInSurfacePolicy,
-      builtInSurfacePolicy.rawValue,
-      1
-    )
   }
 }
 

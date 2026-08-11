@@ -56,27 +56,23 @@ final class EasyBarMenuFactory: NSObject {
   private let frontendDisplayName: String
   private let builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy
 
+  /// Creates a menu builder configured for one frontend identity and built-in policy.
   init(
     logger: ProcessLogger,
     configStore: ConfigSnapshotStore,
     actions: EasyBarMenuActions,
     stateProvider: BarContextMenuStateProvider,
+    frontendDisplayName: String,
+    builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy,
     runtimeState: @escaping () -> EasyBarRuntimeState
   ) {
-    let environment = ProcessInfo.processInfo.environment
-    let configuredDisplayName = environment[SharedEnvironmentKeys.frontendDisplayName]?
-      .trimmingCharacters(in: .whitespacesAndNewlines)
-    let configuredPolicy = environment[SharedEnvironmentKeys.frontendBuiltInSurfacePolicy]
-      .flatMap(EasyBarBuiltInSurfacePolicy.init(rawValue:))
-
     self.logger = logger
     self.configStore = configStore
     self.actions = actions
     self.stateProvider = stateProvider
     self.runtimeState = runtimeState
-    self.frontendDisplayName =
-      configuredDisplayName.flatMap { $0.isEmpty ? nil : $0 } ?? "EasyBar"
-    self.builtInSurfacePolicy = configuredPolicy ?? .all
+    self.frontendDisplayName = frontendDisplayName
+    self.builtInSurfacePolicy = builtInSurfacePolicy
     super.init()
   }
 
@@ -98,6 +94,7 @@ final class EasyBarMenuFactory: NSObject {
     return menu
   }
 
+  /// Builds the items belonging to one logical menu group.
   private func items(
     for group: EasyBarMenuGroup,
     showDeveloperSection: Bool
@@ -168,6 +165,7 @@ final class EasyBarMenuFactory: NSObject {
     ]
   }
 
+  /// Builds the built-in surface submenu allowed by the active frontend policy.
   private func nativeWidgetsMenuItem() -> NSMenuItem? {
     let builtins = configStore.snapshot.builtins
     let widgets: [(String, String, Bool)]
@@ -207,6 +205,7 @@ final class EasyBarMenuFactory: NSObject {
     return item
   }
 
+  /// Builds the theme-selection submenu from the current config snapshot.
   private func themeMenuItem() -> NSMenuItem {
     let snapshot = configStore.snapshot
     let item = submenuItem(title: "Theme")
@@ -242,6 +241,7 @@ final class EasyBarMenuFactory: NSObject {
     )
   }
 
+  /// Builds one helper-agent status submenu with restart and permission controls.
   private func agentMenuItem(
     title: String,
     connected: Bool,
@@ -270,6 +270,7 @@ final class EasyBarMenuFactory: NSObject {
     ]
   }
 
+  /// Builds the runtime log-level selection submenu.
   private func logLevelMenuItem() -> NSMenuItem {
     let item = submenuItem(title: "Log Level")
     for level in ProcessLogLevel.allCases {
@@ -282,6 +283,7 @@ final class EasyBarMenuFactory: NSObject {
     return item
   }
 
+  /// Creates a standard actionable menu item owned by this factory.
   private func actionItem(
     title: String,
     action: Selector,
@@ -295,12 +297,14 @@ final class EasyBarMenuFactory: NSObject {
     return item
   }
 
+  /// Creates an empty submenu container with the supplied title.
   private func submenuItem(title: String) -> NSMenuItem {
     let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
     item.submenu = NSMenu(title: title)
     return item
   }
 
+  /// Creates a disabled informational item with optional tertiary styling.
   private func readOnlyItem(_ title: String, tertiary: Bool = false) -> NSMenuItem {
     let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
     item.isEnabled = false
@@ -366,6 +370,7 @@ final class EasyBarMenuFactory: NSObject {
     )
   }
 
+  /// Opens one validated macOS Settings URL, logging failures without terminating the app.
   private func openSettingsURL(_ value: String) {
     guard let url = URL(string: value) else { return }
     NSWorkspace.shared.open(url)

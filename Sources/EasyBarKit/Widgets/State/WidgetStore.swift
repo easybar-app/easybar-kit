@@ -76,7 +76,7 @@ final class WidgetStore: ObservableObject {
     rebuildPublishedState()
   }
 
-  /// Handles clear.
+  /// Clears the rendered nodes owned by the supplied widget roots.
   func clear(owners: Set<Owner>) {
     guard !owners.isEmpty else { return }
 
@@ -261,13 +261,13 @@ final class WidgetStore: ObservableObject {
 
   /// Rebuilds ordered lookup indexes after one atomic store mutation.
   private func rebuildPublishedState() {
-    nodes = nodeMap.values.sorted(by: sortNodes)
+    let sortedNodes = nodeMap.values.sorted(by: sortNodes)
     topLevelNodesByPosition.removeAll(keepingCapacity: true)
     childNodesByParentID.removeAll(keepingCapacity: true)
     anchorNodesByParentID.removeAll(keepingCapacity: true)
     popupNodesByParentID.removeAll(keepingCapacity: true)
 
-    for node in nodes {
+    for node in sortedNodes {
       guard let parentID = node.parent, !parentID.isEmpty else {
         topLevelNodesByPosition[node.position, default: []].append(node)
         continue
@@ -281,5 +281,9 @@ final class WidgetStore: ObservableObject {
         childNodesByParentID[parentID, default: []].append(node)
       }
     }
+
+    // `@Published` delivers the new array synchronously from `willSet`. Publish only
+    // after every relationship index contains the same snapshot subscribers will read.
+    nodes = sortedNodes
   }
 }
