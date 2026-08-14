@@ -213,7 +213,6 @@ extension CalendarSnapshotProvider {
           CalendarFilterTarget(
             title: calendar.title,
             identifier: calendar.calendarIdentifier,
-            sourceTitle: calendar.source.title,
             sourceIdentifier: calendar.source.sourceIdentifier
           ),
           query: query

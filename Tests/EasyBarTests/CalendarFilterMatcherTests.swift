@@ -6,7 +6,6 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "  Feriés  ",
       identifier: "calendar-123",
-      sourceTitle: "iCloud",
       sourceIdentifier: "source-456"
     )
 
@@ -27,7 +26,6 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "calendar-123",
-      sourceTitle: "iCloud",
       sourceIdentifier: "source-456"
     )
 
@@ -48,7 +46,6 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "calendar-123",
-      sourceTitle: "iCloud",
       sourceIdentifier: "source-456"
     )
 
@@ -80,7 +77,6 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "calendar-123",
-      sourceTitle: "iCloud",
       sourceIdentifier: "source-456"
     )
 
@@ -101,7 +97,6 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "Calendar-ABC",
-      sourceTitle: "iCloud",
       sourceIdentifier: "Source-XYZ"
     )
 
@@ -122,7 +117,6 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "Calendar-ABC",
-      sourceTitle: "iCloud",
       sourceIdentifier: "Source-XYZ"
     )
 
@@ -143,7 +137,6 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "Calendar-ABC",
-      sourceTitle: "iCloud",
       sourceIdentifier: "Source-XYZ"
     )
 
@@ -164,7 +157,6 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "calendar-123",
-      sourceTitle: "iCloud",
       sourceIdentifier: "source-456"
     )
 

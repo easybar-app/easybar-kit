@@ -143,7 +143,6 @@ final class CalendarCoreRegressionTests: XCTestCase {
         CalendarFilterTarget(
           title: "Birthdays",
           identifier: "birthday-calendar",
-          sourceTitle: "Contacts",
           sourceIdentifier: "contacts-source"
         ),
         query: query

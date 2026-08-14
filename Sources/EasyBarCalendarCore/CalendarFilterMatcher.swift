@@ -6,8 +6,6 @@ public struct CalendarFilterTarget: Equatable, Sendable {
   public let title: String
   /// Stable calendar identifier when available.
   public let identifier: String?
-  /// Human-readable source title when available.
-  public let sourceTitle: String?
   /// Stable source identifier when available.
   public let sourceIdentifier: String?
 
@@ -15,12 +13,10 @@ public struct CalendarFilterTarget: Equatable, Sendable {
   public init(
     title: String,
     identifier: String? = nil,
-    sourceTitle: String? = nil,
     sourceIdentifier: String? = nil
   ) {
     self.title = title
     self.identifier = identifier
-    self.sourceTitle = sourceTitle
     self.sourceIdentifier = sourceIdentifier
   }
 }
@@ -84,43 +80,8 @@ public enum CalendarFilterMatcher {
     return normalized.isEmpty ? nil : normalized
   }
 
-  /// Returns whether the target matches at least one filter token.
-  ///
-  /// Human-readable titles use case- and diacritic-insensitive matching. Stable
-  /// calendar and source identifiers are trimmed but otherwise compared exactly.
-  public static func matchesAnyFilter(
-    _ target: CalendarFilterTarget,
-    filters: Set<String>
-  ) -> Bool {
-    guard !filters.isEmpty else { return false }
-
-    let normalizedTitleFilters = Set(filters.compactMap(normalizedToken))
-    let exactIdentifierFilters = Set(filters.compactMap(trimmedIdentifierToken))
-
-    return
-      matchesToken(normalizedToken(target.title), filters: normalizedTitleFilters)
-      || matchesToken(
-        trimmedIdentifierToken(target.identifier ?? ""),
-        filters: exactIdentifierFilters
-      )
-      || matchesToken(
-        trimmedIdentifierToken(target.sourceIdentifier ?? ""),
-        filters: exactIdentifierFilters
-      )
-  }
-
-  /// Returns candidate tokens using friendly title normalization and exact identifiers.
-  public static func normalizedCandidates(for target: CalendarFilterTarget) -> Set<String> {
-    Set(
-      [
-        normalizedToken(target.title),
-        trimmedIdentifierToken(target.identifier ?? ""),
-        trimmedIdentifierToken(target.sourceIdentifier ?? ""),
-      ].compactMap { $0 })
-  }
-
   /// Returns whether one candidate token matches the provided filters exactly.
-  public static func matchesToken(_ candidate: String?, filters: Set<String>) -> Bool {
+  private static func matchesToken(_ candidate: String?, filters: Set<String>) -> Bool {
     guard let candidate, !filters.isEmpty else { return false }
     return filters.contains(candidate)
   }
