@@ -205,18 +205,4 @@ public struct CalendarBuiltinConfig: Sendable {
     self.month = month
   }
 
-  public var enabled: Bool {
-    get { placement.enabled }
-    set { placement.enabled = newValue }
-  }
-
-  public var position: WidgetPosition {
-    get { placement.position }
-    set { placement.position = newValue }
-  }
-
-  public var order: Int {
-    get { placement.order }
-    set { placement.order = newValue }
-  }
 }
