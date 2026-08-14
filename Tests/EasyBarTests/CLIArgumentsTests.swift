@@ -193,6 +193,27 @@ final class CLIArgumentsTests: XCTestCase {
     )
   }
 
+  func testWidgetPackagePinAndUnpinParseOnePackageName() throws {
+    XCTAssertEqual(
+      try parseArguments(["easybar", "widgets", "pin", "inbox-brew"]).action,
+      .pinWidgetPackage("inbox-brew")
+    )
+    XCTAssertEqual(
+      try parseArguments(["easybar", "widgets", "unpin", "inbox-brew"]).action,
+      .unpinWidgetPackage("inbox-brew")
+    )
+  }
+
+  func testWidgetPackagePinAndUnpinRejectAmbiguousArguments() {
+    XCTAssertThrowsError(try parseArguments(["easybar", "widgets", "pin"]))
+    XCTAssertThrowsError(
+      try parseArguments(["easybar", "widgets", "pin", "brew", "shared"])
+    )
+    XCTAssertThrowsError(
+      try parseArguments(["easybar", "widgets", "unpin", "brew", "--socket", "/tmp/app.sock"])
+    )
+  }
+
   func testWidgetPackageOutdatedParsesOptionalRegistry() throws {
     XCTAssertEqual(
       try parseArguments(["easybar", "widgets", "outdated"]).action,

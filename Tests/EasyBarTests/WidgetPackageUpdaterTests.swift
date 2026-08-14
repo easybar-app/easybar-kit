@@ -61,21 +61,76 @@ final class WidgetPackageUpdaterTests: XCTestCase {
           name: "clock",
           installedVersion: "1.0.0",
           availableVersion: "1.1.0",
-          kind: .widget
+          kind: .widget,
+          pinned: false
         )
       ]
     )
 
-    let changes = try await updater.update(
+    let result = try await updater.update(
       options: WidgetPackageUpdateOptions(selection: .all, registry: registry.path)
     )
-    XCTAssertEqual(changes.map(\.package.name), ["clock"])
-    XCTAssertEqual(changes.first?.previousVersion, "1.0.0")
-    XCTAssertEqual(changes.first?.package.version, "1.1.0")
+    XCTAssertEqual(result.changes.map(\.package.name), ["clock"])
+    XCTAssertEqual(result.changes.first?.previousVersion, "1.0.0")
+    XCTAssertEqual(result.changes.first?.package.version, "1.1.0")
+    XCTAssertEqual(result.skippedPinned, [])
     XCTAssertTrue(fileExists("store/clock/1.0.0"))
     XCTAssertTrue(fileExists("store/clock/1.1.0"))
     XCTAssertEqual(try symbolicLinkDestination("active/clock"), "../store/clock/1.1.0/widget.lua")
     XCTAssertEqual(try installedPackage(named: "personal")?.version, "1.0.0")
+  }
+
+  func testPinnedPackagesRemainOutdatedAndAreSkippedByUpdateAll() async throws {
+    let oldArchive = try packageArchive(name: "clock", version: "1.0.0")
+    let newArchive = try packageArchive(name: "clock", version: "1.1.0")
+    _ = try await install(source: oldArchive.path, useRegistry: false)
+    try WidgetPackagePinStore().write(["clock"], to: packagesDirectory)
+    let registry = try registryIndex(entries: [
+      registryEntry(name: "clock", latest: "1.1.0", archives: [oldArchive, newArchive])
+    ])
+
+    let outdated = try await updater.outdated(registrySource: registry.path)
+    XCTAssertEqual(
+      outdated,
+      [
+        OutdatedWidgetPackage(
+          name: "clock",
+          installedVersion: "1.0.0",
+          availableVersion: "1.1.0",
+          kind: .widget,
+          pinned: true
+        )
+      ]
+    )
+
+    let result = try await updater.update(
+      options: WidgetPackageUpdateOptions(selection: .all, registry: registry.path)
+    )
+    XCTAssertEqual(result.changes, [])
+    XCTAssertEqual(result.skippedPinned, ["clock"])
+    XCTAssertEqual(try installedPackage(named: "clock")?.version, "1.0.0")
+  }
+
+  func testNamedUpdateRejectsPinnedPackage() async throws {
+    let oldArchive = try packageArchive(name: "clock", version: "1.0.0")
+    let newArchive = try packageArchive(name: "clock", version: "1.1.0")
+    _ = try await install(source: oldArchive.path, useRegistry: false)
+    try WidgetPackagePinStore().write(["clock"], to: packagesDirectory)
+    let registry = try registryIndex(entries: [
+      registryEntry(name: "clock", latest: "1.1.0", archives: [oldArchive, newArchive])
+    ])
+
+    do {
+      _ = try await updater.update(
+        options: WidgetPackageUpdateOptions(
+          selection: .package("clock"),
+          registry: registry.path
+        )
+      )
+      XCTFail("Expected a pinned package update to be rejected")
+    } catch let error as WidgetPackageError {
+      XCTAssertEqual(error, .packagePinned("clock"))
+    }
   }
 
   func testNamedUpdateRejectsALocalPackageWithARegistryName() async throws {

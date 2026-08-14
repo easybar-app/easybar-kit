@@ -8,6 +8,9 @@ enum WidgetPackageError: LocalizedError, Equatable {
   case unavailablePackageVersion(package: String, version: String)
   case packageAlreadyInstalled(String)
   case packageNotInstalled(String)
+  case packageAlreadyPinned(String)
+  case packageNotPinned(String)
+  case packagePinned(String)
   case packageNotManagedByRegistry(String)
   case packageRequired(name: String, dependents: [String])
   case unavailableDependency(package: String, dependency: String, constraint: String)
@@ -36,6 +39,12 @@ enum WidgetPackageError: LocalizedError, Equatable {
       "package '\(name)' is already installed; use --force to replace it"
     case .packageNotInstalled(let name):
       "package '\(name)' is not installed"
+    case .packageAlreadyPinned(let name):
+      "package '\(name)' is already pinned"
+    case .packageNotPinned(let name):
+      "package '\(name)' is not pinned"
+    case .packagePinned(let name):
+      "package '\(name)' is pinned; unpin it before updating"
     case .packageNotManagedByRegistry(let name):
       "package '\(name)' was not installed from the selected registry"
     case .packageRequired(let name, let dependents):

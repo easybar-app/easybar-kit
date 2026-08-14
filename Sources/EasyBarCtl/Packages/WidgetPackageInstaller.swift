@@ -16,7 +16,10 @@ final class WidgetPackageInstaller {
     self.packagesDirectory = packagesDirectory
   }
 
-  func install(options: WidgetPackageInstallOptions) async throws -> [InstalledWidgetPackage] {
+  func install(
+    options: WidgetPackageInstallOptions,
+    protectedPackages: Set<String> = []
+  ) async throws -> [InstalledWidgetPackage] {
     try fileManager.createDirectory(at: packagesDirectory, withIntermediateDirectories: true)
     let database = try WidgetPackageDatabaseStore(fileManager: fileManager).load(
       from: packagesDirectory
@@ -42,6 +45,7 @@ final class WidgetPackageInstaller {
       temporaryDirectory: temporaryDirectory.appending(
         path: "downloads", directoryHint: .isDirectory),
       installed: database.packages,
+      protectedPackages: protectedPackages,
       logger: logger
     )
     try fileManager.createDirectory(

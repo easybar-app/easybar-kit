@@ -21,6 +21,7 @@ final class WidgetPackageResolver {
   private var resolutionOrder: [String] = []
   private var resolving: [String] = []
   private let installed: [String: InstalledWidgetPackage]
+  private let protectedPackages: Set<String>
   private let currentKitVersion: SemanticVersion?
 
   init(
@@ -28,6 +29,7 @@ final class WidgetPackageResolver {
     useRegistry: Bool,
     temporaryDirectory: URL,
     installed: [InstalledWidgetPackage],
+    protectedPackages: Set<String> = [],
     logger: ProcessLogger,
     currentKitVersion: SemanticVersion? = SemanticVersion(BuildInfo.appVersion)
   ) {
@@ -35,6 +37,7 @@ final class WidgetPackageResolver {
     self.useRegistry = useRegistry
     self.temporaryDirectory = temporaryDirectory
     self.installed = Dictionary(uniqueKeysWithValues: installed.map { ($0.name, $0) })
+    self.protectedPackages = protectedPackages
     self.currentKitVersion = currentKitVersion
     processExecutor = ProcessExecutor(logger: logger.child("archive"))
   }
@@ -99,11 +102,13 @@ final class WidgetPackageResolver {
       if let staged = resolved[dependency], dependencyConstraint.contains(staged.manifest.version) {
         continue
       }
-      if let current = installed[dependency],
-        let version = SemanticVersion(current.version),
-        dependencyConstraint.contains(version)
-      {
-        continue
+      if let current = installed[dependency] {
+        if let version = SemanticVersion(current.version), dependencyConstraint.contains(version) {
+          continue
+        }
+        if protectedPackages.contains(dependency) {
+          throw WidgetPackageError.packagePinned(dependency)
+        }
       }
       guard useRegistry else {
         throw WidgetPackageError.unavailableDependency(

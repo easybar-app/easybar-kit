@@ -6,6 +6,7 @@ struct OutdatedWidgetPackage: Equatable {
   let installedVersion: String
   let availableVersion: String
   let kind: WidgetPackageKind
+  let pinned: Bool
 }
 
 struct WidgetPackageChange: Equatable {
@@ -13,9 +14,15 @@ struct WidgetPackageChange: Equatable {
   let previousVersion: String?
 }
 
+struct WidgetPackageUpdateResult: Equatable {
+  let changes: [WidgetPackageChange]
+  let skippedPinned: [String]
+}
+
 final class WidgetPackageUpdater {
   private let packagesDirectory: URL
   private let databaseStore: WidgetPackageDatabaseStore
+  private let pinStore: WidgetPackagePinStore
   private let registryLoader: WidgetPackageRegistryLoader
   private let installer: WidgetPackageInstaller
 
@@ -28,6 +35,7 @@ final class WidgetPackageUpdater {
     self.packagesDirectory = packagesDirectory
     self.registryLoader = registryLoader
     databaseStore = WidgetPackageDatabaseStore(fileManager: fileManager)
+    pinStore = WidgetPackagePinStore(fileManager: fileManager)
     installer = WidgetPackageInstaller(
       logger: logger,
       fileManager: fileManager,
@@ -37,20 +45,26 @@ final class WidgetPackageUpdater {
 
   func outdated(registrySource: String?) async throws -> [OutdatedWidgetPackage] {
     let database = try databaseStore.load(from: packagesDirectory)
+    let pins = try pinStore.load(from: packagesDirectory)
     let registry = try await registryLoader.load(source: registrySource)
-    return try outdatedPackages(database: database, registry: registry)
+    return try outdatedPackages(database: database, registry: registry, pins: pins)
   }
 
-  func update(options: WidgetPackageUpdateOptions) async throws -> [WidgetPackageChange] {
+  func update(options: WidgetPackageUpdateOptions) async throws -> WidgetPackageUpdateResult {
     let initialDatabase = try databaseStore.load(from: packagesDirectory)
+    let initialPins = try pinStore.load(from: packagesDirectory)
     let registry = try await registryLoader.load(source: options.registry)
     let entries = Dictionary(uniqueKeysWithValues: registry.packages.map { ($0.name, $0) })
     let targets: [String]
+    var skippedPinned: Set<String> = []
 
     switch options.selection {
     case .package(let name):
       guard let installed = initialDatabase.packages.first(where: { $0.name == name }) else {
         throw WidgetPackageError.packageNotInstalled(name)
+      }
+      if initialPins.contains(name) {
+        throw WidgetPackageError.packagePinned(name)
       }
       guard let entry = entries[name] else {
         throw WidgetPackageError.unavailablePackage(name)
@@ -61,7 +75,13 @@ final class WidgetPackageUpdater {
       targets = try isOutdated(installed, comparedWith: entry) ? [name] : []
 
     case .all:
-      targets = try outdatedPackages(database: initialDatabase, registry: registry)
+      let outdated = try outdatedPackages(
+        database: initialDatabase,
+        registry: registry,
+        pins: initialPins
+      )
+      skippedPinned.formUnion(outdated.filter(\.pinned).map(\.name))
+      targets = outdated.filter { !$0.pinned }
         .sorted { left, right in
           if left.kind != right.kind { return left.kind == .widget }
           return left.name < right.name
@@ -72,6 +92,11 @@ final class WidgetPackageUpdater {
     var touchedNames: Set<String> = []
     for name in targets {
       let currentDatabase = try databaseStore.load(from: packagesDirectory)
+      let currentPins = try pinStore.load(from: packagesDirectory)
+      if currentPins.contains(name) {
+        skippedPinned.insert(name)
+        continue
+      }
       guard let current = currentDatabase.packages.first(where: { $0.name == name }),
         let entry = entries[name],
         releaseSources(entry).contains(current.source),
@@ -85,22 +110,29 @@ final class WidgetPackageUpdater {
           registry: options.registry,
           useRegistry: true,
           force: true
-        )
+        ),
+        protectedPackages: currentPins
       )
       touchedNames.formUnion(installed.map(\.name))
     }
 
     let previous = Dictionary(uniqueKeysWithValues: initialDatabase.packages.map { ($0.name, $0) })
     let finalDatabase = try databaseStore.load(from: packagesDirectory)
-    return finalDatabase.packages
+    let changes = finalDatabase.packages
       .filter { touchedNames.contains($0.name) && previous[$0.name]?.version != $0.version }
       .map { WidgetPackageChange(package: $0, previousVersion: previous[$0.name]?.version) }
       .sorted { $0.package.name < $1.package.name }
+
+    return WidgetPackageUpdateResult(
+      changes: changes,
+      skippedPinned: skippedPinned.sorted()
+    )
   }
 
   private func outdatedPackages(
     database: InstalledWidgetPackages,
-    registry: PackageRegistryIndex
+    registry: PackageRegistryIndex,
+    pins: Set<String>
   ) throws -> [OutdatedWidgetPackage] {
     let entries = Dictionary(uniqueKeysWithValues: registry.packages.map { ($0.name, $0) })
     return try database.packages.compactMap { installed in
@@ -111,7 +143,8 @@ final class WidgetPackageUpdater {
         name: installed.name,
         installedVersion: installed.version,
         availableVersion: entry.latest,
-        kind: installed.kind
+        kind: installed.kind,
+        pinned: pins.contains(installed.name)
       )
     }.sorted { $0.name < $1.name }
   }
@@ -161,9 +194,9 @@ func updateWidgetPackages(options: WidgetPackageUpdateOptions, context: AppConte
   let spinner = CLIActivitySpinner(message: label)
   await spinner.start()
   do {
-    let changes = try await WidgetPackageUpdater(logger: context.logger).update(options: options)
+    let result = try await WidgetPackageUpdater(logger: context.logger).update(options: options)
     await spinner.stop()
-    CLIOutput.printWidgetPackageChanges(changes)
+    CLIOutput.printWidgetPackageUpdateResult(result)
   } catch {
     await spinner.stop()
     throw AppError.commandFailed(error.localizedDescription)

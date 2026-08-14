@@ -209,7 +209,7 @@ enum CLIOutput {
   }
 
   static func printInstalledWidgetPackages(
-    _ packages: [InstalledWidgetPackage],
+    _ packages: [InstalledWidgetPackageStatus],
     json: Bool
   ) throws {
     if json {
@@ -226,22 +226,29 @@ enum CLIOutput {
     fputs(installedWidgetPackagesText(packages) + "\n", stdout)
   }
 
-  static func installedWidgetPackagesText(_ packages: [InstalledWidgetPackage]) -> String {
+  static func installedWidgetPackagesText(_ packages: [InstalledWidgetPackageStatus]) -> String {
     guard !packages.isEmpty else { return "No packages installed." }
 
     let nameWidth = max("NAME".count, packages.map(\.name.count).max() ?? 0)
     let versionWidth = max("VERSION".count, packages.map(\.version.count).max() ?? 0)
+    let kindWidth = max("KIND".count, packages.map { $0.kind.rawValue.count }.max() ?? 0)
 
-    func row(name: String, version: String, kind: String) -> String {
+    func row(name: String, version: String, kind: String, pinned: String) -> String {
       let paddedName = name.padding(toLength: nameWidth, withPad: " ", startingAt: 0)
       let paddedVersion = version.padding(toLength: versionWidth, withPad: " ", startingAt: 0)
-      return "\(paddedName)  \(paddedVersion)  \(kind)"
+      let paddedKind = kind.padding(toLength: kindWidth, withPad: " ", startingAt: 0)
+      return "\(paddedName)  \(paddedVersion)  \(paddedKind)  \(pinned)"
     }
 
     return
-      ([row(name: "NAME", version: "VERSION", kind: "KIND")]
+      ([row(name: "NAME", version: "VERSION", kind: "KIND", pinned: "PINNED")]
       + packages.map { package in
-        row(name: package.name, version: package.version, kind: package.kind.rawValue)
+        row(
+          name: package.name,
+          version: package.version,
+          kind: package.kind.rawValue,
+          pinned: package.pinned ? "yes" : "no"
+        )
       })
       .joined(separator: "\n")
   }
@@ -253,21 +260,22 @@ enum CLIOutput {
     }
 
     for package in packages {
+      let pinSuffix = package.pinned ? " [pinned]" : ""
       fputs(
         "\(package.name) \(package.installedVersion) -> \(package.availableVersion) "
-          + "(\(package.kind.rawValue))\n",
+          + "(\(package.kind.rawValue))\(pinSuffix)\n",
         stdout
       )
     }
   }
 
-  static func printWidgetPackageChanges(_ changes: [WidgetPackageChange]) {
-    guard !changes.isEmpty else {
+  static func printWidgetPackageUpdateResult(_ result: WidgetPackageUpdateResult) {
+    if result.changes.isEmpty && result.skippedPinned.isEmpty {
       fputs("All selected widget packages are up to date.\n", stdout)
       return
     }
 
-    for change in changes {
+    for change in result.changes {
       if let previousVersion = change.previousVersion {
         fputs(
           "Updated \(change.package.name) \(previousVersion) -> \(change.package.version) "
@@ -282,8 +290,17 @@ enum CLIOutput {
         )
       }
     }
-    fputs(
-      "Reload \(CLIProgram.current.displayName) with: \(CLIProgram.current.commandName) config reload\n",
-      stdout)
+
+    if !result.skippedPinned.isEmpty {
+      fputs("Skipped pinned packages: \(result.skippedPinned.joined(separator: ", "))\n", stdout)
+    }
+
+    if !result.changes.isEmpty {
+      fputs(
+        "Reload \(CLIProgram.current.displayName) with: \(CLIProgram.current.commandName) config reload\n",
+        stdout
+      )
+    }
   }
+
 }

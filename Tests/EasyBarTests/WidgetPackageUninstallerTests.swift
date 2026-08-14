@@ -58,6 +58,7 @@ final class WidgetPackageUninstallerTests: XCTestCase {
       "active/shared/retry.lua",
       to: "../../store/shared/1.0.0/retry.lua"
     )
+    try WidgetPackagePinStore().write(["clock"], to: packagesDirectory)
 
     XCTAssertThrowsError(try uninstaller.uninstall(name: "shared")) { error in
       XCTAssertEqual(
@@ -72,6 +73,7 @@ final class WidgetPackageUninstallerTests: XCTestCase {
     XCTAssertTrue(exists("active/shared/retry.lua"))
     XCTAssertTrue(exists("store/shared/1.0.0/retry.lua"))
     XCTAssertEqual(try database().packages.map(\.name), ["shared"])
+    XCTAssertEqual(try WidgetPackagePinStore().load(from: packagesDirectory), [])
 
     XCTAssertEqual(try uninstaller.uninstall(name: "shared"), shared)
     XCTAssertFalse(exists("active/shared/retry.lua"))

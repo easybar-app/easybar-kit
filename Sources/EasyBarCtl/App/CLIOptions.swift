@@ -86,6 +86,8 @@ enum CLICommandKind: Equatable {
   case emitEvent
   case inbox(InboxCLIVerb)
   case installWidgetPackage
+  case pinWidgetPackage
+  case unpinWidgetPackage
   case uninstallWidgetPackage
   case searchWidgetPackages
   case installedWidgetPackages
@@ -96,7 +98,8 @@ enum CLICommandKind: Equatable {
   var acceptsSocketOverride: Bool {
     switch self {
     case .logs, .restartAgent(.all), .versionAgent(.all), .installWidgetPackage,
-      .uninstallWidgetPackage, .searchWidgetPackages, .installedWidgetPackages,
+      .pinWidgetPackage, .unpinWidgetPackage, .uninstallWidgetPackage, .searchWidgetPackages,
+      .installedWidgetPackages,
       .outdatedWidgetPackages,
       .updateWidgetPackages:
       return false
@@ -207,6 +210,8 @@ enum CLIAction: Equatable {
   case logs(LogCommandOptions)
   case inbox(InboxCLICommand)
   case installWidgetPackage(WidgetPackageInstallOptions)
+  case pinWidgetPackage(String)
+  case unpinWidgetPackage(String)
   case uninstallWidgetPackage(String)
   case searchWidgetPackages(WidgetPackageSearchOptions)
   case installedWidgetPackages(InstalledWidgetPackageOptions)
@@ -475,6 +480,18 @@ enum CLI {
       description: "List installed widget and library packages",
       kind: .installedWidgetPackages,
       options: [packageWidgetsOnlyOption, packageLibrariesOnlyOption, jsonOption]
+    ),
+    .init(
+      path: ["widgets", "pin"],
+      description: "Prevent an installed package from being updated",
+      kind: .pinWidgetPackage,
+      usageArguments: ["<name>"]
+    ),
+    .init(
+      path: ["widgets", "unpin"],
+      description: "Allow a pinned package to be updated again",
+      kind: .unpinWidgetPackage,
+      usageArguments: ["<name>"]
     ),
     .init(
       path: ["widgets", "outdated"],

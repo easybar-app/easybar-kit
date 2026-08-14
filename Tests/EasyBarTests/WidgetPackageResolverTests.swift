@@ -129,4 +129,63 @@ final class WidgetPackageResolverTests: XCTestCase {
     }
   }
 
+  func testPinnedInstalledDependencyCannotBeReplacedDuringResolution() async throws {
+    let directory = FileManager.default.temporaryDirectory.appending(
+      path: "easybar-resolver-pinned-\(UUID().uuidString)",
+      directoryHint: .isDirectory
+    )
+    let package = directory.appending(path: "consumer", directoryHint: .isDirectory)
+    let downloads = directory.appending(path: "downloads", directoryHint: .isDirectory)
+    try FileManager.default.createDirectory(at: package, withIntermediateDirectories: true)
+    try FileManager.default.createDirectory(at: downloads, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    try """
+    manifest_version = 2
+    name = "consumer"
+    version = "1.0.0"
+    minimum_easybar_kit_version = "0.1.0"
+    kind = "widget"
+    entrypoint = "widget.lua"
+
+    [dependencies]
+    shared = "^2.0.0"
+    """.write(
+      to: package.appending(path: "package.toml"),
+      atomically: true,
+      encoding: .utf8
+    )
+    try "return nil\n".write(
+      to: package.appending(path: "widget.lua"),
+      atomically: true,
+      encoding: .utf8
+    )
+
+    let installed = InstalledWidgetPackage(
+      name: "shared",
+      version: "1.0.0",
+      kind: .library,
+      entrypoint: nil,
+      dependencies: [:],
+      exports: ["shared": "shared.lua"],
+      source: "https://example.com/shared-1.0.0.tar.gz"
+    )
+    let resolver = WidgetPackageResolver(
+      registrySource: nil,
+      useRegistry: false,
+      temporaryDirectory: downloads,
+      installed: [installed],
+      protectedPackages: ["shared"],
+      logger: ProcessLogger(label: "resolver-tests", minimumLevel: .error),
+      currentKitVersion: SemanticVersion("1.0.0")
+    )
+
+    do {
+      _ = try await resolver.resolve(source: package.path, sha256: nil)
+      XCTFail("Expected the pinned dependency to block replacement")
+    } catch let error as WidgetPackageError {
+      XCTAssertEqual(error, .packagePinned("shared"))
+    }
+  }
+
 }

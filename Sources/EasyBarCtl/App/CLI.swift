@@ -86,6 +86,12 @@ private struct AppController {
       case .installedWidgetPackages(let options):
         try listInstalledWidgetPackages(options: options, context: context)
 
+      case .pinWidgetPackage(let name):
+        try pinWidgetPackage(name: name, context: context)
+
+      case .unpinWidgetPackage(let name):
+        try unpinWidgetPackage(name: name, context: context)
+
       case .uninstallWidgetPackage(let name):
         try uninstallWidgetPackage(name: name, context: context)
 

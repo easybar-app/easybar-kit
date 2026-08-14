@@ -19,7 +19,7 @@ final class WidgetPackageListerTests: XCTestCase {
     directory = nil
   }
 
-  func testListsWidgetsBeforeLibrariesAndFiltersByKind() throws {
+  func testListsWidgetsBeforeLibrariesFiltersByKindAndIncludesPins() throws {
     let shared = package(name: "shared", version: "0.1.0", kind: .library)
     let github = package(name: "inbox-github", version: "0.3.0", kind: .widget)
     let brew = package(name: "brew", version: "0.2.0", kind: .widget)
@@ -30,11 +30,18 @@ final class WidgetPackageListerTests: XCTestCase {
       ),
       to: directory
     )
+    try WidgetPackagePinStore().write(["inbox-github"], to: directory)
 
     let lister = WidgetPackageLister(packagesDirectory: directory)
-    XCTAssertEqual(try lister.installed(filter: .all), [brew, github, shared])
-    XCTAssertEqual(try lister.installed(filter: .widgets), [brew, github])
-    XCTAssertEqual(try lister.installed(filter: .libraries), [shared])
+    XCTAssertEqual(
+      try lister.installed(filter: .all),
+      [status(brew), status(github, pinned: true), status(shared)]
+    )
+    XCTAssertEqual(
+      try lister.installed(filter: .widgets),
+      [status(brew), status(github, pinned: true)]
+    )
+    XCTAssertEqual(try lister.installed(filter: .libraries), [status(shared)])
   }
 
   func testMissingDatabaseReturnsAnEmptyList() throws {
@@ -44,21 +51,28 @@ final class WidgetPackageListerTests: XCTestCase {
     )
   }
 
-  func testHumanOutputAlignsNamesVersionsAndKinds() {
+  func testHumanOutputAlignsNamesVersionsKindsAndPins() {
     let packages = [
-      package(name: "brew", version: "0.2.0", kind: .widget),
-      package(name: "shared", version: "0.1.0", kind: .library),
+      status(package(name: "brew", version: "0.2.0", kind: .widget), pinned: true),
+      status(package(name: "shared", version: "0.1.0", kind: .library)),
     ]
 
     XCTAssertEqual(
       CLIOutput.installedWidgetPackagesText(packages),
       """
-      NAME    VERSION  KIND
-      brew    0.2.0    widget
-      shared  0.1.0    library
+      NAME    VERSION  KIND     PINNED
+      brew    0.2.0    widget   yes
+      shared  0.1.0    library  no
       """
     )
     XCTAssertEqual(CLIOutput.installedWidgetPackagesText([]), "No packages installed.")
+  }
+
+  private func status(
+    _ package: InstalledWidgetPackage,
+    pinned: Bool = false
+  ) -> InstalledWidgetPackageStatus {
+    InstalledWidgetPackageStatus(package: package, pinned: pinned)
   }
 
   private func package(

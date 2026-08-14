@@ -19,7 +19,10 @@ final class WidgetPackageUninstaller {
     }
 
     let databaseStore = WidgetPackageDatabaseStore(fileManager: fileManager)
+    let pinStore = WidgetPackagePinStore(fileManager: fileManager)
     var database = try databaseStore.load(from: packagesDirectory)
+    let originalPins = try pinStore.load(from: packagesDirectory)
+    var pins = originalPins
     guard let package = database.packages.first(where: { $0.name == name }) else {
       throw WidgetPackageError.packageNotInstalled(name)
     }
@@ -41,6 +44,7 @@ final class WidgetPackageUninstaller {
     let activeDirectory = WidgetPackageStore.activeDirectory(in: packagesDirectory)
     let storeDirectory = WidgetPackageStore.storeDirectory(in: packagesDirectory)
     var moves: [(original: URL, staged: URL)] = []
+    var pinStateChanged = false
 
     func stage(_ original: URL, at relativePath: String) throws {
       guard itemExists(original) else { return }
@@ -72,9 +76,20 @@ final class WidgetPackageUninstaller {
       )
 
       database.packages.removeAll { $0.name == name }
+      if pins.remove(name) != nil {
+        try pinStore.write(pins, to: packagesDirectory)
+        pinStateChanged = true
+      }
       try databaseStore.write(database, to: packagesDirectory)
     } catch {
       var restorationFailure: Error?
+      if pinStateChanged {
+        do {
+          try pinStore.write(originalPins, to: packagesDirectory)
+        } catch {
+          restorationFailure = error
+        }
+      }
       for move in moves.reversed() where itemExists(move.staged) {
         do {
           try fileManager.createDirectory(

@@ -276,6 +276,24 @@ private func parseCommand(
       )
     )
 
+  case .pinWidgetPackage:
+    return .pinWidgetPackage(
+      try parseWidgetPackageName(
+        arguments,
+        command: descriptor,
+        global: &global
+      )
+    )
+
+  case .unpinWidgetPackage:
+    return .unpinWidgetPackage(
+      try parseWidgetPackageName(
+        arguments,
+        command: descriptor,
+        global: &global
+      )
+    )
+
   case .outdatedWidgetPackages:
     return .outdatedWidgetPackages(
       registry: try parseWidgetPackageRegistryOnlyOptions(
@@ -296,7 +314,7 @@ private func parseCommand(
 
   case .uninstallWidgetPackage:
     return .uninstallWidgetPackage(
-      try parseWidgetPackageUninstallName(
+      try parseWidgetPackageName(
         arguments,
         command: descriptor,
         global: &global
@@ -453,7 +471,7 @@ private func widgetPackageUpdateSelection(
   throw AppError.message("widgets update requires exactly one package name or --all")
 }
 
-private func parseWidgetPackageUninstallName(
+private func parseWidgetPackageName(
   _ arguments: [String],
   command: CLICommandDescriptor,
   global: inout GlobalOptionState
@@ -474,17 +492,17 @@ private func parseWidgetPackageUninstallName(
       continue
     }
     guard !argument.hasPrefix("-") else {
-      throw AppError.message("unknown widgets uninstall option '\(argument)'")
+      throw AppError.message("unknown \(command.commandText) option '\(argument)'")
     }
     guard name == nil else {
-      throw AppError.message("widgets uninstall requires exactly one package name")
+      throw AppError.message("\(command.commandText) requires exactly one package name")
     }
     name = argument
     index += 1
   }
 
   guard let name, !name.isEmpty else {
-    throw AppError.message("widgets uninstall requires a package name")
+    throw AppError.message("\(command.commandText) requires a package name")
   }
   return name
 }
