@@ -178,7 +178,7 @@ final class EasyBarMenuFactory: NSObject {
         ("privacy_spacer", "Privacy Spacer", builtins.privacySpacer.enabled),
         ("battery", "Battery", builtins.battery.enabled),
         ("wifi", "Wi-Fi", builtins.wifi.enabled),
-        ("calendar", "Calendar", builtins.calendar.enabled),
+        ("calendar", "Calendar", builtins.calendar.placement.enabled),
         ("volume", "Volume", builtins.volume.enabled),
         ("front_app", "Front App", builtins.frontApp.enabled),
         ("aerospace_mode", "AeroSpace Mode", builtins.aerospaceMode.enabled),

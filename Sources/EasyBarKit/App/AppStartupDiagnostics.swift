@@ -53,10 +53,10 @@ struct AppStartupDiagnostics {
     )
     logger.debug(
       "config details",
-      .field("calendar_builtin_enabled", services.config.builtinCalendar.enabled),
+      .field("calendar_builtin_enabled", services.config.builtinCalendar.placement.enabled),
       .field("popup_mode", services.config.builtinCalendar.popupMode.rawValue),
       .field("anchor_layout", services.config.builtinCalendar.anchor.layout.rawValue),
-      .field("position", services.config.builtinCalendar.position.rawValue)
+      .field("position", services.config.builtinCalendar.placement.position.rawValue)
     )
     logger.debug(
       "config details",

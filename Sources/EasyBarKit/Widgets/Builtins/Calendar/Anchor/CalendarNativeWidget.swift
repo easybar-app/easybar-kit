@@ -108,7 +108,7 @@ final class CalendarNativeWidget: NativeWidget {
       }
     }
 
-    startedCalendarAgent = snapshot.config.enabled && calendarAgentConfig.enabled
+    startedCalendarAgent = snapshot.config.placement.enabled && calendarAgentConfig.enabled
     startedPopupMode = snapshot.config.popupMode
 
     if startedCalendarAgent {
@@ -190,10 +190,10 @@ extension CalendarNativeWidget {
     case .toggleAnchorField(let field):
       toggleAnchorField(field)
     case .setTodayMarkerVariant(let variant):
-      sessionConfig.month.popup.todayMarkerVariant = variant
+      sessionConfig.month.popup.calendar.todayMarkerVariant = variant
       persistConfiguration()
     case .setTodayMarkerSize(let size):
-      sessionConfig.month.popup.todayMarkerSize = Double(size)
+      sessionConfig.month.popup.calendar.todayMarkerSize = Double(size)
       persistConfiguration()
     case .toggleAppointmentOption(let optionID):
       toggleAppointmentOption(optionID)
@@ -261,11 +261,11 @@ extension CalendarNativeWidget {
       ),
       TOMLEdit(
         path: ["builtins", "calendar", "month", "popup", "calendar", "today_marker_variant"],
-        value: .string(sessionConfig.month.popup.todayMarkerVariant.rawValue)
+        value: .string(sessionConfig.month.popup.calendar.todayMarkerVariant.rawValue)
       ),
       TOMLEdit(
         path: ["builtins", "calendar", "month", "popup", "calendar", "today_marker_size"],
-        value: .double(sessionConfig.month.popup.todayMarkerSize)
+        value: .double(sessionConfig.month.popup.calendar.todayMarkerSize)
       ),
     ]
     edits.append(

@@ -99,23 +99,23 @@ enum CalendarContextMenu {
       WidgetContextMenuItem(
         id: "calendar.today_marker.variant.\(variant.rawValue)",
         title: todayMarkerTitle(variant),
-        checked: config.month.popup.todayMarkerVariant == variant
+        checked: config.month.popup.calendar.todayMarkerVariant == variant
       )
     }
     var todayMarkerSizes = CalendarContextMenuAction.allowedTodayMarkerSizes.map { size in
       WidgetContextMenuItem(
         id: "calendar.today_marker.size.\(size)",
         title: "\(size) pt",
-        checked: config.month.popup.todayMarkerSize == Double(size)
+        checked: config.month.popup.calendar.todayMarkerSize == Double(size)
       )
     }
     if !CalendarContextMenuAction.allowedTodayMarkerSizes.contains(where: {
-      config.month.popup.todayMarkerSize == Double($0)
+      config.month.popup.calendar.todayMarkerSize == Double($0)
     }) {
       todayMarkerSizes.insert(
         WidgetContextMenuItem(
           id: CalendarContextMenuAction.customTodayMarkerSizeID,
-          title: "Custom: \(formattedMarkerSize(config.month.popup.todayMarkerSize)) pt",
+          title: "Custom: \(formattedMarkerSize(config.month.popup.calendar.todayMarkerSize)) pt",
           enabled: false,
           checked: true
         ),

@@ -92,7 +92,7 @@ final class ConfigSnapshotStore: ObservableObject {
       case "aerospace_mode": builtins.aerospaceMode.enabled = enabled
       case "volume": builtins.volume.enabled = enabled
       case "wifi": builtins.wifi.enabled = enabled
-      case "calendar": builtins.calendar.enabled = enabled
+      case "calendar": builtins.calendar.placement.enabled = enabled
       case "time": builtins.time.placement.enabled = enabled
       case "date": builtins.date.placement.enabled = enabled
       default: return

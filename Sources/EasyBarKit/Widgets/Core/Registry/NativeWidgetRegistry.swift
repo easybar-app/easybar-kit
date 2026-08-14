@@ -360,7 +360,7 @@ final class NativeWidgetRegistry {
           format: builtins.time.content.format
         )
       },
-      Registration(id: "calendar", enabled: builtins.calendar.enabled) {
+      Registration(id: "calendar", enabled: builtins.calendar.placement.enabled) {
         CalendarNativeWidget(
           config: builtins.calendar,
           calendarAgentConfig: calendarAgent,

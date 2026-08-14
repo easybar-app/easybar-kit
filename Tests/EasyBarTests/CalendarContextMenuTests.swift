@@ -10,8 +10,8 @@ final class CalendarContextMenuTests: XCTestCase {
     config.anchor.layout = .column
     config.anchor.fields = [.time]
     config.appointments.showLocation = false
-    config.month.popup.todayMarkerVariant = .openLoop
-    config.month.popup.todayMarkerSize = 24
+    config.month.popup.calendar.todayMarkerVariant = .openLoop
+    config.month.popup.calendar.todayMarkerSize = 24
 
     let menu = CalendarContextMenu.make(config: config)
     let validated = try XCTUnwrap(WidgetContextMenuItem.validated(menu))
@@ -51,7 +51,7 @@ final class CalendarContextMenuTests: XCTestCase {
 
   func testMenuPreservesCustomTodayMarkerSize() throws {
     var config = CalendarBuiltinConfig.default
-    config.month.popup.todayMarkerSize = 22.5
+    config.month.popup.calendar.todayMarkerSize = 22.5
 
     let menu = try XCTUnwrap(
       WidgetContextMenuItem.validated(CalendarContextMenu.make(config: config))

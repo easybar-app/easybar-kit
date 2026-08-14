@@ -155,7 +155,7 @@ final class ConfigLoaderBuiltinTests: ConfigLoaderTestCase {
     XCTAssertTrue(config.builtinSpaces.enabled)
     XCTAssertTrue(config.builtinBattery.enabled)
     XCTAssertTrue(config.builtinWiFi.enabled)
-    XCTAssertTrue(config.builtinCalendar.enabled)
+    XCTAssertTrue(config.builtinCalendar.placement.enabled)
   }
 
   /// Verifies that reload applies config file overrides and creates required directories.
@@ -315,7 +315,7 @@ final class ConfigLoaderBuiltinTests: ConfigLoaderTestCase {
 
     XCTAssertNil(error)
     XCTAssertEqual(
-      config.builtinCalendar.month.popup.layout,
+      config.builtinCalendar.month.popup.agenda.layout,
       .appointmentsCalendarVertical
     )
     XCTAssertEqual(
@@ -346,12 +346,12 @@ final class ConfigLoaderBuiltinTests: ConfigLoaderTestCase {
     setEnvironmentValue(configFileURL.path, for: SharedEnvironmentKeys.configPath)
 
     XCTAssertNil(config.reload())
-    XCTAssertEqual(config.builtinCalendar.month.popup.todayMarkerVariant, .openLoop)
-    XCTAssertEqual(config.builtinCalendar.month.popup.todayMarkerSize, 24.5)
-    XCTAssertEqual(config.builtinCalendar.month.popup.todayButtonPaddingX, 9)
-    XCTAssertEqual(config.builtinCalendar.month.popup.todayButtonPaddingY, 3)
-    XCTAssertEqual(config.builtinCalendar.month.popup.todayButtonMarginX, 2)
-    XCTAssertEqual(config.builtinCalendar.month.popup.todayButtonMarginY, 1)
+    XCTAssertEqual(config.builtinCalendar.month.popup.calendar.todayMarkerVariant, .openLoop)
+    XCTAssertEqual(config.builtinCalendar.month.popup.calendar.todayMarkerSize, 24.5)
+    XCTAssertEqual(config.builtinCalendar.month.popup.todayButton.paddingX, 9)
+    XCTAssertEqual(config.builtinCalendar.month.popup.todayButton.paddingY, 3)
+    XCTAssertEqual(config.builtinCalendar.month.popup.todayButton.marginX, 2)
+    XCTAssertEqual(config.builtinCalendar.month.popup.todayButton.marginY, 1)
     XCTAssertEqual(config.builtinCalendar.calendarMonthPopupUIConfig.todayMarkerVariant, .openLoop)
     XCTAssertEqual(config.builtinCalendar.calendarMonthPopupUIConfig.todayMarkerSize, 24.5)
     XCTAssertEqual(config.builtinCalendar.calendarMonthPopupUIConfig.todayButtonPaddingX, 9)
@@ -808,9 +808,9 @@ extension ConfigLoaderBuiltinTests {
     let error = config.reload()
 
     XCTAssertNil(error)
-    XCTAssertEqual(config.builtinCalendar.composer.createTitle, "Create")
-    XCTAssertTrue(config.builtinCalendar.composer.alertLabels.isEmpty)
-    XCTAssertTrue(config.builtinCalendar.composer.travelTimeLabels.isEmpty)
+    XCTAssertEqual(config.builtinCalendar.composer.content.createTitle, "Create")
+    XCTAssertTrue(config.builtinCalendar.composer.content.alertLabels.isEmpty)
+    XCTAssertTrue(config.builtinCalendar.composer.content.travelTimeLabels.isEmpty)
   }
 
   func testCalendarComposerLabelOverrideSectionsCanPartiallyOverrideSystemLabels() throws {
@@ -832,8 +832,8 @@ extension ConfigLoaderBuiltinTests {
     let error = config.reload()
 
     XCTAssertNil(error)
-    XCTAssertEqual(config.builtinCalendar.composer.alertLabels, ["5_minutes": "Five before"])
+    XCTAssertEqual(config.builtinCalendar.composer.content.alertLabels, ["5_minutes": "Five before"])
     XCTAssertEqual(
-      config.builtinCalendar.composer.travelTimeLabels, ["90_minutes": "Ninety travel"])
+      config.builtinCalendar.composer.content.travelTimeLabels, ["90_minutes": "Ninety travel"])
   }
 }

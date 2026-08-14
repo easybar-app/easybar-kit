@@ -40,7 +40,7 @@ enum ConfigSemanticWarningBuilder {
   }
 
   private static func calendarDependsOnDisabledAgent(_ snapshot: ConfigSnapshot) -> Bool {
-    snapshot.builtins.calendar.enabled && !snapshot.calendarAgent.enabled
+    snapshot.builtins.calendar.placement.enabled && !snapshot.calendarAgent.enabled
   }
 
   private static func wifiDependsOnDisabledAgent(_ snapshot: ConfigSnapshot) -> Bool {

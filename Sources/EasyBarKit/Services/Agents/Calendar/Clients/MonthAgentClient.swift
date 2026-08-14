@@ -313,7 +313,7 @@ final class MonthCalendarAgentClient {
   private func resolvedCalendar() -> Calendar {
     var calendar = Calendar.current
 
-    if let firstWeekday = calendarConfig.month.popup.firstWeekday {
+    if let firstWeekday = calendarConfig.month.popup.calendar.firstWeekday {
       calendar.firstWeekday = firstWeekday
     }
 
