@@ -67,6 +67,61 @@ final class WidgetPackageManifestParserTests: XCTestCase {
     }
   }
 
+  func testRejectsSymbolicLinkUsedAsEntrypoint() throws {
+    let directory = try makePackage(
+      manifest: """
+        manifest_version = 2
+        name = "clock"
+        version = "1.2.3"
+        minimum_easybar_kit_version = "0.50.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """
+    )
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let entrypoint = directory.appending(path: "widget.lua")
+    let target = directory.appending(path: "target.lua")
+    try FileManager.default.removeItem(at: entrypoint)
+    try "return nil\n".write(to: target, atomically: true, encoding: .utf8)
+    try FileManager.default.createSymbolicLink(
+      at: entrypoint,
+      withDestinationURL: target
+    )
+
+    XCTAssertThrowsError(try WidgetPackageManifestParser.parse(directory: directory)) { error in
+      XCTAssertEqual(
+        error as? WidgetPackageError,
+        .invalidManifest("unsafe or missing entrypoint: widget.lua")
+      )
+    }
+  }
+
+  func testRejectsDirectoryUsedAsEntrypoint() throws {
+    let directory = try makePackage(
+      manifest: """
+        manifest_version = 2
+        name = "clock"
+        version = "1.2.3"
+        minimum_easybar_kit_version = "0.50.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """
+    )
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let entrypoint = directory.appending(path: "widget.lua")
+    try FileManager.default.removeItem(at: entrypoint)
+    try FileManager.default.createDirectory(at: entrypoint, withIntermediateDirectories: false)
+
+    XCTAssertThrowsError(try WidgetPackageManifestParser.parse(directory: directory)) { error in
+      XCTAssertEqual(
+        error as? WidgetPackageError,
+        .invalidManifest("unsafe or missing entrypoint: widget.lua")
+      )
+    }
+  }
+
   private func makePackage(manifest: String) throws -> URL {
     let directory = FileManager.default.temporaryDirectory.appending(
       path: "easybar-manifest-parser-\(UUID().uuidString)",

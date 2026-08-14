@@ -1,35 +1,59 @@
 import Foundation
 
+/// Exact or caret constraint used by widget package dependencies.
 struct VersionConstraint: CustomStringConvertible, Equatable {
+  private enum Kind: Equatable {
+    case exact(SemanticVersion)
+    case caret(SemanticVersion)
+  }
+
   let rawValue: String
+  private let kind: Kind
 
   init?(_ rawValue: String) {
-    let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-    let versionText =
-      trimmed.hasPrefix("^")
-      ? String(trimmed.dropFirst())
-      : String(trimmed.drop(while: { $0 == "=" || $0 == " " }))
-    guard !trimmed.isEmpty, SemanticVersion(versionText) != nil else { return nil }
-    self.rawValue = trimmed
+    guard !rawValue.isEmpty,
+      rawValue == rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+    else {
+      return nil
+    }
+
+    if rawValue.hasPrefix("^") {
+      guard let minimum = SemanticVersion(String(rawValue.dropFirst())) else { return nil }
+      self.rawValue = rawValue
+      kind = .caret(minimum)
+      return
+    }
+
+    guard let exact = SemanticVersion(rawValue) else { return nil }
+    self.rawValue = rawValue
+    kind = .exact(exact)
   }
 
   var description: String { rawValue }
 
   func contains(_ version: SemanticVersion) -> Bool {
-    if rawValue.hasPrefix("^") {
-      guard let minimum = SemanticVersion(String(rawValue.dropFirst())) else { return false }
-      let maximum: SemanticVersion
-      if minimum.major > 0 {
-        maximum = SemanticVersion(major: minimum.major + 1, minor: 0, patch: 0)
-      } else if minimum.minor > 0 {
-        maximum = SemanticVersion(major: 0, minor: minimum.minor + 1, patch: 0)
-      } else {
-        maximum = SemanticVersion(major: 0, minor: 0, patch: minimum.patch + 1)
-      }
-      return version >= minimum && version < maximum
+    switch kind {
+    case .exact(let exact):
+      return version == exact
+    case .caret(let minimum):
+      guard version >= minimum else { return false }
+      guard let maximum = Self.caretUpperBound(for: minimum) else { return true }
+      return version < maximum
+    }
+  }
+
+  private static func caretUpperBound(for minimum: SemanticVersion) -> SemanticVersion? {
+    if minimum.major > 0 {
+      let (major, overflow) = minimum.major.addingReportingOverflow(1)
+      return overflow ? nil : SemanticVersion(major: major, minor: 0, patch: 0)
     }
 
-    let exact = rawValue.trimmingCharacters(in: CharacterSet(charactersIn: "= "))
-    return SemanticVersion(exact) == version
+    if minimum.minor > 0 {
+      let (minor, overflow) = minimum.minor.addingReportingOverflow(1)
+      return overflow ? nil : SemanticVersion(major: 0, minor: minor, patch: 0)
+    }
+
+    let (patch, overflow) = minimum.patch.addingReportingOverflow(1)
+    return overflow ? nil : SemanticVersion(major: 0, minor: 0, patch: patch)
   }
 }

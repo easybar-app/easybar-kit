@@ -152,9 +152,14 @@ enum WidgetPackageManifestParser {
   ) throws {
     guard !relativePath.isEmpty,
       !relativePath.hasPrefix("/"),
-      !relativePath.split(separator: "/", omittingEmptySubsequences: false).contains(".."),
-      FileManager.default.fileExists(atPath: directory.appending(path: relativePath).path)
+      !relativePath.split(separator: "/", omittingEmptySubsequences: false).contains("..")
     else {
+      throw WidgetPackageError.invalidManifest("unsafe or missing \(label): \(relativePath)")
+    }
+
+    let fileURL = directory.appending(path: relativePath)
+    let values = try? fileURL.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
+    guard values?.isRegularFile == true, values?.isSymbolicLink != true else {
       throw WidgetPackageError.invalidManifest("unsafe or missing \(label): \(relativePath)")
     }
   }

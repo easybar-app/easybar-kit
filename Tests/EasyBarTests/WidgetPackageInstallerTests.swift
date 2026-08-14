@@ -214,7 +214,7 @@ final class WidgetPackageInstallerTests: XCTestCase {
     }
   }
 
-  func testDirectArchiveURLRequiresAHash() async throws {
+  func testDirectFileArchiveURLIsTreatedAsLocal() async throws {
     let package = directory.appending(path: "direct", directoryHint: .isDirectory)
     try writePackage(
       at: package,
@@ -231,12 +231,9 @@ final class WidgetPackageInstallerTests: XCTestCase {
     let archive = directory.appending(path: "direct-1.0.0.tar.gz")
     try createArchive(package: package, archive: archive, files: ["package.toml", "widget.lua"])
 
-    do {
-      _ = try await install(archive.absoluteString, useRegistry: false)
-      XCTFail("Expected a checksum requirement")
-    } catch let error as WidgetPackageError {
-      XCTAssertEqual(error, .checksumRequired(archive.absoluteString))
-    }
+    let installed = try await install(archive.absoluteString, useRegistry: false)
+
+    XCTAssertEqual(installed.map(\.name), ["direct"])
   }
 
   func testRejectsInstallingAnAlreadyInstalledPackage() async throws {

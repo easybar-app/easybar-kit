@@ -135,11 +135,27 @@ final class WidgetPackageResolver {
   }
 
   private func rootRequest(source: String, sha256: String?) throws -> WidgetPackageRequest {
-    if let url = remoteURL(source) {
-      return .archive(url, sha256: sha256, remote: true)
+    if let url = URL(string: source), let scheme = url.scheme?.lowercased() {
+      switch scheme {
+      case "https":
+        return .archive(url, sha256: sha256, remote: true)
+      case "file":
+        return .archive(url, sha256: sha256, remote: false)
+      default:
+        throw WidgetPackageError.invalidSource("unsupported URL scheme '\(scheme)'")
+      }
     }
 
     let expanded = NSString(string: source).expandingTildeInPath
+    return try localRequest(path: expanded, sha256: sha256, originalSource: source)
+  }
+
+  private func localRequest(
+    path: String,
+    sha256: String?,
+    originalSource: String? = nil
+  ) throws -> WidgetPackageRequest {
+    let expanded = NSString(string: path).expandingTildeInPath
     var isDirectory: ObjCBool = false
     if FileManager.default.fileExists(atPath: expanded, isDirectory: &isDirectory) {
       let url = URL(fileURLWithPath: expanded, isDirectory: isDirectory.boolValue)
@@ -152,12 +168,13 @@ final class WidgetPackageResolver {
       return .archive(url, sha256: sha256, remote: false)
     }
 
-    guard WidgetPackageManifestParser.isPackageName(source) else {
+    let source = originalSource ?? path
+    guard originalSource != nil, WidgetPackageManifestParser.isPackageName(source) else {
       throw WidgetPackageError.invalidSource("path does not exist: \(source)")
     }
     guard useRegistry else {
       throw WidgetPackageError.invalidSource(
-        "bare package names require a registry; provide a local path or archive URL"
+        "bare package names require a registry; provide a local path or HTTPS archive URL"
       )
     }
     guard sha256 == nil else {
@@ -196,7 +213,7 @@ final class WidgetPackageResolver {
       }
       guard let release = releases.max(by: { $0.1 < $1.1 })?.0,
         let url = URL(string: release.archive),
-        ["https", "http", "file"].contains(url.scheme?.lowercased() ?? "")
+        ["https", "file"].contains(url.scheme?.lowercased() ?? "")
       else {
         throw WidgetPackageError.unavailableDependency(
           package: resolving.last ?? name,
@@ -300,11 +317,11 @@ final class WidgetPackageResolver {
   }
 
   private func loadData(from url: URL, maximumBytes: Int) async throws -> Data {
-    let data: Data
+    let sourceURL: URL
     if url.isFileURL {
-      data = try Data(contentsOf: url)
+      sourceURL = url
     } else {
-      let (downloaded, response) = try await URLSession.shared.data(from: url)
+      let (downloadedURL, response) = try await URLSession.shared.download(from: url)
       if let response = response as? HTTPURLResponse,
         !(200...299).contains(response.statusCode)
       {
@@ -312,20 +329,17 @@ final class WidgetPackageResolver {
           "\(url.absoluteString) returned HTTP \(response.statusCode)"
         )
       }
-      data = downloaded
+      sourceURL = downloadedURL
     }
-    guard data.count <= maximumBytes else {
+
+    let values = try sourceURL.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+    guard values.isRegularFile == true else {
+      throw WidgetPackageError.invalidSource("archive is not a regular file: \(url.absoluteString)")
+    }
+    guard let fileSize = values.fileSize, fileSize <= maximumBytes else {
       throw WidgetPackageError.archiveTooLarge(maximumBytes)
     }
-    return data
-  }
-
-  private func remoteURL(_ source: String) -> URL? {
-    guard let url = URL(string: source),
-      let scheme = url.scheme?.lowercased(),
-      ["https", "http", "file"].contains(scheme)
-    else { return nil }
-    return url
+    return try Data(contentsOf: sourceURL, options: .mappedIfSafe)
   }
 
   private func rejectSymbolicLinks(in directory: URL) throws {

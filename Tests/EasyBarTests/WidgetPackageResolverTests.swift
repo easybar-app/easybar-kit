@@ -53,4 +53,55 @@ final class WidgetPackageResolverTests: XCTestCase {
       )
     }
   }
+  func testHTTPSArchiveRequiresChecksumBeforeDownloading() async throws {
+    let downloads = FileManager.default.temporaryDirectory.appending(
+      path: "easybar-resolver-downloads-\(UUID().uuidString)",
+      directoryHint: .isDirectory
+    )
+    try FileManager.default.createDirectory(at: downloads, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: downloads) }
+
+    let resolver = WidgetPackageResolver(
+      registrySource: nil,
+      useRegistry: false,
+      temporaryDirectory: downloads,
+      installed: [],
+      logger: ProcessLogger(label: "resolver-tests", minimumLevel: .error),
+      currentKitVersion: nil
+    )
+    let source = "https://example.invalid/package.tar.gz"
+
+    do {
+      _ = try await resolver.resolve(source: source, sha256: nil)
+      XCTFail("Expected checksum requirement before network access")
+    } catch let error as WidgetPackageError {
+      XCTAssertEqual(error, .checksumRequired(source))
+    }
+  }
+
+  func testRejectsPlaintextHTTPArchiveSources() async throws {
+    let downloads = FileManager.default.temporaryDirectory.appending(
+      path: "easybar-resolver-downloads-\(UUID().uuidString)",
+      directoryHint: .isDirectory
+    )
+    try FileManager.default.createDirectory(at: downloads, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: downloads) }
+
+    let resolver = WidgetPackageResolver(
+      registrySource: nil,
+      useRegistry: false,
+      temporaryDirectory: downloads,
+      installed: [],
+      logger: ProcessLogger(label: "resolver-tests", minimumLevel: .error),
+      currentKitVersion: nil
+    )
+
+    do {
+      _ = try await resolver.resolve(source: "http://example.invalid/package.tar.gz", sha256: nil)
+      XCTFail("Expected plaintext HTTP to be rejected")
+    } catch let error as WidgetPackageError {
+      XCTAssertEqual(error, .invalidSource("unsupported URL scheme 'http'"))
+    }
+  }
+
 }

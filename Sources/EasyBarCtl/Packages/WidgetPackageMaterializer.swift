@@ -297,15 +297,16 @@ struct WidgetPackageMaterializer {
       )
     else { return }
 
-    let versions = entries.compactMap { url -> (url: URL, modified: Date)? in
-      guard SemanticVersion(url.lastPathComponent) != nil else { return nil }
+    let versions = entries.compactMap {
+      url -> (url: URL, version: SemanticVersion, modified: Date)? in
+      guard let version = SemanticVersion(url.lastPathComponent) else { return nil }
       guard
         let values = try? url.resourceValues(forKeys: [
           .isDirectoryKey, .contentModificationDateKey,
         ]),
         values.isDirectory == true
       else { return nil }
-      return (url, values.contentModificationDate ?? .distantPast)
+      return (url, version, values.contentModificationDate ?? .distantPast)
     }
 
     let previous =
@@ -315,7 +316,7 @@ struct WidgetPackageMaterializer {
         if left.modified != right.modified {
           return left.modified > right.modified
         }
-        return left.url.lastPathComponent > right.url.lastPathComponent
+        return left.version > right.version
       }
 
     var retained = Set([activeVersion])

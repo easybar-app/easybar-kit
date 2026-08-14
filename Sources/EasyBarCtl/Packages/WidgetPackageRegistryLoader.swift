@@ -21,14 +21,63 @@ struct WidgetPackageRegistryLoader {
     guard Set(registry.packages.map(\.name)).count == registry.packages.count else {
       throw WidgetPackageError.invalidRegistry("registry contains duplicate package names")
     }
+    try validatePackages(registry.packages)
     return registry
   }
 
+  private func validatePackages(_ packages: [PackageRegistryEntry]) throws {
+    for package in packages {
+      guard WidgetPackageManifestParser.isPackageName(package.name) else {
+        throw WidgetPackageError.invalidRegistry("invalid package name '\(package.name)'")
+      }
+      guard SemanticVersion(package.latest) != nil else {
+        throw WidgetPackageError.invalidRegistry(
+          "package '\(package.name)' has invalid latest version '\(package.latest)'"
+        )
+      }
+      guard !package.versions.isEmpty else {
+        throw WidgetPackageError.invalidRegistry("package '\(package.name)' has no releases")
+      }
+      guard Set(package.versions.map(\.version)).count == package.versions.count else {
+        throw WidgetPackageError.invalidRegistry(
+          "package '\(package.name)' contains duplicate release versions"
+        )
+      }
+      guard package.versions.contains(where: { $0.version == package.latest }) else {
+        throw WidgetPackageError.invalidRegistry(
+          "package '\(package.name)' latest version is not present in releases"
+        )
+      }
+
+      for release in package.versions {
+        guard SemanticVersion(release.version) != nil else {
+          throw WidgetPackageError.invalidRegistry(
+            "package '\(package.name)' has invalid release version '\(release.version)'"
+          )
+        }
+        guard
+          let archiveURL = URL(string: release.archive),
+          ["https", "file"].contains(archiveURL.scheme?.lowercased() ?? "")
+        else {
+          throw WidgetPackageError.invalidRegistry(
+            "package '\(package.name)' release '\(release.version)' has an invalid archive URL"
+          )
+        }
+        guard release.sha256.range(of: "^[0-9A-Fa-f]{64}$", options: .regularExpression) != nil
+        else {
+          throw WidgetPackageError.invalidRegistry(
+            "package '\(package.name)' release '\(release.version)' has an invalid SHA-256"
+          )
+        }
+      }
+    }
+  }
+
   private func sourceURL(_ source: String) throws -> URL {
-    if let url = URL(string: source),
-      let scheme = url.scheme?.lowercased(),
-      ["https", "http", "file"].contains(scheme)
-    {
+    if let url = URL(string: source), let scheme = url.scheme?.lowercased() {
+      guard scheme == "https" || scheme == "file" else {
+        throw WidgetPackageError.invalidRegistry("unsupported URL scheme '\(scheme)'")
+      }
       return url
     }
 
@@ -40,11 +89,11 @@ struct WidgetPackageRegistryLoader {
   }
 
   private func loadData(from url: URL) async throws -> Data {
-    let data: Data
+    let sourceURL: URL
     if url.isFileURL {
-      data = try Data(contentsOf: url)
+      sourceURL = url
     } else {
-      let (downloaded, response) = try await URLSession.shared.data(from: url)
+      let (downloadedURL, response) = try await URLSession.shared.download(from: url)
       if let response = response as? HTTPURLResponse,
         !(200...299).contains(response.statusCode)
       {
@@ -52,13 +101,18 @@ struct WidgetPackageRegistryLoader {
           "\(url.absoluteString) returned HTTP \(response.statusCode)"
         )
       }
-      data = downloaded
+      sourceURL = downloadedURL
     }
-    guard data.count <= Self.maximumBytes else {
+
+    let values = try sourceURL.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+    guard values.isRegularFile == true else {
+      throw WidgetPackageError.invalidRegistry("registry source is not a regular file")
+    }
+    guard let fileSize = values.fileSize, fileSize <= Self.maximumBytes else {
       throw WidgetPackageError.invalidRegistry(
         "registry exceeds the \(Self.maximumBytes)-byte limit"
       )
     }
-    return data
+    return try Data(contentsOf: sourceURL, options: .mappedIfSafe)
   }
 }
