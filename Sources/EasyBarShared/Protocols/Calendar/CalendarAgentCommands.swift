@@ -5,7 +5,6 @@ public enum CalendarAgentErrorCode: String, Codable, Equatable, Sendable {
   case accessDenied = "access_denied"
   case invalidDateRange = "invalid_date_range"
   case invalidRequest = "invalid_request"
-  case eventIdentifierUnavailable = "event_identifier_unavailable"
   case eventNotFound = "event_not_found"
   case noWritableCalendar = "no_writable_calendar"
   case missingQuery = "missing_query"

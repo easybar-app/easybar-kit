@@ -118,11 +118,12 @@ final class CalendarSocketServer {
         .field("command", request.command.rawValue),
         .field("error", error)
       )
+      let code = errorCode(for: error, fallback: .invalidRequest)
       return sendError(
         to: clientFD,
         requestID: request.requestID,
-        code: .invalidRequest,
-        message: errorMessage(for: error, code: .invalidRequest)
+        code: code,
+        message: errorMessage(for: error, code: code)
       )
     }
 
@@ -308,7 +309,7 @@ final class CalendarSocketServer {
       successKind: .created,
       failureLogMessage: "calendar event creation failed"
     ) { provider in
-      _ = try provider.createEvent(createEvent)
+      try provider.createEvent(createEvent)
     }
   }
 
@@ -441,23 +442,23 @@ final class CalendarSocketServer {
     for error: Error,
     fallback: CalendarAgentErrorCode
   ) -> CalendarAgentErrorCode {
-    if let createError = error as? CalendarAgentCreateError {
-      switch createError {
-      case .accessDenied:
-        return .accessDenied
-      case .invalidDateRange:
+    if let validationError = error as? CalendarAgentRequestValidationError {
+      switch validationError {
+      case .invalidDateRange, .dateRangeTooLarge:
         return .invalidDateRange
-      case .noWritableCalendar:
-        return .noWritableCalendar
-      case .eventIdentifierUnavailable:
-        return .eventIdentifierUnavailable
+      default:
+        return .invalidRequest
       }
     }
 
     if let mutationError = error as? CalendarAgentMutationError {
       switch mutationError {
+      case .accessDenied:
+        return .accessDenied
       case .eventNotFound:
         return .eventNotFound
+      case .noWritableCalendar:
+        return .noWritableCalendar
       }
     }
 

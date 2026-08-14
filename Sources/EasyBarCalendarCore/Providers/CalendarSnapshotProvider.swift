@@ -173,17 +173,12 @@ final class CalendarSnapshotProvider: @unchecked Sendable {
   }
 
   /// Creates one new calendar event through EventKit.
-  @discardableResult
-  func createEvent(_ draft: CalendarAgentCreateEvent) throws -> String {
+  func createEvent(_ draft: CalendarAgentCreateEvent) throws {
     try CalendarAgentRequestValidator.validate(draft)
     authorizationController.refreshStatus()
 
     guard authorizationController.effectiveAccessGranted() else {
-      throw CalendarAgentCreateError.accessDenied
-    }
-
-    guard draft.startDate < draft.endDate else {
-      throw CalendarAgentCreateError.invalidDateRange
+      throw CalendarAgentMutationError.accessDenied
     }
 
     let event = EKEvent(eventStore: eventStore)
@@ -212,14 +207,6 @@ final class CalendarSnapshotProvider: @unchecked Sendable {
       self?.onChange?()
     }
 
-    guard let eventIdentifier = normalizedOptionalText(event.eventIdentifier) else {
-      logger.error(
-        "calendar event saved without a stable EventKit identifier",
-        .field("title", event.title ?? "Untitled")
-      )
-      throw CalendarAgentCreateError.eventIdentifierUnavailable
-    }
-    return eventIdentifier
   }
 
   /// Updates one existing calendar event through EventKit.
@@ -228,15 +215,11 @@ final class CalendarSnapshotProvider: @unchecked Sendable {
     authorizationController.refreshStatus()
 
     guard authorizationController.effectiveAccessGranted() else {
-      throw CalendarAgentCreateError.accessDenied
+      throw CalendarAgentMutationError.accessDenied
     }
 
     guard let event = resolvedEvent(id: draft.eventIdentifier) else {
       throw CalendarAgentMutationError.eventNotFound
-    }
-
-    guard draft.startDate < draft.endDate else {
-      throw CalendarAgentCreateError.invalidDateRange
     }
 
     event.calendar = try resolvedCalendar(id: draft.calendarID)
@@ -277,7 +260,7 @@ final class CalendarSnapshotProvider: @unchecked Sendable {
     authorizationController.refreshStatus()
 
     guard authorizationController.effectiveAccessGranted() else {
-      throw CalendarAgentCreateError.accessDenied
+      throw CalendarAgentMutationError.accessDenied
     }
 
     guard let event = resolvedEvent(id: draft.eventIdentifier) else {

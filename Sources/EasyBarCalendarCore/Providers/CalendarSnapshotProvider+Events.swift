@@ -262,7 +262,7 @@ extension CalendarSnapshotProvider {
       return firstWritable
     }
 
-    throw CalendarAgentCreateError.noWritableCalendar
+    throw CalendarAgentMutationError.noWritableCalendar
   }
 
   /// Resolves one event by EventKit identifier.
