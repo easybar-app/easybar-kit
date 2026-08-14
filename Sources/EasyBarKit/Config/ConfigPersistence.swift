@@ -82,8 +82,14 @@ final class ConfigPersistence {
       throw WriteError.systemCall(operation: "mkstemp", code: errno)
     }
 
-    let temporaryPath = template.withUnsafeBufferPointer { buffer in
-      String(cString: buffer.baseAddress!)
+    guard
+      let temporaryPath = template.withUnsafeBufferPointer({ buffer -> String? in
+        guard let baseAddress = buffer.baseAddress else { return nil }
+        return String(cString: baseAddress)
+      })
+    else {
+      close(fileDescriptor)
+      throw WriteError.systemCall(operation: "mkstemp", code: EINVAL)
     }
     var shouldRemoveTemporaryFile = true
     defer {

@@ -12,7 +12,8 @@ private enum ScriptError: Error, LocalizedError {
   var errorDescription: String? {
     switch self {
     case .calendarAccessDenied:
-      return "Calendar access was not granted. Allow access in System Settings > Privacy & Security > Calendars."
+      return
+        "Calendar access was not granted. Allow access in System Settings > Privacy & Security > Calendars."
     case .invalidCurrentMonth:
       return "Could not determine the current month."
     case .noWritableCalendarSource:
@@ -56,7 +57,8 @@ private struct AppController {
     }
 
     let calendarName = arguments.first ?? "demo"
-    let clearExisting = ProcessInfo.processInfo.environment["CLEAR_EXISTING"]?.lowercased() != "false"
+    let clearExisting =
+      ProcessInfo.processInfo.environment["CLEAR_EXISTING"]?.lowercased() != "false"
 
     do {
       try populateCalendar(named: calendarName, clearExisting: clearExisting)
@@ -72,11 +74,11 @@ private struct AppController {
     print(
       """
       Usage:
-        ./scripts/populate-demo-calendar.swift
-        ./scripts/populate-demo-calendar.swift demo
+        ./scripts/tools/populate-demo-calendar.swift
+        ./scripts/tools/populate-demo-calendar.swift demo
 
       Optional:
-        CLEAR_EXISTING=false ./scripts/populate-demo-calendar.swift demo
+        CLEAR_EXISTING=false ./scripts/tools/populate-demo-calendar.swift demo
       """)
   }
 
@@ -318,10 +320,13 @@ private struct AppController {
 
     try store.commit()
 
-    print("Created \(createdCount) appointments in calendar \"\(calendarName)\" for the current month.")
+    print(
+      "Created \(createdCount) appointments in calendar \"\(calendarName)\" for the current month.")
     print("Events expected to show Join Meeting: \(joinMeetingActionCount).")
     print("Events expected to show Open URL: \(openURLActionCount).")
-    print("URL source coverage: event.url=\(eventURLCount), notes=\(notesURLCount), location=\(locationURLCount).")
+    print(
+      "URL source coverage: event.url=\(eventURLCount), notes=\(notesURLCount), location=\(locationURLCount)."
+    )
     print("Events with actual EventKit travel time set: \(travelTimeSetCount).")
     print("Events without native travel-time support still include travel time in the notes.")
   }

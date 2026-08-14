@@ -602,7 +602,7 @@ enum CLI {
     var best: (CLICommandDescriptor, Int)?
 
     for command in commands where arguments.starts(with: command.path) {
-      if best == nil || command.path.count > best!.1 {
+      if command.path.count > (best?.1 ?? -1) {
         best = (command, command.path.count)
       }
     }
