@@ -453,9 +453,9 @@ enum CLI {
     ),
     .init(
       path: ["widgets", "install"],
-      description: "Install a registry package, local package, or direct archive",
+      description: "Install a registry package/version, local package, or direct archive",
       kind: .installWidgetPackage,
-      usageArguments: ["<name|path|url>"],
+      usageArguments: ["<name[@version]|path|url>"],
       options: [
         packageSHA256Option,
         packageRegistryOption,

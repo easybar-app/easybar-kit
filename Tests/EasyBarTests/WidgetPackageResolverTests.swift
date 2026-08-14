@@ -53,6 +53,31 @@ final class WidgetPackageResolverTests: XCTestCase {
       )
     }
   }
+  func testRejectsInvalidExactRegistryVersion() async throws {
+    let downloads = FileManager.default.temporaryDirectory.appending(
+      path: "easybar-resolver-downloads-\(UUID().uuidString)",
+      directoryHint: .isDirectory
+    )
+    try FileManager.default.createDirectory(at: downloads, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: downloads) }
+
+    let resolver = WidgetPackageResolver(
+      registrySource: nil,
+      useRegistry: true,
+      temporaryDirectory: downloads,
+      installed: [],
+      logger: ProcessLogger(label: "resolver-tests", minimumLevel: .error),
+      currentKitVersion: nil
+    )
+
+    do {
+      _ = try await resolver.resolve(source: "clock@latest", sha256: nil)
+      XCTFail("Expected an invalid registry package version")
+    } catch let error as WidgetPackageError {
+      XCTAssertEqual(error, .invalidSource("invalid package version 'latest'"))
+    }
+  }
+
   func testHTTPSArchiveRequiresChecksumBeforeDownloading() async throws {
     let downloads = FileManager.default.temporaryDirectory.appending(
       path: "easybar-resolver-downloads-\(UUID().uuidString)",

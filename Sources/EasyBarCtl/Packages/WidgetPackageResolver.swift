@@ -169,18 +169,41 @@ final class WidgetPackageResolver {
     }
 
     let source = originalSource ?? path
-    guard originalSource != nil, WidgetPackageManifestParser.isPackageName(source) else {
+    guard originalSource != nil, let specifier = try registrySpecifier(source) else {
       throw WidgetPackageError.invalidSource("path does not exist: \(source)")
     }
     guard useRegistry else {
       throw WidgetPackageError.invalidSource(
-        "bare package names require a registry; provide a local path or HTTPS archive URL"
+        "registry package names require a registry; provide a local path or HTTPS archive URL"
       )
     }
     guard sha256 == nil else {
       throw WidgetPackageError.invalidSource("--sha256 is only valid for direct archives")
     }
-    return .registry(name: source, constraint: nil)
+    return .registry(name: specifier.name, constraint: specifier.constraint)
+  }
+
+  private func registrySpecifier(
+    _ source: String
+  ) throws -> (name: String, constraint: VersionConstraint?)? {
+    if WidgetPackageManifestParser.isPackageName(source) {
+      return (source, nil)
+    }
+
+    let components = source.split(separator: "@", omittingEmptySubsequences: false)
+    guard components.count > 1 else { return nil }
+
+    let name = String(components[0])
+    guard WidgetPackageManifestParser.isPackageName(name) else { return nil }
+    guard components.count == 2 else {
+      throw WidgetPackageError.invalidSource("invalid registry package selector '\(source)'")
+    }
+
+    let version = String(components[1])
+    guard let constraint = VersionConstraint(version) else {
+      throw WidgetPackageError.invalidSource("invalid package version '\(version)'")
+    }
+    return (name, constraint)
   }
 
   private func load(_ request: WidgetPackageRequest) async throws -> ResolvedWidgetPackage {
@@ -211,14 +234,24 @@ final class WidgetPackageResolver {
         else { return nil }
         return (release, version)
       }
-      guard let release = releases.max(by: { $0.1 < $1.1 })?.0,
-        let url = URL(string: release.archive),
-        ["https", "file"].contains(url.scheme?.lowercased() ?? "")
-      else {
+      guard let release = releases.max(by: { $0.1 < $1.1 })?.0 else {
+        if resolving.isEmpty, let constraint {
+          throw WidgetPackageError.unavailablePackageVersion(
+            package: name,
+            version: constraint.rawValue
+          )
+        }
         throw WidgetPackageError.unavailableDependency(
           package: resolving.last ?? name,
           dependency: name,
           constraint: constraint?.rawValue ?? entry.latest
+        )
+      }
+      guard let url = URL(string: release.archive),
+        ["https", "file"].contains(url.scheme?.lowercased() ?? "")
+      else {
+        throw WidgetPackageError.invalidRegistry(
+          "package '\(name)' release '\(release.version)' has an invalid archive URL"
         )
       }
       return try await loadArchive(url: url, expectedSHA256: release.sha256)

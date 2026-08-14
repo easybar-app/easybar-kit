@@ -164,6 +164,144 @@ final class WidgetPackageInstallerTests: XCTestCase {
     }
   }
 
+  func testInstallsAnExactRegistryVersionInsteadOfLatest() async throws {
+    let oldPackage = directory.appending(path: "caffeinate-1.0.0", directoryHint: .isDirectory)
+    try writePackage(
+      at: oldPackage,
+      manifest: """
+        manifest_version = 2
+        name = "caffeinate"
+        version = "1.0.0"
+        minimum_easybar_kit_version = "0.1.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """,
+      files: ["widget.lua": "return 'old'\n"]
+    )
+    let latestPackage = directory.appending(path: "caffeinate-1.1.0", directoryHint: .isDirectory)
+    try writePackage(
+      at: latestPackage,
+      manifest: """
+        manifest_version = 2
+        name = "caffeinate"
+        version = "1.1.0"
+        minimum_easybar_kit_version = "0.1.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """,
+      files: ["widget.lua": "return 'latest'\n"]
+    )
+
+    let oldArchive = directory.appending(path: "caffeinate-1.0.0.tar.gz")
+    let latestArchive = directory.appending(path: "caffeinate-1.1.0.tar.gz")
+    try createArchive(
+      package: oldPackage,
+      archive: oldArchive,
+      files: ["package.toml", "widget.lua"]
+    )
+    try createArchive(
+      package: latestPackage,
+      archive: latestArchive,
+      files: ["package.toml", "widget.lua"]
+    )
+
+    let index = directory.appending(path: "versioned-index.json")
+    try """
+    {
+      "registry_version": 1,
+      "packages": [{
+        "name": "caffeinate",
+        "kind": "widget",
+        "latest": "1.1.0",
+        "description": "Keep macOS awake.",
+        "categories": ["system"],
+        "versions": [
+          {
+            "version": "1.0.0",
+            "archive": "\(oldArchive.absoluteString)",
+            "sha256": "\(sha256(try Data(contentsOf: oldArchive)))"
+          },
+          {
+            "version": "1.1.0",
+            "archive": "\(latestArchive.absoluteString)",
+            "sha256": "\(sha256(try Data(contentsOf: latestArchive)))"
+          }
+        ]
+      }]
+    }
+    """.write(to: index, atomically: true, encoding: .utf8)
+
+    let installed = try await installer.install(
+      options: WidgetPackageInstallOptions(
+        source: "caffeinate@1.0.0",
+        sha256: nil,
+        registry: index.path,
+        useRegistry: true,
+        force: false
+      )
+    )
+
+    XCTAssertEqual(installed.map(\.version), ["1.0.0"])
+    XCTAssertEqual(try installedDatabase().packages.first?.version, "1.0.0")
+    XCTAssertEqual(try managedFileContents("active/caffeinate"), "return 'old'\n")
+    XCTAssertTrue(fileExists("store/caffeinate/1.0.0"))
+    XCTAssertFalse(fileExists("store/caffeinate/1.1.0"))
+  }
+
+  func testRejectsUnavailableExactRegistryVersion() async throws {
+    let package = directory.appending(path: "caffeinate", directoryHint: .isDirectory)
+    try writePackage(
+      at: package,
+      manifest: """
+        manifest_version = 2
+        name = "caffeinate"
+        version = "1.1.0"
+        minimum_easybar_kit_version = "0.1.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """,
+      files: ["widget.lua": "return nil\n"]
+    )
+    let archive = directory.appending(path: "caffeinate-1.1.0.tar.gz")
+    try createArchive(package: package, archive: archive, files: ["package.toml", "widget.lua"])
+    let index = directory.appending(path: "missing-version-index.json")
+    try """
+    {
+      "registry_version": 1,
+      "packages": [{
+        "name": "caffeinate",
+        "kind": "widget",
+        "latest": "1.1.0",
+        "description": "Keep macOS awake.",
+        "categories": ["system"],
+        "versions": [{
+          "version": "1.1.0",
+          "archive": "\(archive.absoluteString)",
+          "sha256": "\(sha256(try Data(contentsOf: archive)))"
+        }]
+      }]
+    }
+    """.write(to: index, atomically: true, encoding: .utf8)
+
+    do {
+      _ = try await installer.install(
+        options: WidgetPackageInstallOptions(
+          source: "caffeinate@1.0.0",
+          sha256: nil,
+          registry: index.path,
+          useRegistry: true,
+          force: false
+        )
+      )
+      XCTFail("Expected the requested registry version to be unavailable")
+    } catch let error as WidgetPackageError {
+      XCTAssertEqual(
+        error,
+        .unavailablePackageVersion(package: "caffeinate", version: "1.0.0")
+      )
+    }
+  }
+
   func testRejectsOlderPackageStoreLayouts() async throws {
     try FileManager.default.createDirectory(
       at: packagesDirectory,

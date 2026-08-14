@@ -73,6 +73,22 @@ final class CLIArgumentsTests: XCTestCase {
       )
     )
 
+    let versioned = try parseArguments([
+      "easybar", "widgets", "install", "caffeinate@0.4.4",
+    ])
+    XCTAssertEqual(
+      versioned.action,
+      .installWidgetPackage(
+        WidgetPackageInstallOptions(
+          source: "caffeinate@0.4.4",
+          sha256: nil,
+          registry: nil,
+          useRegistry: true,
+          force: false
+        )
+      )
+    )
+
     let local = try parseArguments([
       "easybar", "widgets", "install", "./my-widget",
       "--sha256", "abc",
