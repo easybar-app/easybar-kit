@@ -1,8 +1,0 @@
-# example entrypoint;comma-separated dependency paths relative to examples/
-context-menu.lua;
-group_demo.lua;
-inbox-demo/widget.lua;inbox-demo/README.md,inbox-demo/assets/brew.svg,inbox-demo/assets/github.svg,inbox-demo/assets/gitlab.svg
-network.lua;
-popup-context-menu.lua;
-simple.lua;
-wifi+vpn.lua;

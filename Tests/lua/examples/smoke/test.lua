@@ -1,34 +1,22 @@
--- Smoke-loads every selectable example widget from the install manifest.
+-- Smoke-loads every executable example widget discovered by the CI runner.
 
 local root = assert(arg[1], "repository root argument is required")
-local manifest_path = root .. "/examples/install-manifest.csv"
-local manifest = assert(io.open(manifest_path, "r"))
-local entrypoints = {}
-
-for raw_line in manifest:lines() do
-	local line = raw_line:gsub("\r$", "")
-	if line ~= "" and not line:match("^%s*#") then
-		local entrypoint = assert(line:match("^([^;]+);"), "invalid widget manifest line: " .. line)
-		entrypoints[#entrypoints + 1] = entrypoint
-	end
-end
-manifest:close()
-
-assert(#entrypoints > 0, "widget manifest contains no selectable entrypoints")
-
 local host = assert(loadfile(root .. "/Tests/lua/helpers/widget_host.lua"))()
 host.configure(root)
 local shared_ids = {}
+local count = 0
 
-for _, entrypoint in ipairs(entrypoints) do
-	local path = root .. "/examples/" .. entrypoint
+for index = 2, #arg do
+	local path = arg[index]
 	local easybar = host.new(root, { shared_ids = shared_ids })
 	local environment = setmetatable({ easybar = easybar }, { __index = _G })
 	local chunk, load_error = loadfile(path, "t", environment)
-	assert(chunk, entrypoint .. " failed to load: " .. tostring(load_error))
+	assert(chunk, path .. " failed to load: " .. tostring(load_error))
 
 	local ok, runtime_error = pcall(chunk)
-	assert(ok, entrypoint .. " failed during startup: " .. tostring(runtime_error))
+	assert(ok, path .. " failed during startup: " .. tostring(runtime_error))
+	count = count + 1
 end
 
-print("Lua example smoke test passed for " .. tostring(#entrypoints) .. " examples")
+assert(count > 0, "no example widgets were provided")
+print("Lua example smoke test passed for " .. tostring(count) .. " examples")

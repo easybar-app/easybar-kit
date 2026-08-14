@@ -6,4 +6,4 @@ Use the inbox source actions to add or clear the demo snapshot. Items with a Dis
 
 The demo uses order `10000` for its source groups and context actions so installed inbox widgets appear before it.
 
-Install it with `make install-widgets` and select `inbox-demo/widget.lua`. The native inbox must be enabled for the messages to be visible.
+The native inbox must be enabled for the messages to be visible.

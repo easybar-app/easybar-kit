@@ -11,7 +11,6 @@ fail() {
   exit 1
 }
 
-scripts/ci/check-example-layout.sh
 
 command -v "${lua_bin}" >/dev/null 2>&1 ||
   fail "Lua 5.5 is required: ${lua_bin}"
@@ -23,10 +22,22 @@ while IFS= read -r file; do
     'local path = assert(os.getenv("LUA_CHECK_FILE")); assert(loadfile(path, "t", {}))'
 done < <(find Sources examples scripts Tests -type f -iname '*.lua' -print | LC_ALL=C sort)
 
+example_entrypoints=()
+while IFS= read -r file; do
+  example_entrypoints+=("${file}")
+done < <(
+  find examples -type f -name '*.lua' ! -path '*/shared/*' -print | LC_ALL=C sort
+)
+[ "${#example_entrypoints[@]}" -gt 0 ] || fail "no Lua examples were discovered"
+
 test_count=0
 while IFS= read -r test_file; do
   test_count=$((test_count + 1))
-  "${lua_bin}" "${test_file}" "${repo_root}"
+  if [ "${test_file}" = "Tests/lua/examples/smoke/test.lua" ]; then
+    "${lua_bin}" "${test_file}" "${repo_root}" "${example_entrypoints[@]}"
+  else
+    "${lua_bin}" "${test_file}" "${repo_root}"
+  fi
 done < <(find Tests/lua -type f -name 'test.lua' -print | LC_ALL=C sort)
 
 [ "${test_count}" -gt 0 ] || fail "no Lua regression tests were discovered"
