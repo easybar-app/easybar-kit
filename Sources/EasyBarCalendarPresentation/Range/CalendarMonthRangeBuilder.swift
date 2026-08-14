@@ -39,12 +39,19 @@ public enum CalendarMonthRangeBuilder {
 
     var radius = 0
 
-    while let candidate = subscriptionRange(
-      for: visibleMonth,
-      radius: radius + 1,
-      calendar: calendar
-    ), candidate.duration <= maximumSpan {
-      radius += 1
+    while true {
+      let (nextRadius, overflow) = radius.addingReportingOverflow(1)
+      guard !overflow,
+        let candidate = subscriptionRange(
+          for: visibleMonth,
+          radius: nextRadius,
+          calendar: calendar
+        ),
+        candidate.duration <= maximumSpan
+      else {
+        break
+      }
+      radius = nextRadius
     }
 
     return radius
@@ -63,7 +70,8 @@ public enum CalendarMonthRangeBuilder {
       return visibleGridRange(for: monthStart, calendar: calendar)
     }
 
-    guard
+    let (afterEndOffset, overflow) = normalizedRadius.addingReportingOverflow(1)
+    guard !overflow,
       let start = calendar.date(
         byAdding: .month,
         value: -normalizedRadius,
@@ -71,7 +79,7 @@ public enum CalendarMonthRangeBuilder {
       ),
       let afterEndMonth = calendar.date(
         byAdding: .month,
-        value: normalizedRadius + 1,
+        value: afterEndOffset,
         to: monthStart
       )
     else {

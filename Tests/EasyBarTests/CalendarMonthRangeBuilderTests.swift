@@ -23,6 +23,20 @@ final class CalendarMonthRangeBuilderTests: XCTestCase {
     )
   }
 
+  func testSubscriptionRangeRejectsOverflowingRadius() {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+    let visibleMonth = calendar.date(from: DateComponents(year: 2026, month: 5, day: 15))!
+
+    XCTAssertNil(
+      CalendarMonthRangeBuilder.subscriptionRange(
+        for: visibleMonth,
+        radius: .max,
+        calendar: calendar
+      )
+    )
+  }
+
   func testSubscriptionRangeExpandsWholeMonthsForRadius() {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt

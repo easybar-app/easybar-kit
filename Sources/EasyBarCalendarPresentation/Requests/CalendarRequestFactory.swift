@@ -108,7 +108,10 @@ public enum CalendarRequestFactory {
     calendar: Calendar = .current
   ) -> DateInterval {
     let start = calendar.startOfDay(for: now)
-    let normalizedDayCount = max(1, dayCount)
+    let normalizedDayCount = min(
+      max(1, dayCount),
+      CalendarAgentRequestLimits.maximumSectionDayCount
+    )
     let end =
       calendar.date(byAdding: .day, value: normalizedDayCount, to: start)
       ?? now.addingTimeInterval(TimeInterval(normalizedDayCount * 86_400))

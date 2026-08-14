@@ -1,3 +1,4 @@
+import EasyBarShared
 import Foundation
 
 extension CalendarBuiltinConfig {
@@ -22,7 +23,12 @@ extension CalendarBuiltinConfig {
     fallback: CalendarBuiltinConfig.Upcoming.Events
   ) throws -> CalendarBuiltinConfig.Upcoming.Events {
     CalendarBuiltinConfig.Upcoming.Events(
-      days: try reader.int("days", fallback: fallback.days, minimum: 1),
+      days: try reader.int(
+        "days",
+        fallback: fallback.days,
+        minimum: 1,
+        maximum: CalendarAgentRequestLimits.maximumSectionDayCount
+      ),
       excludePastEvents: try reader.bool(
         "exclude_past_events",
         fallback: fallback.excludePastEvents
