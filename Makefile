@@ -21,10 +21,11 @@ GENERATED_SOURCES := \
 	config.schema.json
 
 VERSION_PREFIX ?= v
-LATEST_TAG := $(shell git tag --list '$(VERSION_PREFIX)*' --sort=-v:refname | head -n 1)
+LATEST_TAG := $(shell git -c versionsort.suffix=- tag --merged HEAD --list '$(VERSION_PREFIX)*' --sort=-v:refname | head -n 1)
+HEAD_TAG := $(shell git -c versionsort.suffix=- tag --points-at HEAD --list '$(VERSION_PREFIX)*' --sort=-v:refname | head -n 1)
 CURRENT_VERSION := $(if $(LATEST_TAG),$(patsubst $(VERSION_PREFIX)%,%,$(LATEST_TAG)),0.0.0)
 CURRENT_CORE_VERSION := $(firstword $(subst -, ,$(CURRENT_VERSION)))
-BUILD_VERSION ?= $(if $(LATEST_TAG),$(CURRENT_VERSION),dev)
+BUILD_VERSION ?= $(if $(HEAD_TAG),$(patsubst $(VERSION_PREFIX)%,%,$(HEAD_TAG)),dev)
 
 NEXT_PATCH := $(shell python3 -c 'm,n,p=map(int,"$(CURRENT_CORE_VERSION)".split(".")); print(f"{m}.{n}.{p+1}")')
 NEXT_MINOR := $(shell python3 -c 'm,n,p=map(int,"$(CURRENT_CORE_VERSION)".split(".")); print(f"{m}.{n+1}.0")')
