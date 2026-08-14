@@ -160,6 +160,8 @@ final class CalendarSnapshotProvider: @unchecked Sendable {
       .field("show_birthdays", query.showBirthdays),
       .field("included_calendar_names", query.includedCalendarNames),
       .field("excluded_calendar_names", query.excludedCalendarNames),
+      .field("included_calendar_source_names", query.includedCalendarSourceNames),
+      .field("excluded_calendar_source_names", query.excludedCalendarSourceNames),
       .field("included_calendar_ids", query.includedCalendarIDs),
       .field("excluded_calendar_ids", query.excludedCalendarIDs),
       .field("included_calendar_source_ids", query.includedCalendarSourceIDs),

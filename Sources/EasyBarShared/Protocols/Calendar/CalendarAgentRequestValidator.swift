@@ -130,6 +130,8 @@ public enum CalendarAgentRequestValidator {
 
     try validateFilter(query.includedCalendarNames, field: "includedCalendarNames")
     try validateFilter(query.excludedCalendarNames, field: "excludedCalendarNames")
+    try validateFilter(query.includedCalendarSourceNames, field: "includedCalendarSourceNames")
+    try validateFilter(query.excludedCalendarSourceNames, field: "excludedCalendarSourceNames")
     try validateFilter(query.includedCalendarIDs, field: "includedCalendarIDs")
     try validateFilter(query.excludedCalendarIDs, field: "excludedCalendarIDs")
     try validateFilter(query.includedCalendarSourceIDs, field: "includedCalendarSourceIDs")

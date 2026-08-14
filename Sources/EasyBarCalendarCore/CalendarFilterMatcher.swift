@@ -6,6 +6,8 @@ public struct CalendarFilterTarget: Equatable, Sendable {
   public let title: String
   /// Stable calendar identifier when available.
   public let identifier: String?
+  /// Human-readable calendar source title when available.
+  public let sourceTitle: String?
   /// Stable source identifier when available.
   public let sourceIdentifier: String?
 
@@ -13,21 +15,25 @@ public struct CalendarFilterTarget: Equatable, Sendable {
   public init(
     title: String,
     identifier: String? = nil,
+    sourceTitle: String? = nil,
     sourceIdentifier: String? = nil
   ) {
     self.title = title
     self.identifier = identifier
+    self.sourceTitle = sourceTitle
     self.sourceIdentifier = sourceIdentifier
   }
 }
 
 /// Shared calendar include/exclude matching semantics.
 public enum CalendarFilterMatcher {
-  /// Returns whether one target passes split title, calendar-id, and source-id filters.
+  /// Returns whether one target passes calendar-title, source-title, calendar-id, and source-id filters.
   public static func matches(
     _ target: CalendarFilterTarget,
     includedTitleTokens: [String],
     excludedTitleTokens: [String],
+    includedSourceTitleTokens: [String],
+    excludedSourceTitleTokens: [String],
     includedCalendarIDTokens: [String],
     excludedCalendarIDTokens: [String],
     includedSourceIDTokens: [String],
@@ -35,20 +41,25 @@ public enum CalendarFilterMatcher {
   ) -> Bool {
     let includedTitles = Set(includedTitleTokens.compactMap(normalizedToken))
     let excludedTitles = Set(excludedTitleTokens.compactMap(normalizedToken))
+    let includedSourceTitles = Set(includedSourceTitleTokens.compactMap(normalizedToken))
+    let excludedSourceTitles = Set(excludedSourceTitleTokens.compactMap(normalizedToken))
     let includedCalendarIDs = Set(includedCalendarIDTokens.compactMap(trimmedIdentifierToken))
     let excludedCalendarIDs = Set(excludedCalendarIDTokens.compactMap(trimmedIdentifierToken))
     let includedSourceIDs = Set(includedSourceIDTokens.compactMap(trimmedIdentifierToken))
     let excludedSourceIDs = Set(excludedSourceIDTokens.compactMap(trimmedIdentifierToken))
 
     let title = normalizedToken(target.title)
+    let sourceTitle = target.sourceTitle.flatMap(normalizedToken)
     let calendarID = trimmedIdentifierToken(target.identifier ?? "")
     let sourceID = trimmedIdentifierToken(target.sourceIdentifier ?? "")
 
     let hasIncludedFilters =
-      !includedTitles.isEmpty || !includedCalendarIDs.isEmpty || !includedSourceIDs.isEmpty
+      !includedTitles.isEmpty || !includedSourceTitles.isEmpty || !includedCalendarIDs.isEmpty
+      || !includedSourceIDs.isEmpty
 
     let matchesIncluded =
       matchesToken(title, filters: includedTitles)
+      || matchesToken(sourceTitle, filters: includedSourceTitles)
       || matchesToken(calendarID, filters: includedCalendarIDs)
       || matchesToken(sourceID, filters: includedSourceIDs)
 
@@ -61,6 +72,7 @@ public enum CalendarFilterMatcher {
 
     let matchesExcluded =
       matchesToken(title, filters: excludedTitles)
+      || matchesToken(sourceTitle, filters: excludedSourceTitles)
       || matchesToken(calendarID, filters: excludedCalendarIDs)
       || matchesToken(sourceID, filters: excludedSourceIDs)
 

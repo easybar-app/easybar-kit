@@ -116,6 +116,21 @@ final class CalendarCoreRegressionTests: XCTestCase {
     )
     XCTAssertThrowsError(try CalendarAgentRequestValidator.validate(query))
 
+    query.includedCalendarNames = []
+    query.includedCalendarSourceNames = Array(
+      repeating: "source",
+      count: CalendarAgentRequestLimits.maximumFilterValueCount + 1
+    )
+    XCTAssertThrowsError(try CalendarAgentRequestValidator.validate(query)) { error in
+      XCTAssertEqual(
+        error as? CalendarAgentRequestValidationError,
+        .tooManyValues(
+          field: "includedCalendarSourceNames",
+          maximum: CalendarAgentRequestLimits.maximumFilterValueCount
+        )
+      )
+    }
+
     let draft = CalendarAgentCreateEvent(
       title: "Event",
       startDate: start,
@@ -136,13 +151,14 @@ final class CalendarCoreRegressionTests: XCTestCase {
       start: Date(timeIntervalSinceReferenceDate: 1_000_000),
       end: Date(timeIntervalSinceReferenceDate: 1_086_400)
     )
-    query.excludedCalendarNames = ["Birthdays"]
+    query.excludedCalendarSourceNames = ["Contacts"]
 
     XCTAssertFalse(
       CalendarSnapshotProvider.calendarMatchesQuery(
         CalendarFilterTarget(
           title: "Birthdays",
           identifier: "birthday-calendar",
+          sourceTitle: "Contacts",
           sourceIdentifier: "contacts-source"
         ),
         query: query

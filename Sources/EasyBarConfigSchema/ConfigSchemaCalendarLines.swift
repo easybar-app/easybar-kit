@@ -660,6 +660,16 @@ extension ConfigSchemaRegistry {
       description: "Optional denylist of visible Calendar.app names applied after the allowlist.",
     ),
     entry(
+      key: "included_calendar_source_names",
+      value: "[]",
+      description: "Optional allowlist of human-readable calendar source names.",
+    ),
+    entry(
+      key: "excluded_calendar_source_names",
+      value: "[]",
+      description: "Optional denylist of human-readable calendar source names applied after the allowlist.",
+    ),
+    entry(
       key: "included_calendar_ids",
       value: "[]",
       description: "Optional advanced allowlist of exact calendar identifiers.",

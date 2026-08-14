@@ -7,6 +7,8 @@ extension CalendarBuiltinConfig {
     CalendarRequestFilters(
       includedCalendarNames: filters.includedCalendarNames,
       excludedCalendarNames: filters.excludedCalendarNames,
+      includedCalendarSourceNames: filters.includedCalendarSourceNames,
+      excludedCalendarSourceNames: filters.excludedCalendarSourceNames,
       includedCalendarIDs: filters.includedCalendarIDs,
       excludedCalendarIDs: filters.excludedCalendarIDs,
       includedCalendarSourceIDs: filters.includedCalendarSourceIDs,

@@ -5,6 +5,8 @@ public struct CalendarBuiltinConfig: Sendable {
   public struct Filters: Sendable {
     public var includedCalendarNames: [String]
     public var excludedCalendarNames: [String]
+    public var includedCalendarSourceNames: [String]
+    public var excludedCalendarSourceNames: [String]
     public var includedCalendarIDs: [String]
     public var excludedCalendarIDs: [String]
     public var includedCalendarSourceIDs: [String]
@@ -13,6 +15,8 @@ public struct CalendarBuiltinConfig: Sendable {
     public init(
       includedCalendarNames: [String],
       excludedCalendarNames: [String],
+      includedCalendarSourceNames: [String],
+      excludedCalendarSourceNames: [String],
       includedCalendarIDs: [String],
       excludedCalendarIDs: [String],
       includedCalendarSourceIDs: [String],
@@ -20,6 +24,8 @@ public struct CalendarBuiltinConfig: Sendable {
     ) {
       self.includedCalendarNames = includedCalendarNames
       self.excludedCalendarNames = excludedCalendarNames
+      self.includedCalendarSourceNames = includedCalendarSourceNames
+      self.excludedCalendarSourceNames = excludedCalendarSourceNames
       self.includedCalendarIDs = includedCalendarIDs
       self.excludedCalendarIDs = excludedCalendarIDs
       self.includedCalendarSourceIDs = includedCalendarSourceIDs

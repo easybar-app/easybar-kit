@@ -6,6 +6,7 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "  Feriés  ",
       identifier: "calendar-123",
+      sourceTitle: "iCloud",
       sourceIdentifier: "source-456"
     )
 
@@ -14,6 +15,8 @@ final class CalendarFilterMatcherTests: XCTestCase {
         target,
         includedTitleTokens: ["feries"],
         excludedTitleTokens: [],
+        includedSourceTitleTokens: [],
+        excludedSourceTitleTokens: [],
         includedCalendarIDTokens: [],
         excludedCalendarIDTokens: [],
         includedSourceIDTokens: [],
@@ -22,18 +25,21 @@ final class CalendarFilterMatcherTests: XCTestCase {
     )
   }
 
-  func testSplitFiltersDoNotUseSourceTitle() {
+  func testSplitFiltersMatchVisibleSourceTitle() {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "calendar-123",
+      sourceTitle: "  iClöud  ",
       sourceIdentifier: "source-456"
     )
 
-    XCTAssertFalse(
+    XCTAssertTrue(
       CalendarFilterMatcher.matches(
         target,
-        includedTitleTokens: ["icloud"],
+        includedTitleTokens: [],
         excludedTitleTokens: [],
+        includedSourceTitleTokens: ["icloud"],
+        excludedSourceTitleTokens: [],
         includedCalendarIDTokens: [],
         excludedCalendarIDTokens: [],
         includedSourceIDTokens: [],
@@ -46,6 +52,7 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "calendar-123",
+      sourceTitle: "iCloud",
       sourceIdentifier: "source-456"
     )
 
@@ -54,6 +61,8 @@ final class CalendarFilterMatcherTests: XCTestCase {
         target,
         includedTitleTokens: [],
         excludedTitleTokens: [],
+        includedSourceTitleTokens: [],
+        excludedSourceTitleTokens: [],
         includedCalendarIDTokens: ["calendar-123"],
         excludedCalendarIDTokens: [],
         includedSourceIDTokens: [],
@@ -65,6 +74,8 @@ final class CalendarFilterMatcherTests: XCTestCase {
         target,
         includedTitleTokens: [],
         excludedTitleTokens: [],
+        includedSourceTitleTokens: [],
+        excludedSourceTitleTokens: [],
         includedCalendarIDTokens: [],
         excludedCalendarIDTokens: [],
         includedSourceIDTokens: ["source-456"],
@@ -77,6 +88,7 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "calendar-123",
+      sourceTitle: "iCloud",
       sourceIdentifier: "source-456"
     )
 
@@ -85,6 +97,8 @@ final class CalendarFilterMatcherTests: XCTestCase {
         target,
         includedTitleTokens: [],
         excludedTitleTokens: [],
+        includedSourceTitleTokens: [],
+        excludedSourceTitleTokens: [],
         includedCalendarIDTokens: ["  calendar-123  "],
         excludedCalendarIDTokens: [],
         includedSourceIDTokens: [],
@@ -97,6 +111,7 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "Calendar-ABC",
+      sourceTitle: "iCloud",
       sourceIdentifier: "Source-XYZ"
     )
 
@@ -105,6 +120,8 @@ final class CalendarFilterMatcherTests: XCTestCase {
         target,
         includedTitleTokens: [],
         excludedTitleTokens: [],
+        includedSourceTitleTokens: [],
+        excludedSourceTitleTokens: [],
         includedCalendarIDTokens: ["calendar-abc"],
         excludedCalendarIDTokens: [],
         includedSourceIDTokens: [],
@@ -117,6 +134,7 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "Calendar-ABC",
+      sourceTitle: "iCloud",
       sourceIdentifier: "Source-XYZ"
     )
 
@@ -125,6 +143,8 @@ final class CalendarFilterMatcherTests: XCTestCase {
         target,
         includedTitleTokens: [],
         excludedTitleTokens: [],
+        includedSourceTitleTokens: [],
+        excludedSourceTitleTokens: [],
         includedCalendarIDTokens: [],
         excludedCalendarIDTokens: [],
         includedSourceIDTokens: ["source-xyz"],
@@ -137,6 +157,7 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "Calendar-ABC",
+      sourceTitle: "iCloud",
       sourceIdentifier: "Source-XYZ"
     )
 
@@ -145,6 +166,8 @@ final class CalendarFilterMatcherTests: XCTestCase {
         target,
         includedTitleTokens: [],
         excludedTitleTokens: [],
+        includedSourceTitleTokens: [],
+        excludedSourceTitleTokens: [],
         includedCalendarIDTokens: [],
         excludedCalendarIDTokens: ["calendar-abc"],
         includedSourceIDTokens: [],
@@ -157,6 +180,7 @@ final class CalendarFilterMatcherTests: XCTestCase {
     let target = CalendarFilterTarget(
       title: "Work",
       identifier: "calendar-123",
+      sourceTitle: "iCloud",
       sourceIdentifier: "source-456"
     )
 
@@ -165,8 +189,10 @@ final class CalendarFilterMatcherTests: XCTestCase {
         target,
         includedTitleTokens: ["work"],
         excludedTitleTokens: [],
+        includedSourceTitleTokens: [],
+        excludedSourceTitleTokens: ["icloud"],
         includedCalendarIDTokens: [],
-        excludedCalendarIDTokens: ["calendar-123"],
+        excludedCalendarIDTokens: [],
         includedSourceIDTokens: [],
         excludedSourceIDTokens: []
       )

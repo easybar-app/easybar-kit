@@ -29,6 +29,10 @@ public struct CalendarAgentQuery: Codable, Equatable, Sendable {
   public var includedCalendarNames: [String]
   /// Optional denylist of visible calendar names.
   public var excludedCalendarNames: [String]
+  /// Optional allowlist of human-readable calendar source names.
+  public var includedCalendarSourceNames: [String]
+  /// Optional denylist of human-readable calendar source names.
+  public var excludedCalendarSourceNames: [String]
   /// Optional allowlist of calendar identifiers.
   public var includedCalendarIDs: [String]
   /// Optional denylist of calendar identifiers.
@@ -54,6 +58,8 @@ public struct CalendarAgentQuery: Codable, Equatable, Sendable {
     birthdaysShowAge: Bool,
     includedCalendarNames: [String] = [],
     excludedCalendarNames: [String] = [],
+    includedCalendarSourceNames: [String] = [],
+    excludedCalendarSourceNames: [String] = [],
     includedCalendarIDs: [String] = [],
     excludedCalendarIDs: [String] = [],
     includedCalendarSourceIDs: [String] = [],
@@ -73,6 +79,8 @@ public struct CalendarAgentQuery: Codable, Equatable, Sendable {
     self.birthdaysShowAge = birthdaysShowAge
     self.includedCalendarNames = includedCalendarNames
     self.excludedCalendarNames = excludedCalendarNames
+    self.includedCalendarSourceNames = includedCalendarSourceNames
+    self.excludedCalendarSourceNames = excludedCalendarSourceNames
     self.includedCalendarIDs = includedCalendarIDs
     self.excludedCalendarIDs = excludedCalendarIDs
     self.includedCalendarSourceIDs = includedCalendarSourceIDs
@@ -94,6 +102,8 @@ public struct CalendarAgentQuery: Codable, Equatable, Sendable {
     case birthdaysShowAge
     case includedCalendarNames
     case excludedCalendarNames
+    case includedCalendarSourceNames
+    case excludedCalendarSourceNames
     case includedCalendarIDs
     case excludedCalendarIDs
     case includedCalendarSourceIDs
@@ -118,6 +128,10 @@ public struct CalendarAgentQuery: Codable, Equatable, Sendable {
       try container.decodeIfPresent([String].self, forKey: .includedCalendarNames) ?? []
     excludedCalendarNames =
       try container.decodeIfPresent([String].self, forKey: .excludedCalendarNames) ?? []
+    includedCalendarSourceNames =
+      try container.decodeIfPresent([String].self, forKey: .includedCalendarSourceNames) ?? []
+    excludedCalendarSourceNames =
+      try container.decodeIfPresent([String].self, forKey: .excludedCalendarSourceNames) ?? []
     includedCalendarIDs =
       try container.decodeIfPresent([String].self, forKey: .includedCalendarIDs) ?? []
     excludedCalendarIDs =

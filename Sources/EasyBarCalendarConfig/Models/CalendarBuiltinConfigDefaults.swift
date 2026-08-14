@@ -42,6 +42,8 @@ extension CalendarBuiltinConfig {
     filters: .init(
       includedCalendarNames: [],
       excludedCalendarNames: [],
+      includedCalendarSourceNames: [],
+      excludedCalendarSourceNames: [],
       includedCalendarIDs: [],
       excludedCalendarIDs: [],
       includedCalendarSourceIDs: [],

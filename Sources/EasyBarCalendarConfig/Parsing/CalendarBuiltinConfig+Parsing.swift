@@ -145,6 +145,14 @@ extension CalendarBuiltinConfig {
         "excluded_calendar_names",
         fallback: fallback.excludedCalendarNames
       ),
+      includedCalendarSourceNames: try reader.stringArray(
+        "included_calendar_source_names",
+        fallback: fallback.includedCalendarSourceNames
+      ),
+      excludedCalendarSourceNames: try reader.stringArray(
+        "excluded_calendar_source_names",
+        fallback: fallback.excludedCalendarSourceNames
+      ),
       includedCalendarIDs: try reader.stringArray(
         "included_calendar_ids",
         fallback: fallback.includedCalendarIDs

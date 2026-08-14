@@ -2911,6 +2911,18 @@
           "value" : "[]"
         },
         {
+          "description" : "Optional allowlist of human-readable calendar source names.",
+          "key" : "included_calendar_source_names",
+          "kind" : "default",
+          "value" : "[]"
+        },
+        {
+          "description" : "Optional denylist of human-readable calendar source names applied after the allowlist.",
+          "key" : "excluded_calendar_source_names",
+          "kind" : "default",
+          "value" : "[]"
+        },
+        {
           "description" : "Optional advanced allowlist of exact calendar identifiers.",
           "key" : "included_calendar_ids",
           "kind" : "default",
