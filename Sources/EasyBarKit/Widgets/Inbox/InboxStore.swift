@@ -94,7 +94,8 @@ final class InboxStore: ObservableObject {
   @discardableResult
   func upsert(source: String, item: InboxItem) -> Bool {
     guard let source = normalizedSource(source), isValid(item) else { return false }
-    let existingIDs = Set((sources[source] ?? []).map(\.id) + (controlSources[source] ?? []).map(\.id))
+    let existingIDs = Set(
+      (sources[source] ?? []).map(\.id) + (controlSources[source] ?? []).map(\.id))
     guard existingIDs.contains(item.id) || existingIDs.count < configuration.maxItems else {
       return false
     }
@@ -125,7 +126,7 @@ final class InboxStore: ObservableObject {
         id: presented.item.id,
         title: presented.item.title,
         message: presented.item.body,
-        severity: IPC.InboxSeverity(rawValue: presented.item.resolvedSeverity.rawValue) ?? .info,
+        severity: presented.item.resolvedSeverity,
         group: presented.item.category,
         url: presented.item.url,
         timestamp: presented.item.timestamp ?? 0,
@@ -346,7 +347,8 @@ final class InboxStore: ObservableObject {
   private func rebuild() {
     var mergedSources = sources
     for (source, controlItems) in controlSources {
-      var mergedItems = Dictionary(uniqueKeysWithValues: (mergedSources[source] ?? []).map { ($0.id, $0) })
+      var mergedItems = Dictionary(
+        uniqueKeysWithValues: (mergedSources[source] ?? []).map { ($0.id, $0) })
       for item in controlItems { mergedItems[item.id] = item }
       mergedSources[source] = Array(mergedItems.values)
     }
@@ -498,7 +500,8 @@ final class InboxStore: ObservableObject {
       let previousActionIDs = actionIDs
       let previousRefreshAllState = hasRefreshAllAction
       let previousCapacity = remainingCapacity
-      guard remainingCapacity > 0, isValidAction(action), actionIDs.insert(action.id).inserted else {
+      guard remainingCapacity > 0, isValidAction(action), actionIDs.insert(action.id).inserted
+      else {
         continue
       }
 

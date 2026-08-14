@@ -1,3 +1,4 @@
+import EasyBarShared
 import Foundation
 
 enum InboxGroupMode: String, CaseIterable, Sendable {
@@ -15,12 +16,9 @@ enum InboxSortMode: String, CaseIterable, Sendable {
   case title
 }
 
-enum InboxSeverity: String, Codable, CaseIterable, Sendable {
-  case info
-  case success
-  case warning
-  case error
+typealias InboxSeverity = IPC.InboxSeverity
 
+extension IPC.InboxSeverity {
   var rank: Int {
     switch self {
     case .error: 3
