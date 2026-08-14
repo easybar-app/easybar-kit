@@ -7,7 +7,7 @@ import SwiftUI
 /// EasyBar configuration store owned by the app service graph.
 final class Config: ObservableObject, @unchecked Sendable {
   typealias CalendarPopupMode = EasyBarCalendarConfig.CalendarPopupMode
-  typealias MonthCalendarPopupLayout = EasyBarCalendarConfig.MonthCalendarPopupLayout
+  typealias CalendarMonthPopupLayout = EasyBarShared.CalendarMonthPopupLayout
   typealias CalendarBuiltinConfig = EasyBarCalendarConfig.CalendarBuiltinConfig
 
   /// Explicit config path override used by staged validation loads.

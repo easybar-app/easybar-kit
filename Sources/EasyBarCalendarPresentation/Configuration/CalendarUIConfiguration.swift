@@ -1,3 +1,4 @@
+import EasyBarShared
 import Foundation
 
 /// Reusable style values for calendar appointments lists.
@@ -183,14 +184,6 @@ public struct CalendarComposerConfig: Sendable {
   }
 }
 
-/// Layout variants for the reusable month-calendar popup.
-public enum CalendarMonthPopupLayout: String, CaseIterable, Sendable {
-  case calendarAppointmentsHorizontal = "calendar_appointments_horizontal"
-  case appointmentsCalendarHorizontal = "appointments_calendar_horizontal"
-  case calendarAppointmentsVertical = "calendar_appointments_vertical"
-  case appointmentsCalendarVertical = "appointments_calendar_vertical"
-}
-
 /// Reusable configuration for the month-calendar popup.
 public struct CalendarMonthPopupConfig: Sendable {
   public let backgroundColorHex: String
@@ -213,7 +206,7 @@ public struct CalendarMonthPopupConfig: Sendable {
   public let todayCellBackgroundColorHex: String
   public let todayCellBorderColorHex: String
   public let todayCellBorderWidth: Double
-  public let todayMarkerVariant: TodayMarkerVariant
+  public let todayMarkerVariant: CalendarTodayMarkerVariant
   public let todayMarkerSize: Double
   public let indicatorColorHex: String
   public let selectedTextColorHex: String
@@ -259,7 +252,7 @@ public struct CalendarMonthPopupConfig: Sendable {
     todayCellBackgroundColorHex: String,
     todayCellBorderColorHex: String,
     todayCellBorderWidth: Double,
-    todayMarkerVariant: TodayMarkerVariant,
+    todayMarkerVariant: CalendarTodayMarkerVariant,
     todayMarkerSize: Double,
     indicatorColorHex: String,
     selectedTextColorHex: String,

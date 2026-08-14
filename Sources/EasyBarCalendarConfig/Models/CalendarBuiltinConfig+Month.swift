@@ -1,3 +1,4 @@
+import EasyBarShared
 import Foundation
 
 extension CalendarBuiltinConfig {
@@ -118,7 +119,7 @@ extension CalendarBuiltinConfig {
       }
 
       public struct AgendaStyle: Sendable {
-        public var layout: MonthCalendarPopupLayout
+        public var layout: CalendarMonthPopupLayout
         public var appointmentsScrollable: Bool
         public var appointmentsMinHeight: Double
         public var appointmentsMaxHeight: Double
@@ -126,7 +127,7 @@ extension CalendarBuiltinConfig {
         public var maxVisibleAppointments: Int
 
         public init(
-          layout: MonthCalendarPopupLayout,
+          layout: CalendarMonthPopupLayout,
           appointmentsScrollable: Bool,
           appointmentsMinHeight: Double,
           appointmentsMaxHeight: Double,

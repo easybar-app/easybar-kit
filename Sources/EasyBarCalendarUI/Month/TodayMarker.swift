@@ -1,9 +1,10 @@
 import EasyBarCalendarPresentation
+import EasyBarShared
 import SwiftUI
 
 /// Draws the configured marker for today's date.
 struct TodayMarker: View {
-  let variant: TodayMarkerVariant
+  let variant: CalendarTodayMarkerVariant
   let color: Color
   let lineWidth: Double
 

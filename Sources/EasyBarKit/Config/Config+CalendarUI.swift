@@ -94,7 +94,7 @@ extension CalendarBuiltinConfig {
       todayCellBackgroundColorHex: month.popup.calendar.todayCellBackgroundColorHex,
       todayCellBorderColorHex: month.popup.calendar.todayCellBorderColorHex,
       todayCellBorderWidth: month.popup.calendar.todayCellBorderWidth,
-      todayMarkerVariant: month.popup.calendar.todayMarkerVariant.calendarTodayMarkerVariant,
+      todayMarkerVariant: month.popup.calendar.todayMarkerVariant,
       todayMarkerSize: month.popup.calendar.todayMarkerSize,
       indicatorColorHex: month.popup.calendar.indicatorColorHex,
       selectedTextColorHex: month.popup.selection.selectedTextColorHex,
@@ -103,7 +103,7 @@ extension CalendarBuiltinConfig {
       selectionDateSeparator: month.popup.selection.selectionDateSeparator,
       allowsRangeSelection: month.popup.selection.allowsRangeSelection,
       resetSelectionOnThirdTap: month.popup.selection.resetSelectionOnThirdTap,
-      layout: month.popup.agenda.layout.calendarMonthPopupLayout,
+      layout: month.popup.agenda.layout,
       appointmentsScrollable: month.popup.agenda.appointmentsScrollable,
       appointmentsMinHeight: month.popup.agenda.appointmentsMinHeight,
       appointmentsMaxHeight: month.popup.agenda.appointmentsMaxHeight,
@@ -138,31 +138,5 @@ extension CalendarBuiltinConfig {
       selectionDateFormat: month.popup.selection.selectionDateFormat,
       defaultIndicatorColorHex: month.popup.calendar.indicatorColorHex
     )
-  }
-}
-
-extension MonthCalendarPopupLayout {
-  fileprivate var calendarMonthPopupLayout: CalendarMonthPopupLayout {
-    switch self {
-    case .calendarAppointmentsHorizontal:
-      return .calendarAppointmentsHorizontal
-    case .appointmentsCalendarHorizontal:
-      return .appointmentsCalendarHorizontal
-    case .calendarAppointmentsVertical:
-      return .calendarAppointmentsVertical
-    case .appointmentsCalendarVertical:
-      return .appointmentsCalendarVertical
-    }
-  }
-}
-
-extension CalendarTodayMarkerVariant {
-  fileprivate var calendarTodayMarkerVariant: TodayMarkerVariant {
-    switch self {
-    case .regularRoundedRectangle: .regularRoundedRectangle
-    case .softWobble: .softWobble
-    case .doubleSketch: .doubleSketch
-    case .openLoop: .openLoop
-    }
   }
 }

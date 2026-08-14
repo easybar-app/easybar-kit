@@ -7,13 +7,6 @@ public enum CalendarPopupMode: String, CaseIterable, Sendable {
   case month
 }
 
-public enum MonthCalendarPopupLayout: String, CaseIterable, Sendable {
-  case calendarAppointmentsHorizontal = "calendar_appointments_horizontal"
-  case appointmentsCalendarHorizontal = "appointments_calendar_horizontal"
-  case calendarAppointmentsVertical = "calendar_appointments_vertical"
-  case appointmentsCalendarVertical = "appointments_calendar_vertical"
-}
-
 public enum CalendarAnchorLayout: String, Codable, CaseIterable, Sendable {
   case row
   case column

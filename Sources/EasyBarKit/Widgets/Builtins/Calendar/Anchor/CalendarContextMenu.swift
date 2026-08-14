@@ -1,4 +1,5 @@
 import EasyBarCalendarConfig
+import EasyBarShared
 import Foundation
 
 /// Persistent actions exposed by the native calendar context menu.

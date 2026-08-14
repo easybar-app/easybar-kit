@@ -6,7 +6,7 @@ extension CalendarPopupMode: TOMLStringDecodable {
   public static let allowedValues = allCases.map(\.rawValue)
 }
 
-extension MonthCalendarPopupLayout: TOMLStringDecodable {
+extension CalendarMonthPopupLayout: TOMLStringDecodable {
   public static let allowedValues = allCases.map(\.rawValue)
 }
 
