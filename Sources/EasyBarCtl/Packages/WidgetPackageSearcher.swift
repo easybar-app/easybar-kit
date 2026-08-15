@@ -7,8 +7,15 @@ struct WidgetPackageSearcher {
     self.loader = loader
   }
 
-  func search(query: String?, registrySource: String?) async throws -> [PackageRegistryEntry] {
-    let registry = try await loader.load(source: registrySource)
+  func search(
+    query: String?,
+    registrySource: String?,
+    refreshRegistry: Bool = false
+  ) async throws -> [PackageRegistryEntry] {
+    let registry = try await loader.load(
+      source: registrySource,
+      refresh: refreshRegistry
+    )
     let normalizedQuery = query?.trimmingCharacters(in: .whitespacesAndNewlines)
 
     return registry.packages
@@ -31,7 +38,8 @@ func searchWidgetPackages(
     context.debug("searching widget registry")
     let packages = try await WidgetPackageSearcher().search(
       query: options.query,
-      registrySource: options.registry
+      registrySource: options.registry,
+      refreshRegistry: options.refreshRegistry
     )
     CLIOutput.printWidgetPackageSearchResults(packages)
   } catch {

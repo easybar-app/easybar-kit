@@ -73,6 +73,45 @@ final class WidgetPackageRegistryLoaderTests: XCTestCase {
     XCTAssertEqual(cachedFiles.filter { $0.pathExtension == "json" }.count, 2)
   }
 
+  func testRefreshBypassesValidatorsAndReplacesPersistentCache() async throws {
+    let source = "https://registry.example.test/index.json"
+    RegistryURLProtocol.enqueue(
+      .init(
+        statusCode: 200,
+        headers: ["ETag": "\"registry-v1\""],
+        data: registryData(version: "1.0.0")
+      )
+    )
+    RegistryURLProtocol.enqueue(
+      .init(
+        statusCode: 200,
+        headers: ["ETag": "\"registry-v2\""],
+        data: registryData(version: "1.1.0")
+      )
+    )
+    RegistryURLProtocol.enqueue(.init(statusCode: 304, headers: [:], data: Data()))
+
+    let loader = WidgetPackageRegistryLoader(session: session, cacheDirectory: directory)
+    let initial = try await loader.load(source: source)
+    XCTAssertEqual(initial.packages.first?.latest, "1.0.0")
+
+    let refreshed = try await loader.load(source: source, refresh: true)
+    XCTAssertEqual(refreshed.packages.first?.latest, "1.1.0")
+
+    let recreatedLoader = WidgetPackageRegistryLoader(session: session, cacheDirectory: directory)
+    let cached = try await recreatedLoader.load(source: source)
+    XCTAssertEqual(cached.packages.first?.latest, "1.1.0")
+
+    let requests = RegistryURLProtocol.requests()
+    XCTAssertEqual(requests.count, 3)
+    XCTAssertNil(requests[0].ifNoneMatch)
+    XCTAssertNil(requests[1].ifNoneMatch)
+    XCTAssertNil(requests[1].ifModifiedSince)
+    XCTAssertEqual(requests[1].cacheControl, "no-cache")
+    XCTAssertEqual(requests[1].cachePolicy, .reloadIgnoringLocalCacheData)
+    XCTAssertEqual(requests[2].ifNoneMatch, "\"registry-v2\"")
+  }
+
   func testRemoteRegistryReplacesCacheWhenValidatorChanges() async throws {
     let source = "https://registry.example.test/index.json"
     RegistryURLProtocol.enqueue(

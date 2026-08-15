@@ -296,7 +296,7 @@ private func parseCommand(
 
   case .outdatedWidgetPackages:
     return .outdatedWidgetPackages(
-      registry: try parseWidgetPackageRegistryOnlyOptions(
+      try parseWidgetPackageRegistryOnlyOptions(
         arguments,
         command: descriptor,
         global: &global
@@ -375,8 +375,9 @@ private func parseWidgetPackageRegistryOnlyOptions(
   _ arguments: [String],
   command: CLICommandDescriptor,
   global: inout GlobalOptionState
-) throws -> String? {
+) throws -> WidgetPackageRegistryOptions {
   var registry: String?
+  var refreshRegistry = false
   var index = 0
 
   while index < arguments.count {
@@ -389,6 +390,11 @@ private func parseWidgetPackageRegistryOnlyOptions(
     ) {
       registry = parsed.value
       index = parsed.nextIndex
+      continue
+    }
+    if CLI.packageRefreshOption.matches(argument) {
+      refreshRegistry = true
+      index += 1
       continue
     }
     if let nextIndex = try parseGlobalArgument(
@@ -404,7 +410,10 @@ private func parseWidgetPackageRegistryOnlyOptions(
     throw AppError.message("unknown \(command.commandText) option '\(argument)'")
   }
 
-  return registry
+  return WidgetPackageRegistryOptions(
+    registry: registry,
+    refreshRegistry: refreshRegistry
+  )
 }
 
 private func parseWidgetPackageUpdateOptions(
@@ -415,6 +424,7 @@ private func parseWidgetPackageUpdateOptions(
   var name: String?
   var updateAll = false
   var registry: String?
+  var refreshRegistry = false
   var index = 0
 
   while index < arguments.count {
@@ -432,6 +442,11 @@ private func parseWidgetPackageUpdateOptions(
     ) {
       registry = parsed.value
       index = parsed.nextIndex
+      continue
+    }
+    if CLI.packageRefreshOption.matches(argument) {
+      refreshRegistry = true
+      index += 1
       continue
     }
     if let nextIndex = try parseGlobalArgument(
@@ -455,7 +470,11 @@ private func parseWidgetPackageUpdateOptions(
   }
 
   let selection = try widgetPackageUpdateSelection(updateAll: updateAll, name: name)
-  return WidgetPackageUpdateOptions(selection: selection, registry: registry)
+  return WidgetPackageUpdateOptions(
+    selection: selection,
+    registry: registry,
+    refreshRegistry: refreshRegistry
+  )
 }
 
 private func widgetPackageUpdateSelection(
@@ -514,6 +533,7 @@ private func parseWidgetPackageSearchOptions(
 ) throws -> WidgetPackageSearchOptions {
   var query: String?
   var registry: String?
+  var refreshRegistry = false
   var index = 0
 
   while index < arguments.count {
@@ -526,6 +546,11 @@ private func parseWidgetPackageSearchOptions(
     ) {
       registry = parsed.value
       index = parsed.nextIndex
+      continue
+    }
+    if CLI.packageRefreshOption.matches(argument) {
+      refreshRegistry = true
+      index += 1
       continue
     }
     if let nextIndex = try parseGlobalArgument(
@@ -548,7 +573,11 @@ private func parseWidgetPackageSearchOptions(
     index += 1
   }
 
-  return WidgetPackageSearchOptions(query: query, registry: registry)
+  return WidgetPackageSearchOptions(
+    query: query,
+    registry: registry,
+    refreshRegistry: refreshRegistry
+  )
 }
 
 private func parseWidgetPackageInstallOptions(
@@ -561,6 +590,7 @@ private func parseWidgetPackageInstallOptions(
   var registry: String?
   var useRegistry = true
   var force = false
+  var refreshRegistry = false
   var index = 0
 
   while index < arguments.count {
@@ -583,6 +613,11 @@ private func parseWidgetPackageInstallOptions(
     ) {
       registry = parsed.value
       index = parsed.nextIndex
+      continue
+    }
+    if CLI.packageRefreshOption.matches(argument) {
+      refreshRegistry = true
+      index += 1
       continue
     }
     if CLI.packageNoRegistryOption.matches(argument) {
@@ -621,12 +656,16 @@ private func parseWidgetPackageInstallOptions(
   if hasConflictingRegistryOptions(useRegistry: useRegistry, registry: registry) {
     throw AppError.message("--registry and --no-registry cannot be used together")
   }
+  if !useRegistry && refreshRegistry {
+    throw AppError.message("--refresh and --no-registry cannot be used together")
+  }
   return WidgetPackageInstallOptions(
     source: source,
     sha256: sha256,
     registry: registry,
     useRegistry: useRegistry,
-    force: force
+    force: force,
+    refreshRegistry: refreshRegistry
   )
 }
 

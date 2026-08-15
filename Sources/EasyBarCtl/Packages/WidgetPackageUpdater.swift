@@ -43,17 +43,26 @@ final class WidgetPackageUpdater {
     )
   }
 
-  func outdated(registrySource: String?) async throws -> [OutdatedWidgetPackage] {
+  func outdated(
+    registrySource: String?,
+    refreshRegistry: Bool = false
+  ) async throws -> [OutdatedWidgetPackage] {
     let database = try databaseStore.load(from: packagesDirectory)
     let pins = try pinStore.load(from: packagesDirectory)
-    let registry = try await registryLoader.load(source: registrySource)
+    let registry = try await registryLoader.load(
+      source: registrySource,
+      refresh: refreshRegistry
+    )
     return try outdatedPackages(database: database, registry: registry, pins: pins)
   }
 
   func update(options: WidgetPackageUpdateOptions) async throws -> WidgetPackageUpdateResult {
     let initialDatabase = try databaseStore.load(from: packagesDirectory)
     let initialPins = try pinStore.load(from: packagesDirectory)
-    let registry = try await registryLoader.load(source: options.registry)
+    let registry = try await registryLoader.load(
+      source: options.registry,
+      refresh: options.refreshRegistry
+    )
     let entries = Dictionary(uniqueKeysWithValues: registry.packages.map { ($0.name, $0) })
     let targets: [String]
     var skippedPinned: Set<String> = []
@@ -173,11 +182,15 @@ final class WidgetPackageUpdater {
   }
 }
 
-func listOutdatedWidgetPackages(registrySource: String?, context: AppContext) async throws {
+func listOutdatedWidgetPackages(
+  options: WidgetPackageRegistryOptions,
+  context: AppContext
+) async throws {
   do {
     context.debug("checking for outdated widget packages")
     let packages = try await WidgetPackageUpdater(logger: context.logger).outdated(
-      registrySource: registrySource
+      registrySource: options.registry,
+      refreshRegistry: options.refreshRegistry
     )
     CLIOutput.printOutdatedWidgetPackages(packages)
   } catch {

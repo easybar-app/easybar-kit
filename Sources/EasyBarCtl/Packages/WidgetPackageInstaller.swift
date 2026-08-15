@@ -46,7 +46,8 @@ final class WidgetPackageInstaller {
         path: "downloads", directoryHint: .isDirectory),
       installed: database.packages,
       protectedPackages: protectedPackages,
-      logger: logger
+      logger: logger,
+      refreshRegistry: options.refreshRegistry
     )
     try fileManager.createDirectory(
       at: temporaryDirectory.appending(path: "downloads", directoryHint: .isDirectory),

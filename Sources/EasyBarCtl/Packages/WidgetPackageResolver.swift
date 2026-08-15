@@ -14,6 +14,7 @@ final class WidgetPackageResolver {
 
   private let registrySource: String?
   private let useRegistry: Bool
+  private let refreshRegistry: Bool
   private let temporaryDirectory: URL
   private let processExecutor: ProcessExecutor
   private var registry: PackageRegistryIndex?
@@ -31,10 +32,12 @@ final class WidgetPackageResolver {
     installed: [InstalledWidgetPackage],
     protectedPackages: Set<String> = [],
     logger: ProcessLogger,
-    currentKitVersion: SemanticVersion? = SemanticVersion(BuildInfo.appVersion)
+    currentKitVersion: SemanticVersion? = SemanticVersion(BuildInfo.appVersion),
+    refreshRegistry: Bool = false
   ) {
     self.registrySource = registrySource
     self.useRegistry = useRegistry
+    self.refreshRegistry = refreshRegistry
     self.temporaryDirectory = temporaryDirectory
     self.installed = Dictionary(uniqueKeysWithValues: installed.map { ($0.name, $0) })
     self.protectedPackages = protectedPackages
@@ -265,7 +268,10 @@ final class WidgetPackageResolver {
 
   private func registryIndex() async throws -> PackageRegistryIndex {
     if let registry { return registry }
-    let decoded = try await WidgetPackageRegistryLoader().load(source: registrySource)
+    let decoded = try await WidgetPackageRegistryLoader().load(
+      source: registrySource,
+      refresh: refreshRegistry
+    )
     registry = decoded
     return decoded
   }

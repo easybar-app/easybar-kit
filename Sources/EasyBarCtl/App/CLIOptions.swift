@@ -167,12 +167,47 @@ struct WidgetPackageInstallOptions: Equatable {
   let registry: String?
   let useRegistry: Bool
   let force: Bool
+  let refreshRegistry: Bool
+
+  init(
+    source: String,
+    sha256: String?,
+    registry: String?,
+    useRegistry: Bool,
+    force: Bool,
+    refreshRegistry: Bool = false
+  ) {
+    self.source = source
+    self.sha256 = sha256
+    self.registry = registry
+    self.useRegistry = useRegistry
+    self.force = force
+    self.refreshRegistry = refreshRegistry
+  }
 }
 
 /// Inputs accepted by `easybar widgets search`.
 struct WidgetPackageSearchOptions: Equatable {
   let query: String?
   let registry: String?
+  let refreshRegistry: Bool
+
+  init(query: String?, registry: String?, refreshRegistry: Bool = false) {
+    self.query = query
+    self.registry = registry
+    self.refreshRegistry = refreshRegistry
+  }
+}
+
+/// Registry inputs accepted by commands that only read package state.
+struct WidgetPackageRegistryOptions: Equatable {
+  let registry: String?
+  let refreshRegistry: Bool
+
+  init(registry: String?, refreshRegistry: Bool = false) {
+    self.registry = registry
+    self.refreshRegistry = refreshRegistry
+  }
 }
 
 /// Package kinds selected by `easybar widgets installed`.
@@ -198,6 +233,17 @@ enum WidgetPackageUpdateSelection: Equatable {
 struct WidgetPackageUpdateOptions: Equatable {
   let selection: WidgetPackageUpdateSelection
   let registry: String?
+  let refreshRegistry: Bool
+
+  init(
+    selection: WidgetPackageUpdateSelection,
+    registry: String?,
+    refreshRegistry: Bool = false
+  ) {
+    self.selection = selection
+    self.registry = registry
+    self.refreshRegistry = refreshRegistry
+  }
 }
 
 /// Supported top-level CLI actions after command-specific options are parsed.
@@ -215,7 +261,7 @@ enum CLIAction: Equatable {
   case uninstallWidgetPackage(String)
   case searchWidgetPackages(WidgetPackageSearchOptions)
   case installedWidgetPackages(InstalledWidgetPackageOptions)
-  case outdatedWidgetPackages(registry: String?)
+  case outdatedWidgetPackages(WidgetPackageRegistryOptions)
   case updateWidgetPackages(WidgetPackageUpdateOptions)
 }
 
@@ -387,6 +433,11 @@ enum CLI {
     placeholder: "source"
   )
 
+  static let packageRefreshOption = CLIOption(
+    flag: "--refresh",
+    description: "Fetch the registry without cached validators"
+  )
+
   static let packageNoRegistryOption = CLIOption(
     flag: "--no-registry",
     description: "Do not resolve missing dependencies from a registry"
@@ -464,6 +515,7 @@ enum CLI {
       options: [
         packageSHA256Option,
         packageRegistryOption,
+        packageRefreshOption,
         packageNoRegistryOption,
         packageForceOption,
       ]
@@ -473,7 +525,7 @@ enum CLI {
       description: "Search packages in a widget registry",
       kind: .searchWidgetPackages,
       usageArguments: ["[query]"],
-      options: [packageRegistryOption]
+      options: [packageRegistryOption, packageRefreshOption]
     ),
     .init(
       path: ["widgets", "installed"],
@@ -497,14 +549,14 @@ enum CLI {
       path: ["widgets", "outdated"],
       description: "List installed packages with available registry updates",
       kind: .outdatedWidgetPackages,
-      options: [packageRegistryOption]
+      options: [packageRegistryOption, packageRefreshOption]
     ),
     .init(
       path: ["widgets", "update"],
       description: "Update one or all outdated registry-managed packages",
       kind: .updateWidgetPackages,
       usageArguments: ["<name>|--all"],
-      options: [packageUpdateAllOption, packageRegistryOption]
+      options: [packageUpdateAllOption, packageRegistryOption, packageRefreshOption]
     ),
     .init(
       path: ["widgets", "uninstall"],

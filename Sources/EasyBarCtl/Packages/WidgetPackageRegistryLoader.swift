@@ -39,12 +39,19 @@ struct WidgetPackageRegistryLoader {
     self.cacheDirectory = cacheDirectory
   }
 
-  func load(source: String?) async throws -> PackageRegistryIndex {
+  func load(
+    source: String?,
+    refresh: Bool = false
+  ) async throws -> PackageRegistryIndex {
     let selectedSource = source ?? Self.defaultSource
     let url = try sourceURL(selectedSource)
 
     if url.isFileURL {
       return try decodeRegistry(try loadFileData(from: url))
+    }
+
+    if refresh {
+      return try await loadRemoteWithoutValidators(from: url, source: selectedSource)
     }
 
     let cached = cachedRegistry(for: selectedSource)

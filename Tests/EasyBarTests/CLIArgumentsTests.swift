@@ -89,6 +89,23 @@ final class CLIArgumentsTests: XCTestCase {
       )
     )
 
+    let refreshed = try parseArguments([
+      "easybar", "widgets", "install", "caffeinate", "--refresh",
+    ])
+    XCTAssertEqual(
+      refreshed.action,
+      .installWidgetPackage(
+        WidgetPackageInstallOptions(
+          source: "caffeinate",
+          sha256: nil,
+          registry: nil,
+          useRegistry: true,
+          force: false,
+          refreshRegistry: true
+        )
+      )
+    )
+
     let local = try parseArguments([
       "easybar", "widgets", "install", "./my-widget",
       "--sha256", "abc",
@@ -124,6 +141,12 @@ final class CLIArgumentsTests: XCTestCase {
     )
     XCTAssertThrowsError(
       try parseArguments([
+        "easybar", "widgets", "install", "./widget",
+        "--refresh", "--no-registry",
+      ])
+    )
+    XCTAssertThrowsError(
+      try parseArguments([
         "easybar", "widgets", "install", "./widget", "--socket", "/tmp/app.sock",
       ])
     )
@@ -141,10 +164,14 @@ final class CLIArgumentsTests: XCTestCase {
     )
     XCTAssertEqual(
       try parseArguments([
-        "easybar", "widgets", "search", "network", "--registry", "index.json",
+        "easybar", "widgets", "search", "network", "--registry", "index.json", "--refresh",
       ]).action,
       .searchWidgetPackages(
-        WidgetPackageSearchOptions(query: "network", registry: "index.json")
+        WidgetPackageSearchOptions(
+          query: "network",
+          registry: "index.json",
+          refreshRegistry: true
+        )
       )
     )
   }
@@ -217,13 +244,15 @@ final class CLIArgumentsTests: XCTestCase {
   func testWidgetPackageOutdatedParsesOptionalRegistry() throws {
     XCTAssertEqual(
       try parseArguments(["easybar", "widgets", "outdated"]).action,
-      .outdatedWidgetPackages(registry: nil)
+      .outdatedWidgetPackages(WidgetPackageRegistryOptions(registry: nil))
     )
     XCTAssertEqual(
       try parseArguments([
-        "easybar", "widgets", "outdated", "--registry", "index.json",
+        "easybar", "widgets", "outdated", "--registry", "index.json", "--refresh",
       ]).action,
-      .outdatedWidgetPackages(registry: "index.json")
+      .outdatedWidgetPackages(
+        WidgetPackageRegistryOptions(registry: "index.json", refreshRegistry: true)
+      )
     )
     XCTAssertThrowsError(
       try parseArguments(["easybar", "widgets", "outdated", "unexpected"])
@@ -239,10 +268,14 @@ final class CLIArgumentsTests: XCTestCase {
     )
     XCTAssertEqual(
       try parseArguments([
-        "easybar", "widgets", "update", "--all", "--registry", "index.json",
+        "easybar", "widgets", "update", "--all", "--registry", "index.json", "--refresh",
       ]).action,
       .updateWidgetPackages(
-        WidgetPackageUpdateOptions(selection: .all, registry: "index.json")
+        WidgetPackageUpdateOptions(
+          selection: .all,
+          registry: "index.json",
+          refreshRegistry: true
+        )
       )
     )
   }
