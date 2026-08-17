@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+# Install development and CI dependencies.
 set -euo pipefail
 
+# Print supported command-line arguments.
 usage() {
   cat >&2 <<'EOF_USAGE'
 Usage: scripts/ci/install-dependencies.sh <test|release|format|lua|imagemagick|librsvg> [...]
@@ -60,6 +62,7 @@ for mode in "$@"; do
   esac
 done
 
+# Mark installed Homebrew taps as trusted repositories.
 trust_installed_taps() {
   if ! command -v brew >/dev/null 2>&1; then
     return 0
@@ -86,6 +89,7 @@ trust_installed_taps() {
   done
 }
 
+# Install a command only when it is unavailable.
 install_if_missing() {
   local command_name="$1"
   local formula="$2"

@@ -1,3 +1,5 @@
+"""Generate theme token definitions for Swift and Lua."""
+
 
 from __future__ import annotations
 
@@ -136,6 +138,7 @@ def replace_generated_theme_section(base_text: str, generated: str) -> str:
 
 
 def main() -> None:
+    """Run the command-line entry point."""
     manifest = load_manifest()
     tokens = manifest["tokens"]
 

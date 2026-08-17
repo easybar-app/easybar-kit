@@ -9,6 +9,7 @@ import sys
 
 
 def git_diff_names(scopes: list[str]) -> list[str]:
+    """Return changed paths for the requested Git scopes."""
     args = ["git", "diff", "--name-only", "HEAD"]
     if scopes:
         args.extend(["--", *scopes])
@@ -22,6 +23,7 @@ def git_diff_names(scopes: list[str]) -> list[str]:
 
 
 def check_diff(scopes: list[str]) -> int:
+    """Report generated files changed by regeneration."""
     changed_paths = git_diff_names(scopes)
     if not changed_paths:
         return 0
@@ -40,6 +42,7 @@ def check_diff(scopes: list[str]) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line argument parser."""
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -59,6 +62,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    """Run the command-line entry point."""
     args = build_parser().parse_args()
     if args.command == "check-diff":
         return check_diff(args.scope)

@@ -1,3 +1,5 @@
+"""Generate event metadata for Swift and Lua API sources."""
+
 
 from __future__ import annotations
 
@@ -428,4 +430,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

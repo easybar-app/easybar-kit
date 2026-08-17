@@ -1,4 +1,5 @@
 #!/usr/bin/env swift
+// Populates a local calendar with events used by the EasyBar demo.
 import CoreGraphics
 import Darwin
 import EventKit

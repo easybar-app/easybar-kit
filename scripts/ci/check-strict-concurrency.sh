@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Check Swift targets with strict concurrency enabled.
 set -euo pipefail
 
 readonly targets=(

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Validate Lua sources and run their tests.
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -6,6 +7,7 @@ lua_bin="${LUA:-lua}"
 
 cd "${repo_root}"
 
+# Print an error and exit unsuccessfully.
 fail() {
   echo "Lua check failed: $*" >&2
   exit 1
