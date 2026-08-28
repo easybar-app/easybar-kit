@@ -40,6 +40,8 @@ local loader = load_module("loader")
 local events = load_module("events")
 --- Registry renderer module.
 local render = load_module("render")
+--- Managed package targeted-reload module.
+local package_reloader = load_module("package_reloader")
 
 --- Widget directory and command defaults passed by the Swift host.
 local widget_dir = arg[1]
@@ -61,6 +63,10 @@ local next_timer_sequence = 0
 local next_storage_sequence = 0
 local pending_storage_responses = {}
 local runtime_command_session = tostring({}):gsub("[^%w]", "_")
+local host_message_depth = 0
+local runtime_ready = false
+local pending_package_reload = false
+local request_cancel_timer
 local default_exec_options = {
 	timeout_seconds = default_command_timeout_seconds,
 	max_output_bytes = default_command_max_output_bytes,
@@ -92,12 +98,30 @@ local function flush_pending_render(force)
 	end
 end
 
+--- Returns host events required by widgets plus the internal package-reload trigger.
+local function required_host_events()
+	local required = registry.required_events()
+	if type(managed_widget_dir) ~= "string" or managed_widget_dir == "" then
+		return required
+	end
+
+	for _, event_name in ipairs(required) do
+		if event_name == "forced" then
+			return required
+		end
+	end
+
+	required[#required + 1] = "forced"
+	table.sort(required)
+	return required
+end
+
 --- Emits runtime subscription requirements when they changed.
 local function emit_subscriptions(force)
 	local payload = json.encode({
 		protocol_version = PROTOCOL_VERSION,
 		type = "subscriptions",
-		events = registry.required_events(),
+		events = required_host_events(),
 	})
 
 	if subscriptions_are_current(force, payload) then
@@ -119,6 +143,46 @@ end
 local function send_payload(payload)
 	io.stdout:write(json.encode(payload) .. "\n")
 	io.stdout:flush()
+end
+
+--- Applies one pending package-update reload plan when the runtime is at a safe turn boundary.
+local function apply_pending_package_reload()
+	if not runtime_ready or type(managed_widget_dir) ~= "string" or managed_widget_dir == "" then
+		pending_package_reload = true
+		return false
+	end
+
+	pending_package_reload = false
+	local plan, plan_error = package_reloader.consume_pending(managed_widget_dir, json)
+	if plan_error ~= nil then
+		log.error("package reload plan rejected error=" .. tostring(plan_error))
+		return false
+	end
+	if plan == nil then
+		return false
+	end
+
+	local result = package_reloader.apply(managed_widget_dir, plan, api, loader, registry, log, request_cancel_timer)
+	for _, root in ipairs(result.cleared_roots or {}) do
+		send_payload({
+			protocol_version = PROTOCOL_VERSION,
+			type = "clear_root",
+			root = root,
+		})
+	end
+
+	log.info(
+		"package reload applied widgets="
+			.. tostring(#plan.widgets)
+			.. " modules="
+			.. tostring(#plan.modules)
+			.. " loaded="
+			.. tostring(result.loaded or 0)
+			.. " failed="
+			.. tostring(result.failed or 0)
+	)
+	flush_pending_outputs(true, true)
+	return true
 end
 
 --- Returns one unique command token.
@@ -293,6 +357,20 @@ local function handle_host_payload(payload, raw_line)
 		return
 	end
 
+	if
+		payload.name == "forced"
+		and type(managed_widget_dir) == "string"
+		and managed_widget_dir ~= ""
+		and package_reloader.has_pending(managed_widget_dir)
+	then
+		if host_message_depth > 1 or not runtime_ready then
+			pending_package_reload = true
+		else
+			apply_pending_package_reload()
+		end
+		return
+	end
+
 	local event = events.normalize_event(payload)
 	events.dispatch_event(registry, event, function(force_render)
 		flush_pending_outputs(force_render, false)
@@ -314,7 +392,12 @@ local function process_next_host_message()
 		return true
 	end
 
+	host_message_depth = host_message_depth + 1
 	handle_host_payload(payload, line)
+	host_message_depth = host_message_depth - 1
+	if host_message_depth == 0 and runtime_ready and pending_package_reload then
+		apply_pending_package_reload()
+	end
 	return true
 end
 
@@ -358,6 +441,7 @@ local function request_storage(operation, widget, key, value)
 			pending_storage_responses[token] = nil
 			return response
 		end
+
 		if not process_next_host_message() then
 			return { ok = false, found = false, error = "EasyBar host disconnected" }
 		end
@@ -387,7 +471,7 @@ local function request_timer(delay_seconds)
 end
 
 --- Requests cancellation of one host-owned timer.
-local function request_cancel_timer(token)
+request_cancel_timer = function(token)
 	send_payload({
 		protocol_version = PROTOCOL_VERSION,
 		type = "timer_cancel",
@@ -508,6 +592,12 @@ registry = api.new(log, {
 io.stdout:setvbuf("line")
 io.stderr:setvbuf("line")
 
+-- Drop a stale plan before initial managed package activation. A runtime started
+-- after an offline package update already reads the newest symlinks directly.
+if type(managed_widget_dir) == "string" and managed_widget_dir ~= "" then
+	package_reloader.discard_pending(managed_widget_dir)
+end
+
 -- Load explicitly activated package entrypoints first so declared shared modules are available.
 if type(managed_widget_dir) == "string" and managed_widget_dir ~= "" then
 	api.load_managed_widgets(managed_widget_dir, loader, registry, log)
@@ -524,6 +614,10 @@ send_payload({
 
 -- Emit the full initial widget trees once the runtime handshake is complete.
 flush_pending_outputs(true, false)
+runtime_ready = true
+if pending_package_reload then
+	apply_pending_package_reload()
+end
 
 while process_next_host_message() do
 end

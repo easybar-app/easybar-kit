@@ -17,6 +17,7 @@ struct WidgetPackageChange: Equatable {
 struct WidgetPackageUpdateResult: Equatable {
   let changes: [WidgetPackageChange]
   let skippedPinned: [String]
+  let reloadPlan: WidgetPackageReloadPlan
 }
 
 final class WidgetPackageUpdater {
@@ -131,10 +132,15 @@ final class WidgetPackageUpdater {
       .filter { touchedNames.contains($0.name) && previous[$0.name]?.version != $0.version }
       .map { WidgetPackageChange(package: $0, previousVersion: previous[$0.name]?.version) }
       .sorted { $0.package.name < $1.package.name }
+    let reloadPlan = try WidgetPackageReloadPlanner.make(
+      changedNames: Set(changes.map(\.package.name)),
+      packages: finalDatabase.packages
+    )
 
     return WidgetPackageUpdateResult(
       changes: changes,
-      skippedPinned: skippedPinned.sorted()
+      skippedPinned: skippedPinned.sorted(),
+      reloadPlan: reloadPlan
     )
   }
 
@@ -207,11 +213,44 @@ func updateWidgetPackages(options: WidgetPackageUpdateOptions, context: AppConte
   let spinner = CLIActivitySpinner(message: label)
   await spinner.start()
   do {
-    let result = try await WidgetPackageUpdater(logger: context.logger).update(options: options)
+    let packagesDirectory = SharedPathDefaults.defaultWidgetPackagesPath()
+    let updater = WidgetPackageUpdater(
+      logger: context.logger,
+      packagesDirectory: packagesDirectory
+    )
+    let result = try await updater.update(options: options)
     await spinner.stop()
     CLIOutput.printWidgetPackageUpdateResult(result)
+    requestRuntimeReload(
+      result.reloadPlan,
+      packagesDirectory: packagesDirectory,
+      context: context
+    )
   } catch {
     await spinner.stop()
     throw AppError.commandFailed(error.localizedDescription)
+  }
+}
+
+private func requestRuntimeReload(
+  _ plan: WidgetPackageReloadPlan,
+  packagesDirectory: URL,
+  context: AppContext
+) {
+  guard !plan.isEmpty else { return }
+
+  let store = WidgetPackageReloadPlanStore()
+  do {
+    try store.write(plan, to: packagesDirectory)
+    let resolution = try SharedRuntimeSocketResolver.controlSocket(explicitPath: nil)
+    logSocketResolution(resolution, kind: "control", context: context)
+    try sendCommand(.manualRefresh, to: resolution.path, context: context)
+  } catch {
+    store.remove(from: packagesDirectory)
+    fputs(
+      "warning: widget packages were updated but the running Lua runtime could not be reloaded: "
+        + error.localizedDescription + "\n",
+      stderr
+    )
   }
 }
