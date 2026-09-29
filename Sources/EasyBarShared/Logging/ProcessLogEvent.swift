@@ -2,12 +2,19 @@ import Foundation
 
 /// One structured log event that can be delivered to a live diagnostics sink.
 public struct ProcessLogEvent: Codable, Sendable {
+  /// The timestamp for this process log event.
   public let timestamp: Date
+  /// The timestamp text for this process log event.
   public let timestampText: String
+  /// The level for this process log event.
   public let level: ProcessLogLevel
+  /// The message for this process log event.
   public let message: String
+  /// The fields for this process log event.
   public let fields: [String: String]
+  /// The source for this process log event.
   public let source: String
+  /// The raw line for this process log event.
   public let rawLine: String
 
   /// Creates one structured live log event.

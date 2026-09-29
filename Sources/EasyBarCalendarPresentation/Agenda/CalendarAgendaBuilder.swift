@@ -5,14 +5,18 @@ import Foundation
 public enum CalendarAgendaBuilder {
   /// One entry in a grouped agenda list.
   public struct Entry: Identifiable, Equatable, Sendable {
+    /// Defines the supported kind values.
     public enum Kind: Equatable, Sendable {
       case dayHeader(Date)
       case event(CalendarAgentEvent)
     }
 
+    /// The stable identifier for this entry.
     public let id: String
+    /// The kind for this entry.
     public let kind: Kind
 
+    /// Creates an entry.
     public init(id: String, kind: Kind) {
       self.id = id
       self.kind = kind

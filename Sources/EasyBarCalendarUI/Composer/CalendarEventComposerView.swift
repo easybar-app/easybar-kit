@@ -4,14 +4,20 @@ import SwiftUI
 /// Reusable SwiftUI calendar composer view.
 public struct CalendarEventComposerView: View {
   @ObservedObject public var composer: CalendarEventComposer
+  /// The config for this calendar event composer view.
   public let config: CalendarComposerConfig
+  /// The appointments style for this calendar event composer view.
   public let appointmentsStyle: CalendarAppointmentsStyle
+  /// The on cancel for this calendar event composer view.
   public let onCancel: () -> Void
+  /// The on saved for this calendar event composer view.
   public let onSaved: () -> Void
+  /// The on deleted for this calendar event composer view.
   public let onDeleted: () -> Void
   @State private var showsDeleteConfirmation = false
   @State private var showsCloseConfirmation = false
 
+  /// Creates a calendar event composer view.
   public init(
     composer: CalendarEventComposer,
     config: CalendarComposerConfig,
@@ -28,6 +34,7 @@ public struct CalendarEventComposerView: View {
     self.onDeleted = onDeleted
   }
 
+  /// The rendered content for this view.
   public var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       header
@@ -63,6 +70,7 @@ public struct CalendarEventComposerView: View {
     }
   }
 
+  /// The header for this calendar event composer view.
   private var header: some View {
     HStack {
       Text(title)
@@ -80,6 +88,7 @@ public struct CalendarEventComposerView: View {
     }
   }
 
+  /// The content for this calendar event composer view.
   private var content: some View {
     VStack(alignment: .leading, spacing: 10) {
       labeledTextField(
@@ -119,6 +128,7 @@ public struct CalendarEventComposerView: View {
     }
   }
 
+  /// The date fields for this calendar event composer view.
   private var dateFields: some View {
     HStack(spacing: 8) {
       VStack(alignment: .leading, spacing: 4) {
@@ -143,6 +153,7 @@ public struct CalendarEventComposerView: View {
     }
   }
 
+  /// The travel time field for this calendar event composer view.
   private var travelTimeField: some View {
     VStack(alignment: .leading, spacing: 4) {
       label(config.travelTimeLabel)
@@ -161,6 +172,7 @@ public struct CalendarEventComposerView: View {
     }
   }
 
+  /// The alerts field for this calendar event composer view.
   private var alertsField: some View {
     VStack(alignment: .leading, spacing: 6) {
       HStack {
@@ -200,6 +212,7 @@ public struct CalendarEventComposerView: View {
     }
   }
 
+  /// The footer for this calendar event composer view.
   private var footer: some View {
     HStack {
       if composer.canDelete {
@@ -221,6 +234,7 @@ public struct CalendarEventComposerView: View {
     }
   }
 
+  /// The title for this calendar event composer view.
   private var title: String {
     switch composer.mode {
     case .create:
@@ -230,6 +244,7 @@ public struct CalendarEventComposerView: View {
     }
   }
 
+  /// The primary button title for this calendar event composer view.
   private var primaryButtonTitle: String {
     switch composer.mode {
     case .create:
@@ -239,10 +254,12 @@ public struct CalendarEventComposerView: View {
     }
   }
 
+  /// The displayed components for this calendar event composer view.
   private var displayedComponents: DatePickerComponents {
     composer.isAllDay ? [.date] : [.date, .hourAndMinute]
   }
 
+  /// Requests close.
   private func requestClose() {
     guard composer.hasUnsavedChanges else {
       onCancel()
@@ -252,10 +269,12 @@ public struct CalendarEventComposerView: View {
     showsCloseConfirmation = true
   }
 
+  /// Saves and close.
   private func saveAndClose() {
     composer.save(onSuccess: onSaved)
   }
 
+  /// Returns the labeled text field.
   private func labeledTextField(
     label labelText: String,
     placeholder: String,
@@ -268,12 +287,14 @@ public struct CalendarEventComposerView: View {
     }
   }
 
+  /// Returns the label.
   private func label(_ text: String) -> some View {
     Text(text)
       .font(.system(size: 11, weight: .medium))
       .foregroundStyle(color(appointmentsStyle.secondaryTextColorHex))
   }
 
+  /// Returns the color.
   private func color(_ hex: String) -> Color {
     Color(calendarHex: hex)
   }

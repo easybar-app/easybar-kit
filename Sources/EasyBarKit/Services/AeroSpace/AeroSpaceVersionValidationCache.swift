@@ -3,9 +3,13 @@ import Foundation
 
 /// Coalesces concurrent version checks and caches only successful validation.
 actor AeroSpaceVersionValidationCache {
+  /// Stores attempt data.
   private struct Attempt {
+    /// The stable identifier for this attempt.
     let id: UInt64
+    /// The generation for this attempt.
     let generation: UInt64
+    /// The task for this attempt.
     let task: Task<Bool, Never>
   }
 
@@ -15,11 +19,13 @@ actor AeroSpaceVersionValidationCache {
   private var attempt: Attempt?
   private var nextAttemptID: UInt64 = 0
 
+  /// Creates an AeroSpace version validation cache.
   init(commandRunner: any AeroSpaceCommandRunning, logger: ProcessLogger) {
     self.commandRunner = commandRunner
     self.logger = logger
   }
 
+  /// Validates the requested input.
   func validate(generation: UInt64) async -> Bool {
     if successfulGeneration == generation {
       return true
@@ -67,6 +73,7 @@ actor AeroSpaceVersionValidationCache {
     return result
   }
 
+  /// Cancels the requested operation.
   func cancel() {
     attempt?.task.cancel()
     attempt = nil

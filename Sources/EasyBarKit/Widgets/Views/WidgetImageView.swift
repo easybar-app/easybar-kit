@@ -3,18 +3,25 @@ import SwiftUI
 
 /// Shared asynchronous renderer for cached widget images.
 struct WidgetImageView: View {
+  /// The source for this widget image view.
   let source: WidgetImageSource
+  /// The size for this widget image view.
   let size: CGFloat
+  /// The corner radius for this widget image view.
   let cornerRadius: CGFloat
+  /// The tint for this widget image view.
   let tint: Color?
+  /// The on load failure for this widget image view.
   let onLoadFailure: ((WidgetImageSource) -> Void)?
 
   @StateObject private var imageLoader = WidgetImageLoader()
 
+  /// Returns the uses template rendering.
   static func usesTemplateRendering(source: WidgetImageSource, tint: Color?) -> Bool {
     tint != nil && source.allowsTemplateTint
   }
 
+  /// Creates a widget image view.
   init(
     source: WidgetImageSource,
     size: CGFloat,
@@ -29,6 +36,7 @@ struct WidgetImageView: View {
     self.onLoadFailure = onLoadFailure
   }
 
+  /// The rendered content for this view.
   var body: some View {
     let revision = WidgetImageRevision(source: source)
     Group {
@@ -52,6 +60,7 @@ struct WidgetImageView: View {
     }
   }
 
+  /// Returns the image view.
   private func imageView(
     _ image: NSImage,
     renderingMode: Image.TemplateRenderingMode

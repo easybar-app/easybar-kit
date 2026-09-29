@@ -1,24 +1,36 @@
 import SwiftUI
 
+/// Stores slider widget view data.
 struct SliderWidgetView: View {
+  /// The stable identifier for this slider widget view.
   let rootWidgetID: String
+  /// The stable identifier for this slider widget view.
   let targetWidgetID: String
+  /// The accessibility label for this slider widget view.
   let accessibilityLabel: String
+  /// The min value for this slider widget view.
   let minValue: Double
+  /// The max value for this slider widget view.
   let maxValue: Double
+  /// The step for this slider widget view.
   let step: Double
+  /// The external value for this slider widget view.
   let externalValue: Double
+  /// The tint for this slider widget view.
   let tint: Color
+  /// The width for this slider widget view.
   let width: CGFloat?
 
   @State private var value: Double
   @State private var isEditing = false
   @Environment(\.appViewServices) private var appViewServices
 
+  /// The range for this slider widget view.
   private var range: SliderValueRange {
     SliderValueRange(minimum: minValue, maximum: maxValue, step: step)
   }
 
+  /// Creates a slider widget view.
   init(
     rootWidgetID: String,
     targetWidgetID: String,

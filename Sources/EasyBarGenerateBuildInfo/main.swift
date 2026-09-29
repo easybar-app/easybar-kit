@@ -1,5 +1,6 @@
 import Foundation
 
+/// Defines the supported build info generator error values.
 private enum BuildInfoGeneratorError: Error, CustomStringConvertible, Sendable {
   case invalidArguments
   case unreadableVersionFile(path: String, reason: String)
@@ -17,9 +18,11 @@ private enum BuildInfoGeneratorError: Error, CustomStringConvertible, Sendable {
   }
 }
 
+/// Defines the supported EasyBar generate build info values.
 private enum EasyBarGenerateBuildInfo {
   private static let defaultVersion = "dev"
 
+  /// Runs the requested operation.
   static func run() throws {
     let arguments = Array(CommandLine.arguments.dropFirst())
     guard arguments.count == 2 else {
@@ -50,6 +53,7 @@ private enum EasyBarGenerateBuildInfo {
     try source.write(to: outputURL, atomically: true, encoding: .utf8)
   }
 
+  /// Reads version.
   private static func readVersion(from path: String) throws -> String {
     guard FileManager.default.fileExists(atPath: path) else {
       return defaultVersion
@@ -66,6 +70,7 @@ private enum EasyBarGenerateBuildInfo {
     }
   }
 
+  /// Evaluates the valid version condition.
   private static func isValidVersion(_ version: String) -> Bool {
     guard !version.isEmpty else { return false }
 

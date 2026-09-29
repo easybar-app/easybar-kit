@@ -1,5 +1,6 @@
 import Foundation
 
+/// Defines the supported inbox context menu action values.
 enum InboxContextMenuAction: Equatable {
   case setGroup(InboxGroupMode)
   case setSort(InboxSortMode)
@@ -9,6 +10,7 @@ enum InboxContextMenuAction: Equatable {
   case toggleShowWhenEmpty
   case toggleSourceActions
 
+  /// Resolves an inbox context-menu identifier to its action.
   init?(id: String) {
     if let value = id.removingPrefix("inbox.group."),
       let mode = InboxGroupMode(rawValue: value)
@@ -34,6 +36,7 @@ enum InboxContextMenuAction: Equatable {
 }
 
 extension String {
+  /// Returns the removing prefix.
   fileprivate func removingPrefix(_ prefix: String) -> String? {
     guard hasPrefix(prefix) else { return nil }
     let suffix = String(dropFirst(prefix.count))
@@ -41,7 +44,9 @@ extension String {
   }
 }
 
+/// Defines the supported inbox context menu values.
 enum InboxContextMenu {
+  /// Creates the requested value.
   static func make(config: Config.InboxBuiltinConfig) -> [WidgetContextMenuItem] {
     let groups = InboxGroupMode.allCases.map { mode in
       WidgetContextMenuItem(
@@ -84,6 +89,7 @@ enum InboxContextMenu {
     ]
   }
 
+  /// Returns the title.
   private static func title(_ value: String) -> String {
     value.replacingOccurrences(of: "_", with: " ").capitalized
   }

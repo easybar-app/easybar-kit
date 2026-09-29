@@ -6,21 +6,35 @@ extension Config {
   struct AeroSpaceModeBuiltinConfig: @unchecked Sendable {
     /// Text and icon settings for the mode widget.
     struct Content {
+      /// Whether this content shows icon.
       var showIcon: Bool
+      /// Whether this content shows text.
       var showText: Bool
 
+      /// The h tiles icon for this content.
       var hTilesIcon: String
+      /// The v tiles icon for this content.
       var vTilesIcon: String
+      /// The h accordion icon for this content.
       var hAccordionIcon: String
+      /// The v accordion icon for this content.
       var vAccordionIcon: String
+      /// The floating icon for this content.
       var floatingIcon: String
+      /// The unknown icon for this content.
       var unknownIcon: String
 
+      /// The h tiles text for this content.
       var hTilesText: String
+      /// The v tiles text for this content.
       var vTilesText: String
+      /// The h accordion text for this content.
       var hAccordionText: String
+      /// The v accordion text for this content.
       var vAccordionText: String
+      /// The floating text for this content.
       var floatingText: String
+      /// The unknown text for this content.
       var unknownText: String
     }
 
@@ -31,86 +45,103 @@ extension Config {
     /// Mode-specific content settings.
     var content: Content
 
+    /// Whether this AeroSpace mode builtin config is enabled.
     var enabled: Bool {
       get { placement.enabled }
       set { placement.enabled = newValue }
     }
 
+    /// The position for this AeroSpace mode builtin config.
     var position: WidgetPosition {
       get { placement.position }
       set { placement.position = newValue }
     }
 
+    /// The order for this AeroSpace mode builtin config.
     var order: Int {
       get { placement.order }
       set { placement.order = newValue }
     }
 
+    /// Whether this AeroSpace mode builtin config shows icon.
     var showIcon: Bool {
       get { content.showIcon }
       set { content.showIcon = newValue }
     }
 
+    /// Whether this AeroSpace mode builtin config shows text.
     var showText: Bool {
       get { content.showText }
       set { content.showText = newValue }
     }
 
+    /// The h tiles icon for this AeroSpace mode builtin config.
     var hTilesIcon: String {
       get { content.hTilesIcon }
       set { content.hTilesIcon = newValue }
     }
 
+    /// The v tiles icon for this AeroSpace mode builtin config.
     var vTilesIcon: String {
       get { content.vTilesIcon }
       set { content.vTilesIcon = newValue }
     }
 
+    /// The h accordion icon for this AeroSpace mode builtin config.
     var hAccordionIcon: String {
       get { content.hAccordionIcon }
       set { content.hAccordionIcon = newValue }
     }
 
+    /// The v accordion icon for this AeroSpace mode builtin config.
     var vAccordionIcon: String {
       get { content.vAccordionIcon }
       set { content.vAccordionIcon = newValue }
     }
 
+    /// The floating icon for this AeroSpace mode builtin config.
     var floatingIcon: String {
       get { content.floatingIcon }
       set { content.floatingIcon = newValue }
     }
 
+    /// The unknown icon for this AeroSpace mode builtin config.
     var unknownIcon: String {
       get { content.unknownIcon }
       set { content.unknownIcon = newValue }
     }
 
+    /// The h tiles text for this AeroSpace mode builtin config.
     var hTilesText: String {
       get { content.hTilesText }
       set { content.hTilesText = newValue }
     }
 
+    /// The v tiles text for this AeroSpace mode builtin config.
     var vTilesText: String {
       get { content.vTilesText }
       set { content.vTilesText = newValue }
     }
 
+    /// The h accordion text for this AeroSpace mode builtin config.
     var hAccordionText: String {
       get { content.hAccordionText }
       set { content.hAccordionText = newValue }
     }
 
+    /// The v accordion text for this AeroSpace mode builtin config.
     var vAccordionText: String {
       get { content.vAccordionText }
       set { content.vAccordionText = newValue }
     }
 
+    /// The floating text for this AeroSpace mode builtin config.
     var floatingText: String {
       get { content.floatingText }
       set { content.floatingText = newValue }
     }
 
+    /// The unknown text for this AeroSpace mode builtin config.
     var unknownText: String {
       get { content.unknownText }
       set { content.unknownText = newValue }

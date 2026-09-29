@@ -1,17 +1,23 @@
 import EasyBarShared
 import Foundation
 
+/// Stores inbox persisted state data.
 struct InboxPersistedState: Codable, Equatable {
+  /// The read item IDs for this inbox persisted state.
   var readItemIDs: Set<String> = []
+  /// The unread item IDs for this inbox persisted state.
   var unreadItemIDs: Set<String> = []
+  /// The dismissed item IDs for this inbox persisted state.
   var dismissedItemIDs: Set<String> = []
 
+  /// Maps stored properties to their encoded keys.
   private enum CodingKeys: String, CodingKey {
     case readItemIDs
     case unreadItemIDs
     case dismissedItemIDs
   }
 
+  /// Creates an inbox persisted state.
   init(
     readItemIDs: Set<String> = [],
     unreadItemIDs: Set<String> = [],
@@ -22,6 +28,7 @@ struct InboxPersistedState: Codable, Equatable {
     self.dismissedItemIDs = dismissedItemIDs
   }
 
+  /// Creates an inbox persisted state.
   init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     readItemIDs = Set(try container.decodeIfPresent([String].self, forKey: .readItemIDs) ?? [])
@@ -30,6 +37,7 @@ struct InboxPersistedState: Codable, Equatable {
       try container.decodeIfPresent([String].self, forKey: .dismissedItemIDs) ?? [])
   }
 
+  /// Encodes the requested value.
   func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(readItemIDs.sorted(), forKey: .readItemIDs)
@@ -38,10 +46,14 @@ struct InboxPersistedState: Codable, Equatable {
   }
 }
 
+/// Stores inbox state persistence data.
 struct InboxStatePersistence {
+  /// The file URL for this inbox state persistence.
   let fileURL: URL
+  /// The logger used to record operational diagnostics.
   let logger: ProcessLogger
 
+  /// Loads the requested value.
   func load() -> InboxPersistedState {
     guard FileManager.default.fileExists(atPath: fileURL.path) else { return .init() }
     do {
@@ -57,6 +69,7 @@ struct InboxStatePersistence {
     }
   }
 
+  /// Saves the requested operation.
   func save(_ state: InboxPersistedState) {
     do {
       let encoder = JSONEncoder()

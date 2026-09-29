@@ -39,18 +39,22 @@ enum ConfigSemanticWarningBuilder {
     return warnings
   }
 
+  /// Returns the calendar depends on disabled agent.
   private static func calendarDependsOnDisabledAgent(_ snapshot: ConfigSnapshot) -> Bool {
     snapshot.builtins.calendar.placement.enabled && !snapshot.calendarAgent.enabled
   }
 
+  /// Returns the Wi-Fi depends on disabled agent.
   private static func wifiDependsOnDisabledAgent(_ snapshot: ConfigSnapshot) -> Bool {
     snapshot.builtins.wifi.enabled && !snapshot.networkAgent.enabled
   }
 
+  /// Returns the Wi-Fi has no configured content.
   private static func wifiHasNoConfiguredContent(_ wifi: Config.WiFiBuiltinConfig) -> Bool {
     wifi.enabled && wifi.mode != .icon && !wifi.fields.hasEnabledField
   }
 
+  /// Returns the spaces has no visible content.
   private static func spacesHasNoVisibleContent(_ spaces: Config.SpacesBuiltinConfig) -> Bool {
     spaces.enabled && !spaces.layout.showLabel && !spaces.layout.showIcons
   }

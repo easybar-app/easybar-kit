@@ -1,13 +1,17 @@
 import EasyBarShared
 import Foundation
 
+/// Stores widget package database store data.
 struct WidgetPackageDatabaseStore {
+  /// The file manager used for filesystem operations.
   private let fileManager: FileManager
 
+  /// Creates a widget package database store.
   init(fileManager: FileManager = .default) {
     self.fileManager = fileManager
   }
 
+  /// Loads the requested value.
   func load(from packagesDirectory: URL) throws -> InstalledWidgetPackages {
     let url = packagesDirectory.appending(path: "installed.json")
     guard fileManager.fileExists(atPath: url.path) else { return .empty }
@@ -52,6 +56,7 @@ struct WidgetPackageDatabaseStore {
     return database
   }
 
+  /// Writes the requested value.
   func write(_ database: InstalledWidgetPackages, to packagesDirectory: URL) throws {
     let url = packagesDirectory.appending(path: "installed.json")
     try fileManager.createDirectory(
@@ -65,6 +70,7 @@ struct WidgetPackageDatabaseStore {
     try data.write(to: url, options: .atomic)
   }
 
+  /// Evaluates the module name condition.
   private static func isModuleName(_ value: String) -> Bool {
     value.range(
       of: #"^[A-Za-z_][A-Za-z0-9_-]*(?:\.[A-Za-z_][A-Za-z0-9_-]*)*$"#,

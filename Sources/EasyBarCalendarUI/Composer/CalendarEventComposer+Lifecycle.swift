@@ -55,6 +55,7 @@ extension CalendarEventComposer {
     refreshSnapshots()
   }
 
+  /// Applies snapshot.
   func applySnapshot(_ snapshot: CalendarAgentSnapshot?) {
     let wasClean = !hasUnsavedChanges
     defer {
@@ -103,6 +104,7 @@ extension CalendarEventComposer {
     selectedCalendarID = options[0].id
   }
 
+  /// Resets the associated service.
   func reset(using date: Date) {
     let defaultStart = defaultStartTime(on: date)
     let defaultEnd = defaultEndTime(on: date)
@@ -118,6 +120,7 @@ extension CalendarEventComposer {
     selectedCalendarID = resolvedInitialCalendarID()
   }
 
+  /// Returns the resolved initial calendar ID.
   func resolvedInitialCalendarID() -> String {
     if let preferredCalendarID,
       calendarOptions.contains(where: { $0.id == preferredCalendarID })

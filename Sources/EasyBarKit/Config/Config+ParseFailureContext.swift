@@ -185,6 +185,7 @@ extension Config {
   }
 }
 
+/// Defines the supported toml line token values.
 private enum TOMLLineToken {
   case content
   case commentStart
@@ -192,14 +193,19 @@ private enum TOMLLineToken {
 
 /// Tracks the minimal TOML string state needed to ignore comments and assignments inside strings.
 private struct TOMLLineScanner {
+  /// Whether the in single quoted string option is enabled for this toml line scanner.
   private var inSingleQuotedString = false
+  /// Whether the in double quoted string option is enabled for this toml line scanner.
   private var inDoubleQuotedString = false
+  /// Whether the escaped option is enabled for this toml line scanner.
   private var escaped = false
 
+  /// Whether this toml line scanner is outside string.
   var isOutsideString: Bool {
     !inSingleQuotedString && !inDoubleQuotedString
   }
 
+  /// Consumes the pending value.
   mutating func consume(_ character: Character) -> TOMLLineToken {
     if escaped {
       escaped = false

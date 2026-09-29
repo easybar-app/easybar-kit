@@ -17,33 +17,57 @@ extension Config {
 
   /// Wi-Fi inline text style.
   struct BuiltinWiFiInline {
+    /// The text color hex for this builtin Wi-Fi inline.
     var textColorHex: String
   }
 
   /// Wi-Fi detail field toggles.
   struct BuiltinWiFiFields {
+    /// Whether the SSID option is enabled for this builtin Wi-Fi fields.
     var ssid: Bool
+    /// Whether the IPv4 address option is enabled for this builtin Wi-Fi fields.
     var ipv4Address: Bool
+    /// Whether the IPv6 address option is enabled for this builtin Wi-Fi fields.
     var ipv6Address: Bool
+    /// Whether the BSSID option is enabled for this builtin Wi-Fi fields.
     var bssid: Bool
+    /// Whether the interface name option is enabled for this builtin Wi-Fi fields.
     var interfaceName: Bool
+    /// Whether the hardware address option is enabled for this builtin Wi-Fi fields.
     var hardwareAddress: Bool
+    /// Whether the power option is enabled for this builtin Wi-Fi fields.
     var power: Bool
+    /// Whether the service active option is enabled for this builtin Wi-Fi fields.
     var serviceActive: Bool
+    /// Whether the RSSI option is enabled for this builtin Wi-Fi fields.
     var rssi: Bool
+    /// Whether the noise option is enabled for this builtin Wi-Fi fields.
     var noise: Bool
+    /// Whether the SNR option is enabled for this builtin Wi-Fi fields.
     var snr: Bool
+    /// Whether the link quality option is enabled for this builtin Wi-Fi fields.
     var linkQuality: Bool
+    /// Whether the transmit rate option is enabled for this builtin Wi-Fi fields.
     var txRate: Bool
+    /// Whether the channel option is enabled for this builtin Wi-Fi fields.
     var channel: Bool
+    /// Whether the channel band option is enabled for this builtin Wi-Fi fields.
     var channelBand: Bool
+    /// Whether the channel width option is enabled for this builtin Wi-Fi fields.
     var channelWidth: Bool
+    /// Whether the security option is enabled for this builtin Wi-Fi fields.
     var security: Bool
+    /// Whether the phy mode option is enabled for this builtin Wi-Fi fields.
     var phyMode: Bool
+    /// Whether the interface mode option is enabled for this builtin Wi-Fi fields.
     var interfaceMode: Bool
+    /// Whether the country code option is enabled for this builtin Wi-Fi fields.
     var countryCode: Bool
+    /// Whether the roaming option is enabled for this builtin Wi-Fi fields.
     var roaming: Bool
+    /// Whether the SSID changed at option is enabled for this builtin Wi-Fi fields.
     var ssidChangedAt: Bool
+    /// Whether the interface changed at option is enabled for this builtin Wi-Fi fields.
     var interfaceChangedAt: Bool
 
     /// Returns whether at least one detail field is enabled.
@@ -56,12 +80,19 @@ extension Config {
   struct WiFiBuiltinConfig: @unchecked Sendable {
     /// Wi-Fi content and color settings.
     struct Content {
+      /// The mode for this content.
       var mode: BuiltinWiFiContentMode
+      /// The surface for this content.
       var surface: BuiltinWiFiContentSurface
+      /// The inline separator for this content.
       var inlineSeparator: String
+      /// The disconnected text for this content.
       var disconnectedText: String
+      /// The denied text for this content.
       var deniedText: String
+      /// The active color hex for this content.
       var activeColorHex: String
+      /// The inactive color hex for this content.
       var inactiveColorHex: String
     }
 
@@ -78,56 +109,67 @@ extension Config {
     /// Popup style for Wi-Fi details mode.
     var popup: BuiltinPopupStyle
 
+    /// Whether this Wi-Fi builtin config is enabled.
     var enabled: Bool {
       get { placement.enabled }
       set { placement.enabled = newValue }
     }
 
+    /// The position for this Wi-Fi builtin config.
     var position: WidgetPosition {
       get { placement.position }
       set { placement.position = newValue }
     }
 
+    /// The order for this Wi-Fi builtin config.
     var order: Int {
       get { placement.order }
       set { placement.order = newValue }
     }
 
+    /// The mode for this Wi-Fi builtin config.
     var mode: BuiltinWiFiContentMode {
       get { content.mode }
       set { content.mode = newValue }
     }
 
+    /// The surface for this Wi-Fi builtin config.
     var surface: BuiltinWiFiContentSurface {
       get { content.surface }
       set { content.surface = newValue }
     }
 
+    /// The inline separator for this Wi-Fi builtin config.
     var inlineSeparator: String {
       get { content.inlineSeparator }
       set { content.inlineSeparator = newValue }
     }
 
+    /// The disconnected text for this Wi-Fi builtin config.
     var disconnectedText: String {
       get { content.disconnectedText }
       set { content.disconnectedText = newValue }
     }
 
+    /// The denied text for this Wi-Fi builtin config.
     var deniedText: String {
       get { content.deniedText }
       set { content.deniedText = newValue }
     }
 
+    /// The active color hex for this Wi-Fi builtin config.
     var activeColorHex: String {
       get { content.activeColorHex }
       set { content.activeColorHex = newValue }
     }
 
+    /// The inactive color hex for this Wi-Fi builtin config.
     var inactiveColorHex: String {
       get { content.inactiveColorHex }
       set { content.inactiveColorHex = newValue }
     }
 
+    /// The inline text color hex for this Wi-Fi builtin config.
     var inlineTextColorHex: String {
       get { inline.textColorHex }
       set { inline.textColorHex = newValue }

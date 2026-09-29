@@ -5,8 +5,10 @@ import SwiftUI
 struct NativeUpcomingCalendarPopupView: View {
   @EnvironmentObject private var configStore: ConfigSnapshotStore
   @StateObject private var composerPanel: CalendarEventComposerPanelController
+  /// The services for this native upcoming calendar popup view.
   private let services: AppViewServices
 
+  /// Creates a native upcoming calendar popup view.
   init(services: AppViewServices) {
     self.services = services
     _composerPanel = StateObject(

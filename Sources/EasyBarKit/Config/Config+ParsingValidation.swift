@@ -140,6 +140,7 @@ extension Config {
     return resolved
   }
 
+  /// Returns the theme color token reference.
   private static func themeColorTokenReference(from value: String) -> ThemeColorToken? {
     let prefix = "theme."
     let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines)

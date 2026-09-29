@@ -1,24 +1,33 @@
 import Foundation
 
+/// Stores widget package pins data.
 private struct WidgetPackagePins: Codable, Equatable {
+  /// The layout version for this widget package pins.
   let layoutVersion: Int
+  /// The packages for this widget package pins.
   var packages: [String]
 
+  /// Maps stored properties to their encoded keys.
   private enum CodingKeys: String, CodingKey {
     case layoutVersion = "layout_version"
     case packages
   }
 }
 
+/// Stores widget package pin store data.
 struct WidgetPackagePinStore {
+  /// The layout version for this widget package pin store.
   static let layoutVersion = 1
 
+  /// The file manager used for filesystem operations.
   private let fileManager: FileManager
 
+  /// Creates a widget package pin store.
   init(fileManager: FileManager = .default) {
     self.fileManager = fileManager
   }
 
+  /// Loads the requested value.
   func load(from packagesDirectory: URL) throws -> Set<String> {
     let url = packagesDirectory.appending(path: "pins.json")
     guard fileManager.fileExists(atPath: url.path) else { return [] }
@@ -52,6 +61,7 @@ struct WidgetPackagePinStore {
     return Set(state.packages)
   }
 
+  /// Writes the requested value.
   func write(_ pins: Set<String>, to packagesDirectory: URL) throws {
     let url = packagesDirectory.appending(path: "pins.json")
     try fileManager.createDirectory(

@@ -3,18 +3,27 @@ import Foundation
 
 /// Streams Wi-Fi and network state from the network agent.
 final class NetworkAgentClient: @unchecked Sendable {
+  /// Stores error log key data.
   private struct ErrorLogKey: Equatable {
+    /// The code for this error log key.
     let code: String
   }
 
+  /// Stores error log state data.
   private struct ErrorLogState {
+    /// The last key for this error log state.
     var lastKey: ErrorLogKey?
+    /// The repeat count for this error log state.
     var repeatCount = 0
   }
 
+  /// Stores lifecycle state data.
   private struct LifecycleState {
+    /// The config for this lifecycle state.
     var config: ConfigSnapshot.NetworkAgent
+    /// Whether the started option is enabled for this lifecycle state.
     var started = false
+    /// The stable identifier for this lifecycle state.
     var publicationID: UInt64 = 0
   }
 

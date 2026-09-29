@@ -1,12 +1,16 @@
 import Foundation
 
+/// Stores widget package searcher data.
 struct WidgetPackageSearcher {
+  /// The loader for this widget package searcher.
   private let loader: WidgetPackageRegistryLoader
 
+  /// Creates a widget package searcher.
   init(loader: WidgetPackageRegistryLoader = WidgetPackageRegistryLoader()) {
     self.loader = loader
   }
 
+  /// Searches the available packages.
   func search(
     query: String?,
     registrySource: String?,
@@ -30,6 +34,7 @@ struct WidgetPackageSearcher {
   }
 }
 
+/// Searches available widget packages.
 func searchWidgetPackages(
   options: WidgetPackageSearchOptions,
   context: AppContext

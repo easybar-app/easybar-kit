@@ -5,6 +5,7 @@ struct BatteryRenderer {
 
   typealias Snapshot = BatteryNativeWidget.Snapshot
 
+  /// The stable identifier for this battery renderer.
   let rootID: String
 
   /// Tunable battery fill metrics.

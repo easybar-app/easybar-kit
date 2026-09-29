@@ -2,6 +2,7 @@ import SwiftUI
 
 /// An uneven marker loop with a deliberate gap, like one quick pen stroke.
 struct OpenHandDrawnLoop: Shape {
+  /// Returns the path.
   func path(in rect: CGRect) -> Path {
     let point: (Double, Double) -> CGPoint = { x, y in
       CGPoint(

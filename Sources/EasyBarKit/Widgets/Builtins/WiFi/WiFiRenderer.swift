@@ -5,11 +5,13 @@ struct WiFiRenderer {
 
   typealias Snapshot = WiFiNativeWidget.Snapshot
 
+  /// Defines the supported detail layout values.
   private enum DetailLayout {
     static let rowSpacing: Double = 2
     static let columnSpacing: Double = 8
   }
 
+  /// The stable identifier for this Wi-Fi renderer.
   let rootID: String
 
   /// Builds the Wi-Fi nodes for the current snapshot.

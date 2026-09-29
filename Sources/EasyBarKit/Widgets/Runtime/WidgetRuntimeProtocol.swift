@@ -30,6 +30,7 @@ enum WidgetRuntimeMessage {
   )
 }
 
+/// Defines the supported widget storage operation values.
 enum WidgetStorageOperation: String, Sendable {
   case get
   case set
@@ -40,6 +41,7 @@ struct WidgetRuntimeProtocolDecoder {
   /// Maximum UTF-8 size accepted for opaque command and timer tokens.
   static let maximumTokenBytes = 256
 
+  /// The decoder for this widget runtime protocol decoder.
   private let decoder: JSONDecoder = {
     let decoder = JSONDecoder()
     decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -183,6 +185,7 @@ struct WidgetRuntimeProtocolDecoder {
     }
   }
 
+  /// Returns the storage value validation error.
   private func storageValueValidationError(
     operation: WidgetStorageOperation,
     value: WidgetStorageValue?

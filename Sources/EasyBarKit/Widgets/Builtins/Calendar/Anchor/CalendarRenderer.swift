@@ -8,6 +8,7 @@ final class CalendarRenderer {
   let rootID: String
   private let formatterCache = FormattedDateFormatterCache()
 
+  /// Creates a calendar renderer.
   init(rootID: String) {
     self.rootID = rootID
   }
@@ -77,6 +78,7 @@ final class CalendarRenderer {
     return nodes
   }
 
+  /// Evaluates the insert separator condition.
   private func shouldInsertSeparator(
     before index: Int,
     anchor: Config.CalendarBuiltinConfig.Anchor
@@ -84,6 +86,7 @@ final class CalendarRenderer {
     anchor.layout == .row && index > 0 && !anchor.separator.isEmpty
   }
 
+  /// Creates content container.
   private func makeContentContainer(
     layout: CalendarAnchorLayout,
     contentID: String,

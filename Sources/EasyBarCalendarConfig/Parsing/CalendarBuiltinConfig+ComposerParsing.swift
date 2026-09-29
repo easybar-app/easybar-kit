@@ -1,6 +1,7 @@
 import Foundation
 
 extension CalendarBuiltinConfig {
+  /// Parses composer.
   static func parseComposer(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Composer
@@ -11,6 +12,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses composer style.
   private static func parseComposerStyle(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Composer.Style
@@ -28,6 +30,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses composer content.
   private static func parseComposerContent(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Composer.Content
@@ -81,6 +84,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses option labels.
   private static func parseOptionLabels(
     reader: Reader?,
     fallback: [String: String]

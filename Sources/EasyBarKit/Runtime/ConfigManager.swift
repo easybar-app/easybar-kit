@@ -3,6 +3,7 @@ import Foundation
 
 /// Actor-owned access to config mutation and runtime-facing config snapshots.
 actor ConfigManager {
+  /// Stores validation result data.
   struct ValidationResult: Sendable {
     /// Resolved path of the validated config file.
     let configPath: String
@@ -12,10 +13,15 @@ actor ConfigManager {
     let warnings: [String]
   }
 
+  /// Stores Lua command settings data.
   struct LuaCommandSettings: Sendable {
+    /// The timeout seconds for this Lua command settings.
     let timeoutSeconds: TimeInterval
+    /// The max output bytes for this Lua command settings.
     let maxOutputBytes: Int
+    /// The max async jobs for this Lua command settings.
     let maxAsyncJobs: Int
+    /// The environment for this Lua command settings.
     let environment: [String: String]
   }
 

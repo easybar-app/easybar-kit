@@ -132,6 +132,7 @@ extension VolumeSliderNativeWidget {
     return deviceID
   }
 
+  /// Creates system volume state.
   private func makeSystemVolumeState(
     normalizedVolume: Double,
     isMuted: Bool,
@@ -152,6 +153,7 @@ extension VolumeSliderNativeWidget {
     )
   }
 
+  /// Returns the audio device capabilities.
   private func audioDeviceCapabilities(deviceID: AudioDeviceID) -> AudioDeviceCapabilities {
     AudioDeviceCapabilities(
       canReadVolume: Self.outputElements.contains {
@@ -178,6 +180,7 @@ extension VolumeSliderNativeWidget {
     )
   }
 
+  /// Reads system volume.
   private func readSystemVolume(deviceID: AudioDeviceID) -> Double? {
     if let main = readVolumeScalar(
       deviceID: deviceID,
@@ -194,6 +197,7 @@ extension VolumeSliderNativeWidget {
     return channelValues.reduce(0, +) / Double(channelValues.count)
   }
 
+  /// Reads muted state.
   private func readMutedState(deviceID: AudioDeviceID) -> Bool? {
     let values = Self.outputElements.compactMap { element in
       readMuteState(deviceID: deviceID, element: element)
@@ -203,6 +207,7 @@ extension VolumeSliderNativeWidget {
     return values.contains(true)
   }
 
+  /// Reads volume scalar.
   private func readVolumeScalar(
     deviceID: AudioDeviceID,
     element: AudioObjectPropertyElement
@@ -219,6 +224,7 @@ extension VolumeSliderNativeWidget {
     return status == noErr ? Double(value) : nil
   }
 
+  /// Reads mute state.
   private func readMuteState(
     deviceID: AudioDeviceID,
     element: AudioObjectPropertyElement
@@ -294,6 +300,7 @@ extension VolumeSliderNativeWidget {
     return wroteAny
   }
 
+  /// Writes mute state.
   private func writeMuteState(
     _ muted: Bool,
     deviceID: AudioDeviceID,
@@ -322,6 +329,7 @@ extension VolumeSliderNativeWidget {
     return status == noErr
   }
 
+  /// Evaluates the property condition.
   private func hasProperty(
     selector: AudioObjectPropertySelector,
     deviceID: AudioDeviceID,
@@ -331,6 +339,7 @@ extension VolumeSliderNativeWidget {
     return AudioObjectHasProperty(deviceID, &address)
   }
 
+  /// Returns the property is settable.
   private func propertyIsSettable(
     selector: AudioObjectPropertySelector,
     deviceID: AudioDeviceID,
@@ -340,6 +349,7 @@ extension VolumeSliderNativeWidget {
     return propertyIsSettable(address: &address, deviceID: deviceID)
   }
 
+  /// Returns the property is settable.
   private func propertyIsSettable(
     address: inout AudioObjectPropertyAddress,
     deviceID: AudioDeviceID
@@ -350,6 +360,7 @@ extension VolumeSliderNativeWidget {
     return status == noErr && settable.boolValue
   }
 
+  /// Returns the property address.
   private func propertyAddress(
     selector: AudioObjectPropertySelector,
     element: AudioObjectPropertyElement

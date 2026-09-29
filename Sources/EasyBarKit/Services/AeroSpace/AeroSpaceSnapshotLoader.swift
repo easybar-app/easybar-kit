@@ -13,7 +13,9 @@ struct AeroSpaceSnapshot: Equatable, Sendable {
 
 /// Focus-sensitive subset that can be loaded without rebuilding every workspace.
 struct AeroSpaceFocusedState: Equatable, Sendable {
+  /// The app for this AeroSpace focused state.
   let app: SpaceApp?
+  /// The layout mode for this AeroSpace focused state.
   let layoutMode: AeroSpaceLayoutMode
 }
 
@@ -165,8 +167,10 @@ enum AeroSpaceSnapshotLoader {
 
 /// Loads AeroSpace state from formatted JSON CLI output.
 private struct JSONAeroSpaceSnapshotProvider {
+  /// The run for this JSON AeroSpace snapshot provider.
   let run: ([String]) -> String?
 
+  /// Loads state.
   func loadState() throws -> AeroSpaceRawSnapshot {
     let workspacesOutput = try requireOutput(
       run(AeroSpaceSnapshotCommands.workspaces),
@@ -191,8 +195,10 @@ private struct JSONAeroSpaceSnapshotProvider {
 
 /// Loads AeroSpace state without blocking the caller's cooperative executor.
 private struct AsyncJSONAeroSpaceSnapshotProvider {
+  /// The run for this async JSON AeroSpace snapshot provider.
   let run: @Sendable ([String]) async -> String?
 
+  /// Loads state.
   func loadState() async throws -> AeroSpaceRawSnapshot {
     let workspacesOutput = try requireOutput(
       await run(AeroSpaceSnapshotCommands.workspaces),
@@ -251,6 +257,7 @@ private enum AeroSpaceSnapshotCommands {
 
 /// Decodes the three formatted JSON payloads into provider-neutral state.
 private enum JSONAeroSpaceSnapshotParser {
+  /// Parses the requested value.
   static func parse(
     workspacesOutput: String,
     windowsOutput: String,
@@ -288,6 +295,7 @@ private enum JSONAeroSpaceSnapshotParser {
     try parseFocusedWindow(output, decoder: JSONDecoder())
   }
 
+  /// Parses focused window.
   private static func parseFocusedWindow(
     _ output: String,
     decoder: JSONDecoder
@@ -331,26 +339,33 @@ private func requireOutput(_ output: String?, command: String) throws -> String 
 
 /// Minimum supported AeroSpace version for JSON snapshot loading.
 struct AeroSpaceVersion: Comparable, CustomStringConvertible, Equatable {
+  /// The major for this AeroSpace version.
   let major: Int
+  /// The minor for this AeroSpace version.
   let minor: Int
+  /// The patch for this AeroSpace version.
   let patch: Int
 
+  /// A human-readable representation of this AeroSpace version.
   var description: String {
     "\(major).\(minor).\(patch)"
   }
 
+  /// Returns whether the left AeroSpace version precedes the right version.
   static func < (lhs: AeroSpaceVersion, rhs: AeroSpaceVersion) -> Bool {
     if lhs.major != rhs.major { return lhs.major < rhs.major }
     if lhs.minor != rhs.minor { return lhs.minor < rhs.minor }
     return lhs.patch < rhs.patch
   }
 
+  /// Creates an AeroSpace version.
   init(major: Int, minor: Int, patch: Int) {
     self.major = major
     self.minor = minor
     self.patch = patch
   }
 
+  /// Parses the first three-component version found in command output.
   init?(_ text: String) {
     let pattern = #"(\d+)\.(\d+)\.(\d+)"#
     guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
@@ -359,6 +374,7 @@ struct AeroSpaceVersion: Comparable, CustomStringConvertible, Equatable {
       return nil
     }
 
+    /// Parses one captured numeric version component.
     func component(_ index: Int) -> Int? {
       guard let range = Range(match.range(at: index), in: text) else { return nil }
       return Int(text[range])
@@ -422,9 +438,13 @@ enum AeroSpaceVersionRequirement {
 
 /// Raw provider-neutral AeroSpace state.
 private struct AeroSpaceRawSnapshot {
+  /// The workspaces for this AeroSpace raw snapshot.
   let workspaces: [WorkspaceDTO]
+  /// The windows for this AeroSpace raw snapshot.
   let windows: [WindowDTO]
+  /// The focused window for this AeroSpace raw snapshot.
   let focusedWindow: FocusedWindowDTO?
+  /// The focused layout for this AeroSpace raw snapshot.
   let focusedLayout: String
 }
 
@@ -460,10 +480,14 @@ private struct FocusedWindowDTO {
 
 /// JSON workspace shape returned by `aerospace list-workspaces --json --format`.
 private struct JSONWorkspaceDTO: Decodable {
+  /// The workspace for this JSON workspace dto.
   let workspace: String
+  /// Whether the workspace is focused option is enabled for this JSON workspace dto.
   let workspaceIsFocused: Bool
+  /// Whether the workspace is visible option is enabled for this JSON workspace dto.
   let workspaceIsVisible: Bool
 
+  /// Maps stored properties to their encoded keys.
   enum CodingKeys: String, CodingKey {
     case workspace
     case workspaceIsFocused = "workspace-is-focused"
@@ -473,11 +497,16 @@ private struct JSONWorkspaceDTO: Decodable {
 
 /// JSON window shape returned by `aerospace list-windows --json --format`.
 private struct JSONWindowDTO: Decodable {
+  /// The workspace for this JSON window dto.
   let workspace: String
+  /// The app name for this JSON window dto.
   let appName: String
+  /// The app bundle path for this JSON window dto.
   let appBundlePath: String
+  /// The window layout for this JSON window dto.
   let windowLayout: String?
 
+  /// Maps stored properties to their encoded keys.
   enum CodingKeys: String, CodingKey {
     case workspace
     case appName = "app-name"

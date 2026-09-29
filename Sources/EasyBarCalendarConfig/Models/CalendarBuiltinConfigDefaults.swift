@@ -190,6 +190,7 @@ extension CalendarBuiltinConfig {
     )
   )
 
+  /// Resolves month weekday symbols.
   public static func resolveMonthWeekdaySymbols(
     format: String,
     manualSymbols: [String]?
@@ -201,6 +202,7 @@ extension CalendarBuiltinConfig {
     return systemMonthWeekdaySymbols(format: format)
   }
 
+  /// Returns the system month weekday symbols.
   private static func systemMonthWeekdaySymbols(format: String) -> [String] {
     let sundayFirstSymbols = systemSundayFirstWeekdaySymbols(format: format)
 
@@ -211,6 +213,7 @@ extension CalendarBuiltinConfig {
     return Array(sundayFirstSymbols[1...6]) + [sundayFirstSymbols[0]]
   }
 
+  /// Returns the system sunday first weekday symbols.
   private static func systemSundayFirstWeekdaySymbols(format: String) -> [String] {
     let formatter = DateFormatter()
     formatter.locale = .autoupdatingCurrent
@@ -228,12 +231,14 @@ extension CalendarBuiltinConfig {
     }
   }
 
+  /// Returns the system very short weekday symbols.
   private static func systemVeryShortWeekdaySymbols(from formatter: DateFormatter) -> [String] {
     return formatter.veryShortStandaloneWeekdaySymbols
       ?? formatter.veryShortWeekdaySymbols
       ?? systemShortWeekdaySymbols(from: formatter).map { String($0.prefix(1)) }
   }
 
+  /// Returns the system short weekday symbols.
   private static func systemShortWeekdaySymbols(from formatter: DateFormatter) -> [String] {
     return formatter.shortStandaloneWeekdaySymbols
       ?? formatter.shortWeekdaySymbols

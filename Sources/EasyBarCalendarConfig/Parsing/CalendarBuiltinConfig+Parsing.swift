@@ -59,6 +59,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Returns the calendar reader.
   private static func calendarReader(table: TOMLTable, path: String) -> Reader {
     Reader(
       table: table,
@@ -68,6 +69,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses placement.
   private static func parsePlacement(
     reader: Reader,
     fallback: CalendarWidgetPlacement
@@ -80,6 +82,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses widget style.
   private static func parseWidgetStyle(
     reader: Reader,
     fallback: CalendarWidgetStyle
@@ -103,6 +106,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses anchor.
   private static func parseAnchor(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Anchor
@@ -119,6 +123,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses anchor field.
   private static func parseAnchorField(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Anchor.Field
@@ -132,6 +137,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses filters.
   private static func parseFilters(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Filters
@@ -172,6 +178,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses appointments.
   private static func parseAppointments(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Appointments
@@ -224,6 +231,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses birthdays.
   private static func parseBirthdays(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Birthdays

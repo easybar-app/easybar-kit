@@ -43,11 +43,16 @@ public enum LineSocketClientTransportError: Error, CustomStringConvertible {
 
 /// Sends one line-delimited JSON request and decodes one JSON response.
 public struct LineSocketClientTransport<Request: Encodable, Response: Decodable> {
+  /// The socket path for this line socket client transport.
   public let socketPath: String
+  /// The response timeout for this line socket client transport.
   public let responseTimeout: TimeInterval
+  /// The max response bytes for this line socket client transport.
   public let maxResponseBytes: Int
 
+  /// The make encoder for this line socket client transport.
   private let makeEncoder: @Sendable () -> JSONEncoder
+  /// The make decoder for this line socket client transport.
   private let makeDecoder: @Sendable () -> JSONDecoder
 
   /// Creates a new client transport for the given socket path.
@@ -89,6 +94,7 @@ public struct LineSocketClientTransport<Request: Encodable, Response: Decodable>
     return try readOneResponse(from: fd, deadline: deadline)
   }
 
+  /// Returns the connect socket.
   private func connectSocket(deadline: UInt64) throws -> Int32 {
     do {
       return try openConnectedUnixSocket(
@@ -257,6 +263,7 @@ public struct LineSocketClientTransport<Request: Encodable, Response: Decodable>
     }
   }
 
+  /// Returns the errno description.
   private func errnoDescription(_ value: Int32) -> String {
     "\(String(cString: strerror(value))) (errno \(value))"
   }

@@ -561,9 +561,11 @@ function M.new(log, hooks)
 
 		return setmetatable(proxy, {
 			__index = copy,
+			-- Rejects writes to the read-only proxy.
 			__newindex = function()
 				error(tostring(name) .. " is read-only")
 			end,
+			-- Iterates the copied constants without exposing their backing table.
 			__pairs = function()
 				return pairs(copy)
 			end,
@@ -614,6 +616,7 @@ function M.new(log, hooks)
 		end
 
 		return setmetatable({}, {
+			-- Writes one prefixed message when the logger is called directly.
 			__call = function(_, level, ...)
 				log_widget_with_prefix(source, level, prefix, ...)
 			end,
@@ -656,6 +659,7 @@ function M.new(log, hooks)
 		end
 
 		return setmetatable(logger, {
+			-- Writes one message to both the host logger and bounded file.
 			__call = function(_, level, ...)
 				log_widget_with_prefix(source, level, prefix, ...)
 
@@ -684,6 +688,7 @@ function M.new(log, hooks)
 		end
 
 		return setmetatable(logger, {
+			-- Writes one message through the widget-scoped host logger.
 			__call = function(_, level, ...)
 				log_widget(source, level, ...)
 			end,

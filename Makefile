@@ -33,7 +33,8 @@ NEXT_MAJOR := $(shell python3 -c 'm,n,p=map(int,"$(CURRENT_CORE_VERSION)".split(
 
 .DEFAULT_GOAL := help
 
-.PHONY: help build test check check-lua check-concurrency prepare-build-version generate check-generated \
+.PHONY: help build test check check-lua check-source-documentation check-concurrency \
+        prepare-build-version generate check-generated \
         generate-event-catalog generate-theme-tokens generate-config \
         fmt fmt-swift fmt-lua fmt-md fmt-yaml fmt-json fmt-toml \
         lint lint-swift lint-lua update install-local clean
@@ -46,13 +47,16 @@ help: ## Display this help.
 build: prepare-build-version ## Build EasyBarKit and shared helper products.
 	@$(SWIFT) build
 
-check: test check-generated check-concurrency lint ## Run the complete repository verification suite.
+check: test check-generated check-source-documentation check-concurrency lint ## Run the complete repository verification suite.
 
 test: check-lua prepare-build-version ## Run Swift and Lua tests.
 	@$(SWIFT) test --disable-sandbox
 
 check-lua: ## Validate Lua runtime sources and examples.
 	@LUA="$(LUA)" scripts/ci/check-lua.sh
+
+check-source-documentation: ## Require descriptions for Swift declarations and struct fields.
+	@python3 scripts/ci/check-source-documentation.py
 
 check-concurrency: prepare-build-version ## Build every target with complete strict concurrency checking.
 	@scripts/ci/check-strict-concurrency.sh

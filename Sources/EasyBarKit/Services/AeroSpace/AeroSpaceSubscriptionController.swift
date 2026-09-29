@@ -12,10 +12,14 @@ final class AeroSpaceSubscriptionController: AeroSpaceSubscriptionControlling, @
 
   /// Locked lifecycle state for the subscription.
   private struct State {
+    /// Whether this state is running.
     var running = false
+    /// The generation for this state.
     var generation: UInt64 = 0
+    /// The subscription for this state.
     var subscription: AeroSpaceSubscriptionSession?
 
+    /// Starts the associated service.
     mutating func start() -> UInt64? {
       guard !running else { return nil }
       running = true
@@ -23,6 +27,7 @@ final class AeroSpaceSubscriptionController: AeroSpaceSubscriptionControlling, @
       return generation
     }
 
+    /// Stops the associated service.
     mutating func stop() -> AeroSpaceSubscriptionSession? {
       guard running else { return nil }
       running = false
@@ -33,6 +38,7 @@ final class AeroSpaceSubscriptionController: AeroSpaceSubscriptionControlling, @
       return stoppedSubscription
     }
 
+    /// Attaches the resource when its generation is still current.
     mutating func attach(
       _ newSubscription: AeroSpaceSubscriptionSession,
       generation: UInt64
@@ -45,6 +51,7 @@ final class AeroSpaceSubscriptionController: AeroSpaceSubscriptionControlling, @
       return true
     }
 
+    /// Detaches a matching resource and reports whether it was active.
     mutating func detach(
       subscription: AeroSpaceSubscriptionSession,
       generation: UInt64

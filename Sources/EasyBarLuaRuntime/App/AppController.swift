@@ -13,16 +13,25 @@ final class AppController {
 
   /// Captures the command-line inputs for the Lua runtime process.
   private struct RuntimeArguments {
+    /// The socket path for this runtime arguments.
     let socketPath: String
+    /// The Lua path for this runtime arguments.
     let luaPath: String
+    /// The runtime path for this runtime arguments.
     let runtimePath: String
+    /// The widgets path for this runtime arguments.
     let widgetsPath: String
+    /// The default command timeout seconds for this runtime arguments.
     let defaultCommandTimeoutSeconds: String
+    /// The default command max output bytes for this runtime arguments.
     let defaultCommandMaxOutputBytes: String
   }
 
+  /// Stores authentication record data.
   private struct AuthenticationRecord: Encodable {
+    /// The type for this authentication record.
     let type = "hello"
+    /// The token for this authentication record.
     let token: String
   }
 

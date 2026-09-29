@@ -7,6 +7,7 @@ import Foundation
 /// The Objective-C bridge catches KVC exceptions that Swift cannot catch. The
 /// adapter additionally rejects unsupported objects and invalid durations.
 enum EventKitTravelTimeAdapter {
+  /// Reads the requested operation.
   static func read(from object: NSObject) -> TimeInterval? {
     var seconds: Double = 0
     guard easybar_eventkit_read_travel_time(object, &seconds) else { return nil }
@@ -21,6 +22,7 @@ enum EventKitTravelTimeAdapter {
   }
 
   @discardableResult
+  /// Writes the requested value.
   static func write(_ seconds: TimeInterval?, to object: NSObject) -> Bool {
     let normalized = seconds ?? 0
     guard

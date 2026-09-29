@@ -3,10 +3,15 @@ import CoreAudio
 import EasyBarShared
 import Foundation
 
+/// Stores microphone activity log state data.
 private struct MicrophoneActivityLogState: Equatable {
+  /// Whether the process active option is enabled for this microphone activity log state.
   let processActive: Bool
+  /// Whether the device active option is enabled for this microphone activity log state.
   let deviceActive: Bool
+  /// Whether the device fallback enabled option is enabled for this microphone activity log state.
   let deviceFallbackEnabled: Bool
+  /// Whether the microphone active option is enabled for this microphone activity log state.
   let microphoneActive: Bool
 }
 
@@ -46,9 +51,13 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     }
   }
 
+  /// Stores property listener data.
   private struct PropertyListener {
+    /// The stable identifier for this property listener.
     let objectID: AudioObjectID
+    /// The address for this property listener.
     let address: AudioObjectPropertyAddress
+    /// The block for this property listener.
     let block: AudioObjectPropertyListenerBlock
   }
 
@@ -66,14 +75,17 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
   private var lastLoggedActivity: MicrophoneActivityLogState?
   private var started = false
 
+  /// Creates a core audio microphone inventory monitor.
   init(logger: ProcessLogger) {
     self.logger = logger
   }
 
+  /// Sets camera active.
   func setCameraActive(_ active: Bool) {
     activityResolver.setCameraActive(active)
   }
 
+  /// Starts the associated service.
   func start() {
     guard !started else { return }
     started = true
@@ -103,6 +115,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     reconcileProcesses()
   }
 
+  /// Stops the associated service.
   func stop() {
     guard started else { return }
     started = false
@@ -140,12 +153,14 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     lastLoggedActivity = nil
   }
 
+  /// Handles device list change.
   private func handleDeviceListChange() {
     guard started else { return }
     reconcileInputDevices()
     notifyActivityChange()
   }
 
+  /// Handles process list change.
   private func handleProcessListChange() {
     guard started else { return }
     reconcileProcesses()
@@ -163,6 +178,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     onChange?()
   }
 
+  /// Reconciles the current input-device set.
   private func reconcileInputDevices() {
     let nextInputDeviceIDs = Self.readAudioObjectIDs(
       objectID: AudioObjectID(kAudioObjectSystemObject),
@@ -210,6 +226,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     )
   }
 
+  /// Reconciles the current process set.
   private func reconcileProcesses() {
     let nextProcessObjectIDs = Self.readAudioObjectIDs(
       objectID: AudioObjectID(kAudioObjectSystemObject),
@@ -284,6 +301,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     return listeners
   }
 
+  /// Adds listener.
   private func addListener(
     objectID: AudioObjectID,
     address: AudioObjectPropertyAddress,
@@ -322,6 +340,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     )
   }
 
+  /// Removes listener.
   private func removeListener(
     _ listener: PropertyListener,
     ignoringMissingObject: Bool = false
@@ -345,6 +364,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     }
   }
 
+  /// Returns the log resolved activity if changed.
   private func logResolvedActivityIfChanged(
     processActive: Bool,
     deviceActive: Bool,
@@ -368,6 +388,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     )
   }
 
+  /// Creates device state.
   private func makeDeviceState(
     _ deviceID: AudioDeviceID,
     active: Bool
@@ -484,6 +505,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     mElement: kAudioObjectPropertyElementMain
   )
 
+  /// Returns the device activity addresses.
   private static func deviceActivityAddresses(
     for deviceID: AudioDeviceID
   ) -> [AudioObjectPropertyAddress] {
@@ -495,6 +517,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     ].filter { hasProperty(objectID: deviceID, address: $0) }
   }
 
+  /// Evaluates the input device running condition.
   private static func isInputDeviceRunning(_ deviceID: AudioDeviceID) -> Bool {
     for address in deviceActivityAddresses(for: deviceID)
     where readUInt32(objectID: deviceID, address: address) != 0 {
@@ -503,6 +526,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     return false
   }
 
+  /// Evaluates the running input condition.
   private static func isRunningInput(_ processObjectID: AudioObjectID) -> Bool {
     readUInt32(
       objectID: processObjectID,
@@ -510,6 +534,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     ) != 0
   }
 
+  /// Reads audio object IDs.
   private static func readAudioObjectIDs(
     objectID: AudioObjectID,
     address: AudioObjectPropertyAddress
@@ -550,6 +575,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     return Array(result.prefix(usedCount))
   }
 
+  /// Reads audio object ID.
   private static func readAudioObjectID(
     objectID: AudioObjectID,
     address: AudioObjectPropertyAddress
@@ -575,6 +601,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     return value
   }
 
+  /// Evaluates the input channels condition.
   private static func hasInputChannels(_ deviceID: AudioDeviceID) -> Bool {
     var address = streamConfigurationAddress
     var dataSize: UInt32 = 0
@@ -616,6 +643,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     }
   }
 
+  /// Evaluates the property condition.
   private static func hasProperty(
     objectID: AudioObjectID,
     address: AudioObjectPropertyAddress
@@ -624,6 +652,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     return AudioObjectHasProperty(objectID, &address)
   }
 
+  /// Reads u int32.
   private static func readUInt32(
     objectID: AudioObjectID,
     address: AudioObjectPropertyAddress
@@ -648,6 +677,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     return value
   }
 
+  /// Reads string.
   private static func readString(
     objectID: AudioObjectID,
     address: AudioObjectPropertyAddress
@@ -671,6 +701,7 @@ final class CoreAudioMicrophoneInventoryMonitor: CaptureDeviceInventoryMonitorin
     return value as String
   }
 
+  /// Returns the four character code.
   private static func fourCharacterCode(_ value: UInt32) -> String {
     let bytes: [UInt8] = [
       UInt8((value >> 24) & 0xff),

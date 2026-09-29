@@ -5,19 +5,29 @@ import Foundation
 final class LuaProcessController: @unchecked Sendable {
   /// Captures the inputs needed to launch the Lua runtime agent.
   struct LaunchContext: Sendable {
+    /// The runtime agent path for this launch context.
     let runtimeAgentPath: String
+    /// The runtime path for this launch context.
     let runtimePath: String
+    /// The Lua path for this launch context.
     let luaPath: String
+    /// The Lua socket path for this launch context.
     let luaSocketPath: String
+    /// The transport authentication token for this launch context.
     let transportAuthenticationToken: String
+    /// The widgets path for this launch context.
     let widgetsPath: String
+    /// The default command timeout seconds for this launch context.
     let defaultCommandTimeoutSeconds: TimeInterval
+    /// The default command max output bytes for this launch context.
     let defaultCommandMaxOutputBytes: Int
+    /// The environment for this launch context.
     let environment: [String: String]
   }
 
   /// Captures local resources kept by the host while the runtime agent is running.
   struct LaunchResources: @unchecked Sendable {
+    /// The error for this launch resources.
     let error = Pipe()
   }
 
@@ -25,8 +35,11 @@ final class LuaProcessController: @unchecked Sendable {
   struct Termination: Equatable, Sendable {
     typealias Reason = ProcessTerminationStatus
 
+    /// The process identifier for this termination.
     let processIdentifier: Int32
+    /// The reason for this termination.
     let reason: Reason
+    /// Whether the was requested option is enabled for this termination.
     let wasRequested: Bool
   }
 
@@ -45,13 +58,19 @@ final class LuaProcessController: @unchecked Sendable {
 
   /// All mutable process ownership protected by one lock.
   struct State {
+    /// The lifecycle for this state.
     var lifecycle: Lifecycle = .stopped
+    /// The termination task for this state.
     var terminationTask: Task<Void, Never>?
+    /// The forced kill task for this state.
     var forcedKillTask: Task<Void, Never>?
+    /// The shutdown waiters for this state.
     var shutdownWaiters: [CheckedContinuation<Void, Never>] = []
+    /// The callback invoked when this state emits a value.
     var terminationHandler: TerminationHandler?
   }
 
+  /// Defines the supported shutdown snapshot values.
   enum ShutdownSnapshot {
     case none
     case starting(wasAlreadyShuttingDown: Bool)

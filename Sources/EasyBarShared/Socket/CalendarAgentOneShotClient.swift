@@ -35,6 +35,7 @@ public enum CalendarAgentOneShotError: LocalizedError {
   case readFailed
   case emptyResponse
 
+  /// Creates a calendar agent one shot error.
   init(transportError: LineSocketClientTransportError) {
     switch transportError {
     case .socketFailed:

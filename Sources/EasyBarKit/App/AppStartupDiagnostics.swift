@@ -5,9 +5,12 @@ import Foundation
 /// Logs one-time startup diagnostics for support and troubleshooting.
 @MainActor
 struct AppStartupDiagnostics {
+  /// The logger used to record operational diagnostics.
   private let logger: ProcessLogger
+  /// The process name for this app startup diagnostics.
   private let processName: String
 
+  /// Creates an app startup diagnostics.
   init(logger: ProcessLogger, processName: String) {
     self.logger = logger
     self.processName = processName

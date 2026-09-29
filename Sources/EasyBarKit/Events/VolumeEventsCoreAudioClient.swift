@@ -10,9 +10,13 @@ struct VolumeEventsCoreAudioClient: @unchecked Sendable {
     _ block: @escaping AudioObjectPropertyListenerBlock
   ) -> OSStatus
 
+  /// The stable identifier for this volume events core audio client.
   let defaultOutputDeviceID: () -> AudioDeviceID?
+  /// The read muted state for this volume events core audio client.
   let readMutedState: (AudioDeviceID) -> Bool
+  /// The add listener for this volume events core audio client.
   let addListener: ListenerOperation
+  /// The remove listener for this volume events core audio client.
   let removeListener: ListenerOperation
 
   /// Production client backed by CoreAudio.

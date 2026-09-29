@@ -13,6 +13,7 @@ final class FormattedClockNativeWidget: NativeWidget {
   private let eventObserver: EasyBarEventObserver
   private let formatterCache = FormattedDateFormatterCache()
 
+  /// Creates a formatted clock native widget.
   init(
     rootID: String,
     widgetStore: WidgetStore,

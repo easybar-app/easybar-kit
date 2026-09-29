@@ -1,16 +1,23 @@
 import EasyBarShared
 import Foundation
 
+/// Stores widget runtime state data.
 private struct WidgetRuntimeState {
+  /// The required events for this widget runtime state.
   var requiredEvents = Set<String>()
+  /// Whether this widget runtime state is ready.
   var isReady = false
+  /// Whether the has subscriptions option is enabled for this widget runtime state.
   var hasSubscriptions = false
+  /// Whether the did emit initial events option is enabled for this widget runtime state.
   var didEmitInitialEvents = false
 
+  /// Whether the can emit initial events option is enabled for this widget runtime state.
   var canEmitInitialEvents: Bool {
     isReady && hasSubscriptions && !didEmitInitialEvents
   }
 
+  /// Resets the associated service.
   mutating func reset() {
     self = WidgetRuntimeState()
   }
@@ -46,6 +53,7 @@ actor WidgetEngine {
   private var runtimeInputOverflowSessionID: UInt64?
   private let restartScheduler: BackoffScheduler
 
+  /// Creates a widget engine.
   init(
     logger: ProcessLogger,
     luaRuntime: LuaRuntime,
@@ -87,6 +95,7 @@ actor WidgetEngine {
   }
 
   @discardableResult
+  /// Starts the associated service.
   func start() async -> Bool {
     guard !started else {
       logger.debug("widget engine already started")
@@ -162,6 +171,7 @@ actor WidgetEngine {
     return true
   }
 
+  /// Reloads the requested operation.
   func reload() async {
     logger.debug("widget engine reload begin")
 
@@ -182,6 +192,7 @@ actor WidgetEngine {
     logger.debug("widget engine reload end")
   }
 
+  /// Stops the service and releases its runtime resources.
   func shutdown() async {
     guard started || runtimeAvailable else {
       restartScheduler.cancel()
@@ -289,6 +300,7 @@ actor WidgetEngine {
     await luaRuntime.terminateForRecovery(reason: "runtime input buffer overflow")
   }
 
+  /// Handles runtime transport line.
   func handleRuntimeTransportLine(_ line: String, runtimeSessionID: UInt64) async {
     guard
       acceptsRuntimeSession(
@@ -325,6 +337,7 @@ actor WidgetEngine {
     }
   }
 
+  /// Returns the emit initial events if possible.
   private func emitInitialEventsIfPossible() async {
     guard runtimeState.canEmitInitialEvents else { return }
 
@@ -335,6 +348,7 @@ actor WidgetEngine {
     await eventHub.emit(.manualRefresh)
   }
 
+  /// Handles runtime message.
   private func handleRuntimeMessage(_ message: WidgetRuntimeMessage) async {
     switch message {
     case .subscriptions(let requiredEvents):
@@ -412,6 +426,7 @@ actor WidgetEngine {
     }
   }
 
+  /// Evaluates the runtime session active condition.
   private func isRuntimeSessionActive(_ sessionID: UInt64) -> Bool {
     acceptsRuntimeSession(sessionID, whileRunning: started && runtimeAvailable)
   }
@@ -430,6 +445,7 @@ actor WidgetEngine {
     whileRunning && runtimeSessionID == candidate
   }
 
+  /// Handles subscriptions.
   private func handleSubscriptions(_ requiredEvents: Set<String>) async {
     runtimeState.requiredEvents = requiredEvents
     runtimeState.hasSubscriptions = true
@@ -447,6 +463,7 @@ actor WidgetEngine {
     await emitInitialEventsIfPossible()
   }
 
+  /// Handles ready.
   private func handleReady() async {
     logger.debug("lua runtime handshake received")
 

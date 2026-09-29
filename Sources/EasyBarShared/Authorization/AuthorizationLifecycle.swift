@@ -13,6 +13,7 @@ public final class AuthorizationLifecycle: @unchecked Sendable {
     private var onChange: (() -> Void)?
     fileprivate let retryBackoff: AuthorizationRetryBackoff
 
+    /// Creates a session.
     fileprivate init(
       onChange: @escaping () -> Void,
       retryBackoff: AuthorizationRetryBackoff
@@ -48,7 +49,9 @@ public final class AuthorizationLifecycle: @unchecked Sendable {
     }
   }
 
+  /// Stores state data.
   private struct State {
+    /// The current session for this state.
     var currentSession: Session?
   }
 

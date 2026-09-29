@@ -2,6 +2,7 @@ import EasyBarCalendarConfig
 import Foundation
 
 extension Config.BuiltinWidgetPlacement {
+  /// Creates an instance.
   init(_ placement: CalendarWidgetPlacement) {
     self.init(
       enabled: placement.enabled,
@@ -13,6 +14,7 @@ extension Config.BuiltinWidgetPlacement {
 }
 
 extension Config.BuiltinWidgetStyle {
+  /// Creates an instance.
   init(_ style: CalendarWidgetStyle) {
     self.init(
       icon: style.icon,
@@ -32,6 +34,7 @@ extension Config.BuiltinWidgetStyle {
 }
 
 extension CalendarWidgetPlacement {
+  /// Creates an instance.
   init(_ placement: Config.BuiltinWidgetPlacement) {
     self.init(
       enabled: placement.enabled,
@@ -43,6 +46,7 @@ extension CalendarWidgetPlacement {
 }
 
 extension CalendarWidgetStyle {
+  /// Creates an instance.
   init(_ style: Config.BuiltinWidgetStyle) {
     self.init(
       icon: style.icon,

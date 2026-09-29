@@ -18,15 +18,25 @@ extension Config {
 
   /// Battery severity colors.
   struct BuiltinBatteryColors {
+    /// The high color hex for this builtin battery colors.
     var highColorHex: String
+    /// The medium color hex for this builtin battery colors.
     var mediumColorHex: String
+    /// The low color hex for this builtin battery colors.
     var lowColorHex: String
+    /// The critical color hex for this builtin battery colors.
     var criticalColorHex: String
+    /// The frame color hex for this builtin battery colors.
     var frameColorHex: String
+    /// The overlay outline color hex for this builtin battery colors.
     var overlayOutlineColorHex: String
+    /// The charging overlay color hex for this builtin battery colors.
     var chargingOverlayColorHex: String
+    /// The external power overlay color hex for this builtin battery colors.
     var externalPowerOverlayColorHex: String
+    /// The on hold overlay color hex for this builtin battery colors.
     var onHoldOverlayColorHex: String
+    /// The unavailable color hex for this builtin battery colors.
     var unavailableColorHex: String
   }
 
@@ -35,11 +45,17 @@ extension Config {
 
     /// Battery content and display settings.
     struct Content {
+      /// The unavailable text for this content.
       var unavailableText: String
+      /// The icon size for this content.
       var iconSize: Double
+      /// The color mode for this content.
       var colorMode: BuiltinBatteryColorMode
+      /// The fixed color hex for this content.
       var fixedColorHex: String?
+      /// The display mode for this content.
       var displayMode: BuiltinBatteryDisplayMode
+      /// The colors for this content.
       var colors: BuiltinBatteryColors
     }
 
@@ -52,46 +68,55 @@ extension Config {
     /// Tooltip popup style settings.
     var popup: BuiltinPopupStyle
 
+    /// Whether this battery builtin config is enabled.
     var enabled: Bool {
       get { placement.enabled }
       set { placement.enabled = newValue }
     }
 
+    /// The position for this battery builtin config.
     var position: WidgetPosition {
       get { placement.position }
       set { placement.position = newValue }
     }
 
+    /// The order for this battery builtin config.
     var order: Int {
       get { placement.order }
       set { placement.order = newValue }
     }
 
+    /// The unavailable text for this battery builtin config.
     var unavailableText: String {
       get { content.unavailableText }
       set { content.unavailableText = newValue }
     }
 
+    /// The icon size for this battery builtin config.
     var iconSize: Double {
       get { content.iconSize }
       set { content.iconSize = newValue }
     }
 
+    /// The color mode for this battery builtin config.
     var colorMode: BuiltinBatteryColorMode {
       get { content.colorMode }
       set { content.colorMode = newValue }
     }
 
+    /// The fixed color hex for this battery builtin config.
     var fixedColorHex: String? {
       get { content.fixedColorHex }
       set { content.fixedColorHex = newValue }
     }
 
+    /// The display mode for this battery builtin config.
     var displayMode: BuiltinBatteryDisplayMode {
       get { content.displayMode }
       set { content.displayMode = newValue }
     }
 
+    /// The colors for this battery builtin config.
     var colors: BuiltinBatteryColors {
       get { content.colors }
       set { content.colors = newValue }

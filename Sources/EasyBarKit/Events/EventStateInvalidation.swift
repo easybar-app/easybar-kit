@@ -18,10 +18,12 @@ enum EventReplayCatalog {
     .workspaceChange,
     .spaceModeChange,
   ]
+  /// Evaluates the replayable condition.
   static func isReplayable(_ eventName: String) -> Bool {
     orderedEvents.contains { $0.rawValue == eventName }
   }
 
+  /// Returns the payloads.
   static func payloads(
     for eventNames: Set<String>,
     wifiSnapshotProvider: @MainActor @Sendable () -> NetworkAgentSnapshot? = { nil }
@@ -35,6 +37,7 @@ enum EventReplayCatalog {
     return payloads
   }
 
+  /// Returns the current payload.
   private static func currentPayload(
     for event: AppEvent,
     wifiSnapshotProvider: @MainActor @Sendable () -> NetworkAgentSnapshot?

@@ -30,6 +30,7 @@ public enum AgentRestartClient {
   }
 }
 
+/// Defines the supported agent restart error values.
 public enum AgentRestartError: LocalizedError {
   case unexpectedResponse
   case transport(String)

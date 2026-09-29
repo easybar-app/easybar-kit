@@ -1,10 +1,15 @@
 import SwiftUI
 
+/// Stores progress bar canvas data.
 struct ProgressBarCanvas: View {
 
+  /// The value for this progress bar canvas.
   let value: Double
+  /// The min value for this progress bar canvas.
   let minValue: Double
+  /// The max value for this progress bar canvas.
   let maxValue: Double
+  /// The tint for this progress bar canvas.
   let tint: Color
 
   /// Draws the progress track and fill.

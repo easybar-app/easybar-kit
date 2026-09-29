@@ -4,21 +4,34 @@ import Foundation
 
 /// Handles Lua command requests, async command limits, and command responses.
 actor LuaCommandService {
+  /// Stores active async command data.
   private struct ActiveAsyncCommand {
+    /// The stable identifier for this active async command.
     let runtimeSessionID: UInt64
+    /// The task for this active async command.
     let task: Task<Void, Never>
+    /// The widget for this active async command.
     let widget: String?
+    /// The operation for this active async command.
     let operation: String?
   }
 
+  /// Stores Lua command response data.
   private struct LuaCommandResponse: Encodable {
+    /// The protocol version for this Lua command response.
     let protocolVersion = easyBarLuaRuntimeProtocolVersion
+    /// The type for this Lua command response.
     let type = "command_response"
+    /// The token for this Lua command response.
     let token: String
+    /// The output for this Lua command response.
     let output: String
+    /// The status for this Lua command response.
     let status: Int32
+    /// The duration ms for this Lua command response.
     let durationMS: Int
 
+    /// Maps stored properties to their encoded keys.
     enum CodingKeys: String, CodingKey {
       case protocolVersion = "protocol_version"
       case type
@@ -38,6 +51,7 @@ actor LuaCommandService {
   private var activeAsyncCommandSessionID: UInt64?
   private var activeAsyncCommands: [String: ActiveAsyncCommand] = [:]
 
+  /// Creates a Lua command service.
   init(logger: ProcessLogger, luaRuntime: LuaRuntime, configManager: ConfigManager) {
     self.logger = logger
     self.luaRuntime = luaRuntime
@@ -284,6 +298,7 @@ actor LuaCommandService {
     await sendCommandResponse(token: token, result: result, durationMS: durationMS)
   }
 
+  /// Returns the log command started.
   private func logCommandStarted(
     requestID: String,
     isSynchronous: Bool,
@@ -316,6 +331,7 @@ actor LuaCommandService {
     }
   }
 
+  /// Returns the log command completed.
   private func logCommandCompleted(
     requestID: String,
     isSynchronous: Bool,
@@ -346,6 +362,7 @@ actor LuaCommandService {
     }
   }
 
+  /// Returns the log async command rejected.
   private func logAsyncCommandRejected(
     requestID: String,
     invocation: LuaCommandInvocation,
@@ -376,6 +393,7 @@ actor LuaCommandService {
     }
   }
 
+  /// Returns the log command cancellation.
   private func logCommandCancellation(
     requestID: String,
     widget: String?,
@@ -410,6 +428,7 @@ actor LuaCommandService {
     Self.elapsedMilliseconds(from: startedAt)
   }
 
+  /// Returns the elapsed milliseconds.
   private static func elapsedMilliseconds(from startedAt: UInt64) -> Int {
     let now = DispatchTime.now().uptimeNanoseconds
     guard now >= startedAt else { return 0 }

@@ -2,6 +2,7 @@ import EasyBarShared
 import Foundation
 
 extension CalendarBuiltinConfig {
+  /// Parses upcoming.
   static func parseUpcoming(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Upcoming
@@ -18,6 +19,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses upcoming events.
   private static func parseUpcomingEvents(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Upcoming.Events
@@ -36,6 +38,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses upcoming popup.
   private static func parseUpcomingPopup(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Upcoming.Popup

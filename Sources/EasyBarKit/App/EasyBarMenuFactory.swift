@@ -1,12 +1,14 @@
 import AppKit
 import EasyBarShared
 
+/// Defines the supported EasyBar runtime state values.
 enum EasyBarRuntimeState: Equatable {
   case running
   case stopped
   case transitioning
 }
 
+/// Defines the supported EasyBar menu group values.
 enum EasyBarMenuGroup: CaseIterable {
   case version
   case lifecycle
@@ -30,18 +32,31 @@ enum EasyBarMenuGroup: CaseIterable {
 }
 
 @MainActor
+/// Stores EasyBar menu actions data.
 struct EasyBarMenuActions {
+  /// The start for this EasyBar menu actions.
   let start: () -> Void
+  /// The stop for this EasyBar menu actions.
   let stop: () -> Void
+  /// The restart for this EasyBar menu actions.
   let restart: () -> Void
+  /// The refresh for this EasyBar menu actions.
   let refresh: () -> Void
+  /// The reload config for this EasyBar menu actions.
   let reloadConfig: () -> Void
+  /// The restart Lua runtime for this EasyBar menu actions.
   let restartLuaRuntime: () -> Void
+  /// The restart calendar agent for this EasyBar menu actions.
   let restartCalendarAgent: () -> Void
+  /// The restart network agent for this EasyBar menu actions.
   let restartNetworkAgent: () -> Void
+  /// The select theme for this EasyBar menu actions.
   let selectTheme: (String?) -> Void
+  /// The set native widget enabled for this EasyBar menu actions.
   let setNativeWidgetEnabled: (String, Bool) -> Void
+  /// The set log level for this EasyBar menu actions.
   let setLogLevel: (ProcessLogLevel) -> Void
+  /// The quit for this EasyBar menu actions.
   let quit: () -> Void
 }
 

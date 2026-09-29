@@ -4,8 +4,11 @@ import Foundation
 
 /// Stores calendar authorization state safely across EventKit callbacks.
 final class CalendarAuthorizationState {
+  /// Stores state data.
   private struct State {
+    /// The status for this state.
     var status: EKAuthorizationStatus = EKEventStore.authorizationStatus(for: .event)
+    /// Whether the access granted in process option is enabled for this state.
     var accessGrantedInProcess = false
   }
 

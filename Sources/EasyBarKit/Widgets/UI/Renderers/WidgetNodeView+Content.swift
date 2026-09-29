@@ -171,6 +171,7 @@ extension WidgetNodeView {
     return .system(size: resolvedSize, weight: weight)
   }
 
+  /// Returns the font weight.
   private func fontWeight(_ value: String?) -> Font.Weight {
     switch value {
     case "ultralight": return .ultraLight
@@ -462,14 +463,18 @@ extension WidgetNodeView {
 /// canvas itself, so the additional width protects the glyph rather than merely
 /// moving the following view.
 private struct OverflowSafeIconText: View {
+  /// The value for this overflow safe icon text.
   let value: String
+  /// The trailing allowance for this overflow safe icon text.
   let trailingAllowance: CGFloat
 
+  /// Creates an overflow safe icon text.
   init(_ value: String, trailingAllowance: CGFloat) {
     self.value = value
     self.trailingAllowance = trailingAllowance
   }
 
+  /// The rendered content for this view.
   var body: some View {
     Text(value)
       .hidden()

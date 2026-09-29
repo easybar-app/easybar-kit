@@ -46,6 +46,7 @@ enum CPUContextMenuAction: Equatable {
 
 /// Builds the native CPU context menu from the effective configuration.
 enum CPUContextMenu {
+  /// Creates the requested value.
   static func make(config: Config.CPUBuiltinConfig) -> [WidgetContextMenuItem] {
     var historyItems = CPUContextMenuAction.allowedHistorySizes.map { size in
       WidgetContextMenuItem(
@@ -105,6 +106,7 @@ enum CPUContextMenu {
     ]
   }
 
+  /// Returns the formatted seconds.
   private static func formattedSeconds(_ value: Double) -> String {
     value.formatted(.number.precision(.fractionLength(0...3)))
   }

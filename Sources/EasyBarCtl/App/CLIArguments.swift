@@ -53,6 +53,7 @@ func parseArguments(_ arguments: [String]) throws -> ParsedArguments {
   )
 }
 
+/// Evaluates the unsupported socket override condition.
 private func hasUnsupportedSocketOverride(
   global: GlobalOptionState,
   command: CLICommandDescriptor
@@ -60,8 +61,11 @@ private func hasUnsupportedSocketOverride(
   global.socketPath != nil && !command.kind.acceptsSocketOverride
 }
 
+/// Stores global option state data.
 private struct GlobalOptionState {
+  /// The socket path for this global option state.
   var socketPath: String?
+  /// Whether the debug enabled option is enabled for this global option state.
   var debugEnabled = false
 }
 
@@ -102,6 +106,7 @@ private func parseGlobalArgument(
   return nil
 }
 
+/// Parses command.
 private func parseCommand(
   _ descriptor: CLICommandDescriptor,
   arguments: [String],
@@ -323,6 +328,7 @@ private func parseCommand(
   }
 }
 
+/// Parses installed widget package options.
 private func parseInstalledWidgetPackageOptions(
   _ arguments: [String],
   command: CLICommandDescriptor,
@@ -371,6 +377,7 @@ private func parseInstalledWidgetPackageOptions(
   return InstalledWidgetPackageOptions(filter: filter, json: json)
 }
 
+/// Parses widget package registry only options.
 private func parseWidgetPackageRegistryOnlyOptions(
   _ arguments: [String],
   command: CLICommandDescriptor,
@@ -416,6 +423,7 @@ private func parseWidgetPackageRegistryOnlyOptions(
   )
 }
 
+/// Parses widget package update options.
 private func parseWidgetPackageUpdateOptions(
   _ arguments: [String],
   command: CLICommandDescriptor,
@@ -477,6 +485,7 @@ private func parseWidgetPackageUpdateOptions(
   )
 }
 
+/// Returns the widget package update selection.
 private func widgetPackageUpdateSelection(
   updateAll: Bool,
   name: String?
@@ -490,6 +499,7 @@ private func widgetPackageUpdateSelection(
   throw AppError.message("widgets update requires exactly one package name or --all")
 }
 
+/// Parses widget package name.
 private func parseWidgetPackageName(
   _ arguments: [String],
   command: CLICommandDescriptor,
@@ -526,6 +536,7 @@ private func parseWidgetPackageName(
   return name
 }
 
+/// Parses widget package search options.
 private func parseWidgetPackageSearchOptions(
   _ arguments: [String],
   command: CLICommandDescriptor,
@@ -580,6 +591,7 @@ private func parseWidgetPackageSearchOptions(
   )
 }
 
+/// Parses widget package install options.
 private func parseWidgetPackageInstallOptions(
   _ arguments: [String],
   command: CLICommandDescriptor,
@@ -669,10 +681,12 @@ private func parseWidgetPackageInstallOptions(
   )
 }
 
+/// Evaluates the conflicting registry options condition.
 private func hasConflictingRegistryOptions(useRegistry: Bool, registry: String?) -> Bool {
   !useRegistry && registry != nil
 }
 
+/// Parses global only arguments.
 private func parseGlobalOnlyArguments(
   _ arguments: [String],
   command: CLICommandDescriptor,
@@ -898,6 +912,7 @@ private func parseInboxCommand(
     throw AppError.message("unknown inbox option '\(argument)'")
   }
 
+  /// Rejects unused arguments.
   func rejectUnused(
     allowedValues: Set<String>,
     allowedFlags: Set<String> = []

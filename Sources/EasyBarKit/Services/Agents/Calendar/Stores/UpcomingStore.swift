@@ -11,6 +11,7 @@ final class NativeUpcomingCalendarStore: CalendarUpcomingPopupStore {
 
   let logger: ProcessLogger
 
+  /// Creates a native upcoming calendar store.
   init(logger: ProcessLogger) {
     self.logger = logger
   }

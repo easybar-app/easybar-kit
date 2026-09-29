@@ -12,6 +12,7 @@ local array_metatable = {}
 local object_metatable = {}
 --- Unique sentinel used to preserve JSON null values inside Lua tables.
 M.null = setmetatable({}, {
+	-- Renders the JSON-null sentinel for diagnostics.
 	__tostring = function()
 		return "null"
 	end,

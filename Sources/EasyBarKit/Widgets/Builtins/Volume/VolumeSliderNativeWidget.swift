@@ -30,23 +30,39 @@ final class VolumeSliderNativeWidget: NativeWidget {
   var autoHideTaskID: UInt64?
   var nextAutoHideTaskID: UInt64 = 1
 
+  /// Stores system volume state data.
   struct SystemVolumeState {
+    /// The clamped system for this system volume state.
     let clampedSystem: Double
+    /// The rounded value for this system volume state.
     let roundedValue: Double
+    /// The step for this system volume state.
     let step: Double
+    /// Whether this system volume state is muted.
     let isMuted: Bool
+    /// The capabilities for this system volume state.
     let capabilities: AudioDeviceCapabilities
   }
 
+  /// Stores snapshot data.
   struct Snapshot {
+    /// The config for this snapshot.
     let config: Config.VolumeBuiltinConfig
+    /// The placement for this snapshot.
     let placement: Config.BuiltinWidgetPlacement
+    /// The style for this snapshot.
     var style: Config.BuiltinWidgetStyle
+    /// The text for this snapshot.
     let text: String
+    /// The value for this snapshot.
     let value: Double
+    /// The step for this snapshot.
     let step: Double
+    /// Whether this snapshot is hovered.
     let isHovered: Bool
+    /// Whether this snapshot is muted.
     let isMuted: Bool
+    /// The capabilities for this snapshot.
     let capabilities: AudioDeviceCapabilities
   }
 
@@ -148,6 +164,7 @@ final class VolumeSliderNativeWidget: NativeWidget {
     )
   }
 
+  /// Creates nodes.
   private func makeNodes(snapshot: Snapshot) -> [WidgetNodeState] {
     guard snapshot.capabilities.canSetVolume else {
       return [
@@ -179,6 +196,7 @@ final class VolumeSliderNativeWidget: NativeWidget {
     ]
   }
 
+  /// Creates expandable nodes.
   private func makeExpandableNodes(snapshot: Snapshot) -> [WidgetNodeState] {
     var nodes: [WidgetNodeState] = [
       BuiltinNativeNodeFactory.makeRowContainerNode(
@@ -290,6 +308,7 @@ final class VolumeSliderNativeWidget: NativeWidget {
     }
   }
 
+  /// Persists the current state.
   private func persist(_ updated: Config.VolumeBuiltinConfig, edit: TOMLEdit) {
     NativeWidgetConfigUpdate.persist(edits: [edit], using: configPersistence) {
       config = updated

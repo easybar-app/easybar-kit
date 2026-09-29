@@ -11,6 +11,7 @@ enum ConfigUnknownKeyWarningBuilder {
     return warnings
   }
 
+  /// Appends warnings.
   private static func appendWarnings(
     in table: TOMLTable,
     path: String,
@@ -41,6 +42,7 @@ enum ConfigUnknownKeyWarningBuilder {
     }
   }
 
+  /// Returns the known keys.
   private static func knownKeys(for path: String) -> Set<String> {
     if path == "theme.colors" {
       return Set(ThemeColorToken.allCases.map(\.rawValue))
@@ -49,6 +51,7 @@ enum ConfigUnknownKeyWarningBuilder {
     return ConfigSchemaRegistry.knownKeys(for: path)
   }
 
+  /// Joins the supplied components into one value.
   private static func joined(_ path: String, _ key: String) -> String {
     path.isEmpty ? key : "\(path).\(key)"
   }

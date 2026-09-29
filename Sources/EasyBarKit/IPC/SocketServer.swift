@@ -9,6 +9,7 @@ import Foundation
 /// `RuntimeCoordinator`, an actor. Transport callbacks may arrive on
 /// background threads, but they do not mutate the server's lifecycle state.
 final class SocketServer: @unchecked Sendable {
+  /// Defines the supported reload outcome values.
   enum ReloadOutcome: Equatable, Sendable {
     case unchanged
     case rebound

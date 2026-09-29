@@ -4,6 +4,7 @@ import Foundation
 extension CalendarEventComposer {
   /// Static timing metadata for one composer preset option.
   struct PresetMetadata {
+    /// The seconds for this preset metadata.
     let seconds: TimeInterval?
   }
 
@@ -61,14 +62,17 @@ extension CalendarEventComposer {
       }
     }
 
+    /// Returns the from.
     static func from(configValue: String) -> AlertOption {
       AlertOption(rawValue: configValue) ?? .oneHour
     }
 
+    /// Returns the title.
     func title(config: CalendarComposerConfig) -> String {
       configuredPresetTitle(labels: config.alertLabels)
     }
 
+    /// Returns the configured preset title.
     private func configuredPresetTitle(labels: [String: String]) -> String {
       labels[rawValue] ?? systemTitle
     }
@@ -133,14 +137,17 @@ extension CalendarEventComposer {
       }
     }
 
+    /// Returns the from.
     static func from(configValue: String) -> TravelTimeOption {
       TravelTimeOption(rawValue: configValue) ?? .none
     }
 
+    /// Returns the title.
     func title(config: CalendarComposerConfig) -> String {
       configuredPresetTitle(labels: config.travelTimeLabels)
     }
 
+    /// Returns the configured preset title.
     private func configuredPresetTitle(labels: [String: String]) -> String {
       labels[rawValue] ?? systemTitle
     }

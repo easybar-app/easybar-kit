@@ -302,6 +302,7 @@ final class AppController {
     surfaceController = controller
   }
 
+  /// Creates menu state provider.
   private func makeMenuStateProvider() -> BarContextMenuStateProvider {
     BarContextMenuStateProvider(
       nativeWiFiStore: services.nativeWiFiStore,
@@ -348,6 +349,7 @@ final class AppController {
     menuBarController = controller
   }
 
+  /// Starts bar.
   private func startBar() {
     runBarLifecycleTransition(finalState: .running) { [weak self] in
       guard let self else { return }
@@ -356,6 +358,7 @@ final class AppController {
     }
   }
 
+  /// Stops bar.
   private func stopBar() {
     surfaceController?.hide()
     runBarLifecycleTransition(finalState: .stopped) { [weak self] in
@@ -363,6 +366,7 @@ final class AppController {
     }
   }
 
+  /// Restarts bar.
   private func restartBar() {
     surfaceController?.hide()
     runBarLifecycleTransition(finalState: .running) { [weak self] in
@@ -373,6 +377,7 @@ final class AppController {
     }
   }
 
+  /// Runs bar lifecycle transition.
   private func runBarLifecycleTransition(
     finalState: EasyBarRuntimeState,
     operation: @escaping @MainActor () async -> Void
@@ -390,18 +395,22 @@ final class AppController {
     }
   }
 
+  /// Refreshes runtime state.
   private func refreshRuntime() {
     Task { await runtimeCoordinator.refreshRuntime() }
   }
 
+  /// Reloads config.
   private func reloadConfig() {
     Task { await runtimeCoordinator.reloadConfig() }
   }
 
+  /// Restarts Lua runtime.
   private func restartLuaRuntime() {
     Task { await runtimeCoordinator.restartLuaRuntime() }
   }
 
+  /// Selects the active theme.
   private func selectTheme(_ name: String?) {
     guard let name else {
       Task { await runtimeCoordinator.reloadConfig() }
@@ -419,6 +428,7 @@ final class AppController {
     Task { await runtimeCoordinator.reloadConfig() }
   }
 
+  /// Sets native widget enabled.
   private func setNativeWidgetEnabled(_ key: String, enabled: Bool) {
     let persistence = ConfigPersistence(
       configPath: services.configSnapshotStore.snapshot.app.configPath,
@@ -432,6 +442,7 @@ final class AppController {
     Task { await runtimeCoordinator.reloadConfig() }
   }
 
+  /// Sets log level.
   private func setLogLevel(_ level: ProcessLogLevel) {
     let persistence = ConfigPersistence(
       configPath: services.configSnapshotStore.snapshot.app.configPath,
@@ -461,6 +472,7 @@ final class AppController {
     Task { await runtimeCoordinator.reloadConfig() }
   }
 
+  /// Restarts calendar agent.
   private func restartCalendarAgent() {
     let socketPath = services.configSnapshotStore.snapshot.calendarAgent.socketPath
     restartAgent(name: "calendar") {
@@ -468,6 +480,7 @@ final class AppController {
     }
   }
 
+  /// Restarts network agent.
   private func restartNetworkAgent() {
     let socketPath = services.configSnapshotStore.snapshot.networkAgent.socketPath
     restartAgent(name: "network") {

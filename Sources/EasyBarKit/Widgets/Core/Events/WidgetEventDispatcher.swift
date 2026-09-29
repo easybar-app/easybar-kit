@@ -7,6 +7,7 @@ final class WidgetEventDispatcher {
 
   private var tailTask: Task<Void, Never>?
 
+  /// Enqueues one value for asynchronous delivery.
   func enqueue(_ operation: @escaping @Sendable () async -> Void) {
     let previousTask = tailTask
     tailTask = Task {
@@ -15,6 +16,7 @@ final class WidgetEventDispatcher {
     }
   }
 
+  /// Waits for until idle.
   func waitUntilIdle() async {
     await tailTask?.value
   }

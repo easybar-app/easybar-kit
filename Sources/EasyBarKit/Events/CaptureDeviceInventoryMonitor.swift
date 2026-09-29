@@ -15,11 +15,13 @@ final class SystemCaptureDeviceInventoryMonitor: CaptureDeviceInventoryMonitorin
   private var settleTask: Task<Void, Never>?
   private var started = false
 
+  /// Creates a system capture device inventory monitor.
   init(logger: ProcessLogger) {
     cameraMonitor = CoreMediaIOCameraInventoryMonitor(logger: logger.child("camera"))
     microphoneMonitor = CoreAudioMicrophoneInventoryMonitor(logger: logger.child("microphone"))
   }
 
+  /// Starts the associated service.
   func start() {
     guard !started else { return }
     started = true
@@ -36,6 +38,7 @@ final class SystemCaptureDeviceInventoryMonitor: CaptureDeviceInventoryMonitorin
     microphoneMonitor.start()
   }
 
+  /// Stops the associated service.
   func stop() {
     guard started else { return }
     started = false
@@ -48,6 +51,7 @@ final class SystemCaptureDeviceInventoryMonitor: CaptureDeviceInventoryMonitorin
     microphoneMonitor.onChange = nil
   }
 
+  /// Handles camera change.
   private func handleCameraChange() {
     guard started else { return }
     microphoneMonitor.setCameraActive(cameraMonitor.devices.contains(where: \.active))

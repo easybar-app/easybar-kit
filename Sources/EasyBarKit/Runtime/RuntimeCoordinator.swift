@@ -19,6 +19,7 @@ actor RuntimeCoordinator {
   private var lifecycle = RuntimeLifecycleStateMachine()
   private var configWatcherTask: Task<Void, Never>?
 
+  /// Creates a runtime coordinator.
   init(
     logger: ProcessLogger,
     services: AppServices,
@@ -48,6 +49,7 @@ actor RuntimeCoordinator {
     )
   }
 
+  /// Starts the associated service.
   func start() async {
     guard let generation = lifecycle.start() else {
       logger.warn("runtime coordinator already started")
@@ -82,6 +84,7 @@ actor RuntimeCoordinator {
     logger.info("runtime coordinator start end")
   }
 
+  /// Stops the associated service.
   func stop() async {
     guard lifecycle.stop() else {
       logger.debug("runtime coordinator stop ignored because it is not started")
@@ -104,6 +107,7 @@ actor RuntimeCoordinator {
     logger.info("runtime coordinator stop end")
   }
 
+  /// Reloads config.
   func reloadConfig() async {
     let operation = RuntimeLifecycleOperation.reloadConfig
 
@@ -143,6 +147,7 @@ actor RuntimeCoordinator {
     }
   }
 
+  /// Runs config reload steps.
   private func runConfigReloadSteps(
     result: ConfigManager.ReloadResult,
     generation: UInt64,
@@ -232,6 +237,7 @@ actor RuntimeCoordinator {
     return completed
   }
 
+  /// Restarts Lua runtime.
   func restartLuaRuntime() async {
     let operation = RuntimeLifecycleOperation.restartLuaRuntime
 

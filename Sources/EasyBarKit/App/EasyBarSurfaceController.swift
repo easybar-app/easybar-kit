@@ -18,6 +18,7 @@ public protocol EasyBarSurfaceController: AnyObject {
 }
 
 extension EasyBarSurfaceController {
+  /// Stops the associated service.
   public func stop() {
     hide()
   }
@@ -26,11 +27,15 @@ extension EasyBarSurfaceController {
 /// Shared inputs supplied to one EasyBar frontend.
 @MainActor
 public struct EasyBarSurfaceContext {
+  /// The logger used to record operational diagnostics.
   public let logger: ProcessLogger
+  /// The presentation model for this EasyBar surface context.
   public let presentationModel: EasyBarPresentationModel
 
+  /// The bar context menu builder for this EasyBar surface context.
   private let barContextMenuBuilder: (Bool) -> NSMenu
 
+  /// Creates an EasyBar surface context.
   init(
     logger: ProcessLogger,
     presentationModel: EasyBarPresentationModel,

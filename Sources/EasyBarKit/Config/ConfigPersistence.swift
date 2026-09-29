@@ -6,6 +6,7 @@ import SwiftTOMLEdit
 /// Applies validated, comment-preserving edits to the active configuration file.
 @MainActor
 final class ConfigPersistence {
+  /// Defines the supported write error values.
   private enum WriteError: LocalizedError {
     case systemCall(operation: String, code: Int32)
 
@@ -22,6 +23,7 @@ final class ConfigPersistence {
   private let configPath: String
   private let logger: ProcessLogger
 
+  /// Creates a config persistence.
   init(configPath: String, logger: ProcessLogger) {
     self.configPath = configPath
     self.logger = logger

@@ -2,12 +2,18 @@ import Darwin
 import EasyBarShared
 import Foundation
 
+/// Stores agent version status data.
 struct AgentVersionStatus: Codable, Equatable {
+  /// The version for this agent version status.
   let version: String?
+  /// The protocol version for this agent version status.
   let protocolVersion: String?
+  /// Whether the matches EasyBar option is enabled for this agent version status.
   let matchesEasyBar: Bool
+  /// The error for this agent version status.
   let error: String?
 
+  /// Maps stored properties to their encoded keys.
   private enum CodingKeys: String, CodingKey {
     case version
     case protocolVersion = "protocol_version"
@@ -16,22 +22,29 @@ struct AgentVersionStatus: Codable, Equatable {
   }
 }
 
+/// Stores agent version output entry data.
 struct AgentVersionOutputEntry: Equatable {
+  /// The key for this agent version output entry.
   let key: String
+  /// The label for this agent version output entry.
   let label: String
+  /// The status for this agent version output entry.
   let status: AgentVersionStatus
 }
 
 /// Prints user-facing CLI output.
 enum CLIOutput {
+  /// Prints error.
   static func printError(_ message: String) {
     fputs("\(CLIProgram.current.commandName): \(message)\n", stderr)
   }
 
+  /// Prints warning.
   static func printWarning(_ message: String) {
     fputs("\(CLIProgram.current.commandName): warning: \(message)\n", stderr)
   }
 
+  /// Prints version.
   static func printVersion() {
     fputs("\(CLIProgram.current.commandName) \(BuildInfo.appVersion)\n", stdout)
   }
@@ -56,6 +69,7 @@ enum CLIOutput {
     fputs(lines.joined(separator: "\n") + "\n", stderr)
   }
 
+  /// Returns the root usage.
   private static func rootUsage() -> [String] {
     let program = CLIProgram.current
     var lines = [
@@ -81,6 +95,7 @@ enum CLIOutput {
     return lines
   }
 
+  /// Returns the group usage.
   private static func groupUsage(_ group: CLICommandGroup) -> [String] {
     let program = CLIProgram.current
     let commands = CLI.commands.filter {
@@ -110,6 +125,7 @@ enum CLIOutput {
     return lines
   }
 
+  /// Returns the command usage.
   private static func commandUsage(_ command: CLICommandDescriptor) -> [String] {
     let program = CLIProgram.current
     let usageText = ([program.commandName] + command.path + command.usageArguments)
@@ -137,10 +153,12 @@ enum CLIOutput {
     return lines
   }
 
+  /// Prints metrics snapshot.
   static func printMetricsSnapshot(_ snapshot: IPC.MetricsSnapshot) {
     fputs(MetricsRenderer.snapshotText(snapshot) + "\n", stdout)
   }
 
+  /// Prints agent versions.
   static func printAgentVersions(_ entries: [AgentVersionOutputEntry], json: Bool) throws {
     if json {
       let output = Dictionary(uniqueKeysWithValues: entries.map { ($0.key, $0.status) })
@@ -166,6 +184,7 @@ enum CLIOutput {
     }
   }
 
+  /// Prints inbox items.
   static func printInboxItems(_ items: [IPC.InboxItem], json: Bool) throws {
     if json {
       let encoder = JSONEncoder()
@@ -193,6 +212,7 @@ enum CLIOutput {
     }
   }
 
+  /// Prints widget package search results.
   static func printWidgetPackageSearchResults(_ packages: [PackageRegistryEntry]) {
     guard !packages.isEmpty else {
       fputs("No widget packages found.\n", stdout)
@@ -208,6 +228,7 @@ enum CLIOutput {
     }
   }
 
+  /// Prints installed widget packages.
   static func printInstalledWidgetPackages(
     _ packages: [InstalledWidgetPackageStatus],
     json: Bool
@@ -226,6 +247,7 @@ enum CLIOutput {
     fputs(installedWidgetPackagesText(packages) + "\n", stdout)
   }
 
+  /// Returns the installed widget packages text.
   static func installedWidgetPackagesText(_ packages: [InstalledWidgetPackageStatus]) -> String {
     guard !packages.isEmpty else { return "No packages installed." }
 
@@ -233,6 +255,7 @@ enum CLIOutput {
     let versionWidth = max("VERSION".count, packages.map(\.version.count).max() ?? 0)
     let kindWidth = max("KIND".count, packages.map { $0.kind.rawValue.count }.max() ?? 0)
 
+    /// Returns the row.
     func row(name: String, version: String, kind: String, pinned: String) -> String {
       let paddedName = name.padding(toLength: nameWidth, withPad: " ", startingAt: 0)
       let paddedVersion = version.padding(toLength: versionWidth, withPad: " ", startingAt: 0)
@@ -253,6 +276,7 @@ enum CLIOutput {
       .joined(separator: "\n")
   }
 
+  /// Prints outdated widget packages.
   static func printOutdatedWidgetPackages(_ packages: [OutdatedWidgetPackage]) {
     guard !packages.isEmpty else {
       fputs("All widget packages are up to date.\n", stdout)
@@ -269,6 +293,7 @@ enum CLIOutput {
     }
   }
 
+  /// Prints widget package update result.
   static func printWidgetPackageUpdateResult(_ result: WidgetPackageUpdateResult) {
     if result.changes.isEmpty && result.skippedPinned.isEmpty {
       fputs("All selected widget packages are up to date.\n", stdout)

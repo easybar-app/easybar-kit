@@ -11,9 +11,13 @@ final class CoreMediaIOCameraInventoryMonitor: CaptureDeviceInventoryMonitoring 
     deviceIDs.map(makeDeviceState)
   }
 
+  /// Stores property listener data.
   private struct PropertyListener {
+    /// The stable identifier for this property listener.
     let objectID: CMIOObjectID
+    /// The address for this property listener.
     let address: CMIOObjectPropertyAddress
+    /// The block for this property listener.
     let block: CMIOObjectPropertyListenerBlock
   }
 
@@ -25,10 +29,12 @@ final class CoreMediaIOCameraInventoryMonitor: CaptureDeviceInventoryMonitoring 
   private var runningListeners: [CMIODeviceID: PropertyListener] = [:]
   private var started = false
 
+  /// Creates a core media io camera inventory monitor.
   init(logger: ProcessLogger) {
     self.logger = logger
   }
 
+  /// Starts the associated service.
   func start() {
     guard !started else { return }
     started = true
@@ -43,6 +49,7 @@ final class CoreMediaIOCameraInventoryMonitor: CaptureDeviceInventoryMonitoring 
     reconcileDevices()
   }
 
+  /// Stops the associated service.
   func stop() {
     guard started else { return }
     started = false
@@ -59,12 +66,14 @@ final class CoreMediaIOCameraInventoryMonitor: CaptureDeviceInventoryMonitoring 
     deviceIDs.removeAll()
   }
 
+  /// Handles device list change.
   private func handleDeviceListChange() {
     guard started else { return }
     reconcileDevices()
     onChange?()
   }
 
+  /// Reconciles the current device set.
   private func reconcileDevices() {
     let nextDeviceIDs = Self.readDeviceIDs().sorted()
     let nextDeviceSet = Set(nextDeviceIDs)
@@ -106,6 +115,7 @@ final class CoreMediaIOCameraInventoryMonitor: CaptureDeviceInventoryMonitoring 
     )
   }
 
+  /// Adds listener.
   private func addListener(
     objectID: CMIOObjectID,
     address: CMIOObjectPropertyAddress,
@@ -141,6 +151,7 @@ final class CoreMediaIOCameraInventoryMonitor: CaptureDeviceInventoryMonitoring 
     )
   }
 
+  /// Removes listener.
   private func removeListener(_ listener: PropertyListener) {
     var address = listener.address
     let status = CMIOObjectRemovePropertyListenerBlock(
@@ -159,6 +170,7 @@ final class CoreMediaIOCameraInventoryMonitor: CaptureDeviceInventoryMonitoring 
     }
   }
 
+  /// Creates device state.
   private func makeDeviceState(_ deviceID: CMIODeviceID) -> CaptureDeviceState {
     CaptureDeviceState(
       id: Self.readString(
@@ -212,6 +224,7 @@ final class CoreMediaIOCameraInventoryMonitor: CaptureDeviceInventoryMonitoring 
     mElement: CMIOObjectPropertyElement(kCMIOObjectPropertyElementMain)
   )
 
+  /// Reads device IDs.
   private static func readDeviceIDs() -> [CMIODeviceID] {
     var address = deviceListAddress
     var dataSize: UInt32 = 0
@@ -251,6 +264,7 @@ final class CoreMediaIOCameraInventoryMonitor: CaptureDeviceInventoryMonitoring 
     return Array(result.prefix(usedCount))
   }
 
+  /// Evaluates the property condition.
   private static func hasProperty(
     objectID: CMIOObjectID,
     address: CMIOObjectPropertyAddress
@@ -259,6 +273,7 @@ final class CoreMediaIOCameraInventoryMonitor: CaptureDeviceInventoryMonitoring 
     return CMIOObjectHasProperty(objectID, &address)
   }
 
+  /// Reads u int32.
   private static func readUInt32(
     objectID: CMIOObjectID,
     address: CMIOObjectPropertyAddress,
@@ -286,6 +301,7 @@ final class CoreMediaIOCameraInventoryMonitor: CaptureDeviceInventoryMonitoring 
     return value
   }
 
+  /// Reads string.
   private static func readString(
     objectID: CMIOObjectID,
     address: CMIOObjectPropertyAddress
@@ -311,6 +327,7 @@ final class CoreMediaIOCameraInventoryMonitor: CaptureDeviceInventoryMonitoring 
     return value as String
   }
 
+  /// Returns the four character code.
   private static func fourCharacterCode(_ value: UInt32) -> String {
     let bytes: [UInt8] = [
       UInt8((value >> 24) & 0xff),

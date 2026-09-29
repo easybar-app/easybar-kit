@@ -58,7 +58,10 @@ enum EventDeliveryPolicy {
 
 /// Aggregated subscriber-buffer overflow for one event class.
 struct EventBackpressureSample: Hashable, Sendable {
+  /// The name for this event backpressure sample.
   let name: String
+  /// The count for this event backpressure sample.
   let count: Int
+  /// Whether the coalesced option is enabled for this event backpressure sample.
   let coalesced: Bool
 }

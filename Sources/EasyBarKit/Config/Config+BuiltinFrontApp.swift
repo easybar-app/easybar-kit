@@ -6,10 +6,15 @@ extension Config {
   struct FrontAppBuiltinConfig: @unchecked Sendable {
     /// Front-app content settings.
     struct Content {
+      /// Whether this content shows icon.
       var showIcon: Bool
+      /// Whether this content shows name.
       var showName: Bool
+      /// The fallback text for this content.
       var fallbackText: String
+      /// The icon size for this content.
       var iconSize: Double
+      /// The icon corner radius for this content.
       var iconCornerRadius: Double
     }
 
@@ -20,41 +25,49 @@ extension Config {
     /// Front-app-specific content settings.
     var content: Content
 
+    /// Whether this front app builtin config is enabled.
     var enabled: Bool {
       get { placement.enabled }
       set { placement.enabled = newValue }
     }
 
+    /// The position for this front app builtin config.
     var position: WidgetPosition {
       get { placement.position }
       set { placement.position = newValue }
     }
 
+    /// The order for this front app builtin config.
     var order: Int {
       get { placement.order }
       set { placement.order = newValue }
     }
 
+    /// Whether this front app builtin config shows icon.
     var showIcon: Bool {
       get { content.showIcon }
       set { content.showIcon = newValue }
     }
 
+    /// Whether this front app builtin config shows name.
     var showName: Bool {
       get { content.showName }
       set { content.showName = newValue }
     }
 
+    /// The fallback text for this front app builtin config.
     var fallbackText: String {
       get { content.fallbackText }
       set { content.fallbackText = newValue }
     }
 
+    /// The icon size for this front app builtin config.
     var iconSize: Double {
       get { content.iconSize }
       set { content.iconSize = newValue }
     }
 
+    /// The icon corner radius for this front app builtin config.
     var iconCornerRadius: Double {
       get { content.iconCornerRadius }
       set { content.iconCornerRadius = newValue }

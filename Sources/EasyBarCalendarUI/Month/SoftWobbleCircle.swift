@@ -2,6 +2,7 @@ import SwiftUI
 
 /// A deterministic uneven circle that stays stable across SwiftUI redraws.
 struct SoftWobbleCircle: Shape {
+  /// Returns the path.
   func path(in rect: CGRect) -> Path {
     let point: (Double, Double) -> CGPoint = { x, y in
       CGPoint(

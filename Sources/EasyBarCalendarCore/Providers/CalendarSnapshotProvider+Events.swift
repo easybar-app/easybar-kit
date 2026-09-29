@@ -393,6 +393,7 @@ extension CalendarSnapshotProvider {
     return formatEventTime(endDate)
   }
 
+  /// Returns the formatted end time.
   func formattedEndTime(for event: CalendarAgentEvent) -> String? {
     formattedEndTime(
       startDate: event.startDate,

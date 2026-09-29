@@ -1,12 +1,14 @@
 import Darwin
 import Foundation
 
+/// Defines the supported single instance lock result values.
 public enum SingleInstanceLockResult: Equatable {
   case acquired(lockPath: String)
   case alreadyRunning(lockPath: String)
   case failed(lockPath: String, reason: String)
 }
 
+/// Coordinates single instance guard state and behavior.
 public final class SingleInstanceGuard {
   private var lockFileHandle: FileHandle?
 

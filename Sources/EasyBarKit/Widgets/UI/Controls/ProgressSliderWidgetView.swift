@@ -3,24 +3,35 @@ import SwiftUI
 
 /// Custom progress-style slider used by native and scripted widgets.
 struct ProgressSliderWidgetView: View {
+  /// The stable identifier for this progress slider widget view.
   let rootWidgetID: String
+  /// The stable identifier for this progress slider widget view.
   let targetWidgetID: String
+  /// The accessibility label for this progress slider widget view.
   let accessibilityLabel: String
+  /// The min value for this progress slider widget view.
   let minValue: Double
+  /// The max value for this progress slider widget view.
   let maxValue: Double
+  /// The step for this progress slider widget view.
   let step: Double
+  /// The external value for this progress slider widget view.
   let externalValue: Double
+  /// The tint for this progress slider widget view.
   let tint: Color
+  /// The width for this progress slider widget view.
   let width: CGFloat?
 
   @State private var value: Double
   @State private var isDragging = false
   @Environment(\.appViewServices) private var appViewServices
 
+  /// The range for this progress slider widget view.
   private var range: SliderValueRange {
     SliderValueRange(minimum: minValue, maximum: maxValue, step: step)
   }
 
+  /// Creates a progress slider widget view.
   init(
     rootWidgetID: String,
     targetWidgetID: String,
@@ -169,8 +180,11 @@ struct ProgressSliderWidgetView: View {
   }
 }
 
+/// Stores progress slider interaction surface data.
 private struct ProgressSliderInteractionSurface: NSViewRepresentable {
+  /// The on preview for this progress slider interaction surface.
   let onPreview: (CGFloat) -> Void
+  /// The on commit for this progress slider interaction surface.
   let onCommit: (CGFloat) -> Void
 
   /// Creates nsview.
@@ -188,6 +202,7 @@ private struct ProgressSliderInteractionSurface: NSViewRepresentable {
   }
 }
 
+/// Coordinates progress slider interaction ns view state and behavior.
 private final class ProgressSliderInteractionNSView: NSView {
   var onPreview: ((CGFloat) -> Void)?
   var onCommit: ((CGFloat) -> Void)?

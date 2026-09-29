@@ -11,7 +11,9 @@ public func defaultLoggingDirectoryPath() -> String {
 
 /// One structured field attached to a process log entry.
 public struct ProcessLogField {
+  /// The key for this process log field.
   public let key: String
+  /// The value for this process log field.
   public let value: Any?
 
   /// Creates one structured log field.
@@ -110,14 +112,19 @@ public final class ProcessLogger: @unchecked Sendable {
 
   /// Runtime configuration read by producers without performing I/O.
   private struct LoggerConfiguration {
+    /// The minimum level accepted by this logger configuration.
     var minimumLevel: ProcessLogLevel
+    /// Whether the file logging enabled option is enabled for this logger configuration.
     var fileLoggingEnabled = false
+    /// The file logging path for this logger configuration.
     var fileLoggingPath = ""
   }
 
   /// Optional live diagnostics sink shared by one logger tree.
   private struct LiveSink: Sendable {
+    /// The minimum level accepted by this live sink.
     let minimumLevel: @Sendable (ProcessLogLevel) -> ProcessLogLevel?
+    /// The emit for this live sink.
     let emit: @Sendable (ProcessLogEvent, ProcessLogLevel) -> Void
   }
 
@@ -137,6 +144,7 @@ public final class ProcessLogger: @unchecked Sendable {
     /// Accessed only from `outputQueue`.
     var fileByteCount = 0
 
+    /// Creates a shared state.
     init(
       minimumLevel: ProcessLogLevel,
       outputStream: UnsafeMutablePointer<FILE>?,

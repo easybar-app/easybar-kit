@@ -4,9 +4,12 @@ import Foundation
 
 /// One atomically sampled location-authorization state.
 struct NetworkAuthorizationSnapshot: Equatable, Sendable {
+  /// Whether this network authorization snapshot is authorized.
   let isAuthorized: Bool
+  /// The permission state for this network authorization snapshot.
   let permissionState: String
 
+  /// Creates a network authorization snapshot.
   init(status: CLAuthorizationStatus) {
     switch status {
     case .authorized, .authorizedAlways, .authorizedWhenInUse:
@@ -167,10 +170,12 @@ final class NetworkLocationAuthorizationController: NSObject, CLLocationManagerD
     }
   }
 
+  /// Sets authorization status.
   private func setAuthorizationStatus(_ status: CLAuthorizationStatus) {
     authorizationStatus.withLock { $0 = status }
   }
 
+  /// Returns the current authorization status.
   private func currentAuthorizationStatus() -> CLAuthorizationStatus {
     authorizationStatus.withLock { $0 }
   }

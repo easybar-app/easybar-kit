@@ -7,32 +7,55 @@ extension Config {
   struct SpacesBuiltinConfig: @unchecked Sendable {
     /// Spaces layout behavior settings.
     struct Layout {
+      /// The spacing for this layout.
       var spacing: Double
+      /// Whether the hide empty option is enabled for this layout.
       var hideEmpty: Bool
+      /// The padding x for this layout.
       var paddingX: Double
+      /// The padding y for this layout.
       var paddingY: Double
+      /// The margin x for this layout.
       var marginX: Double
+      /// The margin y for this layout.
       var marginY: Double
+      /// The corner radius for this layout.
       var cornerRadius: Double
+      /// The focused corner radius for this layout.
       var focusedCornerRadius: Double
+      /// The focused scale for this layout.
       var focusedScale: Double
+      /// The inactive opacity for this layout.
       var inactiveOpacity: Double
+      /// The max icons for this layout.
       var maxIcons: Int
+      /// Whether this layout shows label.
       var showLabel: Bool
+      /// Whether this layout shows icons.
       var showIcons: Bool
+      /// Whether this layout shows only focused label.
       var showOnlyFocusedLabel: Bool
+      /// Whether the collapse inactive option is enabled for this layout.
       var collapseInactive: Bool
+      /// The collapsed padding x for this layout.
       var collapsedPaddingX: Double
+      /// The collapsed padding y for this layout.
       var collapsedPaddingY: Double
+      /// Whether the click to focus space option is enabled for this layout.
       var clickToFocusSpace: Bool
+      /// Whether the click to focus app option is enabled for this layout.
       var clickToFocusApp: Bool
     }
 
     /// Spaces label text settings.
     struct Text {
+      /// The size for this text.
       var size: Double
+      /// The weight for this text.
       var weight: String
+      /// The focused color hex for this text.
       var focusedColorHex: String
+      /// The inactive color hex for this text.
       var inactiveColorHex: String
 
       /// Resolved SwiftUI font weight.
@@ -53,20 +76,31 @@ extension Config {
 
     /// Spaces app-icon settings.
     struct Icons {
+      /// The size for this icons.
       var size: Double
+      /// The spacing for this icons.
       var spacing: Double
+      /// The corner radius for this icons.
       var cornerRadius: Double
+      /// The focused app size for this icons.
       var focusedAppSize: Double
+      /// The border width for this icons.
       var borderWidth: Double
+      /// The focused app border width for this icons.
       var focusedAppBorderWidth: Double
     }
 
     /// Spaces color settings.
     struct Colors {
+      /// The active background hex for this colors.
       var activeBackgroundHex: String
+      /// The inactive background hex for this colors.
       var inactiveBackgroundHex: String
+      /// The active border hex for this colors.
       var activeBorderHex: String
+      /// The inactive border hex for this colors.
       var inactiveBorderHex: String
+      /// The focused app border hex for this colors.
       var focusedAppBorderHex: String
     }
 
@@ -83,16 +117,19 @@ extension Config {
     /// Color settings.
     var colors: Colors
 
+    /// Whether this spaces builtin config is enabled.
     var enabled: Bool {
       get { placement.enabled }
       set { placement.enabled = newValue }
     }
 
+    /// The position for this spaces builtin config.
     var position: WidgetPosition {
       get { placement.position }
       set { placement.position = newValue }
     }
 
+    /// The order for this spaces builtin config.
     var order: Int {
       get { placement.order }
       set { placement.order = newValue }

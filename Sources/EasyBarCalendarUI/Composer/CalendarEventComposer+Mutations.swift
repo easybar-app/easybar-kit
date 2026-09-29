@@ -71,6 +71,7 @@ extension CalendarEventComposer {
     openCalendarAppAction()
   }
 
+  /// Creates create event.
   private func makeCreateEvent(from draft: Draft) -> CalendarAgentCreateEvent {
     CalendarAgentCreateEvent(
       title: draft.title,
@@ -84,6 +85,7 @@ extension CalendarEventComposer {
     )
   }
 
+  /// Creates update event.
   private func makeUpdateEvent(
     from draft: Draft,
     eventIdentifier: String
@@ -101,6 +103,7 @@ extension CalendarEventComposer {
     )
   }
 
+  /// Handles mutation result.
   private func handleMutationResult(
     success: Bool,
     failureMessage: String?,

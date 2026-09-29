@@ -74,6 +74,7 @@ public final class CalendarEventComposer: ObservableObject {
   var preferredCalendarName: String?
   private var cleanFormState: CalendarEventComposerFormState?
 
+  /// Creates a calendar event composer.
   public init(
     config: CalendarComposerConfig,
     snapshotPublisher: AnyPublisher<CalendarAgentSnapshot?, Never>,

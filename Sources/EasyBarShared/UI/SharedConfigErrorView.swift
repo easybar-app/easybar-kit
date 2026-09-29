@@ -123,6 +123,7 @@ public struct SharedConfigErrorView: View {
     self.onClose = onClose
   }
 
+  /// The rendered content for this view.
   public var body: some View {
     VStack(alignment: .leading, spacing: 14) {
       Label(presentation.title, systemImage: "exclamationmark.triangle.fill")

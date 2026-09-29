@@ -143,6 +143,7 @@ extension AeroSpaceService {
   }
 
   @MainActor
+  /// Publishes focused state.
   private func publishFocusedState(
     _ focusedState: AeroSpaceFocusedState,
     token: AeroSpaceFocusedStateToken
@@ -164,6 +165,7 @@ extension AeroSpaceService {
     )
   }
 
+  /// Finishes the focused-state refresh.
   private func finishFocusedStateRefresh(_ token: AeroSpaceFocusedStateToken) {
     withLock { state in
       guard state.pendingFocusedStateToken == token else { return }
@@ -172,6 +174,7 @@ extension AeroSpaceService {
     }
   }
 
+  /// Evaluates the execute condition.
   private func shouldExecute(focusedStateToken token: AeroSpaceFocusedStateToken) -> Bool {
     withLock { state in
       state.running

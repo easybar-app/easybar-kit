@@ -4,10 +4,15 @@ import Foundation
 
 /// Observes CoreAudio output volume and mute changes.
 final class VolumeEvents: @unchecked Sendable {
+  /// Stores device listener data.
   private struct DeviceListener {
+    /// The stable identifier for this device listener.
     let deviceID: AudioDeviceID
+    /// The address for this device listener.
     let address: AudioObjectPropertyAddress
+    /// The label for this device listener.
     let label: String
+    /// The block for this device listener.
     let block: AudioObjectPropertyListenerBlock
   }
 

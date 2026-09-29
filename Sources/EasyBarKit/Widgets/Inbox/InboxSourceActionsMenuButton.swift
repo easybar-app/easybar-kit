@@ -4,16 +4,23 @@ import SwiftUI
 /// AppKit-backed inbox source menu with explicit lifecycle hooks for hover-controlled popups.
 @MainActor
 struct InboxSourceActionsMenuButton: NSViewRepresentable {
+  /// The configurations for this inbox source actions menu button.
   let configurations: [InboxSourceConfiguration]
+  /// The tint color for this inbox source actions menu button.
   let tintColor: NSColor
+  /// The popup panel for this inbox source actions menu button.
   let popupPanel: WidgetPopupPanelController
+  /// The on action for this inbox source actions menu button.
   let onAction: (String, String) -> Void
+  /// The on menu closed for this inbox source actions menu button.
   let onMenuClosed: () -> Void
 
+  /// Creates coordinator.
   func makeCoordinator() -> Coordinator {
     Coordinator(self)
   }
 
+  /// Creates ns view.
   func makeNSView(context: Context) -> NSButton {
     let button = NSButton()
     button.image = NSImage(
@@ -31,6 +38,7 @@ struct InboxSourceActionsMenuButton: NSViewRepresentable {
     return button
   }
 
+  /// Updates ns view.
   func updateNSView(_ button: NSButton, context: Context) {
     context.coordinator.parent = self
     button.contentTintColor = tintColor
@@ -38,9 +46,11 @@ struct InboxSourceActionsMenuButton: NSViewRepresentable {
   }
 
   @MainActor
+  /// Coordinates coordinator state and behavior.
   final class Coordinator: NSObject {
     var parent: InboxSourceActionsMenuButton
 
+    /// Creates a coordinator.
     init(_ parent: InboxSourceActionsMenuButton) {
       self.parent = parent
     }
@@ -67,6 +77,7 @@ struct InboxSourceActionsMenuButton: NSViewRepresentable {
       parent.onAction(selection.source, selection.actionID)
     }
 
+    /// Creates menu.
     private func makeMenu() -> NSMenu {
       let menu = NSMenu(title: "Inbox actions")
       menu.autoenablesItems = false
@@ -91,6 +102,7 @@ struct InboxSourceActionsMenuButton: NSViewRepresentable {
       return menu
     }
 
+    /// Creates menu item.
     private func makeMenuItem(for action: InboxAction, source: String) -> NSMenuItem {
       let item = NSMenuItem(
         title: action.title,
@@ -119,10 +131,12 @@ struct InboxSourceActionsMenuButton: NSViewRepresentable {
   }
 }
 
+/// Coordinates inbox source action selection state and behavior.
 private final class InboxSourceActionSelection: NSObject {
   let source: String
   let actionID: String
 
+  /// Creates an inbox source action selection.
   init(source: String, actionID: String) {
     self.source = source
     self.actionID = actionID

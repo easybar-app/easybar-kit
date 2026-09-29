@@ -1,6 +1,8 @@
 import SwiftUI
 
+/// Stores month calendar grid frame preference key data.
 struct MonthCalendarGridFramePreferenceKey: PreferenceKey {
+  /// The default value for this month calendar grid frame preference key.
   static var defaultValue: CGRect { .zero }
 
   /// Handles reduce.
@@ -10,7 +12,9 @@ struct MonthCalendarGridFramePreferenceKey: PreferenceKey {
   }
 }
 
+/// Stores month calendar day frame preference key data.
 struct MonthCalendarDayFramePreferenceKey: PreferenceKey {
+  /// The default value for this month calendar day frame preference key.
   static var defaultValue: [Date: CGRect] { [:] }
 
   /// Handles reduce.

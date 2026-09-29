@@ -23,11 +23,16 @@ extension String {
 
 /// Parsed color components for `RRGGBB` and `RRGGBBAA` strings.
 private struct HexColorComponents {
+  /// The red for this hex color components.
   let red: Double
+  /// The green for this hex color components.
   let green: Double
+  /// The blue for this hex color components.
   let blue: Double
+  /// The alpha for this hex color components.
   let alpha: Double
 
+  /// Parses an RGB or RGBA hexadecimal color.
   init?(hex rawValue: String) {
     let hex = rawValue.normalizedHexColor
     let hexDigits = CharacterSet(charactersIn: "0123456789ABCDEF")

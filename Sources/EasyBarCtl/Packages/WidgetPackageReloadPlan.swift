@@ -1,16 +1,23 @@
 import Foundation
 
+/// Stores widget package reload plan data.
 struct WidgetPackageReloadPlan: Codable, Equatable {
+  /// The packages for this widget package reload plan.
   let packages: [String]
+  /// The modules for this widget package reload plan.
   let modules: [String]
+  /// The widgets for this widget package reload plan.
   let widgets: [String]
 
+  /// Whether this widget package reload plan is empty.
   var isEmpty: Bool {
     packages.isEmpty
   }
 }
 
+/// Defines the supported widget package reload planner values.
 enum WidgetPackageReloadPlanner {
+  /// Creates the requested value.
   static func make(
     changedNames: Set<String>,
     packages: [InstalledWidgetPackage]
@@ -48,6 +55,7 @@ enum WidgetPackageReloadPlanner {
     return WidgetPackageReloadPlan(packages: order, modules: modules, widgets: widgets)
   }
 
+  /// Returns the dependency order.
   private static func dependencyOrder(
     for affected: Set<String>,
     packages: [String: InstalledWidgetPackage]
@@ -96,15 +104,20 @@ enum WidgetPackageReloadPlanner {
   }
 }
 
+/// Stores widget package reload plan store data.
 struct WidgetPackageReloadPlanStore {
+  /// The file name for this widget package reload plan store.
   static let fileName = ".reload-plan.json"
 
+  /// The file manager used for filesystem operations.
   private let fileManager: FileManager
 
+  /// Creates a widget package reload plan store.
   init(fileManager: FileManager = .default) {
     self.fileManager = fileManager
   }
 
+  /// Writes the requested value.
   func write(_ plan: WidgetPackageReloadPlan, to packagesDirectory: URL) throws {
     guard !plan.isEmpty else {
       remove(from: packagesDirectory)
@@ -119,10 +132,12 @@ struct WidgetPackageReloadPlanStore {
     try data.write(to: url(in: packagesDirectory), options: .atomic)
   }
 
+  /// Removes the requested operation.
   func remove(from packagesDirectory: URL) {
     try? fileManager.removeItem(at: url(in: packagesDirectory))
   }
 
+  /// Returns the URL.
   func url(in packagesDirectory: URL) -> URL {
     packagesDirectory.appending(path: Self.fileName, directoryHint: .notDirectory)
   }

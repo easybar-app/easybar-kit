@@ -2,10 +2,12 @@ import Foundation
 
 /// Renders the generated Markdown reference for EasyBar's public configuration schema.
 public enum ConfigReferenceRenderer {
+  /// Defines the supported catalog value values.
   private enum CatalogValue: Encodable {
     case activeDefault(String)
     case example(String)
 
+    /// Encodes the requested value.
     func encode(to encoder: Encoder) throws {
       var container = encoder.singleValueContainer()
       switch self {
@@ -17,11 +19,16 @@ public enum ConfigReferenceRenderer {
     }
   }
 
+  /// Stores catalog entry data.
   private struct CatalogEntry: Encodable {
+    /// The key for this catalog entry.
     let key: String
+    /// The value for this catalog entry.
     let value: CatalogValue
+    /// A human-readable representation of this catalog entry.
     let description: String
 
+    /// Maps stored properties to their encoded keys.
     enum CodingKeys: String, CodingKey {
       case key
       case kind
@@ -29,6 +36,7 @@ public enum ConfigReferenceRenderer {
       case description
     }
 
+    /// Encodes the requested value.
     func encode(to encoder: Encoder) throws {
       var container = encoder.container(keyedBy: CodingKeys.self)
       try container.encode(key, forKey: .key)
@@ -41,13 +49,19 @@ public enum ConfigReferenceRenderer {
     }
   }
 
+  /// Stores catalog section data.
   private struct CatalogSection: Encodable {
+    /// The name for this catalog section.
     let name: String
+    /// The entries for this catalog section.
     let entries: [CatalogEntry]
   }
 
+  /// Stores catalog data.
   private struct Catalog: Encodable {
+    /// The schema version for this catalog.
     let schemaVersion = 1
+    /// The sections for this catalog.
     let sections: [CatalogSection]
   }
 
@@ -118,6 +132,7 @@ public enum ConfigReferenceRenderer {
     return text + "\n"
   }
 
+  /// Returns the documented sections.
   private static func documentedSections() -> [(name: String, entries: [CatalogEntry])] {
     var result: [(name: String, entries: [CatalogEntry])] = []
     var currentName: String?
@@ -125,6 +140,7 @@ public enum ConfigReferenceRenderer {
     var currentSectionIsDocumented = false
     var currentEntries: [CatalogEntry] = []
 
+    /// Flushes pending work.
     func flush() {
       guard let name = currentName, !currentEntries.isEmpty else { return }
       result.append((name, currentEntries))
@@ -168,10 +184,12 @@ public enum ConfigReferenceRenderer {
     return result
   }
 
+  /// Returns the markdown escape.
   private static func markdownEscape(_ value: String) -> String {
     value.replacingOccurrences(of: "|", with: "\\|")
   }
 
+  /// Returns the code.
   private static func code(_ value: String) -> String {
     "`\(value.replacingOccurrences(of: "`", with: "\\`"))`"
   }

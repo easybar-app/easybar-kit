@@ -4,15 +4,25 @@ import Foundation
 /// Injectable monitor operations used by the main-actor snapshot provider.
 @MainActor
 struct NetworkSnapshotProviderDependencies {
+  /// The start authorization for this network snapshot provider dependencies.
   let startAuthorization: @MainActor (@escaping () -> Void) -> Void
+  /// The stop authorization for this network snapshot provider dependencies.
   let stopAuthorization: @MainActor () -> Void
+  /// The authorization snapshot for this network snapshot provider dependencies.
   let authorizationSnapshot: @MainActor () -> NetworkAuthorizationSnapshot
+  /// The start Wi-Fi for this network snapshot provider dependencies.
   let startWiFi: @MainActor (@escaping () -> Void) -> Void
+  /// The stop Wi-Fi for this network snapshot provider dependencies.
   let stopWiFi: @MainActor () -> Void
+  /// The refresh Wi-Fi for this network snapshot provider dependencies.
   let refreshWiFi: @MainActor (Date) -> Void
+  /// The current Wi-Fi for this network snapshot provider dependencies.
   let currentWiFi: @MainActor () -> NetworkWiFiSnapshot
+  /// The start system for this network snapshot provider dependencies.
   let startSystem: @MainActor (@escaping () -> Void) -> Void
+  /// The stop system for this network snapshot provider dependencies.
   let stopSystem: @MainActor () -> Void
+  /// The current system for this network snapshot provider dependencies.
   let currentSystem: @MainActor () -> NetworkSystemSnapshot
 }
 
@@ -21,9 +31,13 @@ struct NetworkSnapshotProviderDependencies {
 public final class NetworkSnapshotProvider {
   /// Immutable values used while resolving requested field values.
   private struct FieldResolutionContext {
+    /// The now for this field resolution context.
     let now: Date
+    /// The authorization for this field resolution context.
     let authorization: NetworkAuthorizationSnapshot
+    /// The Wi-Fi for this field resolution context.
     let wifi: NetworkWiFiSnapshot
+    /// The network for this field resolution context.
     let network: NetworkSystemSnapshot
   }
 

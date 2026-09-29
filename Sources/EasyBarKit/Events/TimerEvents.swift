@@ -3,7 +3,9 @@ import Foundation
 
 /// Widget-scoped interval schedule requested by the Lua runtime.
 struct WidgetIntervalSchedule: Hashable, Sendable {
+  /// The stable identifier for this widget interval schedule.
   let widgetID: String
+  /// The interval for this widget interval schedule.
   let interval: TimeInterval
 }
 

@@ -6,6 +6,7 @@ enum NativeWidgetContextMenuAction: String {
   case disable = "native_widget.disable"
 }
 
+/// Defines the supported native widget context menu values.
 enum NativeWidgetContextMenu {
   /// Appends the common native-widget controls to an optional widget-specific menu.
   static func appendingCommonActions(
@@ -30,6 +31,7 @@ enum NativeWidgetContextMenu {
     return result
   }
 
+  /// Evaluates the common action separator condition.
   private static func needsCommonActionSeparator(_ items: [WidgetContextMenuItem]) -> Bool {
     !items.isEmpty && items.last?.separator != true
   }

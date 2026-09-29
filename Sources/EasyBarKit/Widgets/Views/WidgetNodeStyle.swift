@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Shared box-model styling for rendered widget nodes.
 struct WidgetNodeStyle: ViewModifier {
+  /// The node for this widget node style.
   let node: WidgetNodeState
   @EnvironmentObject private var configStore: ConfigSnapshotStore
 

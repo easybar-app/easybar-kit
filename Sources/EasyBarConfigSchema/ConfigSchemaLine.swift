@@ -21,6 +21,7 @@ extension ConfigSchemaRegistry {
     case optionalEntry(key: String, value: String, description: String)
   }
 
+  /// Returns the section.
   static func section(
     name: String,
     commented: Bool = false,
@@ -35,6 +36,7 @@ extension ConfigSchemaRegistry {
     )
   }
 
+  /// Returns the entry.
   static func entry(
     key: String,
     value: String,
@@ -53,6 +55,7 @@ extension ConfigSchemaRegistry {
     )
   }
 
+  /// Returns the optional entry.
   static func optionalEntry(
     key: String,
     value: String,

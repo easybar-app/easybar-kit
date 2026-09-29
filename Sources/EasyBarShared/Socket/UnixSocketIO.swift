@@ -32,6 +32,7 @@ public enum UnixSocketConnectError: Error, CustomStringConvertible, LocalizedErr
 
   public var errorDescription: String? { description }
 
+  /// Returns the errno description.
   private static func errnoDescription(_ value: Int32) -> String {
     "\(String(cString: strerror(value))) (errno \(value))"
   }
@@ -46,9 +47,12 @@ public enum UnixSocketWriteError: Error, Equatable, Sendable {
 
 /// Identifies one concrete filesystem entry used by a Unix-domain socket.
 public struct UnixSocketPathIdentity: Equatable, Sendable {
+  /// The device for this unix socket path identity.
   public let device: UInt64
+  /// The inode for this unix socket path identity.
   public let inode: UInt64
 
+  /// Creates a Unix socket path identity.
   fileprivate init(_ value: stat) {
     device = UInt64(value.st_dev)
     inode = UInt64(value.st_ino)
@@ -57,10 +61,14 @@ public struct UnixSocketPathIdentity: Equatable, Sendable {
 
 /// Owns a listening descriptor together with the exact socket path it created.
 public struct OwnedUnixSocketListener: Sendable {
+  /// The fd for this owned unix socket listener.
   public let fd: Int32
+  /// The socket path for this owned unix socket listener.
   public let socketPath: String
+  /// The path identity for this owned unix socket listener.
   public let pathIdentity: UnixSocketPathIdentity
 
+  /// Creates an owned unix socket listener.
   fileprivate init(fd: Int32, socketPath: String, pathIdentity: UnixSocketPathIdentity) {
     self.fd = fd
     self.socketPath = socketPath
@@ -431,6 +439,7 @@ public func unlinkSocketPathIfOwned(
   return unlink(socketPath) == 0
 }
 
+/// Defines the supported socket poll result values.
 private enum SocketPollResult {
   case ready
   case timedOut

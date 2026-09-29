@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Defines the supported popup content kind values.
 private enum PopupContentKind {
   case none
   case calendarUpcoming

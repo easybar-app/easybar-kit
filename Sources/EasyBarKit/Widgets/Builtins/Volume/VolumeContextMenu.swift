@@ -2,10 +2,14 @@ import Foundation
 
 /// Capabilities exposed by the current default audio output device.
 struct AudioDeviceCapabilities: Equatable, Sendable {
+  /// Whether the can read volume option is enabled for this audio device capabilities.
   let canReadVolume: Bool
+  /// Whether the can set volume option is enabled for this audio device capabilities.
   let canSetVolume: Bool
+  /// Whether the can mute option is enabled for this audio device capabilities.
   let canMute: Bool
 
+  /// The unavailable for this audio device capabilities.
   static let unavailable = AudioDeviceCapabilities(
     canReadVolume: false,
     canSetVolume: false,
@@ -65,6 +69,7 @@ enum VolumePresentation {
 
 /// Builds the native volume context menu from current audio and config state.
 enum VolumeContextMenu {
+  /// Creates the requested value.
   static func make(
     config: Config.VolumeBuiltinConfig,
     isMuted: Bool,

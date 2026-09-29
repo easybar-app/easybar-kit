@@ -2,12 +2,18 @@ import Foundation
 
 /// Semantic version used for widget package compatibility and release ordering.
 struct SemanticVersion: Comparable, CustomStringConvertible, Hashable {
+  /// The major for this semantic version.
   let major: Int
+  /// The minor for this semantic version.
   let minor: Int
+  /// The patch for this semantic version.
   let patch: Int
+  /// The prerelease for this semantic version.
   let prerelease: [String]
+  /// The build metadata for this semantic version.
   let buildMetadata: [String]
 
+  /// Creates a semantic version.
   init(
     major: Int,
     minor: Int,
@@ -22,6 +28,7 @@ struct SemanticVersion: Comparable, CustomStringConvertible, Hashable {
     self.buildMetadata = buildMetadata
   }
 
+  /// Parses a semantic version string.
   init?(_ value: String) {
     guard !value.isEmpty, value == value.trimmingCharacters(in: .whitespacesAndNewlines) else {
       return nil
@@ -79,6 +86,7 @@ struct SemanticVersion: Comparable, CustomStringConvertible, Hashable {
     self.buildMetadata = buildMetadata
   }
 
+  /// A human-readable representation of this semantic version.
   var description: String {
     var value = "\(major).\(minor).\(patch)"
     if !prerelease.isEmpty {
@@ -90,6 +98,7 @@ struct SemanticVersion: Comparable, CustomStringConvertible, Hashable {
     return value
   }
 
+  /// Returns whether two versions have the same precedence and prerelease identifiers.
   static func == (lhs: SemanticVersion, rhs: SemanticVersion) -> Bool {
     lhs.major == rhs.major
       && lhs.minor == rhs.minor
@@ -97,6 +106,7 @@ struct SemanticVersion: Comparable, CustomStringConvertible, Hashable {
       && lhs.prerelease == rhs.prerelease
   }
 
+  /// Feeds this value's components into the supplied hasher.
   func hash(into hasher: inout Hasher) {
     hasher.combine(major)
     hasher.combine(minor)
@@ -104,6 +114,7 @@ struct SemanticVersion: Comparable, CustomStringConvertible, Hashable {
     hasher.combine(prerelease)
   }
 
+  /// Returns whether the left version has lower semantic-version precedence.
   static func < (lhs: SemanticVersion, rhs: SemanticVersion) -> Bool {
     if lhs.major != rhs.major { return lhs.major < rhs.major }
     if lhs.minor != rhs.minor { return lhs.minor < rhs.minor }
@@ -127,12 +138,14 @@ struct SemanticVersion: Comparable, CustomStringConvertible, Hashable {
     return lhs.prerelease.count < rhs.prerelease.count
   }
 
+  /// Parses a nonnegative core component without forbidden leading zeroes.
   private static func coreNumber(_ value: Substring) -> Int? {
     guard !value.isEmpty, value.allSatisfy(\.isASCIIDigit) else { return nil }
     guard value.count == 1 || value.first != "0" else { return nil }
     return Int(value)
   }
 
+  /// Validates semantic-version prerelease or build identifiers.
   private static func validIdentifiers(
     _ identifiers: [String],
     rejectLeadingZeroNumbers: Bool
@@ -157,6 +170,7 @@ struct SemanticVersion: Comparable, CustomStringConvertible, Hashable {
     }
   }
 
+  /// Returns whether an identifier contains only ASCII digits.
   private static func isNumericIdentifier(_ value: String) -> Bool {
     !value.isEmpty && value.allSatisfy(\.isASCIIDigit)
   }

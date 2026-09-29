@@ -1,11 +1,13 @@
 import EasyBarShared
 import Foundation
 
+/// Coordinates widget package installer state and behavior.
 final class WidgetPackageInstaller {
   private let logger: ProcessLogger
   private let fileManager: FileManager
   private let packagesDirectory: URL
 
+  /// Creates a widget package installer.
   init(
     logger: ProcessLogger,
     fileManager: FileManager = .default,
@@ -16,6 +18,7 @@ final class WidgetPackageInstaller {
     self.packagesDirectory = packagesDirectory
   }
 
+  /// Installs the requested package.
   func install(
     options: WidgetPackageInstallOptions,
     protectedPackages: Set<String> = []
@@ -70,6 +73,7 @@ final class WidgetPackageInstaller {
     )
   }
 
+  /// Returns the installed package named by source.
   private func installedPackageNamedBySource(
     _ source: String,
     database: InstalledWidgetPackages
@@ -82,6 +86,7 @@ final class WidgetPackageInstaller {
   }
 }
 
+/// Installs widget package.
 func installWidgetPackage(
   options: WidgetPackageInstallOptions,
   context: AppContext

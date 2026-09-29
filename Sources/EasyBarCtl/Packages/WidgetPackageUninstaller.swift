@@ -1,10 +1,12 @@
 import EasyBarShared
 import Foundation
 
+/// Coordinates widget package uninstaller state and behavior.
 final class WidgetPackageUninstaller {
   private let fileManager: FileManager
   private let packagesDirectory: URL
 
+  /// Creates a widget package uninstaller.
   init(
     fileManager: FileManager = .default,
     packagesDirectory: URL = SharedPathDefaults.defaultWidgetPackagesPath()
@@ -13,6 +15,7 @@ final class WidgetPackageUninstaller {
     self.packagesDirectory = packagesDirectory
   }
 
+  /// Uninstalls the requested operation.
   func uninstall(name: String) throws -> InstalledWidgetPackage {
     guard WidgetPackageManifestParser.isPackageName(name) else {
       throw WidgetPackageError.invalidSource("invalid package name '\(name)'")
@@ -46,6 +49,7 @@ final class WidgetPackageUninstaller {
     var moves: [(original: URL, staged: URL)] = []
     var pinStateChanged = false
 
+    /// Stages the requested change.
     func stage(_ original: URL, at relativePath: String) throws {
       guard itemExists(original) else { return }
       let staged = stagingDirectory.appending(path: relativePath)
@@ -115,16 +119,19 @@ final class WidgetPackageUninstaller {
     return package
   }
 
+  /// Returns the module URL.
   private func moduleURL(_ module: String, in root: URL) -> URL {
     root.appending(path: "shared/\(module.replacing(".", with: "/")).lua")
   }
 
+  /// Returns whether a path contains a file or symbolic link.
   private func itemExists(_ url: URL) -> Bool {
     fileManager.fileExists(atPath: url.path)
       || (try? fileManager.destinationOfSymbolicLink(atPath: url.path)) != nil
   }
 }
 
+/// Uninstalls widget package.
 func uninstallWidgetPackage(name: String, context: AppContext) throws {
   do {
     context.debug("uninstalling widget package \(name)")

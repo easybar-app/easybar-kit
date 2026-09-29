@@ -1,6 +1,7 @@
 import Darwin
 import Foundation
 
+/// Serializes access to cli activity spinner state.
 actor CLIActivitySpinner {
   static let clearLine = "\r\u{001B}[2K"
   private static let frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
@@ -9,6 +10,7 @@ actor CLIActivitySpinner {
   private let interactive: Bool
   private var animationTask: Task<Void, Never>?
 
+  /// Creates a cli activity spinner.
   init(
     message: String,
     interactive: Bool = isatty(STDERR_FILENO) != 0
@@ -17,6 +19,7 @@ actor CLIActivitySpinner {
     self.interactive = interactive
   }
 
+  /// Starts the associated service.
   func start() {
     guard interactive, animationTask == nil else { return }
     animationTask = Task { [weak self] in
@@ -24,6 +27,7 @@ actor CLIActivitySpinner {
     }
   }
 
+  /// Stops the associated service.
   func stop() async {
     guard let animationTask else { return }
     self.animationTask = nil
@@ -32,6 +36,7 @@ actor CLIActivitySpinner {
     Self.writeToStandardError(Self.clearLine)
   }
 
+  /// Renders line.
   static func renderLine(frameIndex: Int, message: String) -> String {
     let frame = frames[frameIndex % frames.count]
     let sanitized = String(
@@ -40,6 +45,7 @@ actor CLIActivitySpinner {
     return "\r\(frame) \(sanitized)"
   }
 
+  /// Runs the configured animation.
   private func animate() async {
     var frameIndex = 0
     while !Task.isCancelled {
@@ -53,6 +59,7 @@ actor CLIActivitySpinner {
     }
   }
 
+  /// Writes to standard error.
   private static func writeToStandardError(_ value: String) {
     let data = Data(value.utf8)
     data.withUnsafeBytes { rawBuffer in

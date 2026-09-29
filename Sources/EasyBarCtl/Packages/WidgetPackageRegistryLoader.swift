@@ -1,34 +1,51 @@
 import CryptoKit
 import Foundation
 
+/// Stores widget package registry loader data.
 struct WidgetPackageRegistryLoader {
+  /// The default source for this widget package registry loader.
   static let defaultSource =
     "https://raw.githubusercontent.com/easybar-app/registry/main/index.json"
+  /// The maximum bytes accepted by this widget package registry loader.
   private static let maximumBytes = 5 * 1_024 * 1_024
+  /// The default cache directory for this widget package registry loader.
   private static let defaultCacheDirectory = FileManager.default.homeDirectoryForCurrentUser
     .appending(path: ".cache/easybar/registry", directoryHint: .isDirectory)
 
+  /// Stores cache metadata data.
   private struct CacheMetadata: Codable {
+    /// The source for this cache metadata.
     let source: String
+    /// The ETag for this cache metadata.
     let eTag: String?
+    /// The last modified for this cache metadata.
     let lastModified: String?
+    /// The SHA-256 for this cache metadata.
     let sha256: String
   }
 
+  /// Stores cached registry data.
   private struct CachedRegistry {
+    /// The data for this cached registry.
     let data: Data
+    /// The metadata for this cached registry.
     let metadata: CacheMetadata
   }
 
+  /// Defines the supported remote load result values.
   private enum RemoteLoadResult {
     case modified(data: Data, metadata: CacheMetadata)
     case notModified
   }
 
+  /// The URL session used for network requests.
   private let session: URLSession
+  /// The file manager used for filesystem operations.
   private let fileManager: FileManager
+  /// The cache directory for this widget package registry loader.
   private let cacheDirectory: URL
 
+  /// Creates a widget package registry loader.
   init(
     session: URLSession = .shared,
     fileManager: FileManager = .default,
@@ -39,6 +56,7 @@ struct WidgetPackageRegistryLoader {
     self.cacheDirectory = cacheDirectory
   }
 
+  /// Loads the requested value.
   func load(
     source: String?,
     refresh: Bool = false
@@ -80,6 +98,7 @@ struct WidgetPackageRegistryLoader {
     }
   }
 
+  /// Loads remote without validators.
   private func loadRemoteWithoutValidators(
     from url: URL,
     source: String
@@ -95,6 +114,7 @@ struct WidgetPackageRegistryLoader {
     return registry
   }
 
+  /// Decodes registry.
   private func decodeRegistry(_ data: Data) throws -> PackageRegistryIndex {
     let registry: PackageRegistryIndex
     do {
@@ -112,6 +132,7 @@ struct WidgetPackageRegistryLoader {
     return registry
   }
 
+  /// Validates packages.
   private func validatePackages(_ packages: [PackageRegistryEntry]) throws {
     for package in packages {
       guard WidgetPackageManifestParser.isPackageName(package.name) else {
@@ -160,6 +181,7 @@ struct WidgetPackageRegistryLoader {
     }
   }
 
+  /// Returns the source URL.
   private func sourceURL(_ source: String) throws -> URL {
     if let url = URL(string: source), let scheme = url.scheme?.lowercased() {
       guard scheme == "https" || scheme == "file" else {
@@ -175,6 +197,7 @@ struct WidgetPackageRegistryLoader {
     return URL(fileURLWithPath: path)
   }
 
+  /// Loads file data.
   private func loadFileData(from url: URL) throws -> Data {
     let values = try url.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
     guard values.isRegularFile == true else {
@@ -188,6 +211,7 @@ struct WidgetPackageRegistryLoader {
     return try Data(contentsOf: url, options: .mappedIfSafe)
   }
 
+  /// Loads remote data.
   private func loadRemoteData(
     from url: URL,
     source: String,
@@ -237,6 +261,7 @@ struct WidgetPackageRegistryLoader {
     )
   }
 
+  /// Returns the cached registry.
   private func cachedRegistry(for source: String) -> CachedRegistry? {
     let paths = cachePaths(for: source)
     guard
@@ -255,6 +280,7 @@ struct WidgetPackageRegistryLoader {
     return CachedRegistry(data: data, metadata: metadata)
   }
 
+  /// Stores cache.
   private func storeCache(data: Data, metadata: CacheMetadata) {
     let paths = cachePaths(for: metadata.source)
     do {
@@ -270,10 +296,12 @@ struct WidgetPackageRegistryLoader {
     }
   }
 
+  /// Returns the SHA-256.
   private func sha256(_ data: Data) -> String {
     SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
   }
 
+  /// Returns the cache paths.
   private func cachePaths(for source: String) -> (index: URL, metadata: URL) {
     let digest = sha256(Data(source.utf8))
     return (

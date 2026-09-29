@@ -1,30 +1,44 @@
 import Foundation
 
 extension CalendarEventComposer {
+  /// Stores draft data.
   struct Draft {
+    /// The title for this draft.
     let title: String
+    /// The location for this draft.
     let location: String?
+    /// The stable identifier for this draft.
     let calendarID: String
+    /// The start date for this draft.
     let startDate: Date
+    /// The end date for this draft.
     let endDate: Date
+    /// Whether this draft is all day.
     let isAllDay: Bool
+    /// The alert offsets seconds for this draft.
     let alertOffsetsSeconds: [TimeInterval]
+    /// The travel time seconds for this draft.
     let travelTimeSeconds: TimeInterval?
   }
 
+  /// Defines the supported validation values.
   enum Validation<Value> {
     case success(Value)
     case failure(String)
   }
 
+  /// Stores composer validation error data.
   struct ComposerValidationError: LocalizedError {
+    /// The message for this composer validation error.
     let message: String
 
+    /// The error description for this composer validation error.
     var errorDescription: String? {
       message
     }
   }
 
+  /// Creates draft.
   func makeDraft() -> Validation<Draft> {
     do {
       return .success(try makeValidatedDraft())
@@ -35,6 +49,7 @@ extension CalendarEventComposer {
     }
   }
 
+  /// Creates validated draft.
   func makeValidatedDraft() throws -> Draft {
     let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -62,6 +77,7 @@ extension CalendarEventComposer {
     )
   }
 
+  /// Returns the normalized date range.
   func normalizedDateRange() throws -> (start: Date, end: Date) {
     if isAllDay {
       let startOfDay = calendar.startOfDay(for: startDate)
@@ -80,6 +96,7 @@ extension CalendarEventComposer {
     return (startDate, endDate)
   }
 
+  /// Returns the normalized travel time seconds.
   func normalizedTravelTimeSeconds() throws -> TimeInterval? {
     guard selectedTravelTime == .custom else {
       return selectedTravelTime.seconds
@@ -98,6 +115,7 @@ extension CalendarEventComposer {
     return TimeInterval(minutes * 60)
   }
 
+  /// Returns the normalized alert offsets.
   func normalizedAlertOffsets() throws -> [TimeInterval] {
     var offsets: [TimeInterval] = []
 

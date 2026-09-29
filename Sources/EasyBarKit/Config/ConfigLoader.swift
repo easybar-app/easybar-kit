@@ -4,6 +4,7 @@ import SwiftTOMLEdit
 
 extension Config {
 
+  /// Loads the requested value.
   func load(validateOnly: Bool = false) throws {
     resetRegisteredDirectories()
     configWarnings = []
@@ -22,10 +23,12 @@ extension Config {
     }
   }
 
+  /// Returns the environment config path override.
   func environmentConfigPathOverride() -> String? {
     return expandedEnvironmentPath(named: SharedEnvironmentKeys.configPath)
   }
 
+  /// Returns the environment log level override.
   func environmentLogLevelOverride() throws -> ProcessLogLevel? {
     guard let value = stringEnvironmentValue(named: SharedEnvironmentKeys.loggingLevel) else {
       return nil
@@ -37,6 +40,7 @@ extension Config {
     )
   }
 
+  /// Loads config file.
   private func loadConfigFile(
     from fileURL: URL,
     resolvedPath: String
@@ -75,6 +79,7 @@ extension Config {
     }
   }
 
+  /// Parses config.
   private func parseConfig(from toml: TOMLTable) throws {
     do {
       try parseApp(from: toml)

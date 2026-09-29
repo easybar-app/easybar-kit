@@ -20,6 +20,7 @@ public struct CalendarRequestFilters: Equatable, Sendable {
   /// Optional advanced calendar-source-identifier denylist.
   public let excludedCalendarSourceIDs: [String]
 
+  /// Creates a calendar request filters.
   public init(
     includedCalendarNames: [String] = [],
     excludedCalendarNames: [String] = [],
@@ -43,9 +44,12 @@ public struct CalendarRequestFilters: Equatable, Sendable {
 
 /// Birthday-related request options shared across calendar clients.
 public struct CalendarBirthdayRequestOptions: Equatable, Sendable {
+  /// Whether this calendar birthday request options shows birthdays.
   public let showBirthdays: Bool
+  /// Whether this calendar birthday request options shows age.
   public let showAge: Bool
 
+  /// Creates a calendar birthday request options.
   public init(showBirthdays: Bool, showAge: Bool) {
     self.showBirthdays = showBirthdays
     self.showAge = showAge
@@ -54,14 +58,22 @@ public struct CalendarBirthdayRequestOptions: Equatable, Sendable {
 
 /// Options used to build one upcoming-calendar request.
 public struct CalendarUpcomingRequestOptions: Equatable, Sendable {
+  /// The day count for this calendar upcoming request options.
   public let dayCount: Int
+  /// The empty text for this calendar upcoming request options.
   public let emptyText: String
+  /// The all day label for this calendar upcoming request options.
   public let allDayLabel: String
+  /// The birthdays date format for this calendar upcoming request options.
   public let birthdaysDateFormat: String
+  /// The birthdays title for this calendar upcoming request options.
   public let birthdaysTitle: String
+  /// The birthdays for this calendar upcoming request options.
   public let birthdays: CalendarBirthdayRequestOptions
+  /// The filters for this calendar upcoming request options.
   public let filters: CalendarRequestFilters
 
+  /// Creates a calendar upcoming request options.
   public init(
     dayCount: Int,
     emptyText: String,
@@ -83,13 +95,20 @@ public struct CalendarUpcomingRequestOptions: Equatable, Sendable {
 
 /// Options used to build one month-calendar request.
 public struct CalendarMonthRequestOptions: Equatable, Sendable {
+  /// The empty text for this calendar month request options.
   public let emptyText: String
+  /// The all day label for this calendar month request options.
   public let allDayLabel: String
+  /// The birthdays date format for this calendar month request options.
   public let birthdaysDateFormat: String
+  /// The birthdays title for this calendar month request options.
   public let birthdaysTitle: String
+  /// The birthdays for this calendar month request options.
   public let birthdays: CalendarBirthdayRequestOptions
+  /// The filters for this calendar month request options.
   public let filters: CalendarRequestFilters
 
+  /// Creates a calendar month request options.
   public init(
     emptyText: String,
     allDayLabel: String = "All day",

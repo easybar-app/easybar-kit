@@ -14,6 +14,7 @@ public enum ProcessLogRuntime: String, Codable, CaseIterable, Sendable {
 
 /// One parsed EasyBar process log line.
 public struct ProcessLogRecord: Sendable {
+  /// The agent sources for this process log record.
   private static let agentSources: Set<String> = [
     "calendar-agent",
     "network-agent",
@@ -21,6 +22,7 @@ public struct ProcessLogRecord: Sendable {
     "easybar-network-agent",
   ]
 
+  /// The timestamp formatter for this process log record.
   private static let timestampFormatter = LockedState<ISO8601DateFormatter>(
     {
       let formatter = ISO8601DateFormatter()
@@ -28,12 +30,19 @@ public struct ProcessLogRecord: Sendable {
       return formatter
     }())
 
+  /// The timestamp for this process log record.
   public let timestamp: Date?
+  /// The timestamp text for this process log record.
   public let timestampText: String?
+  /// The level for this process log record.
   public let level: ProcessLogLevel?
+  /// The message for this process log record.
   public let message: String
+  /// The fields for this process log record.
   public let fields: [String: String]
+  /// The source for this process log record.
   public let source: String
+  /// The raw line for this process log record.
   public let rawLine: String
 
   /// Creates one parsed or raw process log record.
@@ -95,14 +104,17 @@ public struct ProcessLogRecord: Sendable {
     return nil
   }
 
+  /// Whether this process log record is agent process.
   private var isAgentProcess: Bool {
     Self.agentSources.contains(source)
   }
 
+  /// Returns the looks like Lua runtime log.
   private func looksLikeLuaRuntimeLog(subsystem: String, message: String) -> Bool {
     subsystem.contains(".lua") || message.hasPrefix("lua ")
   }
 
+  /// Returns the looks like native widget log.
   private func looksLikeNativeWidgetLog(subsystem: String, message: String) -> Bool {
     subsystem.contains(".widgets")
       || subsystem.contains("wifi_store")
@@ -146,12 +158,14 @@ public struct ProcessLogRecord: Sendable {
     )
   }
 
+  /// Returns the normalized widget.
   private static func normalizedWidget(_ value: String) -> String {
     let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     return normalized.hasPrefix("builtin_")
       ? String(normalized.dropFirst("builtin_".count)) : normalized
   }
 
+  /// Returns the parsed header.
   private static func parsedHeader(_ line: String) -> (
     timestamp: String, level: String, remainder: String
   )? {
@@ -170,10 +184,12 @@ public struct ProcessLogRecord: Sendable {
     return (timestamp, level, remainder)
   }
 
+  /// Parses timestamp.
   private static func parseTimestamp(_ value: String) -> Date? {
     timestampFormatter.withLock { $0.date(from: value) }
   }
 
+  /// Returns the tokenize.
   private static func tokenize(_ text: String) -> [String] {
     var tokens: [String] = []
     var current = ""
@@ -216,6 +232,7 @@ public struct ProcessLogRecord: Sendable {
     return tokens
   }
 
+  /// Returns the split field.
   private static func splitField(_ token: String) -> (String, String)? {
     guard let separator = token.firstIndex(of: "=") else { return nil }
     let key = String(token[..<separator])
@@ -224,11 +241,13 @@ public struct ProcessLogRecord: Sendable {
     return (key, decodedFieldValue(String(token[valueStart...])))
   }
 
+  /// Evaluates the field key condition.
   private static func isFieldKey(_ value: String) -> Bool {
     guard let first = value.first, first.isLetter || first == "_" else { return false }
     return value.dropFirst().allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
   }
 
+  /// Returns the decoded field value.
   private static func decodedFieldValue(_ value: String) -> String {
     guard value.count >= 2, value.first == "\"", value.last == "\"" else { return value }
     let inner = value.dropFirst().dropLast()
@@ -260,10 +279,15 @@ public struct ProcessLogRecord: Sendable {
 
 /// Filters parsed process log records consistently for history and live output.
 public struct ProcessLogFilter: Sendable {
+  /// The widget for this process log filter.
   public let widget: String?
+  /// The runtime for this process log filter.
   public let runtime: ProcessLogRuntime?
+  /// The minimum level accepted by this process log filter.
   public let minimumLevel: ProcessLogLevel?
+  /// The stable identifier for this process log filter.
   public let requestID: String?
+  /// The since for this process log filter.
   public let since: Date?
 
   /// Creates one process log filter.
@@ -301,6 +325,7 @@ public struct ProcessLogFilter: Sendable {
     return rawLine.contains("request_id=\(requestID)")
   }
 
+  /// Returns the normalized widget.
   private static func normalizedWidget(_ value: String) -> String {
     let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     return normalized.hasPrefix("builtin_")

@@ -7,34 +7,53 @@ final class LuaEventSink: @unchecked Sendable {
   private static let mustDeliverBacklogWarningThreshold = 128
   private static let coalescingQueueLimit = 128
 
+  /// Stores queue entry data.
   private struct QueueEntry {
+    /// The coalescing key for this queue entry.
     let coalescingKey: String?
+    /// The payload for this queue entry.
     var payload: EasyBarEventPayload
   }
 
+  /// Defines the supported queue pressure values.
   private enum QueuePressure {
     case mustDeliverBacklog(count: Int)
     case mustDeliverOverflow(count: Int, generation: UInt64)
     case coalesced(eventName: String)
   }
 
+  /// Stores enqueue outcome data.
   private struct EnqueueOutcome {
+    /// Whether the should start draining option is enabled for this enqueue outcome.
     let shouldStartDraining: Bool
+    /// The pressure for this enqueue outcome.
     let pressure: QueuePressure?
+    /// The queue depth for this enqueue outcome.
     let queueDepth: Int
+    /// The generation for this enqueue outcome.
     let generation: UInt64
   }
 
+  /// Stores state data.
   private struct State {
+    /// The payload queue for this state.
     var payloadQueue: [QueueEntry] = []
+    /// The coalesced payload indices for this state.
     var coalescedPayloadIndices: [String: Int] = [:]
+    /// The must deliver payload count for this state.
     var mustDeliverPayloadCount = 0
+    /// The coalescing payload count for this state.
     var coalescingPayloadCount = 0
+    /// The next must deliver warning count for this state.
     var nextMustDeliverWarningCount = LuaEventSink.mustDeliverBacklogWarningThreshold
+    /// Whether the draining option is enabled for this state.
     var draining = false
+    /// Whether the suspended after overflow option is enabled for this state.
     var suspendedAfterOverflow = false
+    /// The generation for this state.
     var generation: UInt64 = 0
 
+    /// Whether this state is empty.
     var isEmpty: Bool {
       payloadQueue.isEmpty
     }
@@ -304,6 +323,7 @@ final class LuaEventSink: @unchecked Sendable {
     return result.0
   }
 
+  /// Returns whether work belongs to the current generation.
   private func isCurrentGeneration(_ generation: UInt64) -> Bool {
     state.withLock { state in
       state.generation == generation && !state.suspendedAfterOverflow
@@ -319,6 +339,7 @@ final class LuaEventSink: @unchecked Sendable {
     await sendPayload(encoded)
   }
 
+  /// Encodes JSON.
   private func encodeJSON(_ payload: LuaEventPayload) -> String? {
     guard
       let data = try? encoder.encode(payload),
@@ -329,6 +350,7 @@ final class LuaEventSink: @unchecked Sendable {
     return string
   }
 
+  /// Returns the coalescing key.
   private func coalescingKey(for payload: EasyBarEventPayload) -> String {
     [payload.eventName, payload.widgetID ?? "", payload.targetWidgetID ?? ""]
       .joined(separator: "\u{1f}")

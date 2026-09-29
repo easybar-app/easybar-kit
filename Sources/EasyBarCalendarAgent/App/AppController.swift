@@ -15,6 +15,7 @@ final class AppController {
 
   private var runtime: CalendarAgentRuntime?
 
+  /// Creates an app controller.
   init(onRestartRequested: @escaping @MainActor () -> Void) {
     self.onRestartRequested = onRestartRequested
   }

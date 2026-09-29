@@ -1,5 +1,6 @@
 import Foundation
 
+/// Defines the supported widget package error values.
 enum WidgetPackageError: LocalizedError, Equatable {
   case invalidSource(String)
   case invalidManifest(String)

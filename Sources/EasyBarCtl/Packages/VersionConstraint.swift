@@ -2,14 +2,18 @@ import Foundation
 
 /// Exact or caret constraint used by widget package dependencies.
 struct VersionConstraint: CustomStringConvertible, Equatable {
+  /// Defines the supported kind values.
   private enum Kind: Equatable {
     case exact(SemanticVersion)
     case caret(SemanticVersion)
   }
 
+  /// The raw serialized value for this version constraint.
   let rawValue: String
+  /// The kind for this version constraint.
   private let kind: Kind
 
+  /// Parses an exact or caret semantic-version constraint.
   init?(_ rawValue: String) {
     guard !rawValue.isEmpty,
       rawValue == rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -29,8 +33,10 @@ struct VersionConstraint: CustomStringConvertible, Equatable {
     kind = .exact(exact)
   }
 
+  /// A human-readable representation of this version constraint.
   var description: String { rawValue }
 
+  /// Returns whether a version satisfies this constraint.
   func contains(_ version: SemanticVersion) -> Bool {
     switch kind {
     case .exact(let exact):
@@ -42,6 +48,7 @@ struct VersionConstraint: CustomStringConvertible, Equatable {
     }
   }
 
+  /// Computes the exclusive upper bound for a caret constraint.
   private static func caretUpperBound(for minimum: SemanticVersion) -> SemanticVersion? {
     if minimum.major > 0 {
       let (major, overflow) = minimum.major.addingReportingOverflow(1)

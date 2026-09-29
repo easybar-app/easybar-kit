@@ -120,6 +120,7 @@ private func liveLogEndpoints(
   return endpoints
 }
 
+/// Returns the socket override targets unsupported runtime.
 private func socketOverrideTargetsUnsupportedRuntime(
   _ runtime: ProcessLogRuntime?,
   explicitSocketPath: String?

@@ -1,6 +1,7 @@
 import Foundation
 import SwiftTOMLEdit
 
+/// Defines the supported widget package manifest parser values.
 enum WidgetPackageManifestParser {
   private static let supportedTopLevelKeys: Set<String> = [
     "manifest_version",
@@ -20,6 +21,7 @@ enum WidgetPackageManifestParser {
     "settings",
   ]
 
+  /// Parses the requested value.
   static func parse(directory: URL) throws -> WidgetPackageManifest {
     let manifestURL = directory.appending(path: "package.toml")
     let source: String
@@ -112,10 +114,12 @@ enum WidgetPackageManifestParser {
     )
   }
 
+  /// Evaluates the package name condition.
   static func isPackageName(_ value: String) -> Bool {
     value.range(of: "^[a-z0-9]+(?:-[a-z0-9]+)*$", options: .regularExpression) != nil
   }
 
+  /// Evaluates the module name condition.
   private static func isModuleName(_ value: String) -> Bool {
     value.range(
       of: "^[A-Za-z_][A-Za-z0-9_-]*(?:\\.[A-Za-z_][A-Za-z0-9_-]*)*$",
@@ -123,6 +127,7 @@ enum WidgetPackageManifestParser {
     ) != nil
   }
 
+  /// Returns the required string.
   private static func requiredString(_ key: String, in table: TOMLTable) throws -> String {
     guard let value = table[key]?.string, !value.isEmpty else {
       throw WidgetPackageError.invalidManifest("\(key) must be a non-empty string")
@@ -130,6 +135,7 @@ enum WidgetPackageManifestParser {
     return value
   }
 
+  /// Returns the string table.
   private static func stringTable(_ key: String, in table: TOMLTable) throws -> [String: String] {
     guard let value = table[key] else { return [:] }
     guard let nested = value.table else {
@@ -145,6 +151,7 @@ enum WidgetPackageManifestParser {
     return output
   }
 
+  /// Validates package file.
   private static func validatePackageFile(
     _ relativePath: String,
     label: String,

@@ -1,22 +1,32 @@
 import EasyBarShared
 import Foundation
 
+/// Stores widget package materializer data.
 struct WidgetPackageMaterializer {
+  /// Stores prepared package data.
   private struct PreparedPackage {
+    /// The package for this prepared package.
     let package: ResolvedWidgetPackage
+    /// The record for this prepared package.
     let record: InstalledWidgetPackage
+    /// The staging URL for this prepared package.
     let stagingURL: URL
+    /// The stored URL for this prepared package.
     let storedURL: URL
   }
 
+  /// The retained version count for this widget package materializer.
   private static let retainedVersionCount = 3
 
+  /// The file manager used for filesystem operations.
   private let fileManager: FileManager
 
+  /// Creates a widget package materializer.
   init(fileManager: FileManager) {
     self.fileManager = fileManager
   }
 
+  /// Installs the requested package.
   func install(
     _ packages: [ResolvedWidgetPackage],
     into packagesDirectory: URL,
@@ -83,6 +93,7 @@ struct WidgetPackageMaterializer {
     return prepared.map(\.record)
   }
 
+  /// Validates conflicts.
   private func validateConflicts(
     _ packages: [ResolvedWidgetPackage],
     packagesDirectory: URL,
@@ -135,6 +146,7 @@ struct WidgetPackageMaterializer {
     }
   }
 
+  /// Prepares packages for installation.
   private func preparePackages(
     _ packages: [ResolvedWidgetPackage],
     storeRoot: URL
@@ -187,10 +199,12 @@ struct WidgetPackageMaterializer {
     }
   }
 
+  /// Prepares the requested value.
   private func prepare(_ package: ResolvedWidgetPackage, at stage: URL) throws {
     try fileManager.copyItem(at: package.directory, to: stage)
   }
 
+  /// Evaluates the unmanaged widget collision condition.
   private func isUnmanagedWidgetCollision(
     name: String,
     destination: URL,
@@ -199,6 +213,7 @@ struct WidgetPackageMaterializer {
     itemExists(destination) && installed[name] == nil
   }
 
+  /// Evaluates the module ownership conflict condition.
   private func isModuleOwnershipConflict(
     module: String,
     packageName: String,
@@ -208,6 +223,7 @@ struct WidgetPackageMaterializer {
     itemExists(destination) && exportOwners[module] != packageName
   }
 
+  /// Commits the prepared changes.
   private func commit(
     _ prepared: PreparedPackage,
     into packagesDirectory: URL,
@@ -267,6 +283,7 @@ struct WidgetPackageMaterializer {
     return transaction
   }
 
+  /// Rolls back the prepared changes.
   private func rollback(_ transactions: [WidgetPackageReplacementTransaction]) throws {
     var firstFailure: Error?
     for transaction in transactions.reversed() {
@@ -283,6 +300,7 @@ struct WidgetPackageMaterializer {
     }
   }
 
+  /// Returns the prune stored versions.
   private func pruneStoredVersions(
     for packageName: String,
     activeVersion: String,
@@ -329,12 +347,14 @@ struct WidgetPackageMaterializer {
     }
   }
 
+  /// Removes directory if empty.
   private func removeDirectoryIfEmpty(_ url: URL) {
     guard let contents = try? fileManager.contentsOfDirectory(atPath: url.path), contents.isEmpty
     else { return }
     try? fileManager.removeItem(at: url)
   }
 
+  /// Updates the item's modification date.
   private func touch(_ url: URL) {
     try? fileManager.setAttributes(
       [.modificationDate: Date()],
@@ -342,16 +362,19 @@ struct WidgetPackageMaterializer {
     )
   }
 
+  /// Returns the module URL.
   private func moduleURL(_ module: String, in root: URL) -> URL {
     let path = module.replacing(".", with: "/") + ".lua"
     return root.appending(path: "shared").appending(path: path)
   }
 
+  /// Returns whether a path contains a file or symbolic link.
   private func itemExists(_ url: URL) -> Bool {
     fileManager.fileExists(atPath: url.path)
       || (try? fileManager.destinationOfSymbolicLink(atPath: url.path)) != nil
   }
 
+  /// Writes the requested value.
   private func write(_ database: InstalledWidgetPackages, to url: URL) throws {
     try fileManager.createDirectory(
       at: url.deletingLastPathComponent(),

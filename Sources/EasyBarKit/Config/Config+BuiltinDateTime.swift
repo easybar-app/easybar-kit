@@ -4,14 +4,20 @@ extension Config {
 
   /// Shared configuration for one standalone formatted date or time widget.
   struct FormattedBuiltinConfig: @unchecked Sendable {
+    /// Stores content data.
     struct Content {
+      /// The format for this content.
       var format: String
     }
 
+    /// The placement for this formatted builtin config.
     var placement: BuiltinWidgetPlacement
+    /// The style for this formatted builtin config.
     var style: BuiltinWidgetStyle
+    /// The content for this formatted builtin config.
     var content: Content
 
+    /// The time default for this formatted builtin config.
     static let timeDefault = FormattedBuiltinConfig(
       placement: .init(enabled: false, position: .right, order: 40),
       style: .init(
@@ -31,6 +37,7 @@ extension Config {
       content: .init(format: "HH:mm")
     )
 
+    /// The date default for this formatted builtin config.
     static let dateDefault = FormattedBuiltinConfig(
       placement: .init(enabled: false, position: .right, order: 50),
       style: .init(
@@ -51,16 +58,19 @@ extension Config {
     )
   }
 
+  /// Parses time builtin.
   func parseTimeBuiltin(from builtins: ConfigReader) throws {
     guard let reader = try builtins.optionalSection("time") else { return }
     builtinTime = try parseFormattedBuiltin(reader: reader, fallback: builtinTime)
   }
 
+  /// Parses date builtin.
   func parseDateBuiltin(from builtins: ConfigReader) throws {
     guard let reader = try builtins.optionalSection("date") else { return }
     builtinDate = try parseFormattedBuiltin(reader: reader, fallback: builtinDate)
   }
 
+  /// Parses formatted builtin.
   private func parseFormattedBuiltin(
     reader: ConfigReader,
     fallback: FormattedBuiltinConfig

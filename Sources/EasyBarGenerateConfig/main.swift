@@ -3,6 +3,7 @@ import Foundation
 
 private let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 
+/// Defines the supported generator error values.
 private enum GeneratorError: Error, CustomStringConvertible {
   case missingOutputPath(String)
   case unknownCommand(String)
@@ -20,6 +21,7 @@ private enum GeneratorError: Error, CustomStringConvertible {
   }
 }
 
+/// Returns the output URL.
 private func outputURL(for path: String) -> URL {
   if path.hasPrefix("/") {
     return URL(fileURLWithPath: path)
@@ -27,6 +29,7 @@ private func outputURL(for path: String) -> URL {
   return root.appendingPathComponent(path)
 }
 
+/// Writes the requested value.
 private func write(_ text: String, to path: String) throws {
   let url = outputURL(for: path)
   try FileManager.default.createDirectory(
@@ -37,6 +40,7 @@ private func write(_ text: String, to path: String) throws {
   print("Generated \(url.path)")
 }
 
+/// Renders defaults.
 private func renderDefaults() -> String {
   let lines = ConfigSchemaRegistry.lines.map { line in
     switch line {
@@ -60,18 +64,22 @@ private func renderDefaults() -> String {
     + "\n"
 }
 
+/// Generates the default configuration.
 private func generateDefaults() throws {
   try write(renderDefaults(), to: "config.defaults.toml")
 }
 
+/// Generates the configuration schema.
 private func generateSchema(outputPath: String = "config.schema.json") throws {
   try write(ConfigReferenceRenderer.renderCatalog(), to: outputPath)
 }
 
+/// Generates the configuration documentation.
 private func generateDocs(outputPath: String) throws {
   try write(ConfigReferenceRenderer.render(), to: outputPath)
 }
 
+/// Runs the program entry point.
 private func main() throws {
   let arguments = Array(CommandLine.arguments.dropFirst())
   let command = arguments.first ?? "all"

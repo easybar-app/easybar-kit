@@ -7,9 +7,13 @@ import SwiftTOMLEdit
 /// This is not a public Swift widget extension point; third-party widgets are Lua packages.
 @MainActor
 final class NativeWidgetRegistry {
+  /// Stores registration data.
   private struct Registration {
+    /// The stable identifier for this registration.
     let id: String
+    /// Whether this registration is enabled.
     let enabled: Bool
+    /// The make widget for this registration.
     let makeWidget: () -> NativeWidget
   }
 
@@ -34,6 +38,7 @@ final class NativeWidgetRegistry {
   private var widgets: [NativeWidget] = []
   private var groupRootIDs: [String] = []
 
+  /// Creates a native widget registry.
   init(
     logger: ProcessLogger,
     snapshot: ConfigSnapshot,
@@ -233,6 +238,7 @@ final class NativeWidgetRegistry {
     "builtin_cpu": "cpu",
   ]
 
+  /// Publishes groups.
   private func publishGroups(_ groups: [Config.BuiltinGroupConfig]) {
     clearGroups()
 
@@ -251,6 +257,7 @@ final class NativeWidgetRegistry {
     }
   }
 
+  /// Clears groups.
   private func clearGroups() {
     for rootID in groupRootIDs {
       widgetStore.apply(owner: .native(root: rootID), nodes: [])

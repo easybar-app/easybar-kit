@@ -4,14 +4,18 @@ import SwiftUI
 
 /// One render row in a calendar appointments list.
 public struct CalendarAppointmentsListRow: Identifiable {
+  /// Defines the supported kind values.
   public enum Kind {
     case dayHeader(Date)
     case event(CalendarAgentEvent)
   }
 
+  /// The stable identifier for this calendar appointments list row.
   public let id: String
+  /// The kind for this calendar appointments list row.
   public let kind: Kind
 
+  /// Creates a calendar appointments list row.
   public init(id: String, kind: Kind) {
     self.id = id
     self.kind = kind
@@ -22,18 +26,30 @@ public struct CalendarAppointmentsListRow: Identifiable {
 public struct CalendarAppointmentsListView: View {
   @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
 
+  /// The title for this calendar appointments list view.
   public let title: String?
+  /// The rows for this calendar appointments list view.
   public let rows: [CalendarAppointmentsListRow]
+  /// The empty text for this calendar appointments list view.
   public let emptyText: String
+  /// The style for this calendar appointments list view.
   public let style: CalendarAppointmentsStyle
+  /// The birthday icon for this calendar appointments list view.
   public let birthdayIcon: String
+  /// The birthday icon color hex for this calendar appointments list view.
   public let birthdayIconColorHex: String?
+  /// The default indicator color hex for this calendar appointments list view.
   public let defaultIndicatorColorHex: String
+  /// The calendar for this calendar appointments list view.
   public let calendar: Calendar
+  /// The date header text for this calendar appointments list view.
   public let dateHeaderText: (Date) -> String
+  /// The event actions for this calendar appointments list view.
   public let eventActions: CalendarEventActions?
+  /// The on event tap for this calendar appointments list view.
   public let onEventTap: ((CalendarAgentEvent) -> Void)?
 
+  /// Creates a calendar appointments list view.
   public init(
     title: String?,
     rows: [CalendarAppointmentsListRow],
@@ -60,6 +76,7 @@ public struct CalendarAppointmentsListView: View {
     self.onEventTap = onEventTap
   }
 
+  /// The rendered content for this view.
   public var body: some View {
     VStack(alignment: .leading, spacing: 4) {
       if let title, !title.isEmpty {
@@ -92,6 +109,7 @@ public struct CalendarAppointmentsListView: View {
   }
 
   @ViewBuilder
+  /// Returns the appointment row.
   private func appointmentRow(_ event: CalendarAgentEvent) -> some View {
     let isBirthday = CalendarAgendaBuilder.isBirthdayEvent(event)
     let showsActions = !isBirthday && hasActionMenu(for: event)
@@ -119,6 +137,7 @@ public struct CalendarAppointmentsListView: View {
     }
   }
 
+  /// Returns the appointment row content.
   private func appointmentRowContent(
     _ event: CalendarAgentEvent,
     showsChevron: Bool
@@ -169,11 +188,13 @@ public struct CalendarAppointmentsListView: View {
     .padding(.vertical, 4)
   }
 
+  /// Evaluates the action menu condition.
   private func hasActionMenu(for event: CalendarAgentEvent) -> Bool {
     onEventTap != nil || eventActions?.hasVisibleAction(for: event) == true
   }
 
   @ViewBuilder
+  /// Returns the action menu.
   private func actionMenu(for event: CalendarAgentEvent) -> some View {
     Menu {
       if let onEventTap {
@@ -211,6 +232,7 @@ public struct CalendarAppointmentsListView: View {
   }
 
   @ViewBuilder
+  /// Returns the appointment title view.
   private func appointmentTitleView(for event: CalendarAgentEvent) -> some View {
     HStack(alignment: .firstTextBaseline, spacing: 6) {
       if event.isAllDay {
@@ -247,6 +269,7 @@ public struct CalendarAppointmentsListView: View {
   }
 
   @ViewBuilder
+  /// Returns the appointment meta top view.
   private func appointmentMetaTopView(for event: CalendarAgentEvent) -> some View {
     if shouldShowAlertIcon(for: event) {
       HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -261,6 +284,7 @@ public struct CalendarAppointmentsListView: View {
   }
 
   @ViewBuilder
+  /// Returns the appointment end time view.
   private func appointmentEndTimeView(for event: CalendarAgentEvent) -> some View {
     if !event.isAllDay {
       if let endTime = visibleEndTime(for: event) {
@@ -282,17 +306,20 @@ public struct CalendarAppointmentsListView: View {
     }
   }
 
+  /// Returns the visible calendar name.
   private func visibleCalendarName(for event: CalendarAgentEvent) -> String? {
     guard style.showCalendarName || differentiateWithoutColor else { return nil }
     guard let calendarName = event.calendarName, !calendarName.isEmpty else { return nil }
     return calendarName
   }
 
+  /// Returns the visible location.
   private func visibleLocation(for event: CalendarAgentEvent) -> String? {
     guard style.showLocation, let location = event.location, !location.isEmpty else { return nil }
     return location
   }
 
+  /// Returns the visible end time.
   private func visibleEndTime(for event: CalendarAgentEvent) -> String? {
     guard style.showEndTime else { return nil }
     return CalendarEventFormatter.endTimeText(
@@ -303,11 +330,13 @@ public struct CalendarAppointmentsListView: View {
     )
   }
 
+  /// Returns the visible travel time.
   private func visibleTravelTime(for event: CalendarAgentEvent) -> String? {
     guard style.showTravelTime, let travelTimeSeconds = event.travelTimeSeconds else { return nil }
     return CalendarEventFormatter.travelTimeText(travelTimeSeconds: travelTimeSeconds)
   }
 
+  /// Returns the appointment prefix.
   private func appointmentPrefix(for event: CalendarAgentEvent) -> String {
     guard event.isAllDay else { return "" }
     guard !CalendarAgendaBuilder.isBirthdayEvent(event) else { return "" }
@@ -316,6 +345,7 @@ public struct CalendarAppointmentsListView: View {
     return style.showAllDayLabel ? style.allDayLabel : ""
   }
 
+  /// Evaluates the show alert icon condition.
   private func shouldShowAlertIcon(for event: CalendarAgentEvent) -> Bool {
     guard style.showAlertIcon else { return false }
     guard event.hasAlert else { return false }
@@ -324,6 +354,7 @@ public struct CalendarAppointmentsListView: View {
     return true
   }
 
+  /// Returns the indicator color hex.
   private func indicatorColorHex(for event: CalendarAgentEvent) -> String {
     if let hex = event.calendarColorHex?.trimmingCharacters(in: .whitespacesAndNewlines),
       !hex.isEmpty
@@ -334,6 +365,7 @@ public struct CalendarAppointmentsListView: View {
     return defaultIndicatorColorHex
   }
 
+  /// Returns the color.
   private func color(_ hex: String) -> Color {
     Color(calendarHex: hex)
   }

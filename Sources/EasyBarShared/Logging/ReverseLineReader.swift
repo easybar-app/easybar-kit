@@ -2,7 +2,9 @@ import Foundation
 
 /// Statistics returned by a reverse line scan.
 struct ReverseLineReadStats: Equatable, Sendable {
+  /// The file size for this reverse line read stats.
   let fileSize: UInt64
+  /// The bytes read for this reverse line read stats.
   let bytesRead: UInt64
 }
 
@@ -30,6 +32,7 @@ enum ReverseLineReader {
     var pendingByteCount = 0
     var bytesRead: UInt64 = 0
 
+    /// Returns the visit line.
     func visitLine(prefix: Data) throws -> Bool {
       let lineByteCount = prefix.count + pendingByteCount
       guard lineByteCount > 0 else { return true }
@@ -77,6 +80,7 @@ enum ReverseLineReader {
     return ReverseLineReadStats(fileSize: fileSize, bytesRead: bytesRead)
   }
 
+  /// Reads exactly.
   private static func readExactly(
     _ requestedCount: Int,
     from handle: FileHandle

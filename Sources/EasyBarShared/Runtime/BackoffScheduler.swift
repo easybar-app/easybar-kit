@@ -5,10 +5,15 @@ import Foundation
 /// Sendability is guarded by `LockedState`; pending task ownership and attempt
 /// counters are only read or changed while holding the lock.
 public final class BackoffScheduler: @unchecked Sendable {
+  /// Stores state data.
   private struct State {
+    /// The scheduled task for this state.
     var scheduledTask: Task<Void, Never>?
+    /// The stable identifier for this state.
     var scheduledID: UInt64?
+    /// The stable identifier for this state.
     var nextScheduledID: UInt64 = 1
+    /// The attempt index for this state.
     var attemptIndex = 0
   }
 
@@ -116,6 +121,7 @@ public final class BackoffScheduler: @unchecked Sendable {
     }
   }
 
+  /// Returns the delay for attempt.
   private func delayForAttempt(_ attemptIndex: Int) -> TimeInterval {
     guard !delays.isEmpty else {
       return 0
@@ -124,6 +130,7 @@ public final class BackoffScheduler: @unchecked Sendable {
     return delays[min(attemptIndex, delays.count - 1)]
   }
 
+  /// Returns the log scheduled.
   private func logScheduled(delay: TimeInterval) {
     switch logLevel {
     case .trace:
@@ -139,6 +146,7 @@ public final class BackoffScheduler: @unchecked Sendable {
     }
   }
 
+  /// Clears scheduled task.
   private func clearScheduledTask(id: UInt64) -> Bool {
     state.withLock { state -> Bool in
       guard state.scheduledID == id else {

@@ -77,23 +77,35 @@ enum CaptureDeviceKind: String, Encodable, Hashable, Sendable {
 
 /// One connected camera or microphone in a capture-device snapshot.
 struct CaptureDeviceState: Encodable, Equatable, Sendable {
+  /// The stable identifier for this capture device state.
   let id: String
+  /// The name for this capture device state.
   let name: String
+  /// The kind for this capture device state.
   let kind: CaptureDeviceKind
+  /// Whether this capture device state is connected.
   let connected: Bool
+  /// Whether this capture device state is active.
   let active: Bool
 }
 
 /// Normalized camera and microphone state shared by native and Lua subscribers.
 struct CaptureDeviceSnapshot: Encodable, Equatable, Sendable {
+  /// Whether this capture device snapshot is active.
   let active: Bool
+  /// Whether the camera active option is enabled for this capture device snapshot.
   let cameraActive: Bool
+  /// Whether the microphone active option is enabled for this capture device snapshot.
   let microphoneActive: Bool
+  /// The cameras for this capture device snapshot.
   let cameras: [CaptureDeviceState]
+  /// The microphones for this capture device snapshot.
   let microphones: [CaptureDeviceState]
 
+  /// The empty for this capture device snapshot.
   static let empty = CaptureDeviceSnapshot(cameras: [], microphones: [])
 
+  /// Creates a capture device snapshot.
   init(cameras: [CaptureDeviceState], microphones: [CaptureDeviceState]) {
     self.cameras = cameras
     self.microphones = microphones
@@ -102,6 +114,7 @@ struct CaptureDeviceSnapshot: Encodable, Equatable, Sendable {
     active = cameraActive || microphoneActive
   }
 
+  /// Maps stored properties to their encoded keys.
   private enum CodingKeys: String, CodingKey {
     case active
     case cameraActive = "camera_active"
@@ -307,41 +320,66 @@ struct EasyBarEventPayload: Sendable {
 
 /// Codable event payload shape delivered to Lua.
 struct LuaEventPayload: Encodable, Equatable, Sendable {
+  /// Stores network data.
   struct Network: Encodable, Equatable, Sendable {
+    /// Whether the primary interface is tunnel option is enabled for this network.
     let primaryInterfaceIsTunnel: Bool?
+    /// The interface name for this network.
     let interfaceName: String?
 
+    /// Maps stored properties to their encoded keys.
     private enum CodingKeys: String, CodingKey {
       case primaryInterfaceIsTunnel = "primary_interface_is_tunnel"
       case interfaceName = "interface_name"
     }
   }
 
+  /// Stores power data.
   struct Power: Encodable, Equatable, Sendable {
+    /// Whether the charging option is enabled for this power.
     let charging: Bool
   }
 
+  /// Stores audio data.
   struct Audio: Encodable, Equatable, Sendable {
+    /// Whether the muted option is enabled for this audio.
     let muted: Bool?
+    /// The value for this audio.
     let value: Double?
   }
 
+  /// The name for this Lua event payload.
   let name: String
+  /// The stable identifier for this Lua event payload.
   let widgetID: String?
+  /// The stable identifier for this Lua event payload.
   let targetWidgetID: String?
+  /// The source for this Lua event payload.
   let source: String?
+  /// The button for this Lua event payload.
   let button: String?
+  /// The direction for this Lua event payload.
   let direction: String?
+  /// The value for this Lua event payload.
   let value: Double?
+  /// The delta x for this Lua event payload.
   let deltaX: Double?
+  /// The delta y for this Lua event payload.
   let deltaY: Double?
+  /// The stable identifier for this Lua event payload.
   let actionID: String?
+  /// The capture for this Lua event payload.
   let capture: CaptureDeviceSnapshot?
+  /// The network for this Lua event payload.
   let network: Network?
+  /// The power for this Lua event payload.
   let power: Power?
+  /// The audio for this Lua event payload.
   let audio: Audio?
+  /// The app name for this Lua event payload.
   let appName: String?
 
+  /// Maps stored properties to their encoded keys.
   private enum CodingKeys: String, CodingKey {
     case name
     case widgetID = "widget_id"

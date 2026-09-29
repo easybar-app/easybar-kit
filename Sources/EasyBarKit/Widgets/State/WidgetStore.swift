@@ -8,6 +8,7 @@ final class WidgetStore: ObservableObject {
   static let maximumScriptedNodeCount = 2_048
   static let maximumScriptedDepth = 64
 
+  /// Defines the supported owner values.
   enum Owner: Hashable {
     case native(root: String)
     case scripted(root: String)
@@ -20,15 +21,24 @@ final class WidgetStore: ObservableObject {
     }
   }
 
+  /// Stores apply result data.
   struct ApplyResult: Equatable {
+    /// The duplicate node IDs for this apply result.
     var duplicateNodeIDs = Set<String>()
+    /// The mismatched root node IDs for this apply result.
     var mismatchedRootNodeIDs = Set<String>()
+    /// The conflicting node IDs for this apply result.
     var conflictingNodeIDs = Set<String>()
+    /// The invalid parent node IDs for this apply result.
     var invalidParentNodeIDs = Set<String>()
+    /// The cyclic node IDs for this apply result.
     var cyclicNodeIDs = Set<String>()
+    /// The oversized tree node IDs for this apply result.
     var oversizedTreeNodeIDs = Set<String>()
+    /// The overdepth node IDs for this apply result.
     var overdepthNodeIDs = Set<String>()
 
+    /// The rejected node IDs for this apply result.
     var rejectedNodeIDs: Set<String> {
       duplicateNodeIDs.union(mismatchedRootNodeIDs).union(conflictingNodeIDs)
         .union(invalidParentNodeIDs).union(cyclicNodeIDs)

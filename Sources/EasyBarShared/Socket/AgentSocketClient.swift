@@ -10,12 +10,14 @@ public final class AgentSocketClient<
   Request: Encodable & Sendable,
   Message: Decodable & Sendable
 >: @unchecked Sendable {
+  /// Coordinates connection state and behavior.
   private final class Connection: @unchecked Sendable {
     let identifier: UInt64
     let writer: BoundedSocketWriter
 
     var fd: Int32 { writer.fd }
 
+    /// Creates a connection.
     init(fd: Int32, identifier: UInt64, label: String, writeTimeout: TimeInterval) {
       self.identifier = identifier
       self.writer = BoundedSocketWriter(
@@ -28,19 +30,31 @@ public final class AgentSocketClient<
     }
   }
 
+  /// Stores state data.
   private struct State {
+    /// Whether this state is running.
     var running = false
+    /// Whether the reconnect suspended option is enabled for this state.
     var reconnectSuspended = false
+    /// The connection thread for this state.
     var connectionThread: Thread?
+    /// The next reconnect delay override for this state.
     var nextReconnectDelayOverride: TimeInterval?
+    /// The stable identifier for this state.
     var nextConnectionID: UInt64 = 0
+    /// The current connection generation for this state.
     var currentConnectionGeneration: UInt64 = 0
+    /// The connection for this state.
     var connection: Connection?
   }
 
+  /// Stores stop snapshot data.
   private struct StopSnapshot {
+    /// The connection for this stop snapshot.
     let connection: Connection?
+    /// The stable identifier for this stop snapshot.
     let connectionID: UInt64
+    /// Whether the should notify disconnect option is enabled for this stop snapshot.
     let shouldNotifyDisconnect: Bool
   }
 

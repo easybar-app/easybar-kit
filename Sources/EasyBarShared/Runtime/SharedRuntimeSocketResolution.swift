@@ -10,7 +10,9 @@ public enum SharedRuntimeSocketSource: Equatable, Sendable {
 
 /// One resolved socket path and its source.
 public struct SharedRuntimeSocketResolution: Equatable, Sendable {
+  /// The path for this shared runtime socket resolution.
   public let path: String
+  /// The source for this shared runtime socket resolution.
   public let source: SharedRuntimeSocketSource
 
   /// Creates one resolved socket path.
@@ -22,7 +24,9 @@ public struct SharedRuntimeSocketResolution: Equatable, Sendable {
 
 /// Socket paths resolved from the shared runtime configuration.
 public struct SharedAgentSocketResolutions: Equatable, Sendable {
+  /// The calendar for this shared agent socket resolutions.
   public let calendar: SharedRuntimeSocketResolution
+  /// The network for this shared agent socket resolutions.
   public let network: SharedRuntimeSocketResolution
 
   /// Creates one pair of resolved agent socket paths.

@@ -6,6 +6,7 @@ struct SpacesWidgetView: View {
   @EnvironmentObject private var aeroSpaceService: AeroSpaceService
   @EnvironmentObject private var configStore: ConfigSnapshotStore
 
+  /// The config for this spaces widget view.
   private var config: Config.SpacesBuiltinConfig {
     configStore.snapshot.builtins.spaces
   }
@@ -288,10 +289,14 @@ private struct AppIconView: View {
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+  /// The app for this app icon view.
   let app: SpaceApp
+  /// Whether this app icon view is focused app.
   let isFocusedApp: Bool
 
+  /// The config for this app icon view.
   let config: Config.SpacesBuiltinConfig
+  /// The theme snapshot for this app icon view.
   let themeSnapshot: ConfigSnapshot
 
   /// Returns the app icon size.

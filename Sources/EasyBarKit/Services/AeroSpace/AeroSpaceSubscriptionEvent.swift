@@ -2,6 +2,7 @@ import Foundation
 
 /// One event emitted by `aerospace subscribe`.
 struct AeroSpaceSubscriptionEvent: Decodable, Equatable, Sendable {
+  /// Defines the supported refresh policy values.
   enum RefreshPolicy: Equatable, Sendable {
     case fastFocusAndDebouncedSnapshot
     case fastWorkspaceAndImmediateSnapshot
@@ -76,6 +77,7 @@ struct AeroSpaceSubscriptionEvent: Decodable, Equatable, Sendable {
     }
   }
 
+  /// Maps stored properties to their encoded keys.
   private enum CodingKeys: String, CodingKey {
     case name = "_event"
     case workspace

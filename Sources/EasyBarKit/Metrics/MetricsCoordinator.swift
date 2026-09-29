@@ -71,6 +71,7 @@ actor MetricsCoordinator {
       everConnected = true
     }
 
+    /// Whether this agent state is reconnect.
     private var isReconnect: Bool {
       activeConnections == 0 && everConnected
     }
@@ -84,73 +85,123 @@ actor MetricsCoordinator {
 
   /// Counter snapshot used to compute rates.
   struct SampleCounters {
+    /// The total events for this sample counters.
     var totalEvents: Int
+    /// The dropped events for this sample counters.
     var droppedEvents: Int
+    /// The coalesced events for this sample counters.
     var coalescedEvents: Int
+    /// The tree updates for this sample counters.
     var treeUpdates: Int
+    /// The agent messages for this sample counters.
     var agentMessages: [AgentKey: Int]
+    /// The widget updates for this sample counters.
     var widgetUpdates: [String: Int]
+    /// The event counts for this sample counters.
     var eventCounts: [String: Int]
+    /// The dropped event counts for this sample counters.
     var droppedEventCounts: [String: Int]
+    /// The coalesced event counts for this sample counters.
     var coalescedEventCounts: [String: Int]
   }
 
   /// Inputs needed to compute per-second rates.
   struct RateContext {
+    /// The baseline for this rate context.
     let baseline: SampleCounters?
+    /// The interval for this rate context.
     let interval: TimeInterval
+    /// Whether the collection enabled option is enabled for this rate context.
     let collectionEnabled: Bool
   }
 
   /// Process samples included in one metrics snapshot.
   struct ProcessSamples {
+    /// The app for this process samples.
     let app: IPC.ProcessMetrics
+    /// The Lua for this process samples.
     let lua: IPC.ProcessMetrics
+    /// The calendar for this process samples.
     let calendar: IPC.ProcessMetrics
+    /// The network for this process samples.
     let network: IPC.ProcessMetrics
   }
 
   /// Actor-isolated mutable metrics state.
   struct State {
+    /// The streaming subscriber file descriptors for this state.
     var streamingSubscriberFDs = Set<Int32>()
+    /// The stable identifier for this state.
     var luaPID: Int32?
+    /// Whether the has seen Lua start option is enabled for this state.
     var hasSeenLuaStart = false
+    /// The Lua restart count for this state.
     var luaRestartCount = 0
+    /// Whether the Lua ready option is enabled for this state.
     var luaReady = false
+    /// The subscribed events for this state.
     var subscribedEvents = Set<String>()
 
+    /// The total events for this state.
     var totalEvents = 0
+    /// The app events for this state.
     var appEvents = 0
+    /// The widget events for this state.
     var widgetEvents = 0
+    /// The event counts for this state.
     var eventCounts: [String: Int] = [:]
+    /// The dropped events for this state.
     var droppedEvents = 0
+    /// The coalesced events for this state.
     var coalescedEvents = 0
+    /// The dropped event counts for this state.
     var droppedEventCounts: [String: Int] = [:]
+    /// The coalesced event counts for this state.
     var coalescedEventCounts: [String: Int] = [:]
 
+    /// The transport lines for this state.
     var transportLines = 0
+    /// The Lua writes for this state.
     var luaWrites = 0
+    /// The Lua log lines for this state.
     var luaLogLines = 0
+    /// The Lua warning lines for this state.
     var luaWarningLines = 0
+    /// The Lua error lines for this state.
     var luaErrorLines = 0
+    /// The Lua raw stderr lines for this state.
     var luaRawStderrLines = 0
+    /// The decode errors for this state.
     var decodeErrors = 0
+    /// The Lua runtime input overflows for this state.
     var luaRuntimeInputOverflows = 0
+    /// The Lua event queue depth for this state.
     var luaEventQueueDepth = 0
+    /// The Lua event queue overflows for this state.
     var luaEventQueueOverflows = 0
 
+    /// The tree updates for this state.
     var treeUpdates = 0
+    /// The last tree root for this state.
     var lastTreeRoot: String?
+    /// The last tree node count for this state.
     var lastTreeNodeCount: Int?
+    /// The last tree at for this state.
     var lastTreeAt: Date?
+    /// The widget update counts for this state.
     var widgetUpdateCounts: [String: Int] = [:]
+    /// The widget node counts for this state.
     var widgetNodeCounts: [String: Int] = [:]
+    /// The widget last updated at for this state.
     var widgetLastUpdatedAt: [String: Date] = [:]
 
+    /// The agents for this state.
     var agents: [AgentKey: AgentState] = Dictionary(
       uniqueKeysWithValues: AgentKey.allCases.map { ($0, AgentState()) })
 
+    /// The previous counters for this state.
     var previousCounters: SampleCounters?
+    /// The last sample at for this state.
     var lastSampleAt: Date?
 
     /// Returns whether at least one metrics stream subscriber is active.
@@ -197,6 +248,7 @@ actor MetricsCoordinator {
   /// Callback invoked for streamed snapshots.
   private var onSnapshot: SnapshotHandler?
 
+  /// Creates a metrics coordinator.
   init() {}
 
   /// Returns whether metrics streaming is currently active.

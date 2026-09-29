@@ -15,7 +15,9 @@ public final class LineSocketServerTransport<
 >: @unchecked Sendable {
   /// One currently connected subscriber entry.
   public struct SubscriberEntry {
+    /// The fd for this subscriber entry.
     public let fd: Int32
+    /// The subscriber for this subscriber entry.
     public let subscriber: Subscriber
 
     /// Creates one subscriber entry.
@@ -31,12 +33,14 @@ public final class LineSocketServerTransport<
     case keepOpen
   }
 
+  /// Coordinates client connection state and behavior.
   private final class ClientConnection: @unchecked Sendable {
     let identifier: UInt64
     let writer: BoundedSocketWriter
 
     var fd: Int32 { writer.fd }
 
+    /// Creates a client connection.
     init(
       fd: Int32,
       identifier: UInt64,
@@ -55,35 +59,55 @@ public final class LineSocketServerTransport<
       )
     }
 
+    /// Closes the associated service.
     func close() {
       writer.close()
     }
   }
 
+  /// Stores subscriber registration data.
   private struct SubscriberRegistration {
+    /// The connection for this subscriber registration.
     let connection: ClientConnection
+    /// The subscriber for this subscriber registration.
     let subscriber: Subscriber
   }
 
+  /// Stores state data.
   private struct State {
+    /// The listener for this state.
     var listener: OwnedUnixSocketListener?
+    /// Whether this state is running.
     var running = false
+    /// The generation for this state.
     var generation: UInt64 = 0
+    /// The accept thread for this state.
     var acceptThread: Thread?
+    /// The next client identifier for this state.
     var nextClientIdentifier: UInt64 = 0
+    /// The clients for this state.
     var clients: [Int32: ClientConnection] = [:]
+    /// The request client file descriptors for this state.
     var requestClientFDs: Set<Int32> = []
+    /// The last overload log time for this state.
     var lastOverloadLogTime: TimeInterval = 0
+    /// The subscribers for this state.
     var subscribers: [Int32: SubscriberRegistration] = [:]
   }
 
+  /// Stores stop snapshot data.
   private struct StopSnapshot {
+    /// Whether the was running option is enabled for this stop snapshot.
     let wasRunning: Bool
+    /// The listener for this stop snapshot.
     let listener: OwnedUnixSocketListener?
+    /// The clients for this stop snapshot.
     let clients: [ClientConnection]
+    /// The subscriber file descriptors for this stop snapshot.
     let subscriberFDs: [Int32]
   }
 
+  /// Defines the supported readiness values.
   private enum Readiness {
     case ready
     case timedOut

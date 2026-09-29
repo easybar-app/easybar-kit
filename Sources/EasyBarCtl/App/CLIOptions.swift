@@ -11,6 +11,7 @@ struct CLIOption: Equatable {
   /// Optional value placeholder shown after the option.
   let placeholder: String?
 
+  /// Creates a cli option.
   init(
     flag: String,
     short: String? = nil,
@@ -114,12 +115,18 @@ enum CLICommandKind: Equatable {
 /// This catalog is the source of truth for command paths, descriptions, help,
 /// and mapping to the shared IPC command model.
 struct CLICommandDescriptor: Equatable {
+  /// The path for this cli command descriptor.
   let path: [String]
+  /// A human-readable representation of this cli command descriptor.
   let description: String
+  /// The kind for this cli command descriptor.
   let kind: CLICommandKind
+  /// The usage arguments for this cli command descriptor.
   let usageArguments: [String]
+  /// The options for this cli command descriptor.
   let options: [CLIOption]
 
+  /// Creates a cli command descriptor.
   init(
     path: [String],
     description: String,
@@ -134,10 +141,12 @@ struct CLICommandDescriptor: Equatable {
     self.options = options
   }
 
+  /// The command text for this cli command descriptor.
   var commandText: String {
     path.joined(separator: " ")
   }
 
+  /// The usage text for this cli command descriptor.
   var usageText: String {
     (["easybar"] + path + usageArguments).joined(separator: " ")
   }
@@ -145,7 +154,9 @@ struct CLICommandDescriptor: Equatable {
 
 /// One top-level command or command group shown by root help.
 struct CLICommandGroup: Equatable {
+  /// The name for this cli command group.
   let name: String
+  /// A human-readable representation of this cli command group.
   let description: String
 }
 
@@ -162,13 +173,20 @@ enum InboxCLICommand: Equatable {
 
 /// Inputs accepted by `easybar widgets install`.
 struct WidgetPackageInstallOptions: Equatable {
+  /// The source for this widget package install options.
   let source: String
+  /// The SHA-256 for this widget package install options.
   let sha256: String?
+  /// The registry for this widget package install options.
   let registry: String?
+  /// Whether this widget package install options uses registry.
   let useRegistry: Bool
+  /// Whether the force option is enabled for this widget package install options.
   let force: Bool
+  /// Whether the refresh registry option is enabled for this widget package install options.
   let refreshRegistry: Bool
 
+  /// Creates a widget package install options.
   init(
     source: String,
     sha256: String?,
@@ -188,10 +206,14 @@ struct WidgetPackageInstallOptions: Equatable {
 
 /// Inputs accepted by `easybar widgets search`.
 struct WidgetPackageSearchOptions: Equatable {
+  /// The query for this widget package search options.
   let query: String?
+  /// The registry for this widget package search options.
   let registry: String?
+  /// Whether the refresh registry option is enabled for this widget package search options.
   let refreshRegistry: Bool
 
+  /// Creates a widget package search options.
   init(query: String?, registry: String?, refreshRegistry: Bool = false) {
     self.query = query
     self.registry = registry
@@ -201,9 +223,12 @@ struct WidgetPackageSearchOptions: Equatable {
 
 /// Registry inputs accepted by commands that only read package state.
 struct WidgetPackageRegistryOptions: Equatable {
+  /// The registry for this widget package registry options.
   let registry: String?
+  /// Whether the refresh registry option is enabled for this widget package registry options.
   let refreshRegistry: Bool
 
+  /// Creates a widget package registry options.
   init(registry: String?, refreshRegistry: Bool = false) {
     self.registry = registry
     self.refreshRegistry = refreshRegistry
@@ -219,7 +244,9 @@ enum InstalledWidgetPackageFilter: Equatable {
 
 /// Inputs accepted by `easybar widgets installed`.
 struct InstalledWidgetPackageOptions: Equatable {
+  /// The filter for this installed widget package options.
   let filter: InstalledWidgetPackageFilter
+  /// Whether the JSON option is enabled for this installed widget package options.
   let json: Bool
 }
 
@@ -231,10 +258,14 @@ enum WidgetPackageUpdateSelection: Equatable {
 
 /// Inputs accepted by `easybar widgets update`.
 struct WidgetPackageUpdateOptions: Equatable {
+  /// The selection for this widget package update options.
   let selection: WidgetPackageUpdateSelection
+  /// The registry for this widget package update options.
   let registry: String?
+  /// Whether the refresh registry option is enabled for this widget package update options.
   let refreshRegistry: Bool
 
+  /// Creates a widget package update options.
   init(
     selection: WidgetPackageUpdateSelection,
     registry: String?,
@@ -267,8 +298,11 @@ enum CLIAction: Equatable {
 
 /// Parsed command-line configuration.
 struct ParsedArguments: Equatable {
+  /// The action for this parsed arguments.
   let action: CLIAction
+  /// The socket path for this parsed arguments.
   let socketPath: String?
+  /// Whether the debug enabled option is enabled for this parsed arguments.
   let debugEnabled: Bool
 }
 
@@ -693,6 +727,7 @@ enum CLI {
     }
   }
 
+  /// Formats row.
   static func formatRow(_ value: String, _ description: String, width: Int = 28) -> String {
     "  " + value.padding(toLength: width, withPad: " ", startingAt: 0) + description
   }

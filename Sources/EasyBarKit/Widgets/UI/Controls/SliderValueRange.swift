@@ -1,5 +1,6 @@
 import Foundation
 
+/// Returns the resolved slider width.
 func resolvedSliderWidth(explicit: CGFloat?, fallback: CGFloat) -> CGFloat {
   if let explicit, explicit.isFinite, explicit > 0 {
     return explicit
@@ -9,12 +10,17 @@ func resolvedSliderWidth(explicit: CGFloat?, fallback: CGFloat) -> CGFloat {
 
 /// Normalizes widget-provided slider bounds before they reach SwiftUI controls.
 struct SliderValueRange: Equatable {
+  /// The minimum span accepted by this slider value range.
   static let minimumSpan = 0.0001
 
+  /// The lower bound for this slider value range.
   let lowerBound: Double
+  /// The upper bound for this slider value range.
   let upperBound: Double
+  /// The step for this slider value range.
   let step: Double
 
+  /// Creates a slider value range.
   init(minimum: Double, maximum: Double, step: Double) {
     let finiteMinimum = minimum.isFinite ? minimum : 0
     let finiteMaximum = maximum.isFinite ? maximum : 100

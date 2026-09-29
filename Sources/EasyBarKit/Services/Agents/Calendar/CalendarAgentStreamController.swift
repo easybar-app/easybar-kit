@@ -5,17 +5,27 @@ import Foundation
 ///
 /// Concrete wrappers only provide the request builder and snapshot sink.
 final class CalendarAgentStreamController: @unchecked Sendable {
+  /// Stores lifecycle state data.
   private struct LifecycleState {
+    /// Whether the started option is enabled for this lifecycle state.
     var started = false
+    /// The socket path for this lifecycle state.
     var socketPath: String
+    /// The request for this lifecycle state.
     var request: CalendarAgentRequest
+    /// The permanently rejected request for this lifecycle state.
     var permanentlyRejectedRequest: CalendarAgentRequest?
+    /// The next request sequence for this lifecycle state.
     var nextRequestSequence: UInt64 = 0
+    /// The pending requests for this lifecycle state.
     var pendingRequests: [String: CalendarAgentRequest] = [:]
   }
 
+  /// Stores connection input update data.
   private struct ConnectionInputUpdate {
+    /// Whether the blocked by permanent error option is enabled for this connection input update.
     let blockedByPermanentError: Bool
+    /// Whether the resumed after request change option is enabled for this connection input update.
     let resumedAfterRequestChange: Bool
   }
 

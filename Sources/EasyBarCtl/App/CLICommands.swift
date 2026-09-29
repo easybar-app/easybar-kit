@@ -66,6 +66,7 @@ func runInboxCommand(
   }
 }
 
+/// Restarts calendar agent.
 func restartCalendarAgent(socketPath: String?, context: AppContext) throws {
   let resolution = try resolveCalendarAgentSocket(explicitPath: socketPath)
   logSocketResolution(resolution, kind: "calendar agent", context: context)
@@ -78,6 +79,7 @@ func restartCalendarAgent(socketPath: String?, context: AppContext) throws {
   }
 }
 
+/// Restarts network agent.
 func restartNetworkAgent(socketPath: String?, context: AppContext) throws {
   let resolution = try resolveNetworkAgentSocket(explicitPath: socketPath)
   logSocketResolution(resolution, kind: "network agent", context: context)
@@ -90,6 +92,7 @@ func restartNetworkAgent(socketPath: String?, context: AppContext) throws {
   }
 }
 
+/// Restarts agents.
 func restartAgents(context: AppContext) throws {
   let paths = try resolveAgentSockets()
   logSocketResolution(paths.calendar, kind: "calendar agent", context: context)
@@ -207,6 +210,7 @@ func showAgentVersions(
   }
 }
 
+/// Returns the agent version entry.
 private func agentVersionEntry(
   key: String,
   label: String,
@@ -226,6 +230,7 @@ private func agentVersionEntry(
   )
 }
 
+/// Resolves calendar agent socket.
 private func resolveCalendarAgentSocket(
   explicitPath: String?
 ) throws -> SharedRuntimeSocketResolution {
@@ -239,6 +244,7 @@ private func resolveCalendarAgentSocket(
   }
 }
 
+/// Resolves network agent socket.
 private func resolveNetworkAgentSocket(
   explicitPath: String?
 ) throws -> SharedRuntimeSocketResolution {
@@ -252,6 +258,7 @@ private func resolveNetworkAgentSocket(
   }
 }
 
+/// Resolves agent sockets.
 private func resolveAgentSockets() throws -> SharedAgentSocketResolutions {
   do {
     return try SharedRuntimeSocketResolver.agentSockets()

@@ -1,5 +1,6 @@
 import Foundation
 
+/// Stores calendar agent query data.
 public struct CalendarAgentQuery: Codable, Equatable, Sendable {
   /// Inclusive fetch start date.
   public var startDate: Date
@@ -87,6 +88,7 @@ public struct CalendarAgentQuery: Codable, Equatable, Sendable {
     self.excludedCalendarSourceIDs = excludedCalendarSourceIDs
   }
 
+  /// Maps stored properties to their encoded keys.
   private enum CodingKeys: String, CodingKey {
     case startDate
     case endDate
@@ -110,6 +112,7 @@ public struct CalendarAgentQuery: Codable, Equatable, Sendable {
     case excludedCalendarSourceIDs
   }
 
+  /// Creates a calendar agent query.
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     startDate = try container.decode(Date.self, forKey: .startDate)

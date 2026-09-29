@@ -32,22 +32,29 @@ final class LoadedWidgetImage: @unchecked Sendable {
   let source: WidgetImageSource
   let image: NSImage
 
+  /// Creates a loaded widget image.
   init(source: WidgetImageSource, image: NSImage) {
     self.source = source
     self.image = image
   }
 }
 
+/// Defines the supported widget image load result values.
 enum WidgetImageLoadResult: @unchecked Sendable {
   case loaded(LoadedWidgetImage)
   case failed(source: WidgetImageSource)
 }
 
+/// Stores widget image revision data.
 struct WidgetImageRevision: Hashable, Sendable {
+  /// The source for this widget image revision.
   let source: WidgetImageSource
+  /// The modification date for this widget image revision.
   let modificationDate: Date?
+  /// The file size for this widget image revision.
   let fileSize: UInt64?
 
+  /// Creates a widget image revision.
   init(source: WidgetImageSource) {
     self.source = source
 
@@ -67,9 +74,13 @@ struct WidgetImageRevision: Hashable, Sendable {
 actor WidgetImageCache {
   static let shared = WidgetImageCache()
 
+  /// Stores entry data.
   private struct Entry {
+    /// The revision for this entry.
     let revision: WidgetImageRevision
+    /// The result for this entry.
     let result: WidgetImageLoadResult
+    /// The last access for this entry.
     var lastAccess: UInt64
   }
 
@@ -77,14 +88,17 @@ actor WidgetImageCache {
   private var entries: [WidgetImageSource: Entry] = [:]
   private var accessCounter: UInt64 = 0
 
+  /// Creates a widget image cache.
   init(capacity: Int = 128) {
     self.capacity = max(1, capacity)
   }
 
+  /// Returns the image.
   func image(for source: WidgetImageSource) -> WidgetImageLoadResult {
     image(for: WidgetImageRevision(source: source))
   }
 
+  /// Returns the image.
   func image(for revision: WidgetImageRevision) -> WidgetImageLoadResult {
     accessCounter &+= 1
 
@@ -127,6 +141,7 @@ actor WidgetImageCache {
     return NSImage(contentsOfFile: path)
   }
 
+  /// Returns the evict least recently used entry if needed.
   private func evictLeastRecentlyUsedEntryIfNeeded() {
     guard entries.count > capacity else { return }
     guard let oldestSource = entries.min(by: { $0.value.lastAccess < $1.value.lastAccess })?.key else {
@@ -143,15 +158,18 @@ final class WidgetImageLoader: ObservableObject {
   @Published private(set) var loadedImage: LoadedWidgetImage?
   private var loggedFailures = Set<WidgetImageSource>()
 
+  /// Returns the image.
   func image(for source: WidgetImageSource) -> LoadedWidgetImage? {
     guard loadedImage?.source == source else { return nil }
     return loadedImage
   }
 
+  /// Loads the requested value.
   func load(source: WidgetImageSource) async -> Bool {
     await load(revision: WidgetImageRevision(source: source))
   }
 
+  /// Loads the requested value.
   func load(revision: WidgetImageRevision) async -> Bool {
     let result = await WidgetImageCache.shared.image(for: revision)
     guard !Task.isCancelled else { return false }

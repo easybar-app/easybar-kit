@@ -3,6 +3,7 @@ import EasyBarShared
 import Foundation
 
 @MainActor
+/// Coordinates inbox store state and behavior.
 final class InboxStore: ObservableObject {
   private static let compositeIDSeparator: Character = "\u{1f}"
 
@@ -21,6 +22,7 @@ final class InboxStore: ObservableObject {
   private var persistence: InboxStatePersistence?
   private let logger: ProcessLogger
 
+  /// Creates an inbox store.
   init(
     configuration: Config.InboxBuiltinConfig = .default,
     stateURL: URL? = nil,
@@ -54,6 +56,7 @@ final class InboxStore: ObservableObject {
     refreshAllTargets.filter { $0.action.isEnabled && !$0.action.isBusy }
   }
 
+  /// Updates state URL.
   func updateStateURL(_ stateURL: URL) {
     guard persistence?.fileURL.standardizedFileURL != stateURL.standardizedFileURL else { return }
     persistState()
@@ -65,11 +68,13 @@ final class InboxStore: ObservableObject {
     rebuild()
   }
 
+  /// Updates configuration.
   func updateConfiguration(_ configuration: Config.InboxBuiltinConfig) {
     self.configuration = configuration
     rebuild()
   }
 
+  /// Replaces one source's published items and reconciles persisted state.
   func replace(source: String, items: [InboxItem]) {
     guard let source = normalizedSource(source) else { return }
 
@@ -174,6 +179,7 @@ final class InboxStore: ObservableObject {
     return true
   }
 
+  /// Clears the requested operation.
   func clear(source: String) {
     guard let source = normalizedSource(source) else { return }
     sources.removeValue(forKey: source)
@@ -195,6 +201,7 @@ final class InboxStore: ObservableObject {
     rebuild()
   }
 
+  /// Clears all.
   func clearAll() {
     sources.removeAll()
     controlSources.removeAll()
@@ -209,6 +216,7 @@ final class InboxStore: ObservableObject {
     rebuildSourceConfigurations()
   }
 
+  /// Clears published items.
   func clearPublishedItems() {
     sources.removeAll()
     sourceActions.removeAll()
@@ -218,6 +226,7 @@ final class InboxStore: ObservableObject {
     rebuildSourceConfigurations()
   }
 
+  /// Configures the requested operation.
   func configure(
     source: String,
     actions: [InboxAction],
@@ -255,6 +264,7 @@ final class InboxStore: ObservableObject {
     rebuildSourceConfigurations()
   }
 
+  /// Returns the mark read.
   func markRead(_ presentedItem: InboxPresentedItem) {
     readItemIDs.insert(presentedItem.id)
     unreadItemIDs.remove(presentedItem.id)
@@ -262,6 +272,7 @@ final class InboxStore: ObservableObject {
     rebuild()
   }
 
+  /// Returns the mark unread.
   func markUnread(_ presentedItem: InboxPresentedItem) {
     readItemIDs.remove(presentedItem.id)
     unreadItemIDs.insert(presentedItem.id)
@@ -270,6 +281,7 @@ final class InboxStore: ObservableObject {
     rebuild()
   }
 
+  /// Returns the toggle read.
   func toggleRead(_ presentedItem: InboxPresentedItem) {
     if presentedItem.isUnread {
       markRead(presentedItem)
@@ -278,6 +290,7 @@ final class InboxStore: ObservableObject {
     }
   }
 
+  /// Returns the mark all read.
   func markAllRead() {
     for item in presentedItems where item.isUnread {
       readItemIDs.insert(item.id)
@@ -287,6 +300,7 @@ final class InboxStore: ObservableObject {
     rebuild()
   }
 
+  /// Dismisses the requested operation.
   func dismiss(_ presentedItem: InboxPresentedItem) {
     guard presentedItem.item.isDismissible else { return }
     dismissedItemIDs.insert(presentedItem.id)
@@ -296,6 +310,7 @@ final class InboxStore: ObservableObject {
     rebuild()
   }
 
+  /// Dismisses all.
   func dismissAll() {
     for item in presentedItems where item.item.isDismissible {
       dismissedItemIDs.insert(item.id)
@@ -306,6 +321,7 @@ final class InboxStore: ObservableObject {
     rebuild()
   }
 
+  /// Returns the groups.
   func groups() -> [(
     title: String?, sourcePresentation: InboxSourcePresentation?, items: [InboxPresentedItem]
   )] {
@@ -344,6 +360,7 @@ final class InboxStore: ObservableObject {
     }.map { $0.element }
   }
 
+  /// Rebuilds derived presentation state from the current inputs.
   private func rebuild() {
     var mergedSources = sources
     for (source, controlItems) in controlSources {
@@ -370,6 +387,7 @@ final class InboxStore: ObservableObject {
     presentedItems = flattened.sorted(by: compare)
   }
 
+  /// Orders two values using the configured field and direction.
   private func compare(_ left: InboxPresentedItem, _ right: InboxPresentedItem) -> Bool {
     let result: ComparisonResult
     switch configuration.sortBy {
@@ -386,12 +404,14 @@ final class InboxStore: ObservableObject {
     return configuration.sortDescending ? result == .orderedDescending : result == .orderedAscending
   }
 
+  /// Returns the compare values.
   private func compareValues<T: Comparable>(_ left: T, _ right: T) -> ComparisonResult {
     if left < right { return .orderedAscending }
     if left > right { return .orderedDescending }
     return .orderedSame
   }
 
+  /// Returns the group title.
   private func groupTitle(for item: InboxPresentedItem) -> String {
     switch configuration.groupBy {
     case .source:
@@ -411,12 +431,14 @@ final class InboxStore: ObservableObject {
     }
   }
 
+  /// Returns the nonempty.
   private func nonempty(_ value: String?) -> String? {
     guard let value else { return nil }
     let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
     return trimmed.isEmpty ? nil : trimmed
   }
 
+  /// Returns the matching items.
   private func matchingItems(source: String?, id: String?) -> [InboxPresentedItem] {
     let normalizedFilter: String?
     if let source {
@@ -431,16 +453,19 @@ final class InboxStore: ObservableObject {
     }
   }
 
+  /// Returns the normalized source.
   private func normalizedSource(_ source: String) -> String? {
     let source = source.trimmingCharacters(in: .whitespacesAndNewlines)
     return source.isEmpty || source.utf8.count > 512
       || source.contains(Self.compositeIDSeparator) ? nil : source
   }
 
+  /// Returns the composite ID.
   private func compositeID(source: String, itemID: String) -> String {
     source + String(Self.compositeIDSeparator) + itemID
   }
 
+  /// Returns the reconcile state.
   private func reconcileState(source: String) {
     let prefix = source + String(Self.compositeIDSeparator)
     let items = (sources[source] ?? []) + (controlSources[source] ?? [])
@@ -450,6 +475,7 @@ final class InboxStore: ObservableObject {
     dismissedItemIDs = dismissedItemIDs.filter { !$0.hasPrefix(prefix) || liveIDs.contains($0) }
   }
 
+  /// Returns the persist state.
   private func persistState() {
     persistence?.save(
       InboxPersistedState(
@@ -459,6 +485,7 @@ final class InboxStore: ObservableObject {
       ))
   }
 
+  /// Returns the rebuild source configurations.
   private func rebuildSourceConfigurations() {
     sourceConfigurations = sourceActions.keys.map {
       InboxSourceConfiguration(
@@ -481,11 +508,13 @@ final class InboxStore: ObservableObject {
     }
   }
 
+  /// Evaluates the valid action condition.
   private func isValidAction(_ action: InboxAction) -> Bool {
     !action.id.isEmpty && action.id.utf8.count <= 512
       && !action.title.isEmpty && action.title.utf8.count <= 1_024
   }
 
+  /// Returns the valid source actions.
   private func validSourceActions(
     _ actions: [InboxAction],
     depth: Int,
@@ -553,6 +582,7 @@ final class InboxStore: ObservableObject {
     return validActions
   }
 
+  /// Evaluates the valid condition.
   private func isValid(_ item: InboxItem) -> Bool {
     let id = item.id.trimmingCharacters(in: .whitespacesAndNewlines)
     let title = item.title.trimmingCharacters(in: .whitespacesAndNewlines)

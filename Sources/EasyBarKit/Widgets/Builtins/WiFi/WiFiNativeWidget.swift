@@ -28,15 +28,25 @@ final class WiFiNativeWidget: NativeWidget {
   private var startedNetworkAgent = false
   private lazy var renderer = WiFiRenderer(rootID: rootID)
 
+  /// Stores snapshot data.
   struct Snapshot {
+    /// The config for this snapshot.
     let config: Config.WiFiBuiltinConfig
+    /// The network for this snapshot.
     let network: NetworkAgentSnapshot?
+    /// The content for this snapshot.
     let content: WiFiPresentation.Content
+    /// The signal level for this snapshot.
     let signalLevel: Int
+    /// The visual state for this snapshot.
     let visualState: WiFiPresentation.VisualState
+    /// The active color hex for this snapshot.
     let activeColorHex: String
+    /// The inactive color hex for this snapshot.
     let inactiveColorHex: String
+    /// Whether the inline content visible option is enabled for this snapshot.
     let inlineContentVisible: Bool
+    /// Whether the details content visible option is enabled for this snapshot.
     let detailsContentVisible: Bool
   }
 
@@ -192,6 +202,7 @@ extension WiFiNativeWidget {
     }
   }
 
+  /// Persists the current configuration.
   private func persistConfiguration() {
     var edits = [
       TOMLEdit(

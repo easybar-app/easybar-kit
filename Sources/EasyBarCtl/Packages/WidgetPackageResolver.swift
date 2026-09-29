@@ -2,12 +2,23 @@ import CryptoKit
 import EasyBarShared
 import Foundation
 
+/// Defines the supported widget package request values.
 private enum WidgetPackageRequest {
   case registry(name: String, constraint: VersionConstraint?)
   case directory(URL)
   case archive(URL, sha256: String?, remote: Bool)
 }
 
+/// Validates raw archive entry names before `tar` normalizes or extracts them.
+enum WidgetPackageArchivePathValidator {
+  /// Returns whether an archive entry is absolute or traverses above the package root.
+  static func escapesPackageRoot(_ entry: String) -> Bool {
+    let components = entry.split(separator: "/", omittingEmptySubsequences: false)
+    return entry.hasPrefix("/") || components.contains("..")
+  }
+}
+
+/// Coordinates widget package resolver state and behavior.
 final class WidgetPackageResolver {
   static let defaultRegistry = WidgetPackageRegistryLoader.defaultSource
   private static let maximumArchiveBytes = 20 * 1_024 * 1_024
@@ -25,6 +36,7 @@ final class WidgetPackageResolver {
   private let protectedPackages: Set<String>
   private let currentKitVersion: SemanticVersion?
 
+  /// Creates a widget package resolver.
   init(
     registrySource: String?,
     useRegistry: Bool,
@@ -45,12 +57,14 @@ final class WidgetPackageResolver {
     processExecutor = ProcessExecutor(logger: logger.child("archive"))
   }
 
+  /// Resolves the requested value.
   func resolve(source: String, sha256: String?) async throws -> [ResolvedWidgetPackage] {
     let request = try rootRequest(source: source, sha256: sha256)
     _ = try await resolve(request, requiredBy: nil)
     return resolutionOrder.compactMap { resolved[$0] }
   }
 
+  /// Resolves the requested value.
   private func resolve(
     _ request: WidgetPackageRequest,
     requiredBy parent: WidgetPackageManifest?
@@ -131,6 +145,7 @@ final class WidgetPackageResolver {
     return package
   }
 
+  /// Validates kit compatibility.
   private func validateKitCompatibility(_ manifest: WidgetPackageManifest) throws {
     guard let currentKitVersion else { return }
     guard currentKitVersion >= manifest.minimumEasyBarKitVersion else {
@@ -142,6 +157,7 @@ final class WidgetPackageResolver {
     }
   }
 
+  /// Returns the root request.
   private func rootRequest(source: String, sha256: String?) throws -> WidgetPackageRequest {
     if let url = URL(string: source), let scheme = url.scheme?.lowercased() {
       switch scheme {
@@ -158,6 +174,7 @@ final class WidgetPackageResolver {
     return try localRequest(path: expanded, sha256: sha256, originalSource: source)
   }
 
+  /// Returns the local request.
   private func localRequest(
     path: String,
     sha256: String?,
@@ -191,6 +208,7 @@ final class WidgetPackageResolver {
     return .registry(name: specifier.name, constraint: specifier.constraint)
   }
 
+  /// Returns the registry specifier.
   private func registrySpecifier(
     _ source: String
   ) throws -> (name: String, constraint: VersionConstraint?)? {
@@ -214,6 +232,7 @@ final class WidgetPackageResolver {
     return (name, constraint)
   }
 
+  /// Loads the requested value.
   private func load(_ request: WidgetPackageRequest) async throws -> ResolvedWidgetPackage {
     switch request {
     case .directory(let directory):
@@ -266,6 +285,7 @@ final class WidgetPackageResolver {
     }
   }
 
+  /// Returns the registry index.
   private func registryIndex() async throws -> PackageRegistryIndex {
     if let registry { return registry }
     let decoded = try await WidgetPackageRegistryLoader().load(
@@ -276,6 +296,7 @@ final class WidgetPackageResolver {
     return decoded
   }
 
+  /// Loads archive.
   private func loadArchive(
     url: URL,
     expectedSHA256: String?
@@ -312,6 +333,7 @@ final class WidgetPackageResolver {
     )
   }
 
+  /// Validates archive entries.
   private func validateArchiveEntries(_ archive: URL) async throws {
     let output = try await runTar(["-tzf", archive.path])
     let entries = output.split(whereSeparator: \.isNewline).map(String.init)
@@ -319,7 +341,7 @@ final class WidgetPackageResolver {
       throw WidgetPackageError.unsafeArchive("package.toml must be at the archive root")
     }
     for entry in entries {
-      if archiveEntryEscapesPackageRoot(entry) {
+      if WidgetPackageArchivePathValidator.escapesPackageRoot(entry) {
         throw WidgetPackageError.unsafeArchive("entry escapes the package root: \(entry)")
       }
     }
@@ -332,14 +354,12 @@ final class WidgetPackageResolver {
     }
   }
 
-  private func archiveEntryEscapesPackageRoot(_ entry: String) -> Bool {
-    entry.hasPrefix("/") || URL(fileURLWithPath: entry).pathComponents.contains("..")
-  }
-
+  /// Returns the remote archive requires checksum.
   private func remoteArchiveRequiresChecksum(remote: Bool, digest: String?) -> Bool {
     remote && digest == nil
   }
 
+  /// Runs tar.
   private func runTar(_ arguments: [String]) async throws -> String {
     let result = try await processExecutor.run(
       ProcessExecutionRequest(
@@ -360,6 +380,7 @@ final class WidgetPackageResolver {
     return String(data: result.standardOutput, encoding: .utf8) ?? ""
   }
 
+  /// Loads data.
   private func loadData(from url: URL, maximumBytes: Int) async throws -> Data {
     let sourceURL: URL
     if url.isFileURL {
@@ -386,6 +407,7 @@ final class WidgetPackageResolver {
     return try Data(contentsOf: sourceURL, options: .mappedIfSafe)
   }
 
+  /// Returns the reject symbolic links.
   private func rejectSymbolicLinks(in directory: URL) throws {
     guard
       let enumerator = FileManager.default.enumerator(

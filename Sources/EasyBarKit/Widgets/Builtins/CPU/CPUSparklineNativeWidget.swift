@@ -240,6 +240,7 @@ final class CPUSparklineNativeWidget: NativeWidget {
   }
 
   @discardableResult
+  /// Persists the current state.
   private func persist(_ updated: Config.CPUBuiltinConfig, edit: TOMLEdit) -> Bool {
     NativeWidgetConfigUpdate.persist(edits: [edit], using: configPersistence) {
       config = updated

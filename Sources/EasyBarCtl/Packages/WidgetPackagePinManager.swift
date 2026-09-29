@@ -1,11 +1,16 @@
 import EasyBarShared
 import Foundation
 
+/// Stores widget package pin manager data.
 struct WidgetPackagePinManager {
+  /// The packages directory for this widget package pin manager.
   private let packagesDirectory: URL
+  /// The database store for this widget package pin manager.
   private let databaseStore: WidgetPackageDatabaseStore
+  /// The pin store for this widget package pin manager.
   private let pinStore: WidgetPackagePinStore
 
+  /// Creates a widget package pin manager.
   init(
     fileManager: FileManager = .default,
     packagesDirectory: URL = SharedPathDefaults.defaultWidgetPackagesPath()
@@ -15,6 +20,7 @@ struct WidgetPackagePinManager {
     pinStore = WidgetPackagePinStore(fileManager: fileManager)
   }
 
+  /// Pins the selected package.
   func pin(name: String) throws -> InstalledWidgetPackage {
     let package = try installedPackage(named: name)
     var pins = try pinStore.load(from: packagesDirectory)
@@ -25,6 +31,7 @@ struct WidgetPackagePinManager {
     return package
   }
 
+  /// Unpins the selected package.
   func unpin(name: String) throws -> InstalledWidgetPackage {
     let package = try installedPackage(named: name)
     var pins = try pinStore.load(from: packagesDirectory)
@@ -35,6 +42,7 @@ struct WidgetPackagePinManager {
     return package
   }
 
+  /// Returns the installed package.
   private func installedPackage(named name: String) throws -> InstalledWidgetPackage {
     guard WidgetPackageManifestParser.isPackageName(name) else {
       throw WidgetPackageError.invalidSource("invalid package name '\(name)'")
@@ -47,6 +55,7 @@ struct WidgetPackagePinManager {
   }
 }
 
+/// Pins the selected widget package.
 func pinWidgetPackage(name: String, context: AppContext) throws {
   do {
     context.debug("pinning widget package \(name)")
@@ -57,6 +66,7 @@ func pinWidgetPackage(name: String, context: AppContext) throws {
   }
 }
 
+/// Unpins the selected widget package.
 func unpinWidgetPackage(name: String, context: AppContext) throws {
   do {
     context.debug("unpinning widget package \(name)")

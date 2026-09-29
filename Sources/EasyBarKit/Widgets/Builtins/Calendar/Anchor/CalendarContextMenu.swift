@@ -17,6 +17,7 @@ enum CalendarContextMenuAction: Equatable {
   static let allowedTodayMarkerSizes = [18, 20, 22, 24, 26, 28]
   static let customTodayMarkerSizeID = "calendar.today_marker.size.custom"
 
+  /// Resolves a calendar context-menu identifier to its action.
   init?(id: String) {
     if let value = id.removingPrefix("calendar.popup."),
       let mode = CalendarPopupMode(rawValue: value)
@@ -72,6 +73,7 @@ enum CalendarContextMenuAction: Equatable {
 
 /// Builds the calendar menu from its effective session configuration.
 enum CalendarContextMenu {
+  /// Creates the requested value.
   static func make(config: Config.CalendarBuiltinConfig) -> [WidgetContextMenuItem] {
     let popupModes = CalendarPopupMode.allCases.map { mode in
       WidgetContextMenuItem(
@@ -147,6 +149,7 @@ enum CalendarContextMenu {
     ]
   }
 
+  /// Returns the popup mode title.
   private static func popupModeTitle(_ mode: CalendarPopupMode) -> String {
     switch mode {
     case .none: "None"
@@ -155,6 +158,7 @@ enum CalendarContextMenu {
     }
   }
 
+  /// Returns the today marker title.
   private static func todayMarkerTitle(_ variant: CalendarTodayMarkerVariant) -> String {
     switch variant {
     case .regularRoundedRectangle: "Rounded Rectangle"
@@ -164,10 +168,12 @@ enum CalendarContextMenu {
     }
   }
 
+  /// Returns the formatted marker size.
   private static func formattedMarkerSize(_ value: Double) -> String {
     value.formatted(.number.precision(.fractionLength(0...2)))
   }
 
+  /// Returns the appointment menu.
   private static func appointmentMenu(
     _ appointments: CalendarBuiltinConfig.Appointments
   ) -> [WidgetContextMenuItem] {
@@ -180,6 +186,7 @@ enum CalendarContextMenu {
     }
   }
 
+  /// Returns the birthday menu.
   private static func birthdayMenu(
     _ birthdays: CalendarBuiltinConfig.Birthdays
   ) -> [WidgetContextMenuItem] {
@@ -194,23 +201,35 @@ enum CalendarContextMenu {
   }
 }
 
+/// Stores calendar appointment menu option data.
 struct CalendarAppointmentMenuOption {
+  /// The stable identifier for this calendar appointment menu option.
   let id: String
+  /// The title for this calendar appointment menu option.
   let title: String
+  /// The config key for this calendar appointment menu option.
   let configKey: String
+  /// The key path for this calendar appointment menu option.
   let keyPath: WritableKeyPath<CalendarBuiltinConfig.Appointments, Bool>
 
+  /// Returns the value.
   func value(_ appointments: CalendarBuiltinConfig.Appointments) -> Bool {
     appointments[keyPath: keyPath]
   }
 }
 
+/// Stores calendar birthday menu option data.
 struct CalendarBirthdayMenuOption {
+  /// The stable identifier for this calendar birthday menu option.
   let id: String
+  /// The title for this calendar birthday menu option.
   let title: String
+  /// The config key for this calendar birthday menu option.
   let configKey: String
+  /// The key path for this calendar birthday menu option.
   let keyPath: WritableKeyPath<CalendarBuiltinConfig.Birthdays, Bool>
 
+  /// Returns the value.
   func value(_ birthdays: CalendarBuiltinConfig.Birthdays) -> Bool {
     birthdays[keyPath: keyPath]
   }
@@ -243,6 +262,7 @@ nonisolated(unsafe) let birthdayOptions: [CalendarBirthdayMenuOption] = [
 ]
 
 extension String {
+  /// Returns the removing prefix.
   fileprivate func removingPrefix(_ prefix: String) -> String? {
     guard hasPrefix(prefix) else { return nil }
     let suffix = String(dropFirst(prefix.count))

@@ -51,6 +51,7 @@ enum AeroSpaceModeContextMenu {
     (.floating, "Floating"),
   ]
 
+  /// Creates the requested value.
   static func make(
     config: Config.AeroSpaceModeBuiltinConfig,
     currentLayout: AeroSpaceLayoutMode

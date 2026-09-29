@@ -101,6 +101,7 @@ extension Config {
     applyThemeDateDefaults()
   }
 
+  /// Applies theme inbox defaults.
   private func applyThemeInboxDefaults() {
     builtinInbox.style.chrome.backgroundColorHex = themeTransparentColorHex
     builtinInbox.style.chrome.borderColorHex = themeTransparentColorHex

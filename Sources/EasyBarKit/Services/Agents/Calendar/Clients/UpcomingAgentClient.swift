@@ -3,6 +3,7 @@ import EasyBarShared
 import Foundation
 
 @MainActor
+/// Coordinates upcoming calendar agent client state and behavior.
 final class UpcomingCalendarAgentClient {
   private let logger: ProcessLogger
   private var calendarAgentConfig: ConfigSnapshot.CalendarAgent
@@ -28,6 +29,7 @@ final class UpcomingCalendarAgentClient {
     logger: logger.child("stream")
   )
 
+  /// Creates an upcoming calendar agent client.
   init(
     logger: ProcessLogger,
     calendarAgentConfig: ConfigSnapshot.CalendarAgent,

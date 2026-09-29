@@ -7,6 +7,7 @@ struct MetricsStreamClient {
   /// Unix-domain socket path used for the metrics stream.
   let socketPath: String
 
+  /// Opens connected socket.
   private func openConnectedSocket() throws -> Int32 {
     do {
       return try openConnectedUnixSocket(at: socketPath)

@@ -8,12 +8,14 @@ actor EventHub {
 
   /// Injectable metrics operations used by event delivery.
   struct MetricsRecorder: Sendable {
+    /// The record emission for this metrics recorder.
     let recordEmission:
       @Sendable (
         _ name: String,
         _ isWidgetEvent: Bool,
         _ backpressure: [EventBackpressureSample]
       ) async -> Void
+    /// The record backpressure for this metrics recorder.
     let recordBackpressure: @Sendable (_ samples: [EventBackpressureSample]) async -> Void
 
     /// Builds the production recorder backed by one metrics coordinator.
@@ -62,7 +64,9 @@ actor EventHub {
 
   /// Dictionary key used while aggregating one synchronous delivery pass.
   private struct BackpressureKey: Hashable, Sendable {
+    /// The name for this backpressure key.
     let name: String
+    /// Whether the coalesced option is enabled for this backpressure key.
     let coalesced: Bool
   }
 

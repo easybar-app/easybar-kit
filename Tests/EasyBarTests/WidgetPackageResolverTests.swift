@@ -129,6 +129,14 @@ final class WidgetPackageResolverTests: XCTestCase {
     }
   }
 
+  func testArchivePathValidationRejectsTraversalBeforeURLNormalization() {
+    XCTAssertTrue(WidgetPackageArchivePathValidator.escapesPackageRoot("../outside"))
+    XCTAssertTrue(WidgetPackageArchivePathValidator.escapesPackageRoot("nested/../../outside"))
+    XCTAssertTrue(WidgetPackageArchivePathValidator.escapesPackageRoot("/absolute/path"))
+    XCTAssertTrue(WidgetPackageArchivePathValidator.escapesPackageRoot("nested/../safe.lua"))
+    XCTAssertFalse(WidgetPackageArchivePathValidator.escapesPackageRoot("nested/widget.lua"))
+  }
+
   func testPinnedInstalledDependencyCannotBeReplacedDuringResolution() async throws {
     let directory = FileManager.default.temporaryDirectory.appending(
       path: "easybar-resolver-pinned-\(UUID().uuidString)",
@@ -187,5 +195,4 @@ final class WidgetPackageResolverTests: XCTestCase {
       XCTAssertEqual(error, .packagePinned("shared"))
     }
   }
-
 }

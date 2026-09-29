@@ -8,6 +8,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
   private let menu = NSMenu()
   private let menuFactory: EasyBarMenuFactory
 
+  /// Creates a menu bar controller.
   init(menuFactory: EasyBarMenuFactory) {
     self.menuFactory = menuFactory
     self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -36,6 +37,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     return image
   }
 
+  /// Handles the menu will open callback.
   func menuWillOpen(_ menu: NSMenu) {
     menu.removeAllItems()
     let builtMenu = menuFactory.makeMenu()

@@ -6,10 +6,15 @@ extension Config {
   struct CPUBuiltinConfig: @unchecked Sendable {
     /// CPU graph content settings.
     struct Content {
+      /// The label for this content.
       var label: String
+      /// The history size for this content.
       var historySize: Int
+      /// The line width for this content.
       var lineWidth: Double
+      /// The color hex for this content.
       var colorHex: String?
+      /// The sample interval seconds for this content.
       var sampleIntervalSeconds: Double
     }
 
@@ -20,41 +25,49 @@ extension Config {
     /// CPU-specific content settings.
     var content: Content
 
+    /// Whether this CPU builtin config is enabled.
     var enabled: Bool {
       get { placement.enabled }
       set { placement.enabled = newValue }
     }
 
+    /// The position for this CPU builtin config.
     var position: WidgetPosition {
       get { placement.position }
       set { placement.position = newValue }
     }
 
+    /// The order for this CPU builtin config.
     var order: Int {
       get { placement.order }
       set { placement.order = newValue }
     }
 
+    /// The label for this CPU builtin config.
     var label: String {
       get { content.label }
       set { content.label = newValue }
     }
 
+    /// The history size for this CPU builtin config.
     var historySize: Int {
       get { content.historySize }
       set { content.historySize = newValue }
     }
 
+    /// The line width for this CPU builtin config.
     var lineWidth: Double {
       get { content.lineWidth }
       set { content.lineWidth = newValue }
     }
 
+    /// The color hex for this CPU builtin config.
     var colorHex: String? {
       get { content.colorHex }
       set { content.colorHex = newValue }
     }
 
+    /// The sample interval seconds for this CPU builtin config.
     var sampleIntervalSeconds: Double {
       get { content.sampleIntervalSeconds }
       set { content.sampleIntervalSeconds = newValue }

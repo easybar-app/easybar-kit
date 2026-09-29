@@ -34,16 +34,26 @@ extension IPC {
 
   /// One inbox item exchanged through the control socket.
   public struct InboxItem: Codable, Equatable, Sendable {
+    /// The source for this inbox item.
     public let source: String
+    /// The stable identifier for this inbox item.
     public let id: String
+    /// The title for this inbox item.
     public let title: String
+    /// The message for this inbox item.
     public let message: String?
+    /// The severity for this inbox item.
     public let severity: InboxSeverity
+    /// The group for this inbox item.
     public let group: String?
+    /// The URL for this inbox item.
     public let url: String?
+    /// The timestamp for this inbox item.
     public let timestamp: TimeInterval
+    /// Whether this inbox item is unread.
     public let unread: Bool
 
+    /// Creates an inbox item.
     public init(
       source: String,
       id: String,
@@ -69,6 +79,7 @@ extension IPC {
 
   /// Mutation or query sent to the native inbox.
   public struct InboxRequest: Codable, Equatable, Sendable {
+    /// Defines the supported operation values.
     public enum Operation: String, Codable, Sendable {
       case send
       case read
@@ -79,12 +90,18 @@ extension IPC {
       case clear
     }
 
+    /// The operation for this inbox request.
     public let operation: Operation
+    /// The item for this inbox request.
     public let item: InboxItem?
+    /// The source for this inbox request.
     public let source: String?
+    /// The stable identifier for this inbox request.
     public let id: String?
+    /// Whether the unread only option is enabled for this inbox request.
     public let unreadOnly: Bool
 
+    /// Maps stored properties to their encoded keys.
     private enum CodingKeys: String, CodingKey {
       case operation
       case item
@@ -93,6 +110,7 @@ extension IPC {
       case unreadOnly = "unread_only"
     }
 
+    /// Creates an inbox request.
     public init(
       operation: Operation,
       item: InboxItem? = nil,
@@ -116,6 +134,7 @@ extension IPC {
     case logs(LogSubscription)
     case inbox(InboxRequest)
 
+    /// Maps stored properties to their encoded keys.
     private enum CodingKeys: String, CodingKey {
       case command
       case configPath = "config_path"
@@ -275,6 +294,7 @@ extension IPC {
 
   /// One IPC message returned by the EasyBar socket.
   public enum Message: Codable, Sendable {
+    /// Defines the supported kind values.
     public enum Kind: String, Codable, Sendable {
       case accepted
       case rejected
@@ -293,6 +313,7 @@ extension IPC {
     case logRecord(ProcessLogEvent)
     case inbox([InboxItem])
 
+    /// Maps stored properties to their encoded keys.
     private enum CodingKeys: String, CodingKey {
       case kind
       case message

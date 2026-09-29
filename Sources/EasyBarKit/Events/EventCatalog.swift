@@ -177,12 +177,14 @@ private struct GeneratedCatalogEvent: Decodable {
   /// Whether Lua may subscribe to this app event as a driver.
   let driver: Bool
 
+  /// Creates a generated catalog event.
   init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     runtimeName = try container.decode(String.self, forKey: .runtimeName)
     driver = try container.decodeIfPresent(Bool.self, forKey: .driver) ?? false
   }
 
+  /// Maps stored properties to their encoded keys.
   private enum CodingKeys: String, CodingKey {
     case runtimeName
     case driver

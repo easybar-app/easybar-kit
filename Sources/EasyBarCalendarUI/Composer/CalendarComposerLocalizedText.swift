@@ -17,6 +17,7 @@ enum CalendarComposerLocalizedText {
     String(localized: "Custom", comment: "Label for a custom alert or travel-time value")
   }
 
+  /// Returns the alert before.
   static func alertBefore(seconds: TimeInterval) -> String {
     String(
       localized: "\(duration(seconds: seconds)) before",
@@ -24,6 +25,7 @@ enum CalendarComposerLocalizedText {
     )
   }
 
+  /// Returns the duration.
   static func duration(seconds: TimeInterval) -> String {
     let normalizedSeconds = max(0, seconds)
     let formatter = DateComponentsFormatter()
@@ -36,6 +38,7 @@ enum CalendarComposerLocalizedText {
     return formatter.string(from: normalizedSeconds) ?? fallbackDuration(seconds: normalizedSeconds)
   }
 
+  /// Returns the allowed units.
   private static func allowedUnits(for seconds: TimeInterval) -> NSCalendar.Unit {
     if seconds >= 24 * 60 * 60 {
       return [.day, .hour, .minute]
@@ -48,6 +51,7 @@ enum CalendarComposerLocalizedText {
     return [.minute]
   }
 
+  /// Returns the fallback duration.
   private static func fallbackDuration(seconds: TimeInterval) -> String {
     let minutes = max(1, Int((seconds / 60).rounded()))
 
@@ -64,10 +68,12 @@ enum CalendarComposerLocalizedText {
     return minutes == 1 ? "1 minute" : "\(minutes) minutes"
   }
 
+  /// Returns the represents whole days.
   private static func representsWholeDays(_ minutes: Int) -> Bool {
     minutes >= 24 * 60 && minutes.isMultiple(of: 24 * 60)
   }
 
+  /// Returns the represents whole hours.
   private static func representsWholeHours(_ minutes: Int) -> Bool {
     minutes >= 60 && minutes.isMultiple(of: 60)
   }

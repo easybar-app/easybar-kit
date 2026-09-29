@@ -20,6 +20,7 @@ final class WidgetPopupPanelController: ObservableObject {
     transientInteractionCount > 0
   }
 
+  /// Releases resources retained by this instance.
   deinit {
     let center = NotificationCenter.default
     parentWindowObservers.forEach(center.removeObserver)
@@ -220,6 +221,7 @@ final class WidgetPopupPanelController: ObservableObject {
 
 /// Resolves the backing AppKit anchor view for popup positioning.
 struct WidgetPopupAnchorView: NSViewRepresentable {
+  /// The on resolve for this widget popup anchor view.
   let onResolve: (NSView) -> Void
 
   /// Creates the anchor view and reports it once attached.
@@ -236,6 +238,7 @@ struct WidgetPopupAnchorView: NSViewRepresentable {
   }
 }
 
+/// Coordinates anchor view state and behavior.
 final class AnchorView: NSView {
   var onUpdate: ((NSView) -> Void)?
 

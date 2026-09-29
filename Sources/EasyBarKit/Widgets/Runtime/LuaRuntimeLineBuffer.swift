@@ -12,6 +12,7 @@ final class LuaRuntimeLineBuffer: @unchecked Sendable {
   let stream: AsyncStream<String>
   private let continuation: AsyncStream<String>.Continuation
 
+  /// Creates a Lua runtime line buffer.
   init(maximumBufferedLines: Int) {
     let (stream, continuation) = AsyncStream<String>.makeStream(
       bufferingPolicy: .bufferingOldest(max(1, maximumBufferedLines))

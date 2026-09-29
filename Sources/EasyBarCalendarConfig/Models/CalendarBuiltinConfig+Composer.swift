@@ -1,16 +1,26 @@
 import Foundation
 
 extension CalendarBuiltinConfig {
+  /// Stores composer data.
   public struct Composer: Sendable {
+    /// Stores style data.
     public struct Style: Sendable {
+      /// The background color hex for this style.
       public var backgroundColorHex: String
+      /// The border color hex for this style.
       public var borderColorHex: String
+      /// The border width for this style.
       public var borderWidth: Double
+      /// The corner radius for this style.
       public var cornerRadius: Double
+      /// The padding x for this style.
       public var paddingX: Double
+      /// The padding y for this style.
       public var paddingY: Double
+      /// The header text color hex for this style.
       public var headerTextColorHex: String
 
+      /// Creates a style.
       public init(
         backgroundColorHex: String,
         borderColorHex: String,
@@ -30,33 +40,60 @@ extension CalendarBuiltinConfig {
       }
     }
 
+    /// Stores content data.
     public struct Content: Sendable {
+      /// The create title for this content.
       public var createTitle: String
+      /// The edit title for this content.
       public var editTitle: String
+      /// The title label for this content.
       public var titleLabel: String
+      /// The location label for this content.
       public var locationLabel: String
+      /// The calendar label for this content.
       public var calendarLabel: String
+      /// The title placeholder for this content.
       public var titlePlaceholder: String
+      /// The location placeholder for this content.
       public var locationPlaceholder: String
+      /// The default calendar name for this content.
       public var defaultCalendarName: String?
+      /// The default alert for this content.
       public var defaultAlert: String
+      /// The default travel time for this content.
       public var defaultTravelTime: String
+      /// The alert labels for this content.
       public var alertLabels: [String: String]
+      /// The travel time labels for this content.
       public var travelTimeLabels: [String: String]
+      /// The start label for this content.
       public var startLabel: String
+      /// The end label for this content.
       public var endLabel: String
+      /// The all day label for this content.
       public var allDayLabel: String
+      /// The travel time label for this content.
       public var travelTimeLabel: String
+      /// The alert label for this content.
       public var alertLabel: String
+      /// The add alert label for this content.
       public var addAlertLabel: String
+      /// The open calendar label for this content.
       public var openCalendarLabel: String
+      /// Whether this content can cel label.
       public var cancelLabel: String
+      /// The save label for this content.
       public var saveLabel: String
+      /// The update label for this content.
       public var updateLabel: String
+      /// The remove label for this content.
       public var removeLabel: String
+      /// The delete confirmation title for this content.
       public var deleteConfirmationTitle: String
+      /// The delete confirmation message for this content.
       public var deleteConfirmationMessage: String
 
+      /// Creates a content.
       public init(
         createTitle: String,
         editTitle: String,
@@ -112,9 +149,12 @@ extension CalendarBuiltinConfig {
       }
     }
 
+    /// The style for this composer.
     public var style: Style
+    /// The content for this composer.
     public var content: Content
 
+    /// Creates a composer.
     public init(style: Style, content: Content) {
       self.style = style
       self.content = content

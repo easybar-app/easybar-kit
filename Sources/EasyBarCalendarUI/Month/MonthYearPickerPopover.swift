@@ -2,18 +2,28 @@ import SwiftUI
 
 /// Renders the popover used to jump directly between years in the month popup.
 struct MonthYearPickerPopover: View {
+  /// The current year for this month year picker popover.
   let currentYear: Int
   @Binding var pageStartYear: Int
 
+  /// The on select year for this month year picker popover.
   let onSelectYear: (Int) -> Void
+  /// The on close for this month year picker popover.
   let onClose: () -> Void
+  /// The header color for this month year picker popover.
   let headerColor: Color
+  /// The background color for this month year picker popover.
   let backgroundColor: Color
+  /// The border color for this month year picker popover.
   let borderColor: Color
+  /// The current year text color for this month year picker popover.
   let currentYearTextColor: Color
+  /// The current year background color for this month year picker popover.
   let currentYearBackgroundColor: Color
+  /// The current year border color for this month year picker popover.
   let currentYearBorderColor: Color
 
+  /// The columns for this month year picker popover.
   private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 4)
 
   /// Renders the full year-grid popover.

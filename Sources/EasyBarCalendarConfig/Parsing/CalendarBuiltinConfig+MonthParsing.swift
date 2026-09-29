@@ -1,6 +1,7 @@
 import Foundation
 
 extension CalendarBuiltinConfig {
+  /// Parses month.
   static func parseMonth(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Month
@@ -10,6 +11,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses month popup.
   private static func parseMonthPopup(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Month.Popup
@@ -42,6 +44,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses month popup style.
   private static func parseMonthPopupStyle(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Month.Popup.Style
@@ -60,6 +63,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses month popup calendar.
   private static func parseMonthPopupCalendar(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Month.Popup.CalendarStyle
@@ -134,6 +138,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses month popup selection.
   private static func parseMonthPopupSelection(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Month.Popup.SelectionStyle
@@ -166,6 +171,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses month popup agenda.
   private static func parseMonthPopupAgenda(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Month.Popup.AgendaStyle
@@ -205,6 +211,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses month popup anchor.
   private static func parseMonthPopupAnchor(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Month.Popup.AnchorStyle
@@ -216,6 +223,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Parses month popup today button.
   private static func parseMonthPopupTodayButton(
     reader: Reader,
     fallback: CalendarBuiltinConfig.Month.Popup.TodayButtonStyle
@@ -230,6 +238,7 @@ extension CalendarBuiltinConfig {
     )
   }
 
+  /// Returns the validated month weekday format.
   private static func validatedMonthWeekdayFormat(_ value: String, path: String) throws -> String {
     switch value {
     case "d", "dd", "ddd":
@@ -245,6 +254,7 @@ extension CalendarBuiltinConfig {
     }
   }
 
+  /// Returns the validated month weekday symbols.
   private static func validatedMonthWeekdaySymbols(_ value: [String]?, path: String) throws
     -> [String]?
   {

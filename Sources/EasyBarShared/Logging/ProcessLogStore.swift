@@ -87,6 +87,7 @@ public enum ProcessLogStore {
     return Array(records.suffix(limit))
   }
 
+  /// Returns the chronological order.
   private static func chronologicalOrder(
     _ lhs: ProcessLogRecord,
     _ rhs: ProcessLogRecord
@@ -101,6 +102,7 @@ public enum ProcessLogStore {
     }
   }
 
+  /// Returns the discovered files.
   fileprivate static func discoveredFiles(in directory: String) -> [DiscoveredProcessLogFile] {
     let directoryURL = URL(fileURLWithPath: directory, isDirectory: true)
     guard
@@ -128,6 +130,7 @@ public enum ProcessLogStore {
     }
   }
 
+  /// Returns the archive index.
   private static func archiveIndex(name: String, baseName: String) -> Int? {
     if name == baseName { return 0 }
     let prefix = "\(baseName)."
@@ -137,6 +140,7 @@ public enum ProcessLogStore {
     return index
   }
 
+  /// Returns the file identity.
   private static func fileIdentity(at url: URL) -> ProcessLogFileIdentity? {
     guard
       let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
@@ -153,10 +157,15 @@ public enum ProcessLogStore {
 
 /// Polling follower that survives the logger's rename-based file rotation.
 public final class ProcessLogFollower {
+  /// Stores state data.
   private struct State {
+    /// The URL for this state.
     var url: URL
+    /// The source for this state.
     var source: String
+    /// The offset for this state.
     var offset: UInt64
+    /// The pending line data for this state.
     var pendingLineData: Data
   }
 
@@ -242,18 +251,27 @@ public final class ProcessLogFollower {
   }
 }
 
+/// Stores process log file identity data.
 private struct ProcessLogFileIdentity: Hashable {
+  /// The device for this process log file identity.
   let device: UInt64
+  /// The inode for this process log file identity.
   let inode: UInt64
 }
 
+/// Stores discovered process log file data.
 private struct DiscoveredProcessLogFile {
+  /// The URL for this discovered process log file.
   let url: URL
+  /// The source for this discovered process log file.
   let source: String
+  /// The archive index for this discovered process log file.
   let archiveIndex: Int
+  /// The identity for this discovered process log file.
   let identity: ProcessLogFileIdentity
 }
 
+/// Returns the file size.
 private func fileSize(at url: URL) -> UInt64 {
   guard
     let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
@@ -262,6 +280,7 @@ private func fileSize(at url: URL) -> UInt64 {
   return size.uint64Value
 }
 
+/// Reads data.
 private func readData(at url: URL, offset: UInt64) -> Data? {
   guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
   defer { try? handle.close() }

@@ -6,18 +6,27 @@ extension Config {
   struct VolumeBuiltinConfig: @unchecked Sendable {
     /// Volume display content settings.
     struct Content {
+      /// The muted icon for this content.
       var mutedIcon: String
+      /// The low icon for this content.
       var lowIcon: String
+      /// The high icon for this content.
       var highIcon: String
+      /// Whether this content shows percentage.
       var showPercentage: Bool
+      /// The min value for this content.
       var minValue: Double
+      /// The max value for this content.
       var maxValue: Double
+      /// The step for this content.
       var step: Double
     }
 
     /// Volume slider behavior settings.
     struct Slider {
+      /// Whether the expand to slider on hover option is enabled for this slider.
       var expandToSliderOnHover: Bool
+      /// The width for this slider.
       var width: Double
     }
 
@@ -30,61 +39,73 @@ extension Config {
     /// Slider behavior settings.
     var slider: Slider
 
+    /// Whether this volume builtin config is enabled.
     var enabled: Bool {
       get { placement.enabled }
       set { placement.enabled = newValue }
     }
 
+    /// The position for this volume builtin config.
     var position: WidgetPosition {
       get { placement.position }
       set { placement.position = newValue }
     }
 
+    /// The order for this volume builtin config.
     var order: Int {
       get { placement.order }
       set { placement.order = newValue }
     }
 
+    /// The muted icon for this volume builtin config.
     var mutedIcon: String {
       get { content.mutedIcon }
       set { content.mutedIcon = newValue }
     }
 
+    /// The low icon for this volume builtin config.
     var lowIcon: String {
       get { content.lowIcon }
       set { content.lowIcon = newValue }
     }
 
+    /// The high icon for this volume builtin config.
     var highIcon: String {
       get { content.highIcon }
       set { content.highIcon = newValue }
     }
 
+    /// Whether this volume builtin config shows percentage.
     var showPercentage: Bool {
       get { content.showPercentage }
       set { content.showPercentage = newValue }
     }
 
+    /// The min value for this volume builtin config.
     var minValue: Double {
       get { content.minValue }
       set { content.minValue = newValue }
     }
 
+    /// The max value for this volume builtin config.
     var maxValue: Double {
       get { content.maxValue }
       set { content.maxValue = newValue }
     }
 
+    /// The step for this volume builtin config.
     var step: Double {
       get { content.step }
       set { content.step = newValue }
     }
 
+    /// Whether the expand to slider on hover option is enabled for this volume builtin config.
     var expandToSliderOnHover: Bool {
       get { slider.expandToSliderOnHover }
       set { slider.expandToSliderOnHover = newValue }
     }
 
+    /// The slider width for this volume builtin config.
     var sliderWidth: Double {
       get { slider.width }
       set { slider.width = newValue }

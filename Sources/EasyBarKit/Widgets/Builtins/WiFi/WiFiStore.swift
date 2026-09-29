@@ -3,11 +3,13 @@ import EasyBarShared
 import Foundation
 
 @MainActor
+/// Coordinates native Wi-Fi store state and behavior.
 final class NativeWiFiStore: ObservableObject {
   @Published private(set) var snapshot: NetworkAgentSnapshot?
   private var lastPublishedSignature: NetworkAgentSnapshotRenderSignature?
   let logger: ProcessLogger
 
+  /// Creates a native Wi-Fi store.
   init(logger: ProcessLogger) {
     self.logger = logger
   }

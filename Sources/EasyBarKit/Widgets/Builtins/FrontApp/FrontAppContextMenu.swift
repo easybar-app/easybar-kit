@@ -31,6 +31,7 @@ enum FrontAppContextMenuAction: Equatable {
 
 /// Builds the native front-app context menu from config and focused-app state.
 enum FrontAppContextMenu {
+  /// Creates the requested value.
   static func make(
     config: Config.FrontAppBuiltinConfig,
     canHideFocusedApp: Bool,

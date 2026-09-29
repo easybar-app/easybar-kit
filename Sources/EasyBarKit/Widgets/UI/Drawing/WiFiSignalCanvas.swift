@@ -3,10 +3,15 @@ import SwiftUI
 /// Draws an Apple-like Wi-Fi indicator using two arcs and a dot.
 struct WiFiSignalCanvas: View {
 
+  /// The signal level for this Wi-Fi signal canvas.
   let signalLevel: Int
+  /// The state for this Wi-Fi signal canvas.
   let state: String
+  /// The active color for this Wi-Fi signal canvas.
   let activeColor: Color
+  /// The inactive color for this Wi-Fi signal canvas.
   let inactiveColor: Color
+  /// The slash color for this Wi-Fi signal canvas.
   let slashColor: Color
 
   /// Converts an untrusted widget value into the indicator's supported range.

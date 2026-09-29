@@ -3,11 +3,16 @@ import Foundation
 extension IPC {
   /// Filters one live log subscription independently from persistent file logging.
   public struct LogSubscription: Codable, Equatable, Sendable {
+    /// The widget for this log subscription.
     public let widget: String?
+    /// The runtime for this log subscription.
     public let runtime: ProcessLogRuntime?
+    /// The minimum level accepted by this log subscription.
     public let minimumLevel: ProcessLogLevel?
+    /// The stable identifier for this log subscription.
     public let requestID: String?
 
+    /// Maps stored properties to their encoded keys.
     private enum CodingKeys: String, CodingKey {
       case widget
       case runtime

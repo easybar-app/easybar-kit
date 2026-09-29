@@ -8,10 +8,15 @@ import Foundation
 /// descriptor itself is closed on the writer queue after in-flight work observes
 /// the shutdown, so stale queued closures can never target a reused descriptor.
 public final class BoundedSocketWriter: @unchecked Sendable {
+  /// Stores state data.
   private struct State {
+    /// Whether this state is closed.
     var isClosed = false
+    /// Whether the close scheduled option is enabled for this state.
     var closeScheduled = false
+    /// The pending messages for this state.
     var pendingMessages = 0
+    /// The pending bytes for this state.
     var pendingBytes = 0
   }
 
@@ -40,6 +45,7 @@ public final class BoundedSocketWriter: @unchecked Sendable {
     queue.setSpecific(key: queueKey, value: 1)
   }
 
+  /// Releases resources retained by this instance.
   deinit {
     close()
   }
@@ -105,6 +111,7 @@ public final class BoundedSocketWriter: @unchecked Sendable {
     state.withLock { ($0.pendingMessages, $0.pendingBytes) }
   }
 
+  /// Writes if open.
   private func writeIfOpen(_ data: Data) -> UnixSocketWriteError? {
     guard !state.withLock({ $0.isClosed }) else { return .closed }
     return writeAll(data, to: fd, timeout: writeTimeout)

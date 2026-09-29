@@ -4,8 +4,11 @@ import Foundation
 extension Config {
   /// One fully loaded config state produced off to the side before swapping live values.
   struct LoadedState: Sendable {
+    /// The snapshot for this loaded state.
     let snapshot: ConfigSnapshot
+    /// The registered directories for this loaded state.
     let registeredDirectories: [String: RequiredDirectory]
+    /// The warnings for this loaded state.
     let warnings: [String]
   }
 

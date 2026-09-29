@@ -11,14 +11,22 @@ import SwiftUI
 public final class EasyBarPresentationModel: ObservableObject {
   /// Immutable bar appearance needed by the custom EasyBar window frontend.
   public struct BarStyle {
+    /// The height for this bar style.
     public let height: CGFloat
+    /// The padding x for this bar style.
     public let paddingX: CGFloat
+    /// Whether the extend behind notch option is enabled for this bar style.
     public let extendBehindNotch: Bool
+    /// The background for this bar style.
     public let background: Color
+    /// The border for this bar style.
     public let border: Color
+    /// Whether the draws border option is enabled for this bar style.
     public let drawsBorder: Bool
+    /// The text for this bar style.
     public let text: Color
 
+    /// Creates a bar style.
     fileprivate init(snapshot: ConfigSnapshot) {
       self.height = snapshot.bar.height
       self.paddingX = snapshot.bar.paddingX
@@ -35,10 +43,14 @@ public final class EasyBarPresentationModel: ObservableObject {
   /// Scripted surfaces come from Lua widgets. EasyBarKit may also publish host-owned built-in
   /// surfaces selected by the frontend's `EasyBarBuiltInSurfacePolicy`.
   public struct WidgetSurface: Identifiable {
+    /// The stable identifier for this widget surface.
     public let id: String
+    /// The position for this widget surface.
     public let position: EasyBarShared.WidgetPosition
+    /// The order for this widget surface.
     public let order: Int
 
+    /// The content for this widget surface.
     fileprivate let content: AnyView
 
     /// Returns a self-contained SwiftUI view for this widget.
@@ -60,6 +72,7 @@ public final class EasyBarPresentationModel: ObservableObject {
   private let appViewServices: AppViewServices
   private var cancellables = Set<AnyCancellable>()
 
+  /// Creates an EasyBar presentation model.
   init(logger: ProcessLogger, services: AppServices) {
     self.logger = logger
     self.configStore = services.configSnapshotStore

@@ -5,9 +5,13 @@ import Foundation
 /// Sendability is guarded by `LockedState`; pending task replacement and
 /// generation checks are serialized through that lock.
 public final class DebouncedActionScheduler: @unchecked Sendable {
+  /// Stores state data.
   private struct State {
+    /// The pending task for this state.
     var pendingTask: Task<Void, Never>?
+    /// The pending generation for this state.
     var pendingGeneration: UInt64?
+    /// The generation for this state.
     var generation: UInt64 = 0
   }
 

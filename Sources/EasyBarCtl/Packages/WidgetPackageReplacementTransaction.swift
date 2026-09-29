@@ -2,9 +2,13 @@ import Foundation
 
 /// Tracks package-local filesystem replacements so a failed install can restore prior paths.
 final class WidgetPackageReplacementTransaction {
+  /// Stores change data.
   private struct Change {
+    /// The destination for this change.
     let destination: URL
+    /// The backup for this change.
     let backup: URL?
+    /// Whether the installed replacement option is enabled for this change.
     let installedReplacement: Bool
   }
 
@@ -12,6 +16,7 @@ final class WidgetPackageReplacementTransaction {
   private let identifier = UUID().uuidString
   private var changes: [Change] = []
 
+  /// Creates a widget package replacement transaction.
   init(fileManager: FileManager) {
     self.fileManager = fileManager
   }
@@ -120,6 +125,7 @@ final class WidgetPackageReplacementTransaction {
     }
   }
 
+  /// Returns the backup URL.
   private func backupURL(for destination: URL) -> URL {
     destination.deletingLastPathComponent().appending(
       path: "\(destination.lastPathComponent).backup-\(identifier)",
@@ -127,6 +133,7 @@ final class WidgetPackageReplacementTransaction {
     )
   }
 
+  /// Returns the staging URL.
   private func stagingURL(for destination: URL) -> URL {
     destination.deletingLastPathComponent().appending(
       path: "\(destination.lastPathComponent).staging-\(identifier)",
@@ -134,11 +141,13 @@ final class WidgetPackageReplacementTransaction {
     )
   }
 
+  /// Returns whether a path contains a file or symbolic link.
   private func itemExists(_ url: URL) -> Bool {
     fileManager.fileExists(atPath: url.path)
       || (try? fileManager.destinationOfSymbolicLink(atPath: url.path)) != nil
   }
 
+  /// Returns the relative path.
   private func relativePath(from directory: URL, to target: URL) -> String {
     let sourceComponents = directory.standardizedFileURL.pathComponents
     let targetComponents = target.standardizedFileURL.pathComponents

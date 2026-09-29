@@ -6,19 +6,32 @@ let widgetHoverDelay: Duration = .milliseconds(80)
 
 /// AppKit-backed event surface for widget mouse input.
 struct WidgetMouseView: NSViewRepresentable {
+  /// The stable identifier for this widget mouse view.
   let widgetID: String
+  /// The stable identifier for this widget mouse view.
   let targetWidgetID: String
+  /// The logger used to record operational diagnostics.
   let logger: ProcessLogger
+  /// The event hub for this widget mouse view.
   let eventHub: EventHub?
+  /// Whether the tracks hover option is enabled for this widget mouse view.
   let tracksHover: Bool
+  /// Whether the emits mouse hover option is enabled for this widget mouse view.
   let emitsMouseHover: Bool
+  /// Whether the emits mouse down option is enabled for this widget mouse view.
   let emitsMouseDown: Bool
+  /// Whether the emits mouse up option is enabled for this widget mouse view.
   let emitsMouseUp: Bool
+  /// Whether the emits mouse click option is enabled for this widget mouse view.
   let emitsMouseClick: Bool
+  /// Whether the emits mouse scroll option is enabled for this widget mouse view.
   let emitsMouseScroll: Bool
+  /// The context menu items for this widget mouse view.
   let contextMenuItems: [WidgetContextMenuItem]?
+  /// The on hover changed for this widget mouse view.
   let onHoverChanged: ((Bool) -> Void)?
 
+  /// Creates a widget mouse view.
   init(
     widgetID: String,
     targetWidgetID: String? = nil,
@@ -87,6 +100,7 @@ struct WidgetMouseView: NSViewRepresentable {
   }
 }
 
+/// Coordinates mouse tracking ns view state and behavior.
 final class MouseTrackingNSView: NSView {
   var widgetID: String = ""
   var targetWidgetID: String = ""
@@ -107,12 +121,14 @@ final class MouseTrackingNSView: NSView {
   private let hoverSurfaceID = UUID()
   private static let hoverState = WidgetHoverState()
 
+  /// Creates a mouse tracking ns view.
   init(logger: ProcessLogger) {
     self.logger = logger
     super.init(frame: .zero)
   }
 
   @available(*, unavailable)
+  /// Rejects coder-based construction because the view is created programmatically.
   required init?(coder: NSCoder) {
     nil
   }
@@ -288,6 +304,7 @@ final class MouseTrackingNSView: NSView {
     return menu.items.isEmpty ? nil : menu
   }
 
+  /// Appends context menu items.
   private func appendContextMenuItems(_ entries: [WidgetContextMenuItem], to menu: NSMenu) {
     for entry in entries {
       if entry.separator {
@@ -319,6 +336,7 @@ final class MouseTrackingNSView: NSView {
     handleContextMenuItemSelection(sender)
   }
 
+  /// Handles context menu item selection.
   func handleContextMenuItemSelection(_ sender: NSMenuItem) {
     guard sender.isEnabled, let actionID = sender.representedObject as? String else { return }
     if let onContextMenuAction {
@@ -454,8 +472,11 @@ final class MouseTrackingNSView: NSView {
 /// Sendability is guarded by `LockedState`; hovered IDs and pending exit tasks
 /// are only accessed while holding that lock.
 final class WidgetHoverState: @unchecked Sendable {
+  /// Stores state data.
   private struct State {
+    /// The stable identifier for this state.
     var surfaceIDsByWidgetID: [String: Set<UUID>] = [:]
+    /// The pending exit tasks for this state.
     var pendingExitTasks: [String: Task<Void, Never>] = [:]
   }
 

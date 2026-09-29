@@ -3,8 +3,10 @@ import Foundation
 
 /// Installs the bundled Lua editor stub into the configured editor-stub path.
 struct WidgetEditorStubInstaller {
+  /// The logger used to record operational diagnostics.
   private let logger: ProcessLogger
 
+  /// Creates a widget editor stub installer.
   init(logger: ProcessLogger) {
     self.logger = logger
   }

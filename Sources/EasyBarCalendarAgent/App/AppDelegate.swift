@@ -1,6 +1,7 @@
 import Cocoa
 
 @MainActor
+/// Coordinates app delegate state and behavior.
 final class AppDelegate: NSObject, NSApplicationDelegate {
   private lazy var appController = AppController { [weak self] in
     self?.stopApplication(exitCode: 75)

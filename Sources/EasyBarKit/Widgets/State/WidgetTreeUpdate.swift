@@ -8,6 +8,7 @@ enum WidgetStorageValue: Codable, Equatable, Sendable {
   case bool(Bool)
   case stringArray([String])
 
+  /// Creates a widget storage value.
   init(from decoder: Decoder) throws {
     let container = try decoder.singleValueContainer()
     if let value = try? container.decode(Bool.self) {
@@ -31,6 +32,7 @@ enum WidgetStorageValue: Codable, Equatable, Sendable {
     }
   }
 
+  /// Encodes the requested value.
   func encode(to encoder: Encoder) throws {
     var container = encoder.singleValueContainer()
     switch self {
@@ -54,28 +56,50 @@ let easyBarLuaRuntimeProtocolVersion = 1
 /// Decoded message emitted by the Lua widget runtime.
 struct WidgetTreeUpdate: Codable, Sendable {
 
+  /// The protocol version for this widget tree update.
   let protocolVersion: Int?
+  /// The type for this widget tree update.
   let type: Kind
+  /// The root for this widget tree update.
   let root: String?
+  /// The nodes for this widget tree update.
   let nodes: [WidgetNodeState]?
+  /// The events for this widget tree update.
   let events: [String]?
+  /// The token for this widget tree update.
   let token: String?
+  /// The command for this widget tree update.
   let command: String?
+  /// The arguments for this widget tree update.
   let arguments: [String]?
+  /// Whether the sync option is enabled for this widget tree update.
   let sync: Bool?
+  /// The delay seconds for this widget tree update.
   let delaySeconds: TimeInterval?
+  /// The timeout seconds for this widget tree update.
   let timeoutSeconds: TimeInterval?
+  /// The max output bytes for this widget tree update.
   let maxOutputBytes: Int?
+  /// The widget for this widget tree update.
   let widget: String?
+  /// The operation for this widget tree update.
   let operation: String?
+  /// The source for this widget tree update.
   let source: String?
+  /// The items for this widget tree update.
   let items: [InboxItem]?
+  /// The actions for this widget tree update.
   let actions: [InboxAction]?
+  /// The order for this widget tree update.
   let order: Int?
+  /// The presentation for this widget tree update.
   let presentation: InboxSourcePresentation?
+  /// The key for this widget tree update.
   let key: String?
+  /// The value for this widget tree update.
   let value: WidgetStorageValue?
 
+  /// Maps stored properties to their encoded keys.
   enum CodingKeys: String, CodingKey {
     case protocolVersion
     case type
@@ -100,6 +124,7 @@ struct WidgetTreeUpdate: Codable, Sendable {
     case value
   }
 
+  /// Defines the supported kind values.
   enum Kind: String, Codable, Sendable {
     case subscriptions
     case ready
@@ -163,16 +188,19 @@ struct WidgetTreeUpdate: Codable, Sendable {
     return (token: token, delaySeconds: delaySeconds)
   }
 
+  /// The inbox replace payload for this widget tree update.
   var inboxReplacePayload: InboxSourceSnapshot? {
     guard type == .inboxReplace, let source, let items else { return nil }
     return InboxSourceSnapshot(source: source, items: items)
   }
 
+  /// The inbox clear source for this widget tree update.
   var inboxClearSource: String? {
     guard type == .inboxClear else { return nil }
     return source
   }
 
+  /// The inbox configuration payload for this widget tree update.
   var inboxConfigurationPayload: InboxSourceConfiguration? {
     guard type == .inboxConfigure, let source, let actions else { return nil }
     return InboxSourceConfiguration(
@@ -183,6 +211,7 @@ struct WidgetTreeUpdate: Codable, Sendable {
     )
   }
 
+  /// The storage request payload for this widget tree update.
   var storageRequestPayload:
     (token: String, widget: String, key: String, operation: String, value: WidgetStorageValue?)?
   {

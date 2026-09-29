@@ -3,6 +3,7 @@ import Foundation
 import SwiftTOMLEdit
 
 @MainActor
+/// Coordinates inbox native widget state and behavior.
 final class InboxNativeWidget: NativeWidget {
   let rootID = "builtin_inbox"
   let widgetStore: WidgetStore
@@ -15,6 +16,7 @@ final class InboxNativeWidget: NativeWidget {
   private var cancellable: AnyCancellable?
   private var items: [InboxPresentedItem] = []
 
+  /// Creates an inbox native widget.
   init(
     config: Config.InboxBuiltinConfig,
     widgetStore: WidgetStore,
@@ -31,6 +33,7 @@ final class InboxNativeWidget: NativeWidget {
     self.eventObserver = EasyBarEventObserver(eventHub: eventHub)
   }
 
+  /// Starts the associated service.
   func start() {
     inboxStore.updateConfiguration(config)
     cancellable = inboxStore.$presentedItems.sink { [weak self] items in
@@ -46,6 +49,7 @@ final class InboxNativeWidget: NativeWidget {
     }
   }
 
+  /// Stops the associated service.
   func stop() {
     cancellable?.cancel()
     cancellable = nil
@@ -53,6 +57,7 @@ final class InboxNativeWidget: NativeWidget {
     clearNodes()
   }
 
+  /// Publishes the requested operation.
   private func publish(items: [InboxPresentedItem]) {
     let unreadCount = items.lazy.filter(\.isUnread).count
     let hasUnread = unreadCount > 0
@@ -76,6 +81,7 @@ final class InboxNativeWidget: NativeWidget {
     applyNodes([node])
   }
 
+  /// Handles context menu action.
   private func handleContextMenuAction(_ actionID: String) {
     guard let action = InboxContextMenuAction(id: actionID) else { return }
     var updated = config
@@ -114,11 +120,16 @@ final class InboxNativeWidget: NativeWidget {
   }
 }
 
+/// Stores inbox anchor presentation data.
 struct InboxAnchorPresentation: Equatable {
+  /// The icon for this inbox anchor presentation.
   let icon: String
+  /// The icon color hex for this inbox anchor presentation.
   let iconColorHex: String?
+  /// The count color hex for this inbox anchor presentation.
   let countColorHex: String?
 
+  /// Resolves the requested value.
   static func resolve(
     config: Config.InboxBuiltinConfig,
     hasUnread: Bool

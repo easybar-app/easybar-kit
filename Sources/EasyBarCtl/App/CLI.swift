@@ -5,6 +5,7 @@ import Foundation
 /// CLI entry point.
 @main
 enum EasyBarCtlApp {
+  /// Runs the program entry point.
   static func main() async {
     exit(await AppController().run())
   }
@@ -12,6 +13,7 @@ enum EasyBarCtlApp {
 
 /// Runs the CLI flow.
 private struct AppController {
+  /// Runs the requested operation.
   func run() async -> Int32 {
     do {
       let parsed = try parseArguments(CommandLine.arguments)

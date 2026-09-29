@@ -2,8 +2,10 @@ import EasyBarCalendarPresentation
 import EasyBarShared
 import SwiftUI
 
+/// Stores calendar upcoming popup view data.
 public struct CalendarUpcomingPopupView<Store: CalendarUpcomingPopupStore>: View {
 
+  /// The resolved calendar for this calendar upcoming popup view.
   private var resolvedCalendar: Calendar {
     var calendar = Calendar.current
 
@@ -15,14 +17,22 @@ public struct CalendarUpcomingPopupView<Store: CalendarUpcomingPopupStore>: View
   }
 
   @ObservedObject private var store: Store
+  /// The config for this calendar upcoming popup view.
   private let config: CalendarUpcomingPopupConfig
+  /// The appointments style for this calendar upcoming popup view.
   private let appointmentsStyle: CalendarAppointmentsStyle
+  /// The birthdays for this calendar upcoming popup view.
   private let birthdays: CalendarBirthdayStyle
+  /// The empty text for this calendar upcoming popup view.
   private let emptyText: String
+  /// The event actions for this calendar upcoming popup view.
   private let eventActions: CalendarEventActions?
+  /// The now provider for this calendar upcoming popup view.
   private let nowProvider: () -> Date
+  /// The on event tap for this calendar upcoming popup view.
   private let onEventTap: (CalendarAgentEvent) -> Void
 
+  /// Creates a calendar upcoming popup view.
   public init(
     store: Store,
     config: CalendarUpcomingPopupConfig,

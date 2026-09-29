@@ -16,6 +16,7 @@ final class AppController: NetworkAuthorizationPromptPresenter {
   private var runtime: NetworkAgentRuntime?
   private var presentedAuthorizationPrompt = false
 
+  /// Creates an app controller.
   init(onRestartRequested: @escaping @MainActor () -> Void) {
     self.onRestartRequested = onRestartRequested
   }

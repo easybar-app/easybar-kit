@@ -1,16 +1,26 @@
 import EasyBarShared
 import Foundation
 
+/// Stores installed widget package status data.
 struct InstalledWidgetPackageStatus: Codable, Equatable {
+  /// The name for this installed widget package status.
   let name: String
+  /// The version for this installed widget package status.
   let version: String
+  /// The kind for this installed widget package status.
   let kind: WidgetPackageKind
+  /// The entrypoint for this installed widget package status.
   let entrypoint: String?
+  /// The dependencies for this installed widget package status.
   let dependencies: [String: String]
+  /// The exports for this installed widget package status.
   let exports: [String: String]
+  /// The source for this installed widget package status.
   let source: String
+  /// Whether this installed widget package status is pinned.
   let pinned: Bool
 
+  /// Creates an installed widget package status.
   init(package: InstalledWidgetPackage, pinned: Bool) {
     name = package.name
     version = package.version
@@ -23,11 +33,16 @@ struct InstalledWidgetPackageStatus: Codable, Equatable {
   }
 }
 
+/// Stores widget package lister data.
 struct WidgetPackageLister {
+  /// The packages directory for this widget package lister.
   private let packagesDirectory: URL
+  /// The database store for this widget package lister.
   private let databaseStore: WidgetPackageDatabaseStore
+  /// The pin store for this widget package lister.
   private let pinStore: WidgetPackagePinStore
 
+  /// Creates a widget package lister.
   init(
     fileManager: FileManager = .default,
     packagesDirectory: URL = SharedPathDefaults.defaultWidgetPackagesPath()
@@ -37,6 +52,7 @@ struct WidgetPackageLister {
     pinStore = WidgetPackagePinStore(fileManager: fileManager)
   }
 
+  /// Returns the installed.
   func installed(filter: InstalledWidgetPackageFilter) throws -> [InstalledWidgetPackageStatus] {
     let packages = try databaseStore.load(from: packagesDirectory).packages
     let pins = try pinStore.load(from: packagesDirectory)
@@ -55,6 +71,7 @@ struct WidgetPackageLister {
   }
 }
 
+/// Lists installed widget packages.
 func listInstalledWidgetPackages(
   options: InstalledWidgetPackageOptions,
   context: AppContext

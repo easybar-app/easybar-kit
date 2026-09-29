@@ -6,16 +6,24 @@ actor LuaTimerService {
   /// Hard limit for one runtime session's active one-shot timers.
   static let maximumActiveTimers = 1_024
 
+  /// Stores active timer data.
   private struct ActiveTimer {
+    /// The stable identifier for this active timer.
     let runtimeSessionID: UInt64
+    /// The task for this active timer.
     let task: Task<Void, Never>
   }
 
+  /// Stores Lua timer response data.
   private struct LuaTimerResponse: Encodable {
+    /// The protocol version for this Lua timer response.
     let protocolVersion = easyBarLuaRuntimeProtocolVersion
+    /// The type for this Lua timer response.
     let type = "timer_fired"
+    /// The token for this Lua timer response.
     let token: String
 
+    /// Maps stored properties to their encoded keys.
     enum CodingKeys: String, CodingKey {
       case protocolVersion = "protocol_version"
       case type
@@ -23,12 +31,18 @@ actor LuaTimerService {
     }
   }
 
+  /// Stores Lua timer rejected response data.
   private struct LuaTimerRejectedResponse: Encodable {
+    /// The protocol version for this Lua timer rejected response.
     let protocolVersion = easyBarLuaRuntimeProtocolVersion
+    /// The type for this Lua timer rejected response.
     let type = "timer_rejected"
+    /// The token for this Lua timer rejected response.
     let token: String
+    /// The message for this Lua timer rejected response.
     let message: String
 
+    /// Maps stored properties to their encoded keys.
     enum CodingKeys: String, CodingKey {
       case protocolVersion = "protocol_version"
       case type
@@ -44,6 +58,7 @@ actor LuaTimerService {
   private var activeTimers: [String: ActiveTimer] = [:]
   private var activeRuntimeSessionID: UInt64?
 
+  /// Creates a Lua timer service.
   init(logger: ProcessLogger, luaRuntime: LuaRuntime) {
     self.logger = logger
     self.maximumActiveTimers = Self.maximumActiveTimers
@@ -122,6 +137,7 @@ actor LuaTimerService {
     )
   }
 
+  /// Evaluates the at capacity condition.
   private func isAtCapacity(forNewToken token: String) -> Bool {
     activeTimers[token] == nil && activeTimers.count >= maximumActiveTimers
   }
@@ -152,6 +168,7 @@ actor LuaTimerService {
     await sendResponse(encoded)
   }
 
+  /// Fires one pending timer when its runtime session is still active.
   private func fire(
     token: String,
     runtimeSessionID: UInt64,

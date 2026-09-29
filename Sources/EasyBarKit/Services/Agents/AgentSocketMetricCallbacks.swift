@@ -2,9 +2,13 @@ import Foundation
 
 /// Metric callbacks shared by app-side agent socket clients.
 struct AgentSocketMetricCallbacks {
+  /// The on connected for this agent socket metric callbacks.
   let onConnected: () -> Void
+  /// The on disconnected for this agent socket metric callbacks.
   let onDisconnected: () -> Void
+  /// The on decoded message for this agent socket metric callbacks.
   let onDecodedMessage: () -> Void
+  /// The on decode error for this agent socket metric callbacks.
   let onDecodeError: () -> Void
 
   /// Builds callbacks that record lifecycle and message events for one agent stream.

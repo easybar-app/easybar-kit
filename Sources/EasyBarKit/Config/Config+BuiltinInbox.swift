@@ -5,40 +5,74 @@ extension InboxGroupMode: TOMLStringDecodable {}
 extension InboxSortMode: TOMLStringDecodable {}
 
 extension Config {
+  /// Stores inbox builtin config data.
   struct InboxBuiltinConfig: @unchecked Sendable {
+    /// The placement for this inbox builtin config.
     var placement: BuiltinWidgetPlacement
+    /// The style for this inbox builtin config.
     var style: InboxBuiltinStyle
+    /// The group by for this inbox builtin config.
     var groupBy: InboxGroupMode
+    /// The sort by for this inbox builtin config.
     var sortBy: InboxSortMode
+    /// Whether the sort descending option is enabled for this inbox builtin config.
     var sortDescending: Bool
+    /// Whether this inbox builtin config shows unread count.
     var showUnreadCount: Bool
+    /// Whether this inbox builtin config uses inactive style when read.
     var useInactiveStyleWhenRead: Bool
+    /// Whether this inbox builtin config shows when empty.
     var showWhenEmpty: Bool
+    /// Whether this inbox builtin config shows source actions.
     var showSourceActions: Bool
+    /// Whether this inbox builtin config shows refresh all.
     var showRefreshAll: Bool
+    /// The refresh all icon for this inbox builtin config.
     var refreshAllIcon: String
+    /// The refresh all tooltip for this inbox builtin config.
     var refreshAllTooltip: String
+    /// Whether this inbox builtin config shows mark all read.
     var showMarkAllRead: Bool
+    /// The mark all read icon for this inbox builtin config.
     var markAllReadIcon: String
+    /// The mark all read tooltip for this inbox builtin config.
     var markAllReadTooltip: String
+    /// Whether this inbox builtin config shows dismiss all.
     var showDismissAll: Bool
+    /// The dismiss all icon for this inbox builtin config.
     var dismissAllIcon: String
+    /// The dismiss all tooltip for this inbox builtin config.
     var dismissAllTooltip: String
+    /// The popup width for this inbox builtin config.
     var popupWidth: Int
+    /// The popup max height for this inbox builtin config.
     var popupMaxHeight: Int
+    /// The popup background color hex for this inbox builtin config.
     var popupBackgroundColorHex: String?
+    /// The popup border color hex for this inbox builtin config.
     var popupBorderColorHex: String?
+    /// The popup title color hex for this inbox builtin config.
     var popupTitleColorHex: String?
+    /// The popup text color hex for this inbox builtin config.
     var popupTextColorHex: String?
+    /// The popup muted color hex for this inbox builtin config.
     var popupMutedColorHex: String?
+    /// The popup item background color hex for this inbox builtin config.
     var popupItemBackgroundColorHex: String?
+    /// The popup action color hex for this inbox builtin config.
     var popupActionColorHex: String?
+    /// The info color hex for this inbox builtin config.
     var infoColorHex: String?
+    /// The success color hex for this inbox builtin config.
     var successColorHex: String?
+    /// The warning color hex for this inbox builtin config.
     var warningColorHex: String?
+    /// The error color hex for this inbox builtin config.
     var errorColorHex: String?
+    /// The max items for this inbox builtin config.
     var maxItems: Int
 
+    /// Whether this inbox builtin config is enabled.
     var enabled: Bool { placement.enabled }
 
     static let `default` = InboxBuiltinConfig(
@@ -95,6 +129,7 @@ extension Config {
     )
   }
 
+  /// Parses inbox builtin.
   func parseInboxBuiltin(from builtins: ConfigReader) throws {
     guard let inbox = try builtins.optionalSection("inbox") else { return }
     let placement = try parseBuiltinPlacement(reader: inbox, fallback: builtinInbox.placement)
@@ -178,6 +213,7 @@ extension Config {
     )
   }
 
+  /// Returns the non empty inbox string.
   private func nonEmptyInboxString(
     _ key: String,
     from reader: ConfigReader,

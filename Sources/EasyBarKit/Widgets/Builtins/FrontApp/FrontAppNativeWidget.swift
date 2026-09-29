@@ -121,6 +121,7 @@ final class FrontAppNativeWidget: NativeWidget {
     }
   }
 
+  /// Persists the current state.
   private func persist(_ updated: Config.FrontAppBuiltinConfig, edit: TOMLEdit) {
     NativeWidgetConfigUpdate.persist(edits: [edit], using: configPersistence) {
       config = updated

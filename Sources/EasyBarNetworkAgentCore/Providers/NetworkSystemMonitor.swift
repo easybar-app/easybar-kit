@@ -119,6 +119,7 @@ final class NetworkSystemMonitor {
     var allInterfaces: [String] = []
     var seenInterfaces = Set<String>()
 
+    /// Appends interface.
     func appendInterface(_ name: String) {
       guard seenInterfaces.insert(name).inserted else { return }
       allInterfaces.append(name)

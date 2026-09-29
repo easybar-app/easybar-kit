@@ -1,12 +1,18 @@
 import SwiftUI
 
+/// Stores sparkline canvas data.
 struct SparklineCanvas: View {
 
+  /// The values for this sparkline canvas.
   let values: [Double]
+  /// The tint for this sparkline canvas.
   let tint: Color
+  /// The line width for this sparkline canvas.
   let lineWidth: CGFloat
 
+  /// The min value for this sparkline canvas.
   private let minValue = 0.0
+  /// The max value for this sparkline canvas.
   private let maxValue = 100.0
 
   /// Draws the sparkline path when enough points exist.

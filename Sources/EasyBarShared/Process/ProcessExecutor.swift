@@ -38,17 +38,28 @@ public enum ProcessExecutionError: Error, Equatable, LocalizedError, Sendable {
 
 /// Immutable execution request consumed by `ProcessExecutor`.
 public struct ProcessExecutionRequest: Sendable {
+  /// The executable path for this process execution request.
   public let executablePath: String
+  /// The arguments for this process execution request.
   public let arguments: [String]
+  /// The environment for this process execution request.
   public let environment: [String: String]
+  /// The timeout for this process execution request.
   public let timeout: TimeInterval?
+  /// The standard output limit for this process execution request.
   public let standardOutputLimit: Int
+  /// The standard error limit for this process execution request.
   public let standardErrorLimit: Int
+  /// Whether the merge standard error option is enabled for this process execution request.
   public let mergeStandardError: Bool
+  /// The termination grace seconds for this process execution request.
   public let terminationGraceSeconds: TimeInterval
+  /// The pipe drain grace seconds for this process execution request.
   public let pipeDrainGraceSeconds: TimeInterval
+  /// The final reap grace seconds for this process execution request.
   public let finalReapGraceSeconds: TimeInterval
 
+  /// Creates a process execution request.
   public init(
     executablePath: String,
     arguments: [String],
@@ -76,9 +87,13 @@ public struct ProcessExecutionRequest: Sendable {
 
 /// Captured output and termination state from one process execution.
 public struct ProcessExecutionResult: Equatable, Sendable {
+  /// The standard output for this process execution result.
   public let standardOutput: Data
+  /// The standard error for this process execution result.
   public let standardError: Data
+  /// The termination for this process execution result.
   public let termination: ProcessTerminationStatus
+  /// The outcome for this process execution result.
   public let outcome: ProcessExecutionOutcome
 }
 
@@ -86,9 +101,11 @@ public struct ProcessExecutionResult: Equatable, Sendable {
 public final class ProcessExecutor: @unchecked Sendable {
   private static let pollIntervalMilliseconds: Int32 = 20
 
+  /// Coordinates cancellation state state and behavior.
   private final class CancellationState: @unchecked Sendable {
     private let state = LockedState(false)
 
+    /// Cancels the requested operation.
     func cancel() {
       state.withLock { $0 = true }
     }
@@ -98,18 +115,27 @@ public final class ProcessExecutor: @unchecked Sendable {
     }
   }
 
+  /// Stores output channel data.
   private struct OutputChannel {
+    /// The stream for this output channel.
     let stream: ProcessCapturedStream
+    /// The limit for this output channel.
     let limit: Int
+    /// The file descriptor for this output channel.
     var fileDescriptor: Int32
+    /// The data for this output channel.
     var data = Data()
+    /// Whether the exceeded limit option is enabled for this output channel.
     var exceededLimit = false
+    /// The read error for this output channel.
     var readError: Int32?
 
+    /// Whether this output channel is open.
     var isOpen: Bool {
       fileDescriptor >= 0
     }
 
+    /// Closes the associated service.
     mutating func close() {
       guard fileDescriptor >= 0 else { return }
       Darwin.close(fileDescriptor)
@@ -258,6 +284,7 @@ public final class ProcessExecutor: @unchecked Sendable {
     var closePipesDeadline: UInt64?
     var finalCleanupDeadline: UInt64?
 
+    /// Records signal failure.
     func recordSignalFailure(_ delivery: ProcessSignalDelivery, signal: Int32) {
       guard !delivery.delivered, !delivery.targetWasMissing else { return }
       logger.warn(
@@ -270,6 +297,7 @@ public final class ProcessExecutor: @unchecked Sendable {
       )
     }
 
+    /// Returns the begin cleanup.
     func beginCleanup(now: UInt64, leaderHasExited: Bool) {
       guard !sentTerminationSignal else { return }
       sentTerminationSignal = true
@@ -428,6 +456,7 @@ public final class ProcessExecutor: @unchecked Sendable {
     )
   }
 
+  /// Evaluates the invalid timeout condition.
   private func hasInvalidTimeout(_ request: ProcessExecutionRequest) -> Bool {
     guard let timeout = request.timeout else { return false }
     return !timeout.isFinite || timeout <= 0

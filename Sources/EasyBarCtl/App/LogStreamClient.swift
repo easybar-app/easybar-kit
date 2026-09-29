@@ -59,6 +59,7 @@ enum LogStreamClientError: LocalizedError {
 
 /// Multiplexes bounded live log streams from EasyBar and its enabled agents.
 struct LogStreamClient {
+  /// The endpoints for this log stream client.
   let endpoints: [LogStreamEndpoint]
 
   /// Connects every requested process before exposing retained history or live records.
@@ -140,6 +141,7 @@ struct LogStreamClient {
     }
   }
 
+  /// Opens connection.
   private func openConnection(
     to endpoint: LogStreamEndpoint,
     subscription: IPC.LogSubscription
@@ -168,6 +170,7 @@ struct LogStreamClient {
     )
   }
 
+  /// Sends subscription.
   private func sendSubscription(
     _ subscription: IPC.LogSubscription,
     endpoint: LogStreamEndpoint,
@@ -205,6 +208,7 @@ struct LogStreamClient {
     }
   }
 
+  /// Polls active connections for work.
   private func pollConnections(
     _ connections: inout [Connection]
   ) throws -> [(Int, Signal)] {
@@ -235,6 +239,7 @@ struct LogStreamClient {
     return signals
   }
 
+  /// Reads available.
   private func readAvailable(
     from index: Int,
     connections: inout [Connection]
@@ -266,13 +271,19 @@ struct LogStreamClient {
 }
 
 extension LogStreamClient {
+  /// Stores connection data.
   fileprivate struct Connection {
+    /// The endpoint for this connection.
     let endpoint: LogStreamEndpoint
+    /// The fd for this connection.
     let fd: Int32
+    /// The decoder for this connection.
     var decoder: DecoderState
+    /// Whether this connection is subscribed.
     var subscribed = false
   }
 
+  /// Defines the supported signal values.
   fileprivate enum Signal {
     case subscribed
     case record(ProcessLogRecord)
@@ -280,11 +291,13 @@ extension LogStreamClient {
     case unexpected(String)
   }
 
+  /// Defines the supported decoder state values.
   fileprivate enum DecoderState {
     case easyBar(LineDelimitedJSONDecoder<IPC.Message>)
     case calendar(LineDelimitedJSONDecoder<CalendarAgentMessage>)
     case network(LineDelimitedJSONDecoder<NetworkAgentMessage>)
 
+    /// Creates a decoder state.
     init(endpoint: LogStreamEndpoint) {
       let decoder = JSONDecoder()
       decoder.dateDecodingStrategy = .iso8601
@@ -299,6 +312,7 @@ extension LogStreamClient {
       }
     }
 
+    /// Appends the requested operation.
     mutating func append(_ bytes: ArraySlice<UInt8>) throws -> [Signal] {
       switch self {
       case .easyBar(var decoder):
@@ -316,6 +330,7 @@ extension LogStreamClient {
       }
     }
 
+    /// Flushes pending work.
     mutating func flush() throws -> [Signal] {
       switch self {
       case .easyBar(var decoder):
@@ -333,6 +348,7 @@ extension LogStreamClient {
       }
     }
 
+    /// Signals the waiting operation.
     private static func signal(from message: IPC.Message) throws -> Signal {
       switch message {
       case .logSubscribed:
@@ -346,6 +362,7 @@ extension LogStreamClient {
       }
     }
 
+    /// Signals the waiting operation.
     private static func signal(from message: CalendarAgentMessage) throws -> Signal {
       switch message.kind {
       case .logSubscribed:
@@ -362,6 +379,7 @@ extension LogStreamClient {
       }
     }
 
+    /// Signals the waiting operation.
     private static func signal(from message: NetworkAgentMessage) throws -> Signal {
       switch message.kind {
       case .logSubscribed:

@@ -1,16 +1,21 @@
 import AppKit
 import SwiftUI
 
+/// Stores inbox popup view data.
 struct InboxPopupView: View {
   @ObservedObject var store: InboxStore
+  /// The event hub for this inbox popup view.
   let eventHub: EventHub
+  /// The popup panel for this inbox popup view.
   let popupPanel: WidgetPopupPanelController
+  /// The on source actions menu closed for this inbox popup view.
   let onSourceActionsMenuClosed: () -> Void
   @EnvironmentObject private var configStore: ConfigSnapshotStore
   @State private var holdsSourceActionOpen = false
   @State private var observedSourceActivity = false
   @State private var sourceActionHoldTask: Task<Void, Never>?
 
+  /// The rendered content for this view.
   var body: some View {
     let config = configStore.snapshot.builtins.inbox
     let activities = sourceActivityRows
@@ -198,6 +203,7 @@ struct InboxPopupView: View {
     }
   }
 
+  /// Returns the begin source action hold.
   private func beginSourceActionHold(hasActivity: Bool) {
     guard !holdsSourceActionOpen else { return }
 
@@ -219,11 +225,13 @@ struct InboxPopupView: View {
     }
   }
 
+  /// Handles source actions menu closed.
   private func handleSourceActionsMenuClosed() {
     guard !holdsSourceActionOpen else { return }
     onSourceActionsMenuClosed()
   }
 
+  /// Handles source activity change.
   private func handleSourceActivityChange(hasActivity: Bool) {
     guard holdsSourceActionOpen else { return }
 
@@ -236,6 +244,7 @@ struct InboxPopupView: View {
     }
   }
 
+  /// Returns the release source action hold.
   private func releaseSourceActionHold() {
     sourceActionHoldTask?.cancel()
     sourceActionHoldTask = nil
@@ -246,26 +255,32 @@ struct InboxPopupView: View {
     popupPanel.endTransientInteraction()
   }
 
+  /// Whether the should release inactive source action hold option is enabled for this inbox popup view.
   private var shouldReleaseInactiveSourceActionHold: Bool {
     holdsSourceActionOpen && !observedSourceActivity
   }
 
+  /// Evaluates the show refresh all condition.
   private func shouldShowRefreshAll(_ config: Config.InboxBuiltinConfig) -> Bool {
     config.showRefreshAll && !store.refreshAllTargets.isEmpty
   }
 
+  /// Evaluates the show mark all read condition.
   private func shouldShowMarkAllRead(_ config: Config.InboxBuiltinConfig) -> Bool {
     config.showMarkAllRead && store.unreadCount > 0
   }
 
+  /// Evaluates the show dismiss all condition.
   private func shouldShowDismissAll(_ config: Config.InboxBuiltinConfig) -> Bool {
     config.showDismissAll && !store.presentedItems.isEmpty
   }
 
+  /// Evaluates the show source actions condition.
   private func shouldShowSourceActions(_ config: Config.InboxBuiltinConfig) -> Bool {
     config.showSourceActions && !store.sourceConfigurations.isEmpty
   }
 
+  /// The source activity rows for this inbox popup view.
   private var sourceActivityRows: [InboxSourceActivityRow] {
     store.sourceConfigurations.flatMap { configuration in
       configuration.actions.compactMap { action in
@@ -279,10 +294,12 @@ struct InboxPopupView: View {
     }
   }
 
+  /// Returns the source presentation.
   private func sourcePresentation(for source: String) -> InboxSourcePresentation? {
     store.presentedItems.first { $0.source == source }?.item.source
   }
 
+  /// Returns the source activity view.
   private func sourceActivityView(
     _ activity: InboxSourceActivityRow,
     config: Config.InboxBuiltinConfig
@@ -312,6 +329,7 @@ struct InboxPopupView: View {
     .clipShape(RoundedRectangle(cornerRadius: 7))
   }
 
+  /// Returns the item view.
   private func itemView(
     _ presented: InboxPresentedItem,
     busySourceActions: [InboxAction],
@@ -461,6 +479,7 @@ struct InboxPopupView: View {
     }
   }
 
+  /// Returns the source group header.
   private func sourceGroupHeader(
     title: String,
     presentation: InboxSourcePresentation?,
@@ -480,6 +499,7 @@ struct InboxPopupView: View {
   }
 
   @ViewBuilder
+  /// Returns the body text.
   private func bodyText(_ body: String, format: InboxBodyFormat) -> some View {
     if format == .markdown,
       let attributed = try? AttributedString(
@@ -493,6 +513,7 @@ struct InboxPopupView: View {
     }
   }
 
+  /// Returns the emit action.
   private func emitAction(
     _ event: WidgetEvent,
     actionID: String,
@@ -510,10 +531,12 @@ struct InboxPopupView: View {
     }
   }
 
+  /// Returns the color.
   private func color(_ value: String?) -> Color {
     Color(hex: value ?? configStore.snapshot.theme.colors.text, snapshot: configStore.snapshot)
   }
 
+  /// Returns the severity color.
   private func severityColor(_ severity: InboxSeverity) -> Color {
     let config = configStore.snapshot.builtins.inbox
     switch severity {
@@ -525,17 +548,23 @@ struct InboxPopupView: View {
   }
 }
 
+/// Defines the supported inbox item action style values.
 enum InboxItemActionStyle: Equatable {
   case button
   case progress
   case status
 }
 
+/// Stores inbox item action presentation data.
 struct InboxItemActionPresentation: Equatable {
+  /// The title for this inbox item action presentation.
   let title: String
+  /// The style for this inbox item action presentation.
   let style: InboxItemActionStyle
+  /// Whether this inbox item action presentation is enabled.
   let isEnabled: Bool
 
+  /// Creates an inbox item action presentation.
   init(action: InboxAction, busySourceAction: InboxAction?) {
     if let busySourceAction, busySourceAction.isBusy {
       title = busySourceAction.title
@@ -553,22 +582,32 @@ struct InboxItemActionPresentation: Equatable {
   }
 }
 
+/// Stores inbox source activity row data.
 private struct InboxSourceActivityRow: Identifiable {
+  /// The source for this inbox source activity row.
   let source: String
+  /// The action for this inbox source activity row.
   let action: InboxAction
+  /// The presentation for this inbox source activity row.
   let presentation: InboxSourcePresentation?
 
+  /// The stable identifier for this inbox source activity row.
   var id: String { source + "\u{1f}" + action.id }
 }
 
+/// Stores inbox source icon view data.
 private struct InboxSourceIconView: View {
+  /// The value for this inbox source icon view.
   let value: String
+  /// The color for this inbox source icon view.
   let color: Color
 
+  /// The image source for this inbox source icon view.
   private var imageSource: WidgetImageSource? {
     value.hasPrefix("/") ? .path(value) : nil
   }
 
+  /// The rendered content for this view.
   var body: some View {
     if let imageSource {
       WidgetImageView(source: imageSource, size: 12, tint: color)

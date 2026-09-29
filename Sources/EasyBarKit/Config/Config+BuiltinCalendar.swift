@@ -32,6 +32,7 @@ extension CalendarConfigError {
 
 /// Resolves one calendar color reference and writes the validated concrete value back.
 private struct CalendarColorReferenceResolver {
+  /// The resolve for this calendar color reference resolver.
   let resolve: (String, String) throws -> String
 
   /// Resolves a required color value in place.

@@ -31,20 +31,35 @@ final class BatteryNativeWidget: NativeWidget {
   private var isHovered = false
   private lazy var renderer = BatteryRenderer(rootID: rootID)
 
+  /// Stores snapshot data.
   struct Snapshot {
+    /// The config for this snapshot.
     let config: Config.BatteryBuiltinConfig
+    /// The placement for this snapshot.
     let placement: Config.BuiltinWidgetPlacement
+    /// The style for this snapshot.
     let style: Config.BuiltinWidgetStyle
+    /// The percentage for this snapshot.
     let percentage: Int
+    /// The fill fraction for this snapshot.
     let fillFraction: Double
+    /// Whether the charging option is enabled for this snapshot.
     let charging: Bool
+    /// Whether the charged option is enabled for this snapshot.
     let charged: Bool
+    /// Whether the finishing charge option is enabled for this snapshot.
     let finishingCharge: Bool
+    /// Whether the on hold option is enabled for this snapshot.
     let onHold: Bool
+    /// Whether the on external power option is enabled for this snapshot.
     let onExternalPower: Bool
+    /// The text for this snapshot.
     let text: String
+    /// The color hex for this snapshot.
     let colorHex: String?
+    /// Whether this snapshot shows label.
     let showLabel: Bool
+    /// Whether this snapshot is unavailable.
     let isUnavailable: Bool
   }
 
@@ -217,6 +232,7 @@ extension BatteryNativeWidget {
     publishIfHoverAffectsLayout()
   }
 
+  /// Handles context menu action.
   private func handleContextMenuAction(_ actionID: String) {
     guard let action = BatteryContextMenuAction(id: actionID) else { return }
     var updated = config

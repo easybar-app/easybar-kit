@@ -5,41 +5,67 @@ import SwiftUI
 /// Renders the reusable month-calendar popup.
 public struct CalendarMonthPopupView<Store: CalendarMonthPopupStore>: View {
 
+  /// Stores day cell data.
   struct DayCell: Identifiable {
+    /// The stable identifier for this day cell.
     let id: String
+    /// The date for this day cell.
     let date: Date
+    /// Whether this day cell is current month.
     let isCurrentMonth: Bool
   }
 
+  /// Stores week row data.
   struct WeekRow: Identifiable {
+    /// The stable identifier for this week row.
     let id: String
+    /// The week start date for this week row.
     let weekStartDate: Date
+    /// The week number for this week row.
     let weekNumber: Int
+    /// The days for this week row.
     let days: [DayCell]
   }
 
+  /// Stores day indicator segment data.
   struct DayIndicatorSegment: Identifiable {
+    /// The stable identifier for this day indicator segment.
     let id: String
+    /// The color hex for this day indicator segment.
     let colorHex: String
+    /// The fraction for this day indicator segment.
     let fraction: CGFloat
   }
 
   typealias AgendaRow = CalendarAgendaBuilder.Entry
 
   @ObservedObject var store: Store
+  /// The logger used to record operational diagnostics.
   let logger: ProcessLogger
+  /// The config for this calendar month popup view.
   let config: CalendarMonthPopupConfig
+  /// The appointments style for this calendar month popup view.
   let appointmentsStyle: CalendarAppointmentsStyle
+  /// The birthdays for this calendar month popup view.
   let birthdays: CalendarBirthdayStyle
+  /// The empty text for this calendar month popup view.
   let emptyText: String
+  /// The event actions for this calendar month popup view.
   let eventActions: CalendarEventActions?
+  /// The on visible month changed for this calendar month popup view.
   let onVisibleMonthChanged: (Date) -> Void
+  /// The on create event for this calendar month popup view.
   let onCreateEvent: (Date, @escaping () -> Void) -> Void
+  /// The on edit event for this calendar month popup view.
   let onEditEvent: (CalendarAgentEvent, @escaping () -> Void) -> Void
+  /// The on refresh requested for this calendar month popup view.
   let onRefreshRequested: () -> Void
+  /// The now provider for this calendar month popup view.
   let nowProvider: () -> Date
+  /// The calendar for this calendar month popup view.
   let calendar = Calendar.current
 
+  /// Creates a calendar month popup view.
   public init(
     store: Store,
     logger: ProcessLogger,

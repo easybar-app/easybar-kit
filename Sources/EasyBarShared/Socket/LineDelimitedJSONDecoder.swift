@@ -14,11 +14,16 @@ public enum LineDelimitedJSONDecoderError: Error, CustomStringConvertible, Equat
 
 /// Incrementally decodes newline-delimited JSON messages from arbitrary byte chunks.
 public struct LineDelimitedJSONDecoder<Message: Decodable> {
+  /// The default max line bytes for this line delimited JSON decoder.
   public static var defaultMaxLineBytes: Int { 1_048_576 }
 
+  /// The pending for this line delimited JSON decoder.
   private var pending = Data()
+  /// Whether the discarding oversized line option is enabled for this line delimited JSON decoder.
   private var discardingOversizedLine = false
+  /// The decoder for this line delimited JSON decoder.
   private let decoder: JSONDecoder
+  /// The max line bytes for this line delimited JSON decoder.
   private let maxLineBytes: Int
 
   /// Creates a new line-delimited decoder.
@@ -56,6 +61,7 @@ public struct LineDelimitedJSONDecoder<Message: Decodable> {
     return [decode(line)]
   }
 
+  /// Decodes pending lines.
   private mutating func decodePendingLines() -> [Result<Message, Error>] {
     var results: [Result<Message, Error>] = []
 
@@ -86,6 +92,7 @@ public struct LineDelimitedJSONDecoder<Message: Decodable> {
     return results
   }
 
+  /// Decodes the requested operation.
   private func decode(_ data: Data.SubSequence) -> Result<Message, Error> {
     do {
       return .success(try decoder.decode(Message.self, from: Data(data)))
@@ -94,6 +101,7 @@ public struct LineDelimitedJSONDecoder<Message: Decodable> {
     }
   }
 
+  /// Creates default decoder.
   private static func makeDefaultDecoder() -> JSONDecoder {
     let decoder = JSONDecoder()
     decoder.dateDecodingStrategy = .iso8601

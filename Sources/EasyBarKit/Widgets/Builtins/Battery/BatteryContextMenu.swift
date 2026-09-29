@@ -1,10 +1,12 @@
 import Foundation
 
+/// Defines the supported battery context menu action values.
 enum BatteryContextMenuAction: Equatable {
   case setDisplayMode(Config.BuiltinBatteryDisplayMode)
   case setColorMode(Config.BuiltinBatteryColorMode)
   case refresh
 
+  /// Resolves a battery context-menu identifier to its action.
   init?(id: String) {
     if let value = id.removingPrefix("battery.display."),
       let mode = Config.BuiltinBatteryDisplayMode(rawValue: value)
@@ -23,7 +25,9 @@ enum BatteryContextMenuAction: Equatable {
   }
 }
 
+/// Defines the supported battery context menu values.
 enum BatteryContextMenu {
+  /// Creates the requested value.
   static func make(config: Config.BatteryBuiltinConfig) -> [WidgetContextMenuItem] {
     let displayModes = Config.BuiltinBatteryDisplayMode.allCases.map { mode in
       WidgetContextMenuItem(
@@ -49,6 +53,7 @@ enum BatteryContextMenu {
 }
 
 extension String {
+  /// Returns the removing prefix.
   fileprivate func removingPrefix(_ prefix: String) -> String? {
     guard hasPrefix(prefix) else { return nil }
     let suffix = String(dropFirst(prefix.count))

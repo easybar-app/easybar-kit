@@ -6,8 +6,11 @@ import Foundation
 /// Sendability is guarded by `LockedState`; running state and generation checks
 /// are serialized, and the debounced scheduler owns its own locked state.
 final class CalendarAgentEventRelay: @unchecked Sendable {
+  /// Stores state data.
   private struct State {
+    /// Whether this state is running.
     var running = false
+    /// The generation for this state.
     var generation: UInt64 = 0
   }
 

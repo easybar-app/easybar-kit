@@ -120,6 +120,7 @@ final class AeroSpaceModeNativeWidget: NativeWidget {
     }
   }
 
+  /// Persists the current state.
   private func persist(_ updated: Config.AeroSpaceModeBuiltinConfig, edit: TOMLEdit) {
     NativeWidgetConfigUpdate.persist(edits: [edit], using: configPersistence) {
       config = updated

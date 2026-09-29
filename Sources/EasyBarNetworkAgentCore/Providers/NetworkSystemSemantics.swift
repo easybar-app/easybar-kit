@@ -65,9 +65,13 @@ enum NetworkAddressSelection {
     }?.value
   }
 
+  /// Stores candidate data.
   private struct Candidate {
+    /// The value for this candidate.
     let value: String
+    /// The rank for this candidate.
     let rank: Int
+    /// The original index for this candidate.
     let originalIndex: Int
   }
 }

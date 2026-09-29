@@ -7,13 +7,21 @@ import Foundation
 final class NetworkWiFiMonitor: NSObject, CWEventDelegate {
   private let smoothingFactor = 0.35
 
+  /// Stores tracking state data.
   private struct TrackingState {
+    /// The smoothed RSSI for this tracking state.
     var smoothedRSSI: Double?
+    /// The stable identifier for this tracking state.
     var lastSSID: String?
+    /// The stable identifier for this tracking state.
     var lastBSSID: String?
+    /// The last interface for this tracking state.
     var lastInterface: String?
+    /// The SSID changed at for this tracking state.
     var ssidChangedAt: Date?
+    /// The interface changed at for this tracking state.
     var interfaceChangedAt: Date?
+    /// Whether the roaming option is enabled for this tracking state.
     var roaming = false
   }
 
@@ -177,22 +185,27 @@ final class NetworkWiFiMonitor: NSObject, CWEventDelegate {
     cachedSnapshot
   }
 
+  /// Handles the SSID did change for Wi-Fi interface callback.
   nonisolated func ssidDidChangeForWiFiInterface(withName interfaceName: String) {
     enqueueChange(label: "SSID", interfaceName: interfaceName)
   }
 
+  /// Handles the BSSID did change for Wi-Fi interface callback.
   nonisolated func bssidDidChangeForWiFiInterface(withName interfaceName: String) {
     enqueueChange(label: "BSSID", interfaceName: interfaceName)
   }
 
+  /// Handles the country code did change for Wi-Fi interface callback.
   nonisolated func countryCodeDidChangeForWiFiInterface(withName interfaceName: String) {
     enqueueChange(label: "country code", interfaceName: interfaceName)
   }
 
+  /// Handles the link did change for Wi-Fi interface callback.
   nonisolated func linkDidChangeForWiFiInterface(withName interfaceName: String) {
     enqueueChange(label: "link", interfaceName: interfaceName)
   }
 
+  /// Handles the link quality did change for Wi-Fi interface callback.
   nonisolated func linkQualityDidChangeForWiFiInterface(
     withName interfaceName: String,
     rssi: Int,
@@ -210,14 +223,17 @@ final class NetworkWiFiMonitor: NSObject, CWEventDelegate {
     }
   }
 
+  /// Handles the mode did change for Wi-Fi interface callback.
   nonisolated func modeDidChangeForWiFiInterface(withName interfaceName: String) {
     enqueueChange(label: "mode", interfaceName: interfaceName)
   }
 
+  /// Handles the power state did change for Wi-Fi interface callback.
   nonisolated func powerStateDidChangeForWiFiInterface(withName interfaceName: String) {
     enqueueChange(label: "power", interfaceName: interfaceName)
   }
 
+  /// Returns the scan cache updated for Wi-Fi interface.
   nonisolated func scanCacheUpdatedForWiFiInterface(withName interfaceName: String) {
     Task { @MainActor [weak self] in
       guard let self else { return }

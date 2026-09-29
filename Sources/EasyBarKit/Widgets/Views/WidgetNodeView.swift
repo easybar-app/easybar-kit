@@ -3,7 +3,9 @@ import SwiftUI
 
 /// Recursive SwiftUI renderer for one widget node.
 struct WidgetNodeView: View {
+  /// The node for this widget node view.
   let node: WidgetNodeState
+  /// The logger used to record operational diagnostics.
   let logger: ProcessLogger
 
   @EnvironmentObject var store: WidgetStore
@@ -16,6 +18,7 @@ struct WidgetNodeView: View {
   @State var popupHovered = false
   @State var popupCloseTask: Task<Void, Never>?
 
+  /// The rendered content for this view.
   var body: some View {
     Group {
       if node.visible {

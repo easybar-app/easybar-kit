@@ -10,6 +10,7 @@ final class SpacerNativeWidget: NativeWidget {
 
   private let config: Config.SpacerBuiltinConfig
 
+  /// Creates a spacer native widget.
   init(
     rootID: String,
     config: Config.SpacerBuiltinConfig,

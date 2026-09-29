@@ -26,6 +26,7 @@ public struct NetworkAgentSnapshot: Codable, Equatable, Sendable {
     makeDateFormatter().date(from: string)
   }
 
+  /// Creates date formatter.
   private static func makeDateFormatter() -> ISO8601DateFormatter {
     let formatter = ISO8601DateFormatter()
     formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -224,33 +225,60 @@ public struct NetworkAgentSnapshot: Codable, Equatable, Sendable {
 
 /// Render-relevant signature used to suppress duplicate Wi-Fi UI updates.
 public struct NetworkAgentSnapshotRenderSignature: Equatable, Sendable {
+  /// Whether the access granted option is enabled for this network agent snapshot render signature.
   public let accessGranted: Bool
+  /// The permission state for this network agent snapshot render signature.
   public let permissionState: String
+  /// The SSID for this network agent snapshot render signature.
   public let ssid: String?
+  /// The IPv4 address for this network agent snapshot render signature.
   public let ipv4Address: String?
+  /// The IPv6 address for this network agent snapshot render signature.
   public let ipv6Address: String?
+  /// The BSSID for this network agent snapshot render signature.
   public let bssid: String?
+  /// The interface name for this network agent snapshot render signature.
   public let interfaceName: String?
+  /// The hardware address for this network agent snapshot render signature.
   public let hardwareAddress: String?
+  /// Whether the power option is enabled for this network agent snapshot render signature.
   public let power: Bool?
+  /// Whether the service active option is enabled for this network agent snapshot render signature.
   public let serviceActive: Bool?
+  /// Whether the primary interface is tunnel option is enabled for this network agent snapshot render signature.
   public let primaryInterfaceIsTunnel: Bool
+  /// The RSSI for this network agent snapshot render signature.
   public let rssi: Int?
+  /// The noise for this network agent snapshot render signature.
   public let noise: Int?
+  /// The SNR for this network agent snapshot render signature.
   public let snr: Int?
+  /// The link quality for this network agent snapshot render signature.
   public let linkQuality: Int?
+  /// The transmit rate for this network agent snapshot render signature.
   public let txRate: Int?
+  /// The channel for this network agent snapshot render signature.
   public let channel: Int?
+  /// The channel band for this network agent snapshot render signature.
   public let channelBand: String?
+  /// The channel width for this network agent snapshot render signature.
   public let channelWidth: String?
+  /// The security for this network agent snapshot render signature.
   public let security: String?
+  /// The phy mode for this network agent snapshot render signature.
   public let phyMode: String?
+  /// The interface mode for this network agent snapshot render signature.
   public let interfaceMode: String?
+  /// The country code for this network agent snapshot render signature.
   public let countryCode: String?
+  /// Whether the roaming option is enabled for this network agent snapshot render signature.
   public let roaming: Bool?
+  /// The SSID changed at for this network agent snapshot render signature.
   public let ssidChangedAt: String?
+  /// The interface changed at for this network agent snapshot render signature.
   public let interfaceChangedAt: String?
 
+  /// Creates a network agent snapshot render signature.
   public init(snapshot: NetworkAgentSnapshot) {
     self.accessGranted = snapshot.accessGranted
     self.permissionState = snapshot.permissionState

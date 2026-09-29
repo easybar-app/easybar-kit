@@ -263,6 +263,7 @@ final class Config: ObservableObject, @unchecked Sendable {
   /// Non-fatal warnings produced while parsing the current config.
   var configWarnings: [String] = []
 
+  /// Creates a config.
   private init(
     configPathOverride: String? = nil,
     builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy = .all

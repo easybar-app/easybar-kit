@@ -32,6 +32,7 @@ extension ConfigSchemaRegistry {
   private static let knownKeysBySection: [String: Set<String>] = {
     var sections: [String: [String]] = [:]
 
+    /// Adds section.
     func addSection(_ path: String) {
       if sections[path] == nil {
         sections[path] = []
@@ -51,6 +52,7 @@ extension ConfigSchemaRegistry {
       }
     }
 
+    /// Adds key.
     func addKey(section: String, key: String) {
       if sections[section] == nil {
         sections[section] = []
@@ -114,6 +116,7 @@ extension ConfigSchemaRegistry {
       || isNamedBuiltinSpacer(path)
   }
 
+  /// Evaluates the builtin group condition.
   private static func isBuiltinGroup(_ path: String) -> Bool {
     let components = path.split(separator: ".")
     return components.count == 3
@@ -121,6 +124,7 @@ extension ConfigSchemaRegistry {
       && components[1] == "groups"
   }
 
+  /// Evaluates the builtin group style condition.
   private static func isBuiltinGroupStyle(_ path: String) -> Bool {
     let components = path.split(separator: ".")
     return components.count == 4
@@ -129,6 +133,7 @@ extension ConfigSchemaRegistry {
       && components[3] == "style"
   }
 
+  /// Evaluates the named builtin spacer condition.
   private static func isNamedBuiltinSpacer(_ path: String) -> Bool {
     let components = path.split(separator: ".")
     return components.count == 3

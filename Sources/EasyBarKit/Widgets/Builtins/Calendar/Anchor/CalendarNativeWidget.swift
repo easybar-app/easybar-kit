@@ -42,8 +42,11 @@ final class CalendarNativeWidget: NativeWidget {
   private var startedCalendarAgent = false
   private var startedPopupMode: Config.CalendarPopupMode = .none
 
+  /// Stores snapshot data.
   struct Snapshot {
+    /// The config for this snapshot.
     let config: Config.CalendarBuiltinConfig
+    /// The now for this snapshot.
     let now: Date
   }
 
@@ -178,6 +181,7 @@ final class CalendarNativeWidget: NativeWidget {
 // MARK: - Context Menu
 
 extension CalendarNativeWidget {
+  /// Handles context menu action.
   private func handleContextMenuAction(_ actionID: String) {
     guard let action = CalendarContextMenuAction(id: actionID) else { return }
 
@@ -206,6 +210,7 @@ extension CalendarNativeWidget {
     }
   }
 
+  /// Updates popup mode.
   private func updatePopupMode(_ mode: CalendarPopupMode) {
     guard sessionConfig.popupMode != mode else { return }
 
@@ -221,6 +226,7 @@ extension CalendarNativeWidget {
     persistConfiguration()
   }
 
+  /// Returns the toggle anchor field.
   private func toggleAnchorField(_ field: CalendarAnchorFieldKind) {
     if let index = sessionConfig.anchor.fields.firstIndex(of: field) {
       guard sessionConfig.anchor.fields.count > 1 else { return }
@@ -231,12 +237,14 @@ extension CalendarNativeWidget {
     persistConfiguration()
   }
 
+  /// Returns the toggle appointment option.
   private func toggleAppointmentOption(_ optionID: String) {
     guard let option = appointmentOptions.first(where: { $0.id == optionID }) else { return }
     sessionConfig.appointments[keyPath: option.keyPath].toggle()
     persistConfiguration()
   }
 
+  /// Returns the toggle birthday option.
   private func toggleBirthdayOption(_ optionID: String) {
     guard let option = birthdayOptions.first(where: { $0.id == optionID }) else { return }
     sessionConfig.birthdays[keyPath: option.keyPath].toggle()
@@ -245,6 +253,7 @@ extension CalendarNativeWidget {
     persistConfiguration()
   }
 
+  /// Persists the current configuration.
   private func persistConfiguration() {
     var edits: [TOMLEdit] = [
       TOMLEdit(
@@ -297,6 +306,7 @@ extension CalendarNativeWidget {
     publish()
   }
 
+  /// Updates agent configuration.
   private func updateAgentConfiguration() {
     upcomingCalendarAgentClient.updateConfiguration(
       calendarAgentConfig: calendarAgentConfig,
@@ -308,6 +318,7 @@ extension CalendarNativeWidget {
     )
   }
 
+  /// Returns the refresh active calendar client.
   private func refreshActiveCalendarClient() {
     switch sessionConfig.popupMode {
     case .none: break
@@ -316,6 +327,7 @@ extension CalendarNativeWidget {
     }
   }
 
+  /// Opens calendar settings.
   private func openCalendarSettings() {
     guard
       let url = URL(

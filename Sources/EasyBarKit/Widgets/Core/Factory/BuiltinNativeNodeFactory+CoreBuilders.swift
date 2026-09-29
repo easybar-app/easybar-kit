@@ -366,60 +366,116 @@ extension BuiltinNativeNodeFactory {
 
 /// Draft value used to construct native widget nodes without repeating initializer chains.
 private struct NativeNodeDraft {
+  /// The stable identifier for this native node draft.
   var id: String
+  /// The root for this native node draft.
   var root: String
+  /// The kind for this native node draft.
   var kind: WidgetNodeKind
+  /// The parent for this native node draft.
   var parent: String?
+  /// The position for this native node draft.
   var position: WidgetPosition
+  /// The order for this native node draft.
   var order: Int
+  /// The icon for this native node draft.
   var icon: String = ""
+  /// The text for this native node draft.
   var text: String = ""
+  /// The color for this native node draft.
   var color: String?
+  /// The icon color for this native node draft.
   var iconColor: String?
+  /// The label color for this native node draft.
   var labelColor: String?
+  /// Whether this native node draft is visible.
   var visible: Bool = true
+  /// The role for this native node draft.
   var role: WidgetNodeRole?
+  /// Whether the popup presented option is enabled for this native node draft.
   var popupPresented: Bool?
+  /// The image path for this native node draft.
   var imagePath: String?
+  /// The image size for this native node draft.
   var imageSize: Double?
+  /// The image corner radius for this native node draft.
   var imageCornerRadius: Double?
+  /// The symbol name for this native node draft.
   var symbolName: String?
+  /// The symbol secondary color for this native node draft.
   var symbolSecondaryColor: String?
+  /// The symbol overlay name for this native node draft.
   var symbolOverlayName: String?
+  /// The symbol overlay color for this native node draft.
   var symbolOverlayColor: String?
+  /// The symbol overlay backdrop color for this native node draft.
   var symbolOverlayBackdropColor: String?
+  /// The symbol overlay scale for this native node draft.
   var symbolOverlayScale: Double?
+  /// The symbol overlay backdrop scale for this native node draft.
   var symbolOverlayBackdropScale: Double?
+  /// The symbol overlay offset x for this native node draft.
   var symbolOverlayOffsetX: Double?
+  /// The symbol overlay offset y for this native node draft.
   var symbolOverlayOffsetY: Double?
+  /// The symbol fill fraction for this native node draft.
   var symbolFillFraction: Double?
+  /// The symbol fill width factor for this native node draft.
   var symbolFillWidthFactor: Double?
+  /// The symbol fill height factor for this native node draft.
   var symbolFillHeightFactor: Double?
+  /// The symbol fill offset x factor for this native node draft.
   var symbolFillOffsetXFactor: Double?
+  /// The symbol fill offset y factor for this native node draft.
   var symbolFillOffsetYFactor: Double?
+  /// The symbol fill corner radius factor for this native node draft.
   var symbolFillCornerRadiusFactor: Double?
+  /// The symbol fill minimum visible width factor for this native node draft.
   var symbolFillMinimumVisibleWidthFactor: Double?
+  /// The symbol canvas width factor for this native node draft.
   var symbolCanvasWidthFactor: Double?
+  /// The symbol canvas height factor for this native node draft.
   var symbolCanvasHeightFactor: Double?
+  /// The font size for this native node draft.
   var fontSize: Double?
+  /// The icon font size for this native node draft.
   var iconFontSize: Double?
+  /// The label font size for this native node draft.
   var labelFontSize: Double?
+  /// The icon offset x for this native node draft.
   var iconOffsetX: Double?
+  /// The icon offset y for this native node draft.
   var iconOffsetY: Double?
+  /// The value for this native node draft.
   var value: Double?
+  /// The min for this native node draft.
   var min: Double?
+  /// The max for this native node draft.
   var max: Double?
+  /// The step for this native node draft.
   var step: Double?
+  /// The padding x for this native node draft.
   var paddingX: Double? = 0
+  /// The padding y for this native node draft.
   var paddingY: Double? = 0
+  /// The margin x for this native node draft.
   var marginX: Double?
+  /// The margin y for this native node draft.
   var marginY: Double?
+  /// The spacing for this native node draft.
   var spacing: Double? = 4
+  /// The background color for this native node draft.
   var backgroundColor: String?
+  /// The border color for this native node draft.
   var borderColor: String?
+  /// The border width for this native node draft.
   var borderWidth: Double?
+  /// The corner radius for this native node draft.
   var cornerRadius: Double?
+  /// The opacity for this native node draft.
   var opacity: Double? = 1
+  /// The width for this native node draft.
   var width: Double?
+  /// The height for this native node draft.
   var height: Double?
 }

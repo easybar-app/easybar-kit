@@ -2,6 +2,7 @@ import Darwin
 import EasyBarShared
 import Foundation
 
+/// Defines the supported Lua transport limits values.
 private enum LuaTransportLimits {
   static let maxLineBytes = 1024 * 1024
   static let maxAuthenticationBytes = 4096
@@ -30,20 +31,33 @@ final class LuaTransport: @unchecked Sendable {
     }
   }
 
+  /// Stores authentication record data.
   private struct AuthenticationRecord: Decodable {
+    /// The type for this authentication record.
     let type: String
+    /// The token for this authentication record.
     let token: String
   }
 
+  /// Stores state data.
   private struct State {
+    /// The generation for this state.
     var generation: UInt64 = 0
+    /// The listener for this state.
     var listener: OwnedUnixSocketListener?
+    /// The client writer for this state.
     var clientWriter: BoundedSocketWriter?
+    /// The error pipe for this state.
     var errorPipe: Pipe?
+    /// The accept task for this state.
     var acceptTask: Task<Void, Never>?
+    /// The read task for this state.
     var readTask: Task<Void, Never>?
+    /// The stderr task for this state.
     var stderrTask: Task<Void, Never>?
+    /// The callback invoked when this state emits a value.
     var lineHandler: (@Sendable (String) -> Void)?
+    /// The authentication token for this state.
     var authenticationToken: String?
   }
 

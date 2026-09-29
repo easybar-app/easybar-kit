@@ -33,6 +33,7 @@ enum WiFiContextMenuAction: Equatable {
 
 /// Builds the native Wi-Fi context menu from the effective session configuration.
 enum WiFiContextMenu {
+  /// Creates the requested value.
   static func make(config: Config.WiFiBuiltinConfig) -> [WidgetContextMenuItem] {
     let modes = Config.BuiltinWiFiContentMode.allCases.map { mode in
       WidgetContextMenuItem(

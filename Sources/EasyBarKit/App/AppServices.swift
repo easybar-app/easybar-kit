@@ -3,33 +3,59 @@ import Foundation
 
 /// Explicitly owned app services used by the app shell and runtime coordinator.
 struct AppServices: @unchecked Sendable {
+  /// The config for this app services.
   let config: Config
+  /// The config manager for this app services.
   let configManager: ConfigManager
+  /// The config snapshot store for this app services.
   let configSnapshotStore: ConfigSnapshotStore
+  /// The Lua runtime for this app services.
   let luaRuntime: LuaRuntime
+  /// The event hub for this app services.
   let eventHub: EventHub
+  /// The event manager for this app services.
   let eventManager: EventManager
+  /// The capture device events for this app services.
   let captureDeviceEvents: CaptureDeviceEvents
+  /// The system events for this app services.
   let systemEvents: SystemEvents
+  /// The power events for this app services.
   let powerEvents: PowerEvents
+  /// The timer events for this app services.
   let timerEvents: TimerEvents
+  /// The volume events for this app services.
   let volumeEvents: VolumeEvents
+  /// The widget store for this app services.
   let widgetStore: WidgetStore
+  /// The native widget registry for this app services.
   let nativeWidgetRegistry: NativeWidgetRegistry
+  /// The inbox store for this app services.
   let inboxStore: InboxStore
+  /// The AeroSpace service for this app services.
   let aeroSpaceService: AeroSpaceService
+  /// The calendar agent event relay for this app services.
   let calendarAgentEventRelay: CalendarAgentEventRelay
+  /// The network agent client for this app services.
   let networkAgentClient: NetworkAgentClient
+  /// The native Wi-Fi store for this app services.
   let nativeWiFiStore: NativeWiFiStore
+  /// The native month calendar store for this app services.
   let nativeMonthCalendarStore: NativeMonthCalendarStore
+  /// The native upcoming calendar store for this app services.
   let nativeUpcomingCalendarStore: NativeUpcomingCalendarStore
+  /// The native composer calendar store for this app services.
   let nativeComposerCalendarStore: NativeComposerCalendarStore
+  /// The month calendar agent client for this app services.
   let monthCalendarAgentClient: MonthCalendarAgentClient
+  /// The upcoming calendar agent client for this app services.
   let upcomingCalendarAgentClient: UpcomingCalendarAgentClient
+  /// The composer calendar agent client for this app services.
   let composerCalendarAgentClient: ComposerCalendarAgentClient
+  /// The metrics coordinator for this app services.
   let metricsCoordinator: MetricsCoordinator
 
   @MainActor
+  /// Bootstraps the application services.
   static func bootstrap(
     logger: ProcessLogger,
     builtInSurfacePolicy: EasyBarBuiltInSurfacePolicy = .all,
@@ -145,6 +171,7 @@ struct AppServices: @unchecked Sendable {
   }
 
   @MainActor
+  /// Applies runtime configuration.
   func applyRuntimeConfiguration(_ snapshot: ConfigSnapshot) {
     configSnapshotStore.apply(snapshot)
     inboxStore.updateStateURL(
@@ -164,6 +191,7 @@ struct AppServices: @unchecked Sendable {
   }
 
   @MainActor
+  /// Creates native services.
   private static func makeNativeServices(
     logger: ProcessLogger,
     snapshot: ConfigSnapshot,
@@ -215,6 +243,7 @@ struct AppServices: @unchecked Sendable {
   }
 
   @MainActor
+  /// Creates agent services.
   private static func makeAgentServices(
     logger: ProcessLogger,
     snapshot: ConfigSnapshot,
@@ -275,20 +304,32 @@ struct AppServices: @unchecked Sendable {
 
 /// UI-facing services and stores for host-owned built-in surfaces.
 private struct NativeServices {
+  /// The widget store for this native services.
   let widgetStore: WidgetStore
+  /// The native widget registry for this native services.
   let nativeWidgetRegistry: NativeWidgetRegistry
+  /// The AeroSpace service for this native services.
   let aeroSpaceService: AeroSpaceService
+  /// The native Wi-Fi store for this native services.
   let nativeWiFiStore: NativeWiFiStore
+  /// The native month calendar store for this native services.
   let nativeMonthCalendarStore: NativeMonthCalendarStore
+  /// The native upcoming calendar store for this native services.
   let nativeUpcomingCalendarStore: NativeUpcomingCalendarStore
+  /// The native composer calendar store for this native services.
   let nativeComposerCalendarStore: NativeComposerCalendarStore
 }
 
 /// Helper-agent clients and relays.
 private struct AgentServices {
+  /// The calendar agent event relay for this agent services.
   let calendarAgentEventRelay: CalendarAgentEventRelay
+  /// The network agent client for this agent services.
   let networkAgentClient: NetworkAgentClient
+  /// The month calendar agent client for this agent services.
   let monthCalendarAgentClient: MonthCalendarAgentClient
+  /// The upcoming calendar agent client for this agent services.
   let upcomingCalendarAgentClient: UpcomingCalendarAgentClient
+  /// The composer calendar agent client for this agent services.
   let composerCalendarAgentClient: ComposerCalendarAgentClient
 }

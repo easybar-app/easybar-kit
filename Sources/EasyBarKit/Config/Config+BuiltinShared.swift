@@ -23,9 +23,13 @@ extension Config {
 
   /// Shared placement block for built-in widgets.
   struct BuiltinWidgetPlacement {
+    /// Whether this builtin widget placement is enabled.
     var enabled: Bool
+    /// The position for this builtin widget placement.
     var position: WidgetPosition
+    /// The order for this builtin widget placement.
     var order: Int
+    /// The group for this builtin widget placement.
     var group: String? = nil
 
     /// Returns the configured native group parent when present.
@@ -41,17 +45,29 @@ extension Config {
 
   /// Shared style block for built-in widgets.
   struct BuiltinWidgetStyle {
+    /// The icon for this builtin widget style.
     var icon: String
+    /// The text color hex for this builtin widget style.
     var textColorHex: String?
+    /// The background color hex for this builtin widget style.
     var backgroundColorHex: String?
+    /// The border color hex for this builtin widget style.
     var borderColorHex: String?
+    /// The border width for this builtin widget style.
     var borderWidth: Double
+    /// The corner radius for this builtin widget style.
     var cornerRadius: Double
+    /// The margin x for this builtin widget style.
     var marginX: Double
+    /// The margin y for this builtin widget style.
     var marginY: Double
+    /// The padding x for this builtin widget style.
     var paddingX: Double
+    /// The padding y for this builtin widget style.
     var paddingY: Double
+    /// The spacing for this builtin widget style.
     var spacing: Double
+    /// The opacity for this builtin widget style.
     var opacity: Double
 
     /// Returns the content-independent visual chrome.
@@ -73,15 +89,25 @@ extension Config {
 
   /// Shared visual chrome for built-ins that render their own content.
   struct BuiltinWidgetChromeStyle {
+    /// The background color hex for this builtin widget chrome style.
     var backgroundColorHex: String?
+    /// The border color hex for this builtin widget chrome style.
     var borderColorHex: String?
+    /// The border width for this builtin widget chrome style.
     var borderWidth: Double
+    /// The corner radius for this builtin widget chrome style.
     var cornerRadius: Double
+    /// The margin x for this builtin widget chrome style.
     var marginX: Double
+    /// The margin y for this builtin widget chrome style.
     var marginY: Double
+    /// The padding x for this builtin widget chrome style.
     var paddingX: Double
+    /// The padding y for this builtin widget chrome style.
     var paddingY: Double
+    /// The spacing for this builtin widget chrome style.
     var spacing: Double
+    /// The opacity for this builtin widget chrome style.
     var opacity: Double
 
     /// Adapts the chrome to the shared node factory with explicit content styling.
@@ -105,7 +131,9 @@ extension Config {
 
   /// Shared text and chrome style for built-ins that choose their icon dynamically.
   struct BuiltinWidgetTextStyle {
+    /// The text color hex for this builtin widget text style.
     var textColorHex: String?
+    /// The chrome for this builtin widget text style.
     var chrome: BuiltinWidgetChromeStyle
 
     /// Adapts the style to the shared node factory with an explicit icon.
@@ -116,24 +144,39 @@ extension Config {
 
   /// Inbox anchor style with explicit unread and read presentation states.
   struct InboxBuiltinStyle {
+    /// The unread icon for this inbox builtin style.
     var unreadIcon: String
+    /// The read icon for this inbox builtin style.
     var readIcon: String
+    /// The unread icon color hex for this inbox builtin style.
     var unreadIconColorHex: String?
+    /// The read icon color hex for this inbox builtin style.
     var readIconColorHex: String?
+    /// The unread count color hex for this inbox builtin style.
     var unreadCountColorHex: String?
+    /// The chrome for this inbox builtin style.
     var chrome: BuiltinWidgetChromeStyle
   }
 
   /// Shared popup style block for built-ins that render simple tooltip-style popups.
   struct BuiltinPopupStyle {
+    /// The text color hex for this builtin popup style.
     var textColorHex: String?
+    /// The background color hex for this builtin popup style.
     var backgroundColorHex: String
+    /// The border color hex for this builtin popup style.
     var borderColorHex: String
+    /// The border width for this builtin popup style.
     var borderWidth: Double
+    /// The corner radius for this builtin popup style.
     var cornerRadius: Double
+    /// The padding x for this builtin popup style.
     var paddingX: Double
+    /// The padding y for this builtin popup style.
     var paddingY: Double
+    /// The margin x for this builtin popup style.
     var marginX: Double
+    /// The margin y for this builtin popup style.
     var marginY: Double
   }
 

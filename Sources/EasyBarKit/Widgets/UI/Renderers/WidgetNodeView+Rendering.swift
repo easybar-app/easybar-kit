@@ -170,9 +170,12 @@ extension WidgetNodeView {
 /// SwiftUI context-menu content used by native popup anchors, which cannot host the ordinary
 /// AppKit mouse overlay without creating an AttributeGraph cycle.
 private struct NativePopupContextMenu: View {
+  /// The items for this native popup context menu.
   let items: [WidgetContextMenuItem]
+  /// The on action for this native popup context menu.
   let onAction: (String) -> Void
 
+  /// The rendered content for this view.
   var body: some View {
     ForEach(Array(items.enumerated()), id: \.offset) { _, item in
       if item.separator {

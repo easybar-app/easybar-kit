@@ -4,8 +4,11 @@ extension Config {
 
   /// Native group container config used by built-in widgets.
   struct BuiltinGroupConfig {
+    /// The stable identifier for this builtin group config.
     var id: String
+    /// The placement for this builtin group config.
     var placement: BuiltinWidgetPlacement
+    /// The style for this builtin group config.
     var style: BuiltinWidgetChromeStyle
   }
 

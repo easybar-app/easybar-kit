@@ -19,6 +19,7 @@ final class CaptureDeviceEvents {
   private var started = false
   private(set) var snapshot = CaptureDeviceSnapshot.empty
 
+  /// Creates a capture device events.
   init(
     logger: ProcessLogger,
     eventHub: EventHub,
@@ -66,11 +67,13 @@ final class CaptureDeviceEvents {
     emit(events, snapshot: snapshot)
   }
 
+  /// Handles inventory change.
   private func handleInventoryChange() {
     guard started else { return }
     applySnapshot(Self.makeSnapshot(from: inventoryMonitor.devices))
   }
 
+  /// Applies snapshot.
   private func applySnapshot(_ next: CaptureDeviceSnapshot) {
     let previous = snapshot
     snapshot = next
@@ -108,6 +111,7 @@ final class CaptureDeviceEvents {
     emit(events, snapshot: next)
   }
 
+  /// Emits the prepared value.
   private func emit(_ events: [AppEvent], snapshot: CaptureDeviceSnapshot) {
     guard !events.isEmpty else { return }
 
@@ -125,6 +129,7 @@ final class CaptureDeviceEvents {
     }
   }
 
+  /// Creates snapshot.
   private static func makeSnapshot(
     from devices: [CaptureDeviceState]
   ) -> CaptureDeviceSnapshot {
@@ -140,6 +145,7 @@ final class CaptureDeviceEvents {
     return CaptureDeviceSnapshot(cameras: cameras, microphones: microphones)
   }
 
+  /// Returns the device sort.
   private static func deviceSort(_ lhs: CaptureDeviceState, _ rhs: CaptureDeviceState) -> Bool {
     if lhs.name != rhs.name {
       return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
@@ -147,6 +153,7 @@ final class CaptureDeviceEvents {
     return lhs.id < rhs.id
   }
 
+  /// Returns the device identities.
   private static func deviceIdentities(
     in snapshot: CaptureDeviceSnapshot
   ) -> [CaptureDeviceIdentity] {
@@ -160,6 +167,7 @@ final class CaptureDeviceEvents {
     }
   }
 
+  /// Returns the active device IDs.
   private static func activeDeviceIDs(
     in devices: [CaptureDeviceState]
   ) -> [String] {
@@ -167,10 +175,15 @@ final class CaptureDeviceEvents {
   }
 }
 
+/// Stores capture device identity data.
 private struct CaptureDeviceIdentity: Equatable {
+  /// The stable identifier for this capture device identity.
   let id: String
+  /// The name for this capture device identity.
   let name: String
+  /// The kind for this capture device identity.
   let kind: CaptureDeviceKind
+  /// Whether this capture device identity is connected.
   let connected: Bool
 }
 
@@ -180,6 +193,8 @@ protocol CaptureDeviceInventoryMonitoring: AnyObject {
   var onChange: (() -> Void)? { get set }
   var devices: [CaptureDeviceState] { get }
 
+  /// Starts the associated service.
   func start()
+  /// Stops the associated service.
   func stop()
 }

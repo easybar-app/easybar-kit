@@ -4,15 +4,24 @@ import SwiftTOMLEdit
 
 /// Reads and writes widget-owned values below the reserved `[widgets]` config namespace.
 actor LuaStorageService {
+  /// Stores response data.
   private struct Response: Encodable {
+    /// The protocol version for this response.
     let protocolVersion = easyBarLuaRuntimeProtocolVersion
+    /// The type for this response.
     let type = "storage_response"
+    /// The token for this response.
     let token: String
+    /// Whether the ok option is enabled for this response.
     let ok: Bool
+    /// Whether the found option is enabled for this response.
     let found: Bool
+    /// The value for this response.
     let value: WidgetStorageValue?
+    /// The error for this response.
     let error: String?
 
+    /// Maps stored properties to their encoded keys.
     enum CodingKeys: String, CodingKey {
       case protocolVersion = "protocol_version"
       case type
@@ -29,12 +38,14 @@ actor LuaStorageService {
   private let configManager: ConfigManager
   private let encoder = JSONEncoder()
 
+  /// Creates a Lua storage service.
   init(logger: ProcessLogger, luaRuntime: LuaRuntime, configManager: ConfigManager) {
     self.logger = logger
     self.luaRuntime = luaRuntime
     self.configManager = configManager
   }
 
+  /// Handles the requested operation.
   func handle(
     token: String,
     widget: String,
@@ -56,6 +67,7 @@ actor LuaStorageService {
     }
   }
 
+  /// Returns the get.
   private func get(token: String, path: [String]) async {
     let configPath = await configManager.configPath()
 
@@ -81,6 +93,7 @@ actor LuaStorageService {
     }
   }
 
+  /// Sets the requested operation.
   private func set(token: String, path: [String], value: WidgetStorageValue) async {
     let configPath = await configManager.configPath()
     if let table = try? Self.readConfig(at: configPath),
@@ -104,6 +117,7 @@ actor LuaStorageService {
     }
   }
 
+  /// Sends the requested operation.
   private func send(
     token: String,
     ok: Bool,
@@ -127,6 +141,7 @@ actor LuaStorageService {
     await luaRuntime.send(encoded)
   }
 
+  /// Reads config.
   private static func readConfig(at path: String) throws -> TOMLTable {
     let url = URL(fileURLWithPath: path).resolvingSymlinksInPath()
     guard FileManager.default.fileExists(atPath: url.path) else {
@@ -135,6 +150,7 @@ actor LuaStorageService {
     return try TOMLTable(string: String(contentsOf: url, encoding: .utf8))
   }
 
+  /// Returns the value.
   private static func value(in table: TOMLTable, at path: [String]) -> TOMLValue? {
     guard let first = path.first else { return nil }
     var current = table[first]
@@ -147,6 +163,7 @@ actor LuaStorageService {
 }
 
 extension WidgetStorageValue {
+  /// Converts one supported TOML value into widget storage data.
   fileprivate init?(_ value: TOMLValue) {
     switch value {
     case .string(let value):

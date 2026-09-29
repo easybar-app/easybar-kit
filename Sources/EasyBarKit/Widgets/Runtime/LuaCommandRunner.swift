@@ -7,8 +7,10 @@ struct LuaCommandResult: Sendable {
   let output: String
   /// Exact bytes decoded as UTF-8 for Lua's `raw_output` option.
   let rawOutput: String
+  /// The status for this Lua command result.
   let status: Int32
 
+  /// Creates a Lua command result.
   init(output: String, status: Int32) {
     self.rawOutput = output
     self.output = Self.removingTrailingLineEndings(from: output)
@@ -60,13 +62,20 @@ enum LuaCommandInvocation: Sendable, Equatable {
 
 /// Adapts Lua command requests to the shared process executor.
 final class LuaCommandRunner: @unchecked Sendable {
+  /// Stores limits data.
   struct Limits: Sendable {
+    /// The timeout seconds for this limits.
     let timeoutSeconds: TimeInterval
+    /// The max output bytes for this limits.
     let maxOutputBytes: Int
 
+    /// The timed out status for this limits.
     static let timedOutStatus: Int32 = 124
+    /// Whether this limits can celled status.
     static let cancelledStatus: Int32 = 130
+    /// The output limit status for this limits.
     static let outputLimitStatus: Int32 = 65
+    /// The read failure status for this limits.
     static let readFailureStatus: Int32 = 74
   }
 

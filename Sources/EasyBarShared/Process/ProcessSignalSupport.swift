@@ -2,8 +2,11 @@ import Darwin
 
 /// Result of signaling a dedicated process group with an optional leader fallback.
 public struct ProcessSignalDelivery: Equatable, Sendable {
+  /// Whether the delivered option is enabled for this process signal delivery.
   public let delivered: Bool
+  /// The process group error for this process signal delivery.
   public let processGroupError: Int32?
+  /// The process error for this process signal delivery.
   public let processError: Int32?
 
   /// Returns whether every attempted target was already absent.

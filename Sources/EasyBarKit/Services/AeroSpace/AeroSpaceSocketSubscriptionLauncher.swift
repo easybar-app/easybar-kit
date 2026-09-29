@@ -10,6 +10,7 @@ final class AeroSpaceSocketSubscriptionLauncher: AeroSpaceSubscriptionLaunching,
   private let socketPath: String
   private let startupTimeout: TimeInterval
 
+  /// Creates an AeroSpace socket subscription launcher.
   init(
     socketPath: String = "/tmp/bobko.aerospace-\(NSUserName()).sock",
     startupTimeout: TimeInterval = 3
@@ -18,6 +19,7 @@ final class AeroSpaceSocketSubscriptionLauncher: AeroSpaceSubscriptionLaunching,
     self.startupTimeout = normalizedSocketTimeout(startupTimeout, fallback: 3)
   }
 
+  /// Creates subscription.
   func makeSubscription() -> AeroSpaceSubscriptionSession {
     AeroSpaceSocketSubscriptionSession(
       socketPath: socketPath,
@@ -26,20 +28,29 @@ final class AeroSpaceSocketSubscriptionLauncher: AeroSpaceSubscriptionLaunching,
   }
 }
 
+/// Coordinates AeroSpace socket subscription session state and behavior.
 private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSession,
   @unchecked Sendable
 {
   private static let protocolVersion: UInt32 = 1
 
+  /// Stores state data.
   private struct State {
+    /// The fd for this state.
     var fd: Int32 = -1
+    /// Whether the stopped option is enabled for this state.
     var stopped = false
   }
 
+  /// Stores request data.
   private struct Request: Encodable {
+    /// The args for this request.
     let args: [String]
+    /// The stdin for this request.
     let stdin = ""
+    /// The window ID for this request.
     let windowId: UInt32? = nil
+    /// The workspace for this request.
     let workspace: String? = nil
   }
 
@@ -47,11 +58,13 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
   private let startupTimeout: TimeInterval
   private let state = LockedState(State())
 
+  /// Creates an AeroSpace socket subscription session.
   init(socketPath: String, startupTimeout: TimeInterval) {
     self.socketPath = socketPath
     self.startupTimeout = startupTimeout
   }
 
+  /// Starts the associated service.
   func start(
     onEventFrame: @escaping @Sendable (Data) -> Void,
     onDisconnect: @escaping @Sendable (AeroSpaceSubscriptionSession, String?) -> Void
@@ -94,14 +107,17 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     }
   }
 
+  /// Stops the associated service.
   func stop() {
     closeSocket(markStopped: true)
   }
 
+  /// Invalidates the session and closes its resources.
   func invalidate() {
     closeSocket(markStopped: true)
   }
 
+  /// Performs handshake.
   private func performHandshake(fd: Int32, deadline: UInt64) throws {
     try writeUInt32(Self.protocolVersion, to: fd, deadline: deadline)
     let serverVersion = try readUInt32(from: fd, deadline: deadline)
@@ -110,6 +126,7 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     }
   }
 
+  /// Sends subscription request.
   private func sendSubscriptionRequest(fd: Int32, deadline: UInt64) throws {
     let payload = try JSONEncoder().encode(
       Request(args: AeroSpaceSubscriptionEvent.subscribeArguments)
@@ -120,6 +137,7 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     }
   }
 
+  /// Reads events.
   private func readEvents(
     fd: Int32,
     onEventFrame: @escaping @Sendable (Data) -> Void
@@ -139,6 +157,7 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     }
   }
 
+  /// Finishes the operation only while it still owns the resource.
   private func finish(fd: Int32) {
     let shouldClose = state.withLock { state -> Bool in
       guard state.fd == fd else { return false }
@@ -148,6 +167,7 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     if shouldClose { Darwin.close(fd) }
   }
 
+  /// Closes socket.
   private func closeSocket(markStopped: Bool) {
     let fd = state.withLock { state -> Int32 in
       if markStopped { state.stopped = true }
@@ -160,6 +180,7 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     Darwin.close(fd)
   }
 
+  /// Writes u int32.
   private func writeUInt32(_ value: UInt32, to fd: Int32, deadline: UInt64) throws {
     var littleEndian = value.littleEndian
     let data = Data(bytes: &littleEndian, count: MemoryLayout<UInt32>.size)
@@ -168,6 +189,7 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     }
   }
 
+  /// Reads u int32.
   private func readUInt32(from fd: Int32) throws -> UInt32 {
     let data = try readExactly(MemoryLayout<UInt32>.size, from: fd)
     return data.withUnsafeBytes { rawBuffer in
@@ -175,6 +197,7 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     }
   }
 
+  /// Reads u int32.
   private func readUInt32(from fd: Int32, deadline: UInt64) throws -> UInt32 {
     let data = try readExactly(
       MemoryLayout<UInt32>.size,
@@ -186,6 +209,7 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     }
   }
 
+  /// Reads exactly.
   private func readExactly(_ count: Int, from fd: Int32) throws -> Data {
     var data = Data(count: count)
     var offset = 0
@@ -204,6 +228,7 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     return data
   }
 
+  /// Reads exactly.
   private func readExactly(_ count: Int, from fd: Int32, deadline: UInt64) throws -> Data {
     var data = Data(count: count)
     var offset = 0
@@ -232,6 +257,7 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     return data
   }
 
+  /// Waits for for readable.
   private func waitForReadable(fd: Int32, deadline: UInt64) throws {
     let now = DispatchTime.now().uptimeNanoseconds
     guard deadline > now else {
@@ -257,6 +283,7 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     }
   }
 
+  /// Returns the startup deadline.
   private func startupDeadline(after timeout: TimeInterval) -> UInt64 {
     let nanoseconds = UInt64(min(timeout * 1_000_000_000, Double(UInt64.max)))
     let now = DispatchTime.now().uptimeNanoseconds
@@ -264,8 +291,11 @@ private final class AeroSpaceSocketSubscriptionSession: AeroSpaceSubscriptionSes
     return overflow ? UInt64.max : deadline
   }
 
+  /// Stores socket error data.
   private struct SocketError: Error, CustomStringConvertible {
+    /// A human-readable representation of this socket error.
     let description: String
+    /// Creates a socket error.
     init(_ description: String) { self.description = description }
   }
 }

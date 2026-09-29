@@ -1,8 +1,10 @@
 import AppKit
 import SwiftUI
 
+/// Stores popup hover region data.
 struct PopupHoverRegion: NSViewRepresentable {
 
+  /// The on hover changed for this popup hover region.
   let onHoverChanged: (Bool) -> Void
 
   /// Creates the AppKit hover region.
@@ -23,6 +25,7 @@ struct PopupHoverRegion: NSViewRepresentable {
   }
 }
 
+/// Coordinates popup hover ns view state and behavior.
 final class PopupHoverNSView: NSView {
 
   var hoverChanged: ((Bool) -> Void)?

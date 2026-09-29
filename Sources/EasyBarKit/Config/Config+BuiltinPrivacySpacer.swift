@@ -8,16 +8,19 @@ extension Config {
     /// Reserved width in points.
     var width: Double
 
+    /// Whether this spacer builtin config is enabled.
     var enabled: Bool {
       get { placement.enabled }
       set { placement.enabled = newValue }
     }
 
+    /// The position for this spacer builtin config.
     var position: WidgetPosition {
       get { placement.position }
       set { placement.position = newValue }
     }
 
+    /// The order for this spacer builtin config.
     var order: Int {
       get { placement.order }
       set { placement.order = newValue }
