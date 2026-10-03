@@ -26,9 +26,6 @@ final class NetworkSocketServer {
   /// Human-readable component label included in diagnostics and transport metadata.
   private let componentName: String
 
-  /// Filesystem path bound by the underlying Unix-domain socket transport.
-  private let socketPath: String
-
   /// Application version returned to connected clients.
   private let appVersion: String
 
@@ -51,7 +48,6 @@ final class NetworkSocketServer {
     onRestartRequested: @escaping @MainActor () -> Void
   ) {
     self.componentName = componentName
-    self.socketPath = socketPath
     self.appVersion = appVersion
     self.allowUnauthorizedNonSensitiveFields = allowUnauthorizedNonSensitiveFields
     self.logger = logger
