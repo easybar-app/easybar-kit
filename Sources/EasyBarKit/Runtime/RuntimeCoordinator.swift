@@ -173,8 +173,12 @@ actor RuntimeCoordinator {
   ) async -> Bool {
     guard await RuntimeReloadPreflight.apply(
       result: result,
-      configManager: configManager,
-      socketServer: socketServer,
+      reloadSocket: { [socketServer] path in
+        socketServer.reloadConfiguration(socketPath: path)
+      },
+      restorePreviousState: { [configManager] in
+        await configManager.restorePreviousState()
+      },
       logger: logger,
       rebindInstanceLock: rebindInstanceLock
     ) else { return false }
