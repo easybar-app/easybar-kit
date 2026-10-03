@@ -348,6 +348,8 @@ extension AeroSpaceService {
         return
       }
 
+      guard self.shouldExecute(generation: generation) else { return }
+
       Task { @MainActor in
         guard NSWorkspace.shared.open(URL(fileURLWithPath: path)) else {
           self.logger.warn(
