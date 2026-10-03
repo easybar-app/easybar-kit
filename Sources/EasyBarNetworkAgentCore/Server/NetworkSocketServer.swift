@@ -20,11 +20,22 @@ final class NetworkSocketServer {
     NetworkAgentMessage
   >.ClientDisposition
 
+  /// Snapshot provider retained while the socket transport is accepting requests.
   private var provider: NetworkSnapshotProvider?
+
+  /// Human-readable component label included in diagnostics and transport metadata.
   private let componentName: String
+
+  /// Filesystem path bound by the underlying Unix-domain socket transport.
   private let socketPath: String
+
+  /// Application version returned to connected clients.
   private let appVersion: String
+
+  /// Whether unauthenticated clients may fetch non-sensitive network fields.
   private let allowUnauthorizedNonSensitiveFields: Bool
+
+  /// Structured logger for socket-server diagnostics.
   private let logger: ProcessLogger
   /// Host callback invoked after a restart acknowledgement has been sent.
   private let onRestartRequested: @MainActor () -> Void
