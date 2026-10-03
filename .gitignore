@@ -4,3 +4,4 @@ dist/
 .home/
 .cache/
 .DS_Store
+.projectatlas
