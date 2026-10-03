@@ -7,16 +7,34 @@ import Foundation
 /// runtime refreshes, and IPC commands. Lifecycle queue state, config watching,
 /// and socket callback bridging are delegated to smaller runtime collaborators.
 actor RuntimeCoordinator {
+  /// Structured logger for lifecycle and configuration diagnostics.
   private let logger: ProcessLogger
+
+  /// Shared runtime services owned by the application composition root.
   private let services: AppServices
+
+  /// Serialized owner of the active EasyBar configuration snapshot.
   private let configManager: ConfigManager
+
+  /// Filesystem observer that emits configuration-file changes.
   private let fileWatcher: FileWatcher
+
+  /// Runtime that loads and renders Lua widget packages.
   private let widgetEngine: WidgetEngine
+
+  /// Service that supplies current macOS workspace and focus information.
   private let aeroSpaceService: AeroSpaceService
+
+  /// IPC boundary used by CLI clients and metrics subscribers.
   private let socketServer: SocketServer
+
+  /// Rebinds the singleton-instance lock when configuration moves its lock directory.
   private let rebindInstanceLock: @MainActor @Sendable (String) -> Bool
 
+  /// State machine that serializes startup, reload, and runtime-restart work.
   private var lifecycle = RuntimeLifecycleStateMachine()
+
+  /// Task consuming filesystem changes from the current configuration watcher stream.
   private var configWatcherTask: Task<Void, Never>?
 
   /// Creates a runtime coordinator.
@@ -347,12 +365,8 @@ actor RuntimeCoordinator {
         guard let payload = request.item else {
           return .rejected(message: "inbox send requires an item")
         }
-        if let value = payload.url {
-          guard let url = URL(string: value), url.host != nil,
-            let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https"
-          else {
-            return .rejected(message: "inbox URL must use http or https")
-          }
+        if let value = payload.url, !isSupportedInboxURL(value) {
+          return .rejected(message: "inbox URL must use http or https")
         }
         let item = InboxItem(
           id: payload.id,
@@ -572,4 +586,18 @@ private func easyBarLogPath(in directory: String) -> String {
   URL(fileURLWithPath: directory)
     .appendingPathComponent("easybar.out")
     .path
+}
+
+/// Returns whether an inbox link is an absolute HTTP or HTTPS URL with a host.
+private func isSupportedInboxURL(_ value: String) -> Bool {
+  guard let url = URL(string: value), url.host != nil else {
+    return false
+  }
+
+  switch url.scheme?.lowercased() {
+  case "http", "https":
+    return true
+  default:
+    return false
+  }
 }
