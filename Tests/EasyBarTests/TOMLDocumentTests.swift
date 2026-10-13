@@ -56,7 +56,7 @@ final class TOMLDocumentTests: XCTestCase {
       edits: [
         TOMLEdit(
           path: ["builtins", "calendar", "anchor", "fields"],
-          value: .stringArray(["date", "time"])
+          value: .array([.string("date"), .string("time")])
         )
       ]
     )

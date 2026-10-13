@@ -194,7 +194,7 @@ extension WidgetStorageValue {
     case .bool(let value):
       return .bool(value)
     case .stringArray(let value):
-      return .stringArray(value)
+      return .array(value.map(TOMLEdit.Value.string))
     }
   }
 }

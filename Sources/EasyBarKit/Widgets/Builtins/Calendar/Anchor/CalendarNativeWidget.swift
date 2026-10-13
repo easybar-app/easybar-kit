@@ -266,7 +266,7 @@ extension CalendarNativeWidget {
       ),
       TOMLEdit(
         path: ["builtins", "calendar", "anchor", "fields"],
-        value: .stringArray(sessionConfig.anchor.fields.map(\.rawValue))
+        value: .array(sessionConfig.anchor.fields.map { .string($0.rawValue) })
       ),
       TOMLEdit(
         path: ["builtins", "calendar", "month", "popup", "calendar", "today_marker_variant"],
