@@ -457,6 +457,8 @@ final class CalendarSocketServer {
         return .accessDenied
       case .eventNotFound:
         return .eventNotFound
+      case .calendarNotFound:
+        return .invalidRequest
       case .noWritableCalendar:
         return .noWritableCalendar
       }

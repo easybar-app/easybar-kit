@@ -49,6 +49,8 @@ extension CalendarSnapshotProvider {
     end: Date
   ) -> [CalendarAgentEvent] {
     let normalCalendars = filteredRegularCalendars(query: query)
+    guard !normalCalendars.isEmpty else { return [] }
+
     let predicate = eventStore.predicateForEvents(
       withStart: start,
       end: end,
@@ -239,32 +241,40 @@ extension CalendarSnapshotProvider {
     )
   }
 
-  /// Resolves one writable calendar for creation or update.
+  /// Resolves a writable calendar without silently replacing an explicit user selection.
   func resolvedCalendar(id: String?) throws -> EKCalendar {
     let writableCalendars = eventStore.calendars(for: .event).filter { calendar in
       calendar.allowsContentModifications && calendar.type != .birthday
     }
 
-    if let id = normalizedOptionalText(id) {
-      if let match = writableCalendars.first(where: {
-        $0.calendarIdentifier == id
-      }) {
-        return match
+    return try Self.selectWritableCalendar(
+      requestedID: normalizedOptionalText(id),
+      available: writableCalendars,
+      preferred: eventStore.defaultCalendarForNewEvents
+    )
+  }
+
+  /// Chooses the requested calendar or uses defaults only when no calendar was selected.
+  static func selectWritableCalendar(
+    requestedID: String?,
+    available: [EKCalendar],
+    preferred: EKCalendar?
+  ) throws -> EKCalendar {
+    if let requestedID {
+      guard let selected = available.first(where: { $0.calendarIdentifier == requestedID }) else {
+        throw CalendarAgentMutationError.calendarNotFound
       }
+      return selected
     }
 
-    if let defaultCalendar = eventStore.defaultCalendarForNewEvents,
-      defaultCalendar.allowsContentModifications,
-      defaultCalendar.type != .birthday
-    {
-      return defaultCalendar
+    if let preferred, preferred.allowsContentModifications, preferred.type != .birthday {
+      return preferred
     }
 
-    if let firstWritable = writableCalendars.first {
-      return firstWritable
+    guard let firstWritable = available.first else {
+      throw CalendarAgentMutationError.noWritableCalendar
     }
-
-    throw CalendarAgentMutationError.noWritableCalendar
+    return firstWritable
   }
 
   /// Resolves one event by EventKit identifier.

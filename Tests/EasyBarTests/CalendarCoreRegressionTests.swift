@@ -10,6 +10,34 @@ private final class CalendarTravelTimeTestObject: NSObject {
 }
 
 final class CalendarCoreRegressionTests: XCTestCase {
+  func testExplicitUnknownCalendarDoesNotFallBackToDefault() {
+    XCTAssertThrowsError(
+      try CalendarSnapshotProvider.selectWritableCalendar(
+        requestedID: "removed-calendar",
+        available: [],
+        preferred: EKCalendar(for: .event, eventStore: EKEventStore())
+      )
+    ) { error in
+      guard let mutation = error as? CalendarAgentMutationError, case .calendarNotFound = mutation else {
+        return XCTFail("Expected calendarNotFound, got \(error)")
+      }
+    }
+  }
+
+  func testMissingDefaultCalendarReportsNoWritableCalendar() {
+    XCTAssertThrowsError(
+      try CalendarSnapshotProvider.selectWritableCalendar(
+        requestedID: nil,
+        available: [],
+        preferred: nil
+      )
+    ) { error in
+      guard let mutation = error as? CalendarAgentMutationError, case .noWritableCalendar = mutation else {
+        return XCTFail("Expected noWritableCalendar, got \(error)")
+      }
+    }
+  }
+
   func testInProcessAuthorizationGrantSurvivesTransientNotDeterminedStatus() {
     let state = CalendarAuthorizationState()
     state.markGrantedInProcess()
