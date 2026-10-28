@@ -1,17 +1,17 @@
 import EasyBarShared
 import Foundation
 
-/// Stores widget package database store data.
+/// Validates and persists the installed-package database as atomic JSON.
 struct WidgetPackageDatabaseStore {
   /// The file manager used for filesystem operations.
   private let fileManager: FileManager
 
-  /// Creates a widget package database store.
+  /// Creates a database store with an injectable filesystem implementation.
   init(fileManager: FileManager = .default) {
     self.fileManager = fileManager
   }
 
-  /// Loads the requested value.
+  /// Loads installed packages and rejects invalid layouts, duplicate names, and export collisions.
   func load(from packagesDirectory: URL) throws -> InstalledWidgetPackages {
     let url = packagesDirectory.appending(path: "installed.json")
     guard fileManager.fileExists(atPath: url.path) else { return .empty }
@@ -56,7 +56,7 @@ struct WidgetPackageDatabaseStore {
     return database
   }
 
-  /// Writes the requested value.
+  /// Atomically writes package metadata with stable ordering and a trailing newline.
   func write(_ database: InstalledWidgetPackages, to packagesDirectory: URL) throws {
     let url = packagesDirectory.appending(path: "installed.json")
     try fileManager.createDirectory(

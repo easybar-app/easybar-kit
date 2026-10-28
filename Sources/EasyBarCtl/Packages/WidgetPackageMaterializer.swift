@@ -1,32 +1,32 @@
 import EasyBarShared
 import Foundation
 
-/// Stores widget package materializer data.
+/// Stages and atomically activates resolved widget packages with rollback on failure.
 struct WidgetPackageMaterializer {
-  /// Stores prepared package data.
+  /// Holds a verified package and its staging and final store locations.
   private struct PreparedPackage {
-    /// The package for this prepared package.
+    /// Package resolved from a registry, directory, or archive.
     let package: ResolvedWidgetPackage
-    /// The record for this prepared package.
+    /// Metadata persisted in the installed-package database.
     let record: InstalledWidgetPackage
-    /// The staging URL for this prepared package.
+    /// Temporary directory containing the uncommitted package contents.
     let stagingURL: URL
-    /// The stored URL for this prepared package.
+    /// Versioned destination under the managed package store.
     let storedURL: URL
   }
 
-  /// The retained version count for this widget package materializer.
+  /// Number of package versions retained, including the active version.
   private static let retainedVersionCount = 3
 
   /// The file manager used for filesystem operations.
   private let fileManager: FileManager
 
-  /// Creates a widget package materializer.
+  /// Creates a package materializer using the supplied filesystem implementation.
   init(fileManager: FileManager) {
     self.fileManager = fileManager
   }
 
-  /// Installs the requested package.
+  /// Activates a resolved package set and records it only after all replacements succeed.
   func install(
     _ packages: [ResolvedWidgetPackage],
     into packagesDirectory: URL,
@@ -65,7 +65,10 @@ struct WidgetPackageMaterializer {
         )
         transactions.append(transaction)
       }
-      try write(updated, to: packagesDirectory.appending(path: "installed.json"))
+      try WidgetPackageDatabaseStore(fileManager: fileManager).write(
+        updated,
+        to: packagesDirectory
+      )
     } catch {
       do {
         try rollback(transactions)
@@ -93,7 +96,7 @@ struct WidgetPackageMaterializer {
     return prepared.map(\.record)
   }
 
-  /// Validates conflicts.
+  /// Rejects collisions with unmanaged widget paths and exports owned by other packages.
   private func validateConflicts(
     _ packages: [ResolvedWidgetPackage],
     packagesDirectory: URL,
@@ -146,7 +149,7 @@ struct WidgetPackageMaterializer {
     }
   }
 
-  /// Prepares packages for installation.
+  /// Copies resolved packages into versioned staging directories before activation.
   private func preparePackages(
     _ packages: [ResolvedWidgetPackage],
     storeRoot: URL
@@ -199,12 +202,12 @@ struct WidgetPackageMaterializer {
     }
   }
 
-  /// Prepares the requested value.
+  /// Copies one resolved package into its staging directory.
   private func prepare(_ package: ResolvedWidgetPackage, at stage: URL) throws {
     try fileManager.copyItem(at: package.directory, to: stage)
   }
 
-  /// Evaluates the unmanaged widget collision condition.
+  /// Detects an existing unmanaged widget entrypoint at the activation path.
   private func isUnmanagedWidgetCollision(
     name: String,
     destination: URL,
@@ -213,7 +216,7 @@ struct WidgetPackageMaterializer {
     itemExists(destination) && installed[name] == nil
   }
 
-  /// Evaluates the module ownership conflict condition.
+  /// Detects a Lua module already occupied by another package or unmanaged file.
   private func isModuleOwnershipConflict(
     module: String,
     packageName: String,
@@ -223,7 +226,7 @@ struct WidgetPackageMaterializer {
     itemExists(destination) && exportOwners[module] != packageName
   }
 
-  /// Commits the prepared changes.
+  /// Activates the staged package, updates exports, and records its installed metadata.
   private func commit(
     _ prepared: PreparedPackage,
     into packagesDirectory: URL,
@@ -283,7 +286,7 @@ struct WidgetPackageMaterializer {
     return transaction
   }
 
-  /// Rolls back the prepared changes.
+  /// Restores earlier activation paths in reverse order after a failed batch.
   private func rollback(_ transactions: [WidgetPackageReplacementTransaction]) throws {
     var firstFailure: Error?
     for transaction in transactions.reversed() {
@@ -300,7 +303,7 @@ struct WidgetPackageMaterializer {
     }
   }
 
-  /// Returns the prune stored versions.
+  /// Removes old inactive package versions while retaining the active version and recent history.
   private func pruneStoredVersions(
     for packageName: String,
     activeVersion: String,
@@ -347,14 +350,14 @@ struct WidgetPackageMaterializer {
     }
   }
 
-  /// Removes directory if empty.
+  /// Removes a package store directory only when it contains no remaining versions.
   private func removeDirectoryIfEmpty(_ url: URL) {
     guard let contents = try? fileManager.contentsOfDirectory(atPath: url.path), contents.isEmpty
     else { return }
     try? fileManager.removeItem(at: url)
   }
 
-  /// Updates the item's modification date.
+  /// Marks the installed version as recently used for retention ordering.
   private func touch(_ url: URL) {
     try? fileManager.setAttributes(
       [.modificationDate: Date()],
@@ -362,7 +365,7 @@ struct WidgetPackageMaterializer {
     )
   }
 
-  /// Returns the module URL.
+  /// Maps a dotted Lua module name to its managed shared-file path.
   private func moduleURL(_ module: String, in root: URL) -> URL {
     let path = module.replacing(".", with: "/") + ".lua"
     return root.appending(path: "shared").appending(path: path)
@@ -374,16 +377,4 @@ struct WidgetPackageMaterializer {
       || (try? fileManager.destinationOfSymbolicLink(atPath: url.path)) != nil
   }
 
-  /// Writes the requested value.
-  private func write(_ database: InstalledWidgetPackages, to url: URL) throws {
-    try fileManager.createDirectory(
-      at: url.deletingLastPathComponent(),
-      withIntermediateDirectories: true
-    )
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-    var data = try encoder.encode(database)
-    data.append(0x0A)
-    try data.write(to: url, options: .atomic)
-  }
 }
