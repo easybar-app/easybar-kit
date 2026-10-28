@@ -5,6 +5,8 @@ import Foundation
 struct WidgetPackagePinManager {
   /// The packages directory for this widget package pin manager.
   private let packagesDirectory: URL
+  /// The file manager used when acquiring the shared package lock.
+  private let fileManager: FileManager
   /// The database store for this widget package pin manager.
   private let databaseStore: WidgetPackageDatabaseStore
   /// The pin store for this widget package pin manager.
@@ -16,27 +18,43 @@ struct WidgetPackagePinManager {
     packagesDirectory: URL = SharedPathDefaults.defaultWidgetPackagesPath()
   ) {
     self.packagesDirectory = packagesDirectory
+    self.fileManager = fileManager
     databaseStore = WidgetPackageDatabaseStore(fileManager: fileManager)
     pinStore = WidgetPackagePinStore(fileManager: fileManager)
   }
 
   /// Pins the selected package.
   func pin(name: String) throws -> InstalledWidgetPackage {
-    let package = try installedPackage(named: name)
-    var pins = try pinStore.load(from: packagesDirectory)
-    guard pins.insert(name).inserted else {
-      throw WidgetPackageError.packageAlreadyPinned(name)
+    try WidgetPackageOperationLock.withExclusiveAccess(
+      to: packagesDirectory,
+      fileManager: fileManager
+    ) {
+      try changePin(name: name, shouldPin: true)
     }
-    try pinStore.write(pins, to: packagesDirectory)
-    return package
   }
 
-  /// Unpins the selected package.
+  /// Unpins one package while other CLI mutations are excluded.
   func unpin(name: String) throws -> InstalledWidgetPackage {
+    try WidgetPackageOperationLock.withExclusiveAccess(
+      to: packagesDirectory,
+      fileManager: fileManager
+    ) {
+      try changePin(name: name, shouldPin: false)
+    }
+  }
+
+  /// Updates the package pin set using the database read from the same locked operation.
+  private func changePin(name: String, shouldPin: Bool) throws -> InstalledWidgetPackage {
     let package = try installedPackage(named: name)
     var pins = try pinStore.load(from: packagesDirectory)
-    guard pins.remove(name) != nil else {
-      throw WidgetPackageError.packageNotPinned(name)
+    if shouldPin {
+      guard pins.insert(name).inserted else {
+        throw WidgetPackageError.packageAlreadyPinned(name)
+      }
+    } else {
+      guard pins.remove(name) != nil else {
+        throw WidgetPackageError.packageNotPinned(name)
+      }
     }
     try pinStore.write(pins, to: packagesDirectory)
     return package

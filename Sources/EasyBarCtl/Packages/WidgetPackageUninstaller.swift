@@ -17,6 +17,16 @@ final class WidgetPackageUninstaller {
 
   /// Uninstalls the requested operation.
   func uninstall(name: String) throws -> InstalledWidgetPackage {
+    try WidgetPackageOperationLock.withExclusiveAccess(
+      to: packagesDirectory,
+      fileManager: fileManager
+    ) {
+      try uninstallLocked(name: name)
+    }
+  }
+
+  /// Removes one installed package while other CLI mutations are excluded.
+  private func uninstallLocked(name: String) throws -> InstalledWidgetPackage {
     guard WidgetPackageManifestParser.isPackageName(name) else {
       throw WidgetPackageError.invalidSource("invalid package name '\(name)'")
     }

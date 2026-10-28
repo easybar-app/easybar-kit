@@ -23,7 +23,19 @@ final class WidgetPackageInstaller {
     options: WidgetPackageInstallOptions,
     protectedPackages: Set<String> = []
   ) async throws -> [InstalledWidgetPackage] {
-    try fileManager.createDirectory(at: packagesDirectory, withIntermediateDirectories: true)
+    try await WidgetPackageOperationLock.withExclusiveAccess(
+      to: packagesDirectory,
+      fileManager: fileManager
+    ) {
+      try await installLocked(options: options, protectedPackages: protectedPackages)
+    }
+  }
+
+  /// Resolves and installs packages while the shared package-directory lock is held.
+  private func installLocked(
+    options: WidgetPackageInstallOptions,
+    protectedPackages: Set<String>
+  ) async throws -> [InstalledWidgetPackage] {
     let database = try WidgetPackageDatabaseStore(fileManager: fileManager).load(
       from: packagesDirectory
     )
