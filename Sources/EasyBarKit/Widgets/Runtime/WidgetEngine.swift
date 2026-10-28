@@ -48,6 +48,8 @@ actor WidgetEngine {
   private var started = false
   private var runtimeAvailable = false
   private var runtimeSessionID: UInt64 = 0
+  /// Session token visible to MainActor closures without crossing the widget-engine actor.
+  private let publishedRuntimeSessionID = LockedState<UInt64>(0)
   private var runtimeLineBuffer: LuaRuntimeLineBuffer?
   private var runtimeLineTask: Task<Void, Never>?
   private var runtimeInputOverflowSessionID: UInt64?
@@ -124,6 +126,7 @@ actor WidgetEngine {
 
     runtimeSessionID &+= 1
     let sessionID = runtimeSessionID
+    publishedRuntimeSessionID.withLock { $0 = sessionID }
     runtimeAvailable = false
     runtimeInputOverflowSessionID = nil
 
@@ -317,7 +320,7 @@ actor WidgetEngine {
 
     do {
       let message = try protocolDecoder.decodeMessage(from: line)
-      await handleRuntimeMessage(message)
+      await handleRuntimeMessage(message, runtimeSessionID: runtimeSessionID)
     } catch WidgetRuntimeProtocolError.unsupportedProtocolVersion(let version) {
       await metricsCoordinator.recordDecodeError()
       logger.warn(
@@ -338,27 +341,40 @@ actor WidgetEngine {
   }
 
   /// Returns the emit initial events if possible.
-  private func emitInitialEventsIfPossible() async {
-    guard runtimeState.canEmitInitialEvents else { return }
+  private func emitInitialEventsIfPossible(runtimeSessionID sessionID: UInt64) async {
+    guard acceptsRuntimeSession(sessionID, whileRunning: started && runtimeAvailable),
+      runtimeState.canEmitInitialEvents
+    else { return }
 
     runtimeState.didEmitInitialEvents = true
     logger.debug("emitting replayable widget events")
 
-    await eventHub.emitReplayableState(for: runtimeState.requiredEvents)
+    let events = runtimeState.requiredEvents
+    await eventHub.emitReplayableState(for: events)
+    guard acceptsRuntimeSession(sessionID, whileRunning: started && runtimeAvailable) else {
+      return
+    }
     await eventHub.emit(.manualRefresh)
   }
 
   /// Handles runtime message.
-  private func handleRuntimeMessage(_ message: WidgetRuntimeMessage) async {
+  private func handleRuntimeMessage(
+    _ message: WidgetRuntimeMessage,
+    runtimeSessionID sessionID: UInt64
+  ) async {
+    guard acceptsRuntimeSession(sessionID, whileRunning: started && runtimeAvailable) else {
+      return
+    }
+
     switch message {
     case .subscriptions(let requiredEvents):
-      await handleSubscriptions(requiredEvents)
+      await handleSubscriptions(requiredEvents, runtimeSessionID: sessionID)
     case .ready:
-      await handleReady()
+      await handleReady(runtimeSessionID: sessionID)
     case .tree(let root, let nodes):
-      await handleTree(root: root, nodes: nodes)
+      await handleTree(root: root, nodes: nodes, runtimeSessionID: sessionID)
     case .clearRoot(let rootID):
-      await handleClearRoot(rootID: rootID)
+      await handleClearRoot(rootID: rootID, runtimeSessionID: sessionID)
     case .commandRequest(
       let token,
       let invocation,
@@ -375,7 +391,7 @@ actor WidgetEngine {
         maxOutputBytesOverride: maxOutputBytes,
         widget: widget,
         operation: operation,
-        runtimeSessionID: runtimeSessionID,
+        runtimeSessionID: sessionID,
         isRuntimeSessionActive: { [weak self] sessionID in
           guard let self else { return false }
           return await self.isRuntimeSessionActive(sessionID)
@@ -384,30 +400,36 @@ actor WidgetEngine {
     case .commandCancel(let token):
       await commandService.cancelAsyncCommand(
         token: token,
-        runtimeSessionID: runtimeSessionID
+        runtimeSessionID: sessionID
       )
     case .timerRequest(let token, let delaySeconds):
       await timerService.schedule(
         token: token,
         delaySeconds: delaySeconds,
-        runtimeSessionID: runtimeSessionID,
+        runtimeSessionID: sessionID,
         isRuntimeSessionActive: { [weak self] sessionID in
           guard let self else { return false }
           return await self.isRuntimeSessionActive(sessionID)
         }
       )
     case .timerCancel(let token):
-      await timerService.cancel(token: token, runtimeSessionID: runtimeSessionID)
+      await timerService.cancel(token: token, runtimeSessionID: sessionID)
     case .inboxReplace(let snapshot):
+      let tracker = publishedRuntimeSessionID
       await MainActor.run {
+        guard tracker.withLock({ $0 == sessionID }) else { return }
         inboxStore.replace(source: snapshot.source, items: snapshot.items)
       }
     case .inboxClear(let source):
+      let tracker = publishedRuntimeSessionID
       await MainActor.run {
+        guard tracker.withLock({ $0 == sessionID }) else { return }
         inboxStore.clear(source: source)
       }
     case .inboxConfigure(let configuration):
+      let tracker = publishedRuntimeSessionID
       await MainActor.run {
+        guard tracker.withLock({ $0 == sessionID }) else { return }
         inboxStore.configure(
           source: configuration.source,
           actions: configuration.actions,
@@ -434,6 +456,7 @@ actor WidgetEngine {
   /// Invalidates queued work captured by the active Lua process generation.
   private func invalidateRuntimeSession() {
     runtimeSessionID &+= 1
+    publishedRuntimeSessionID.withLock { $0 = runtimeSessionID }
     runtimeLineBuffer?.finish()
     runtimeLineBuffer = nil
     runtimeLineTask?.cancel()
@@ -446,36 +469,49 @@ actor WidgetEngine {
   }
 
   /// Handles subscriptions.
-  private func handleSubscriptions(_ requiredEvents: Set<String>) async {
+  private func handleSubscriptions(
+    _ requiredEvents: Set<String>,
+    runtimeSessionID sessionID: UInt64
+  ) async {
     runtimeState.requiredEvents = requiredEvents
     runtimeState.hasSubscriptions = true
 
-    await metricsCoordinator.recordLuaSubscriptions(runtimeState.requiredEvents)
-    logger.debug("required events updated", .field("events", runtimeState.requiredEvents))
+    await metricsCoordinator.recordLuaSubscriptions(requiredEvents)
+    guard acceptsRuntimeSession(sessionID, whileRunning: started && runtimeAvailable) else {
+      return
+    }
+    logger.debug("required events updated", .field("events", requiredEvents))
 
-    let requiredEvents = runtimeState.requiredEvents
     await eventHub.setLuaForwardedAppEvents(requiredEvents)
+    guard acceptsRuntimeSession(sessionID, whileRunning: started && runtimeAvailable) else {
+      return
+    }
 
+    let tracker = publishedRuntimeSessionID
     await MainActor.run {
+      guard tracker.withLock({ $0 == sessionID }) else { return }
       eventManager.setLuaSubscriptions(requiredEvents)
     }
 
-    await emitInitialEventsIfPossible()
+    await emitInitialEventsIfPossible(runtimeSessionID: sessionID)
   }
 
   /// Handles ready.
-  private func handleReady() async {
+  private func handleReady(runtimeSessionID sessionID: UInt64) async {
     logger.debug("lua runtime handshake received")
 
     restartScheduler.resetDelay()
     runtimeState.isReady = true
     await metricsCoordinator.recordLuaReady()
-
-    await emitInitialEventsIfPossible()
+    await emitInitialEventsIfPossible(runtimeSessionID: sessionID)
   }
 
   /// Handles one rendered widget tree update.
-  private func handleTree(root: String, nodes: [WidgetNodeState]) async {
+  private func handleTree(
+    root: String,
+    nodes: [WidgetNodeState],
+    runtimeSessionID sessionID: UInt64
+  ) async {
     scriptedRoots.insert(root)
 
     logger.debug(
@@ -484,10 +520,16 @@ actor WidgetEngine {
       .field("nodes", nodes.count)
     )
     await metricsCoordinator.recordTreeUpdate(root: root, nodeCount: nodes.count)
-
-    let applyResult = await MainActor.run {
-      widgetStore.apply(owner: .scripted(root: root), nodes: nodes)
+    guard acceptsRuntimeSession(sessionID, whileRunning: started && runtimeAvailable) else {
+      return
     }
+
+    let tracker = publishedRuntimeSessionID
+    let applyResult: WidgetStore.ApplyResult? = await MainActor.run {
+      guard tracker.withLock({ $0 == sessionID }) else { return nil }
+      return widgetStore.apply(owner: .scripted(root: root), nodes: nodes)
+    }
+    guard let applyResult else { return }
 
     if !applyResult.rejectedNodeIDs.isEmpty {
       logger.warn(
@@ -501,14 +543,16 @@ actor WidgetEngine {
   }
 
   /// Handles one explicit root-clear update from Lua.
-  private func handleClearRoot(rootID: String) async {
+  private func handleClearRoot(rootID: String, runtimeSessionID sessionID: UInt64) async {
     guard scriptedRoots.remove(rootID) != nil else {
       logger.warn("ignored clear for unknown scripted widget root", .field("root", rootID))
       return
     }
     logger.debug("decoded widget root clear", .field("root", rootID))
 
+    let tracker = publishedRuntimeSessionID
     await MainActor.run {
+      guard tracker.withLock({ $0 == sessionID }) else { return }
       widgetStore.clear(owners: [.scripted(root: rootID)])
     }
   }
