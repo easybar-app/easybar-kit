@@ -105,15 +105,18 @@ actor LuaRuntime {
   /// Stops the Lua runtime and clears all pipe handlers.
   func shutdown() async {
     let hadRunningProcess = processController.processIdentifier != nil
+    runtimeGeneration &+= 1
+    let shutdownGeneration = runtimeGeneration
 
     transport.shutdown()
     await processController.shutdownAndWait()
 
+    guard runtimeGeneration == shutdownGeneration else { return }
     if hadRunningProcess {
       await metricsCoordinator.recordLuaRuntimeStopped()
     }
 
-    runtimeGeneration &+= 1
+    guard runtimeGeneration == shutdownGeneration else { return }
     logger.debug("lua runtime facade shutdown completed")
   }
 
@@ -127,6 +130,7 @@ actor LuaRuntime {
 
     transport.shutdown()
     await metricsCoordinator.recordLuaRuntimeStopped()
+    guard runtimeGeneration == generation else { return }
     terminationHandler?(termination)
   }
 
