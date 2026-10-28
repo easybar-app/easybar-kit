@@ -74,6 +74,31 @@ final class ProcessExecutorTests: XCTestCase {
     XCTAssertTrue(waitUntilProcessIsAbsent(childPID))
   }
 
+  func testContinuousOutputStopsAtCaptureLimit() throws {
+    let executor = ProcessExecutor(
+      logger: ProcessLogger(
+        label: "process.executor.tests",
+        minimumLevel: .error,
+        outputStream: nil,
+        errorStream: nil
+      )
+    )
+
+    let result = try executor.runSynchronously(
+      ProcessExecutionRequest(
+        executablePath: "/usr/bin/yes",
+        arguments: ["/usr/bin/yes", "overflow"],
+        environment: ProcessInfo.processInfo.environment,
+        timeout: 5,
+        standardOutputLimit: 2_048,
+        mergeStandardError: true
+      )
+    )
+
+    XCTAssertEqual(result.outcome, .outputLimitExceeded(stream: .standardOutput))
+    XCTAssertEqual(result.standardOutput.count, 2_048)
+  }
+
   func testAlreadyCancelledExecutionDoesNotLaunchProcess() async {
     let logger = ProcessLogger(
       label: "process.executor.tests",

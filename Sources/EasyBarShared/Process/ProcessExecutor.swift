@@ -143,6 +143,7 @@ public final class ProcessExecutor: @unchecked Sendable {
     }
   }
 
+  /// Logger for process termination and cleanup diagnostics.
   private let logger: ProcessLogger
 
   /// Creates one shared process executor.
@@ -553,6 +554,8 @@ public final class ProcessExecutor: @unchecked Sendable {
         }
         if bytesRead > remainingBytes {
           channel.exceededLimit = true
+          channel.close()
+          return
         }
         continue
       }
