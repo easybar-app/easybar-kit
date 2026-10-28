@@ -210,6 +210,47 @@ final class AgentSocketClientTests: XCTestCase {
     }
   }
 
+  func testResumeReconnectsAfterInitialConnectionFailure() async throws {
+    let logger = Self.makeLogger()
+    let pathLookups = LockedState(0)
+    let connections = LockedState(0)
+    let client = AgentSocketClient<TestRequest, TestMessage>(
+      label: "initial connection failure",
+      socketPath: {
+        pathLookups.withLock { $0 += 1 }
+        return self.socketPath
+      },
+      subscribeRequest: { TestRequest(command: "subscribe") },
+      handleMessage: { _, _ in },
+      clearState: { _ in },
+      onConnected: { connections.withLock { $0 += 1 } },
+      logger: logger
+    )
+    client.setNextReconnectDelay(30)
+    client.start()
+    defer { client.stop() }
+
+    try await waitUntil("first socket lookup") {
+      pathLookups.withLock { $0 >= 1 }
+    }
+    try await Task.sleep(nanoseconds: 150_000_000)
+    client.suspendReconnect()
+
+    let server = makeServer(logger: logger)
+    XCTAssertTrue(
+      server.start { fd, _ in
+        server.addSubscriber((), for: fd)
+        return .keepOpen
+      })
+    defer { server.stop() }
+
+    client.resumeReconnect()
+    try await waitUntil("reconnected after explicit resume") {
+      connections.withLock { $0 == 1 }
+    }
+    XCTAssertTrue(client.isConnected)
+  }
+
   func testServerStopClosesKeptOpenSubscriberSocket() async throws {
     let logger = Self.makeLogger()
     let removedSubscribers = LockedState(0)

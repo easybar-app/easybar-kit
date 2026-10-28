@@ -221,7 +221,9 @@ public final class AgentSocketClient<
     thread.qualityOfService = .utility
 
     let shouldStart = state.withLock { state -> Bool in
-      guard state.running else { return false }
+      guard state.running, state.connectionThread == nil, state.connection == nil else {
+        return false
+      }
       state.connectionThread = thread
       return true
     }
@@ -231,12 +233,22 @@ public final class AgentSocketClient<
     }
   }
 
+  /// Releases a finished connection attempt so an explicit resume can start a new one.
+  private func finishFailedConnectionAttempt() {
+    state.withLock { state in
+      if state.connectionThread === Thread.current {
+        state.connectionThread = nil
+      }
+    }
+  }
+
   /// Performs one connection attempt and read loop.
   private func runConnectionAttempt() {
     guard isRunning() else { return }
 
     let resolvedSocketPath = socketPath()
     guard let fd = openConnectedSocket(socketPath: resolvedSocketPath) else {
+      finishFailedConnectionAttempt()
       scheduleReconnect()
       return
     }
