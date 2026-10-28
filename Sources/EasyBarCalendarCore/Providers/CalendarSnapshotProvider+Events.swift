@@ -11,23 +11,17 @@ extension CalendarSnapshotProvider {
     fetchStart: Date,
     fetchEndExclusive: Date
   ) -> [CalendarAgentEvent] {
-    var result: [CalendarAgentEvent] = []
-
-    result.append(
-      contentsOf: makeBirthdayEvents(
-        query: query,
-        start: fetchStart,
-        end: fetchEndExclusive
-      )
+    let birthdayEvents = makeBirthdayEvents(
+      query: query,
+      start: fetchStart,
+      end: fetchEndExclusive
     )
-
-    result.append(
-      contentsOf: makeRegularEvents(
-        query: query,
-        start: fetchStart,
-        end: fetchEndExclusive
-      )
+    let regularEvents = makeRegularEvents(
+      query: query,
+      start: fetchStart,
+      end: fetchEndExclusive
     )
+    let result = birthdayEvents + regularEvents
 
     return result.sorted { lhs, rhs in
       if lhs.startDate != rhs.startDate {
@@ -42,145 +36,93 @@ extension CalendarSnapshotProvider {
     }
   }
 
-  /// Builds normalized regular calendar events.
+  /// Builds regular event rows using the calendars allowed by the current query.
   private func makeRegularEvents(
     query: CalendarAgentQuery,
     start: Date,
     end: Date
   ) -> [CalendarAgentEvent] {
-    let normalCalendars = filteredRegularCalendars(query: query)
-    guard !normalCalendars.isEmpty else { return [] }
-
-    let predicate = eventStore.predicateForEvents(
-      withStart: start,
-      end: end,
-      calendars: normalCalendars
-    )
-
-    return eventStore.events(matching: predicate)
-      .sorted { lhs, rhs in
-        if lhs.startDate != rhs.startDate {
-          return lhs.startDate < rhs.startDate
-        }
-
-        if lhs.endDate != rhs.endDate {
-          return lhs.endDate < rhs.endDate
-        }
-
-        return (lhs.eventIdentifier ?? "") < (rhs.eventIdentifier ?? "")
-      }
-      .map { event in
-        let eventIdentifier = normalizedOptionalText(event.eventIdentifier)
-        let title = normalizedTitle(event.title)
-        let location = normalizedOptionalText(event.location)
-        let stableID = CalendarEventIdentity.makeID(
-          prefix: "event-",
-          eventIdentifier: eventIdentifier,
-          calendarID: event.calendar.calendarIdentifier,
-          sourceID: event.calendar.source.sourceIdentifier,
-          title: title,
-          startDate: event.startDate,
-          endDate: event.endDate,
-          isAllDay: event.isAllDay,
-          location: location
-        )
-        let travelTimeSeconds = resolvedTravelTimeSeconds(for: event)
-        let alertOffsetsSeconds = visibleAlertOffsetsSeconds(
-          for: event,
-          travelTimeSeconds: travelTimeSeconds
-        )
-
-        return CalendarAgentEvent(
-          id: stableID,
-          eventIdentifier: eventIdentifier,
-          title: title,
-          startDate: event.startDate,
-          endDate: event.endDate,
-          isAllDay: event.isAllDay,
-          calendarID: event.calendar.calendarIdentifier,
-          calendarName: normalizedTitle(event.calendar.title),
-          calendarColorHex: colorHex(for: event.calendar.cgColor),
-          location: location,
-          url: normalizedEventURLText(for: event),
-          alertOffsetsSeconds: alertOffsetsSeconds,
-          isHoliday: isHolidayCalendar(event.calendar),
-          hasAlert: hasVisibleAlert(alertOffsetsSeconds: alertOffsetsSeconds),
-          travelTimeSeconds: travelTimeSeconds
-        )
-      }
+    makeEvents(query: query, start: start, end: end, birthdayOnly: false)
   }
 
-  /// Builds normalized birthday events when enabled.
+  /// Builds birthday rows only when birthdays are enabled for the current query.
   private func makeBirthdayEvents(
     query: CalendarAgentQuery,
     start: Date,
     end: Date
   ) -> [CalendarAgentEvent] {
     guard query.showBirthdays else { return [] }
+    return makeEvents(query: query, start: start, end: end, birthdayOnly: true)
+  }
 
-    let birthdayCalendars = filteredCalendars(query: query, birthdayOnly: true)
-    guard !birthdayCalendars.isEmpty else { return [] }
+  /// Fetches events only when at least one eligible calendar remains after filtering.
+  private func makeEvents(
+    query: CalendarAgentQuery,
+    start: Date,
+    end: Date,
+    birthdayOnly: Bool
+  ) -> [CalendarAgentEvent] {
+    let calendars = filteredCalendars(query: query, birthdayOnly: birthdayOnly)
+    guard !calendars.isEmpty else { return [] }
 
     let predicate = eventStore.predicateForEvents(
       withStart: start,
       end: end,
-      calendars: birthdayCalendars
+      calendars: calendars
     )
 
-    return eventStore.events(matching: predicate)
-      .sorted { lhs, rhs in
-        if lhs.startDate != rhs.startDate {
-          return lhs.startDate < rhs.startDate
-        }
+    return eventStore.events(matching: predicate).map { event in
+      makeNormalizedEvent(event, birthdayOnly: birthdayOnly, showBirthdayAge: query.birthdaysShowAge)
+    }
+  }
 
-        if lhs.endDate != rhs.endDate {
-          return lhs.endDate < rhs.endDate
-        }
+  /// Converts one EventKit event into the shared transport model with consistent metadata.
+  private func makeNormalizedEvent(
+    _ event: EKEvent,
+    birthdayOnly: Bool,
+    showBirthdayAge: Bool
+  ) -> CalendarAgentEvent {
+    let eventIdentifier = normalizedOptionalText(event.eventIdentifier)
+    let location = normalizedOptionalText(event.location)
+    let title = normalizedTitle(event.title)
+    let displayTitle =
+      birthdayOnly
+      ? CalendarEventNormalization.birthdayTitle(title, showAge: showBirthdayAge)
+      : title
+    let isAllDay = birthdayOnly || event.isAllDay
+    let prefix = birthdayOnly ? "birthday-" : "event-"
 
-        return (lhs.eventIdentifier ?? "") < (rhs.eventIdentifier ?? "")
-      }
-      .map { event in
-        let eventIdentifier = normalizedOptionalText(event.eventIdentifier)
-        let title = CalendarEventNormalization.birthdayTitle(
-          normalizedTitle(event.title),
-          showAge: query.birthdaysShowAge
-        )
-        let location = normalizedOptionalText(event.location)
-        let stableID = CalendarEventIdentity.makeID(
-          prefix: "birthday-",
-          eventIdentifier: eventIdentifier,
-          calendarID: event.calendar.calendarIdentifier,
-          sourceID: event.calendar.source.sourceIdentifier,
-          title: title,
-          startDate: event.startDate,
-          endDate: event.endDate,
-          isAllDay: true,
-          location: location
-        )
-        let travelTimeSeconds = resolvedTravelTimeSeconds(for: event)
-        let alertOffsetsSeconds = visibleAlertOffsetsSeconds(
-          for: event,
-          travelTimeSeconds: travelTimeSeconds
-        )
+    let stableID = CalendarEventIdentity.makeID(
+      prefix: prefix,
+      eventIdentifier: eventIdentifier,
+      calendarID: event.calendar.calendarIdentifier,
+      sourceID: event.calendar.source.sourceIdentifier,
+      title: displayTitle,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      isAllDay: isAllDay,
+      location: location
+    )
+    let travelTimeSeconds = EventKitTravelTimeAdapter.read(from: event)
+    let alertOffsetsSeconds = visibleAlertOffsetsSeconds(for: event)
 
-        return CalendarAgentEvent(
-          id: stableID,
-          eventIdentifier: eventIdentifier,
-          title: title,
-          startDate: event.startDate,
-          endDate: event.endDate,
-          isAllDay: true,
-          calendarID: event.calendar.calendarIdentifier,
-          calendarName: normalizedTitle(event.calendar.title),
-          calendarColorHex: colorHex(for: event.calendar.cgColor),
-          location: location,
-          url: normalizedEventURLText(for: event),
-          alertOffsetsSeconds: alertOffsetsSeconds,
-          isHoliday: isHolidayCalendar(event.calendar),
-          hasAlert: hasVisibleAlert(alertOffsetsSeconds: alertOffsetsSeconds),
-          travelTimeSeconds: travelTimeSeconds
-        )
-      }
+    return CalendarAgentEvent(
+      id: stableID,
+      eventIdentifier: eventIdentifier,
+      title: displayTitle,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      isAllDay: isAllDay,
+      calendarID: event.calendar.calendarIdentifier,
+      calendarName: normalizedTitle(event.calendar.title),
+      calendarColorHex: colorHex(for: event.calendar.cgColor),
+      location: location,
+      url: normalizedEventURLText(for: event),
+      alertOffsetsSeconds: alertOffsetsSeconds,
+      isHoliday: isHolidayCalendar(event.calendar),
+      hasAlert: !alertOffsetsSeconds.isEmpty,
+      travelTimeSeconds: travelTimeSeconds
+    )
   }
 
   /// Returns writable non-birthday calendars for the composer.
@@ -196,11 +138,6 @@ extension CalendarSnapshotProvider {
           title: calendar.title
         )
       }
-  }
-
-  /// Returns the filtered non-birthday calendars for the query.
-  private func filteredRegularCalendars(query: CalendarAgentQuery) -> [EKCalendar] {
-    filteredCalendars(query: query, birthdayOnly: false)
   }
 
   /// Applies the same include/exclude contract to regular and birthday calendars.
@@ -285,21 +222,8 @@ extension CalendarSnapshotProvider {
     return eventStore.event(withIdentifier: trimmed)
   }
 
-  /// Resolves travel time from the best available source.
-  private func resolvedTravelTimeSeconds(for event: EKEvent) -> TimeInterval? {
-    return EventKitTravelTimeAdapter.read(from: event)
-  }
-
-  /// Returns whether the event has at least one visible non-travel alert.
-  private func hasVisibleAlert(alertOffsetsSeconds: [TimeInterval]) -> Bool {
-    return !alertOffsetsSeconds.isEmpty
-  }
-
   /// Returns visible non-travel alert lead times.
-  private func visibleAlertOffsetsSeconds(
-    for event: EKEvent,
-    travelTimeSeconds _: TimeInterval?
-  ) -> [TimeInterval] {
+  private func visibleAlertOffsetsSeconds(for event: EKEvent) -> [TimeInterval] {
     guard let alarms = event.alarms, !alarms.isEmpty else { return [] }
 
     var relativeOffsets: [TimeInterval] = []
