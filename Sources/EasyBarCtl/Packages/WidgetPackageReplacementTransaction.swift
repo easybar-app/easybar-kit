@@ -36,10 +36,19 @@ final class WidgetPackageReplacementTransaction {
     do {
       try fileManager.moveItem(at: preparedItem, to: destination)
     } catch {
+      let replacementError = error
       if let backup {
-        try? fileManager.moveItem(at: backup, to: destination)
+        do {
+          try fileManager.moveItem(at: backup, to: destination)
+        } catch {
+          throw WidgetPackageError.installConflict(
+            "could not restore \(destination.path) after replacement failed "
+              + "(\(replacementError.localizedDescription)); previous item remains at "
+              + "\(backup.path): \(error.localizedDescription)"
+          )
+        }
       }
-      throw error
+      throw replacementError
     }
 
     changes.append(
@@ -103,6 +112,7 @@ final class WidgetPackageReplacementTransaction {
   /// Restores every replaced path in reverse order.
   func rollback() throws {
     var firstFailure: Error?
+    var remainingChanges: [Change] = []
 
     for change in changes.reversed() {
       do {
@@ -113,13 +123,14 @@ final class WidgetPackageReplacementTransaction {
           try fileManager.moveItem(at: backup, to: change.destination)
         }
       } catch {
+        remainingChanges.append(change)
         if firstFailure == nil {
           firstFailure = error
         }
       }
     }
 
-    changes.removeAll()
+    changes = remainingChanges.reversed()
     if let firstFailure {
       throw firstFailure
     }
