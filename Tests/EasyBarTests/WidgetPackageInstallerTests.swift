@@ -602,6 +602,42 @@ final class WidgetPackageInstallerTests: XCTestCase {
     XCTAssertEqual(try replacementArtifacts(), [])
   }
 
+  func testUpdateModeRechecksCurrentPinBeforeReplacingPackage() async throws {
+    let package = directory.appending(path: "pinned-clock", directoryHint: .isDirectory)
+    try writePackage(
+      at: package,
+      manifest: """
+        manifest_version = 2
+        name = "pinned-clock"
+        version = "1.0.0"
+        minimum_easybar_kit_version = "0.1.0"
+        kind = "widget"
+        entrypoint = "widget.lua"
+        """,
+      files: ["widget.lua": "return 'pinned'\n"]
+    )
+    _ = try await install(package.path, useRegistry: false)
+    try WidgetPackagePinStore().write(["pinned-clock"], to: packagesDirectory)
+
+    do {
+      _ = try await installer.install(
+        options: WidgetPackageInstallOptions(
+          source: package.path,
+          sha256: nil,
+          registry: nil,
+          useRegistry: false,
+          force: true
+        ),
+        protectedPackages: [],
+        respectPins: true
+      )
+      XCTFail("Expected a package pinned after update selection to be protected")
+    } catch let error as WidgetPackageError {
+      XCTAssertEqual(error, .packagePinned("pinned-clock"))
+    }
+    XCTAssertEqual(try installedDatabase().packages.first?.version, "1.0.0")
+  }
+
   func testCaretConstraintsFollowSemverZeroMajorRules() throws {
     let stable = try XCTUnwrap(VersionConstraint("^1.2.3"))
     let zeroMajor = try XCTUnwrap(VersionConstraint("^0.2.3"))

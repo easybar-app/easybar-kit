@@ -124,7 +124,8 @@ final class WidgetPackageUpdater {
           useRegistry: true,
           force: true
         ),
-        protectedPackages: currentPins
+        protectedPackages: currentPins,
+        respectPins: true
       )
       touchedNames.formUnion(installed.map(\.name))
     }

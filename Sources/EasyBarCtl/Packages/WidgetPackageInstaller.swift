@@ -21,21 +21,32 @@ final class WidgetPackageInstaller {
   /// Installs the requested package.
   func install(
     options: WidgetPackageInstallOptions,
-    protectedPackages: Set<String> = []
+    protectedPackages: Set<String> = [],
+    respectPins: Bool = false
   ) async throws -> [InstalledWidgetPackage] {
     try await WidgetPackageOperationLock.withExclusiveAccess(
       to: packagesDirectory,
       fileManager: fileManager
     ) {
-      try await installLocked(options: options, protectedPackages: protectedPackages)
+      try await installLocked(
+        options: options,
+        protectedPackages: protectedPackages,
+        respectPins: respectPins
+      )
     }
   }
 
   /// Resolves and installs packages while the shared package-directory lock is held.
   private func installLocked(
     options: WidgetPackageInstallOptions,
-    protectedPackages: Set<String>
+    protectedPackages: Set<String>,
+    respectPins: Bool
   ) async throws -> [InstalledWidgetPackage] {
+    let currentPins =
+      respectPins
+      ? try WidgetPackagePinStore(fileManager: fileManager).load(from: packagesDirectory)
+      : []
+    let excludedPackages = protectedPackages.union(currentPins)
     let database = try WidgetPackageDatabaseStore(fileManager: fileManager).load(
       from: packagesDirectory
     )
@@ -60,7 +71,7 @@ final class WidgetPackageInstaller {
       temporaryDirectory: temporaryDirectory.appending(
         path: "downloads", directoryHint: .isDirectory),
       installed: database.packages,
-      protectedPackages: protectedPackages,
+      protectedPackages: excludedPackages,
       logger: logger,
       refreshRegistry: options.refreshRegistry
     )
@@ -71,6 +82,9 @@ final class WidgetPackageInstaller {
     let packages = try await resolver.resolve(source: options.source, sha256: options.sha256)
     guard let rootPackage = packages.last else {
       throw WidgetPackageError.invalidSource("package resolution returned no packages")
+    }
+    if respectPins, currentPins.contains(rootPackage.manifest.name) {
+      throw WidgetPackageError.packagePinned(rootPackage.manifest.name)
     }
     if let existingRoot = database.packages.first(where: { $0.name == rootPackage.manifest.name }),
       !options.force
