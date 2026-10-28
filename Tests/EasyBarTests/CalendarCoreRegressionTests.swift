@@ -214,6 +214,31 @@ final class CalendarCoreRegressionTests: XCTestCase {
     XCTAssertNotEqual(common(start), common(start.addingTimeInterval(86_400)))
   }
 
+  func testDayBucketsIncludeSubMillisecondOverlapAfterMidnight() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = try XCTUnwrap(TimeZone(secondsFromGMT: 0))
+    let midnight = try XCTUnwrap(
+      calendar.date(from: DateComponents(year: 2026, month: 10, day: 28))
+    )
+    let previousDay = try XCTUnwrap(calendar.date(byAdding: .day, value: -1, to: midnight))
+    let event = CalendarAgentEvent(
+      id: "cross-midnight",
+      title: "Short overlap",
+      startDate: midnight.addingTimeInterval(-1),
+      endDate: midnight.addingTimeInterval(0.0005),
+      isAllDay: false
+    )
+
+    let buckets = CalendarSectionBucketer.bucket(
+      events: [event],
+      sectionStartDate: previousDay,
+      dayCount: 2,
+      calendar: calendar
+    )
+
+    XCTAssertEqual(buckets.map { $0.map(\.id) }, [["cross-midnight"], ["cross-midnight"]])
+  }
+
   func testAlarmNormalizationPreservesAbsoluteAndEqualLeadTimes() {
     let start = Date(timeIntervalSinceReferenceDate: 100_000)
     let offsets = CalendarEventNormalization.visibleAlertOffsetsSeconds(

@@ -3,7 +3,7 @@ import Foundation
 
 /// Builds stable event identifiers without relying on Swift's randomized Hasher.
 enum CalendarEventIdentity {
-  /// Creates ID.
+  /// Builds an occurrence-specific identifier from EventKit IDs or fallback event fields.
   static func makeID(
     prefix: String,
     eventIdentifier: String?,
@@ -33,14 +33,14 @@ enum CalendarEventIdentity {
     return "\(prefix)fallback-\(fnv1a64(payload))"
   }
 
-  /// Returns the normalized.
+  /// Trims optional identifier components and drops blank values.
   private static func normalized(_ value: String?) -> String? {
     guard let value else { return nil }
     let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
     return trimmed.isEmpty ? nil : trimmed
   }
 
-  /// Returns the fnv1a64.
+  /// Hashes the fallback identity with deterministic 64-bit FNV-1a.
   private static func fnv1a64(_ value: String) -> String {
     var hash: UInt64 = 14_695_981_039_346_656_037
     for byte in value.utf8 {
@@ -115,7 +115,7 @@ enum CalendarEventNormalization {
     return startComponents != endComponents
   }
 
-  /// Returns the parsed birthday title.
+  /// Separates a plausible age suffix from an EventKit birthday title.
   private static func parsedBirthdayTitle(_ title: String) -> (title: String, age: Int)? {
     guard title.last == ")", let marker = title.range(of: " (", options: .backwards) else {
       return nil
@@ -136,7 +136,7 @@ enum CalendarEventNormalization {
     return (base, age)
   }
 
-  /// Returns the normalized search text.
+  /// Normalizes a title into case- and accent-insensitive word tokens.
   private static func normalizedSearchText(_ value: String) -> String {
     value
       .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
@@ -145,7 +145,7 @@ enum CalendarEventNormalization {
       .joined(separator: " ")
   }
 
-  /// Evaluates the holiday name condition.
+  /// Recognizes only supported holiday-calendar name suffixes.
   private static func matchesHolidayName(_ value: String) -> Bool {
     let tokens = value.split(separator: " ").map(String.init)
     guard let last = tokens.last else { return false }
@@ -160,7 +160,7 @@ enum CalendarEventNormalization {
 
 /// Buckets events by overlapping days without rescanning the complete event list per section.
 enum CalendarSectionBucketer {
-  /// Returns the bucket.
+  /// Assigns events to every overlapping local calendar day and sorts each day.
   static func bucket(
     events: [CalendarAgentEvent],
     sectionStartDate: Date,
@@ -183,7 +183,9 @@ enum CalendarSectionBucketer {
       guard overlapStart < overlapEnd else { continue }
 
       let eventFirstDay = calendar.startOfDay(for: overlapStart)
-      let lastIncludedInstant = overlapEnd.addingTimeInterval(-0.001)
+      let lastIncludedInstant = Date(
+        timeIntervalSinceReferenceDate: overlapEnd.timeIntervalSinceReferenceDate.nextDown
+      )
       let eventLastDay = calendar.startOfDay(for: max(overlapStart, lastIncludedInstant))
       guard
         let firstOffset = calendar.dateComponents([.day], from: firstDay, to: eventFirstDay).day,
