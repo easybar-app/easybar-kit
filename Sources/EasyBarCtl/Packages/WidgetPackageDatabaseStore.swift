@@ -41,7 +41,7 @@ struct WidgetPackageDatabaseStore {
         )
       }
       for module in package.exports.keys {
-        guard Self.isModuleName(module) else {
+        guard WidgetPackageManifestParser.isModuleName(module) else {
           throw WidgetPackageError.installConflict(
             "installed package database contains invalid export '\(module)'"
           )
@@ -70,11 +70,4 @@ struct WidgetPackageDatabaseStore {
     try data.write(to: url, options: .atomic)
   }
 
-  /// Evaluates the module name condition.
-  private static func isModuleName(_ value: String) -> Bool {
-    value.range(
-      of: #"^[A-Za-z_][A-Za-z0-9_-]*(?:\.[A-Za-z_][A-Za-z0-9_-]*)*$"#,
-      options: .regularExpression
-    ) != nil
-  }
 }

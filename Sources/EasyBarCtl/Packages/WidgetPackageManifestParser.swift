@@ -114,17 +114,25 @@ enum WidgetPackageManifestParser {
     )
   }
 
-  /// Evaluates the package name condition.
+  /// Returns whether a package name consists entirely of permitted lowercase components.
   static func isPackageName(_ value: String) -> Bool {
-    value.range(of: "^[a-z0-9]+(?:-[a-z0-9]+)*$", options: .regularExpression) != nil
+    matchesEntireString(value, pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$")
   }
 
-  /// Evaluates the module name condition.
-  private static func isModuleName(_ value: String) -> Bool {
-    value.range(
-      of: "^[A-Za-z_][A-Za-z0-9_-]*(?:\\.[A-Za-z_][A-Za-z0-9_-]*)*$",
-      options: .regularExpression
-    ) != nil
+  /// Returns whether an exported Lua module name consists entirely of valid identifiers.
+  static func isModuleName(_ value: String) -> Bool {
+    matchesEntireString(
+      value,
+      pattern: "^[A-Za-z_][A-Za-z0-9_-]*(?:\\.[A-Za-z_][A-Za-z0-9_-]*)*$"
+    )
+  }
+
+  /// Prevents regex end anchors from accepting an unconsumed trailing newline.
+  private static func matchesEntireString(_ value: String, pattern: String) -> Bool {
+    guard let match = value.range(of: pattern, options: .regularExpression) else {
+      return false
+    }
+    return match.lowerBound == value.startIndex && match.upperBound == value.endIndex
   }
 
   /// Returns the required string.

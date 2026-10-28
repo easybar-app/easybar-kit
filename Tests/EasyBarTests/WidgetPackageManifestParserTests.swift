@@ -122,6 +122,21 @@ final class WidgetPackageManifestParserTests: XCTestCase {
     }
   }
 
+  func testPackageNamesMustMatchTheEntireString() {
+    XCTAssertTrue(WidgetPackageManifestParser.isPackageName("valid-name"))
+    XCTAssertFalse(WidgetPackageManifestParser.isPackageName("valid-name\n"))
+    XCTAssertFalse(WidgetPackageManifestParser.isPackageName("valid-name\r\n"))
+    XCTAssertFalse(WidgetPackageManifestParser.isPackageName("part\nother"))
+    XCTAssertFalse(WidgetPackageManifestParser.isPackageName("../unsafe"))
+  }
+
+  func testExportNamesMustMatchTheEntireString() {
+    XCTAssertTrue(WidgetPackageManifestParser.isModuleName("utils.codec"))
+    XCTAssertFalse(WidgetPackageManifestParser.isModuleName("utils.codec\n"))
+    XCTAssertFalse(WidgetPackageManifestParser.isModuleName("utils.codec\r\n"))
+    XCTAssertFalse(WidgetPackageManifestParser.isModuleName("utils/codec"))
+  }
+
   private func makePackage(manifest: String) throws -> URL {
     let directory = FileManager.default.temporaryDirectory.appending(
       path: "easybar-manifest-parser-\(UUID().uuidString)",
