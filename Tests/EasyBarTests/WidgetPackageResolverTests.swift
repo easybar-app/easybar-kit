@@ -129,6 +129,34 @@ final class WidgetPackageResolverTests: XCTestCase {
     }
   }
 
+  func testRejectsSymbolicLinkAsLocalPackageRoot() async throws {
+    let directory = FileManager.default.temporaryDirectory.appending(
+      path: "easybar-package-root-\(UUID().uuidString)",
+      directoryHint: .isDirectory
+    )
+    let real = directory.appending(path: "real", directoryHint: .isDirectory)
+    let link = directory.appending(path: "linked", directoryHint: .isDirectory)
+    try FileManager.default.createDirectory(at: real, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    try FileManager.default.createSymbolicLink(at: link, withDestinationURL: real)
+
+    let resolver = WidgetPackageResolver(
+      registrySource: nil,
+      useRegistry: false,
+      temporaryDirectory: directory,
+      installed: [],
+      logger: ProcessLogger(label: "resolver-tests", minimumLevel: .error),
+      currentKitVersion: nil
+    )
+
+    do {
+      _ = try await resolver.resolve(source: link.path, sha256: nil)
+      XCTFail("Expected a symlinked package root to be rejected")
+    } catch let error as WidgetPackageError {
+      XCTAssertEqual(error, .unsafeArchive("symbolic links are not allowed: linked"))
+    }
+  }
+
   func testArchivePathValidationRejectsTraversalBeforeURLNormalization() {
     XCTAssertTrue(WidgetPackageArchivePathValidator.escapesPackageRoot("../outside"))
     XCTAssertTrue(WidgetPackageArchivePathValidator.escapesPackageRoot("nested/../../outside"))

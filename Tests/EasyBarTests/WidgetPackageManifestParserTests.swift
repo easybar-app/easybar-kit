@@ -122,6 +122,60 @@ final class WidgetPackageManifestParserTests: XCTestCase {
     }
   }
 
+  func testRejectsSymbolicLinkInEntrypointParent() throws {
+    let directory = try makePackage(
+      manifest: """
+        manifest_version = 2
+        name = "clock"
+        version = "1.2.3"
+        minimum_easybar_kit_version = "0.50.0"
+        kind = "widget"
+        entrypoint = "nested/widget.lua"
+        """
+    )
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let targetDirectory = directory.appending(path: "real", directoryHint: .isDirectory)
+    try FileManager.default.createDirectory(at: targetDirectory, withIntermediateDirectories: false)
+    try "return nil\n".write(
+      to: targetDirectory.appending(path: "widget.lua"),
+      atomically: true,
+      encoding: .utf8
+    )
+    try FileManager.default.createSymbolicLink(
+      at: directory.appending(path: "nested"),
+      withDestinationURL: targetDirectory
+    )
+
+    XCTAssertThrowsError(try WidgetPackageManifestParser.parse(directory: directory)) { error in
+      XCTAssertEqual(
+        error as? WidgetPackageError,
+        .invalidManifest("unsafe or missing entrypoint: nested/widget.lua")
+      )
+    }
+  }
+
+  func testRejectsNoncanonicalEntrypointComponents() throws {
+    let directory = try makePackage(
+      manifest: """
+        manifest_version = 2
+        name = "clock"
+        version = "1.2.3"
+        minimum_easybar_kit_version = "0.50.0"
+        kind = "widget"
+        entrypoint = "./widget.lua"
+        """
+    )
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    XCTAssertThrowsError(try WidgetPackageManifestParser.parse(directory: directory)) { error in
+      XCTAssertEqual(
+        error as? WidgetPackageError,
+        .invalidManifest("unsafe or missing entrypoint: ./widget.lua")
+      )
+    }
+  }
+
   func testPackageNamesMustMatchTheEntireString() {
     XCTAssertTrue(WidgetPackageManifestParser.isPackageName("valid-name"))
     XCTAssertFalse(WidgetPackageManifestParser.isPackageName("valid-name\n"))

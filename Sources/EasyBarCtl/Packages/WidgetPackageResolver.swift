@@ -407,8 +407,12 @@ final class WidgetPackageResolver {
     return try Data(contentsOf: sourceURL, options: .mappedIfSafe)
   }
 
-  /// Returns the reject symbolic links.
+  /// Rejects symbolic links at the package root and anywhere beneath it.
   private func rejectSymbolicLinks(in directory: URL) throws {
+    if try directory.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink == true {
+      throw WidgetPackageError.unsafeArchive("symbolic links are not allowed: \(directory.lastPathComponent)")
+    }
+
     guard
       let enumerator = FileManager.default.enumerator(
         at: directory,

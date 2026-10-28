@@ -165,17 +165,29 @@ enum WidgetPackageManifestParser {
     label: String,
     directory: URL
   ) throws {
-    guard !relativePath.isEmpty,
+    let components = relativePath.split(separator: "/", omittingEmptySubsequences: false)
+    guard !components.isEmpty,
       !relativePath.hasPrefix("/"),
-      !relativePath.split(separator: "/", omittingEmptySubsequences: false).contains("..")
+      components.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." })
     else {
       throw WidgetPackageError.invalidManifest("unsafe or missing \(label): \(relativePath)")
     }
 
-    let fileURL = directory.appending(path: relativePath)
-    let values = try? fileURL.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
-    guard values?.isRegularFile == true, values?.isSymbolicLink != true else {
-      throw WidgetPackageError.invalidManifest("unsafe or missing \(label): \(relativePath)")
+    var current = directory
+    for (index, component) in components.enumerated() {
+      current.append(path: String(component))
+      let values = try? current.resourceValues(forKeys: [
+        .isRegularFileKey, .isDirectoryKey, .isSymbolicLinkKey,
+      ])
+      let isLastComponent = index == components.count - 1
+      let isExpectedType =
+        isLastComponent
+        ? values?.isRegularFile == true
+        : values?.isDirectory == true
+
+      guard isExpectedType, values?.isSymbolicLink != true else {
+        throw WidgetPackageError.invalidManifest("unsafe or missing \(label): \(relativePath)")
+      }
     }
   }
 }
