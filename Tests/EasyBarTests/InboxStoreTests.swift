@@ -255,6 +255,23 @@ final class InboxStoreTests: XCTestCase {
     XCTAssertEqual(restored.presentedItems.map(\.source), ["GitHub"])
   }
 
+  func testRestartPreservesStateWhileItemsAreRepublishedIncrementally() throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("inbox-state.json")
+    let original = InboxStore(stateURL: url)
+    original.replace(source: "alerts", items: [item("read"), item("dismissed")])
+    XCTAssertTrue(original.setRead(true, source: "alerts", id: "read"))
+    XCTAssertTrue(original.dismiss(source: "alerts", id: "dismissed"))
+
+    let restored = InboxStore(stateURL: url)
+    restored.replace(source: "alerts", items: [])
+    XCTAssertTrue(restored.upsert(source: "alerts", item: item("read")))
+    XCTAssertTrue(restored.upsert(source: "alerts", item: item("dismissed")))
+    XCTAssertEqual(restored.presentedItems.map(\.item.id), ["read"])
+    XCTAssertEqual(restored.unreadCount, 0)
+  }
+
   func testInvalidItemsAreDropped() {
     let store = InboxStore()
     store.replace(source: "GitLab", items: [item(""), item("valid")])

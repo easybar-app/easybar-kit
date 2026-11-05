@@ -63,7 +63,7 @@ struct InboxPopupView: View {
             tooltipTextColor: tooltipTextColor,
             tooltipBackgroundColor: tooltipBackgroundColor,
             tooltipBorderColor: tooltipBorderColor,
-            action: store.dismissAll
+            action: dismissAll
           )
         }
         if shouldShowSourceActions(config) {
@@ -177,6 +177,20 @@ struct InboxPopupView: View {
       source: item.source,
       targetWidgetID: item.item.id
     )
+  }
+
+  private func dismiss(_ item: InboxPresentedItem) {
+    guard item.item.isDismissible else { return }
+    store.dismiss(item)
+    emitAction(.inboxAction, actionID: "dismiss", source: item.source, targetWidgetID: item.item.id)
+  }
+
+  private func dismissAll() {
+    let items = store.presentedItems.filter(\.item.isDismissible)
+    store.dismissAll()
+    for item in items {
+      emitAction(.inboxAction, actionID: "dismiss", source: item.source, targetWidgetID: item.item.id)
+    }
   }
 
   /// Toggles local read state while forwarding only the server-actionable read transition.
@@ -413,7 +427,7 @@ struct InboxPopupView: View {
 
         if presented.item.isDismissible {
           Button("Dismiss") {
-            store.dismiss(presented)
+            dismiss(presented)
           }
           .buttonStyle(.plain)
           .foregroundStyle(color(config.popupActionColorHex))
@@ -474,7 +488,7 @@ struct InboxPopupView: View {
       }
       if presented.item.isDismissible {
         Divider()
-        Button("Dismiss") { store.dismiss(presented) }
+        Button("Dismiss") { dismiss(presented) }
       }
     }
   }

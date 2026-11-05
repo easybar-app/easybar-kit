@@ -88,10 +88,10 @@ final class InboxStore: ObservableObject {
         occupiedIDs.insert(item.id)
       }
     }
+    let previousItems = sources[source] ?? []
     sources[source] = Array(uniqueItems.values)
 
-    reconcileState(source: source)
-    persistState()
+    forgetRemovedItems(previousItems, source: source)
     rebuild()
   }
 
@@ -108,8 +108,6 @@ final class InboxStore: ObservableObject {
     items.removeAll { $0.id == item.id }
     items.append(item)
     controlSources[source] = items
-    reconcileState(source: source)
-    persistState()
     rebuild()
     return true
   }
@@ -182,9 +180,8 @@ final class InboxStore: ObservableObject {
   /// Clears the requested operation.
   func clear(source: String) {
     guard let source = normalizedSource(source) else { return }
-    sources.removeValue(forKey: source)
-    reconcileState(source: source)
-    persistState()
+    let previousItems = sources.removeValue(forKey: source) ?? []
+    forgetRemovedItems(previousItems, source: source)
     rebuild()
   }
 
@@ -465,14 +462,18 @@ final class InboxStore: ObservableObject {
     source + String(Self.compositeIDSeparator) + itemID
   }
 
-  /// Returns the reconcile state.
-  private func reconcileState(source: String) {
-    let prefix = source + String(Self.compositeIDSeparator)
-    let items = (sources[source] ?? []) + (controlSources[source] ?? [])
-    let liveIDs = Set(items.map { compositeID(source: source, itemID: $0.id) })
-    readItemIDs = readItemIDs.filter { !$0.hasPrefix(prefix) || liveIDs.contains($0) }
-    unreadItemIDs = unreadItemIDs.filter { !$0.hasPrefix(prefix) || liveIDs.contains($0) }
-    dismissedItemIDs = dismissedItemIDs.filter { !$0.hasPrefix(prefix) || liveIDs.contains($0) }
+  /// Forget only observed removals. Other publishers may still be restoring their items.
+  private func forgetRemovedItems(_ previousItems: [InboxItem], source: String) {
+    let liveItems = (sources[source] ?? []) + (controlSources[source] ?? [])
+    let removed = Set(previousItems.map(\.id)).subtracting(liveItems.map(\.id))
+    guard !removed.isEmpty else { return }
+    for id in removed {
+      let key = compositeID(source: source, itemID: id)
+      readItemIDs.remove(key)
+      unreadItemIDs.remove(key)
+      dismissedItemIDs.remove(key)
+    }
+    persistState()
   }
 
   /// Returns the persist state.
