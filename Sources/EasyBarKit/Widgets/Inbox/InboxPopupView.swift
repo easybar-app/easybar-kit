@@ -179,12 +179,14 @@ struct InboxPopupView: View {
     )
   }
 
+  /// Hides one item locally and forwards the dismissal to its publisher.
   private func dismiss(_ item: InboxPresentedItem) {
     guard item.item.isDismissible else { return }
     store.dismiss(item)
     emitAction(.inboxAction, actionID: "dismiss", source: item.source, targetWidgetID: item.item.id)
   }
 
+  /// Hides dismissible items and forwards each dismissal to its publisher.
   private func dismissAll() {
     let items = store.presentedItems.filter(\.item.isDismissible)
     store.dismissAll()
